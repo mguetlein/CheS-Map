@@ -12,13 +12,11 @@ import javax.swing.JOptionPane;
 
 import main.Settings;
 
-import org.apache.commons.lang.NotImplementedException;
-
 public class DatasetUtil
 {
 	public static boolean isAmbitURI(String uri)
 	{
-		throw new NotImplementedException();
+		return (uri.contains("apps.ideaconsult.net") || uri.contains("ambit.uni-plovdiv.bg"));
 	}
 
 	public static String AMBIT_DATASET_SERVICE_URI = "http://apps.ideaconsult.net:8080/ambit2/dataset";
@@ -43,7 +41,7 @@ public class DatasetUtil
 			connection.setDoOutput(true);
 			connection.setInstanceFollowRedirects(false);
 			connection.setRequestMethod("GET");
-			if (datasetUrl.contains("apps.ideaconsult.net") || datasetUrl.contains("ambit.uni-plovdiv.bg"))
+			if (isAmbitURI(datasetUrl))
 				connection.setRequestProperty("accept", "chemical/x-mdl-sdf");
 			else
 				connection.setRequestProperty("accept", "text/csv");

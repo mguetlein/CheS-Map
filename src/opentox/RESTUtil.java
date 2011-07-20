@@ -10,10 +10,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.Random;
 
 import javax.swing.JOptionPane;
 
 import main.Settings;
+import util.StringUtil;
 
 public class RESTUtil
 {
@@ -48,6 +50,46 @@ public class RESTUtil
 		{
 			System.out.println("result: " + b.toString());
 			return b.toString();
+		}
+	}
+
+	public static void delete(String urlString)
+	{
+		HttpURLConnection connection = null;
+		try
+		{
+			System.err.println("deleting: " + urlString);
+
+			URL url = new URL(urlString);
+			connection = (HttpURLConnection) url.openConnection();
+			connection.setDoOutput(true);
+			connection.setInstanceFollowRedirects(false);
+			connection.setRequestMethod("DELETE");
+			connection.disconnect();
+			if (connection.getResponseCode() >= 400)
+				throw new IllegalStateException("Response code: " + connection.getResponseCode());
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+
+			StringBuffer serverError = new StringBuffer();
+			if (connection != null && connection.getErrorStream() != null)
+			{
+				BufferedReader buffy2 = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+				String s = "";
+				try
+				{
+					while ((s = buffy2.readLine()) != null)
+						serverError.append(s + "\n");
+				}
+				catch (IOException e1)
+				{
+				}
+			}
+			JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, "Error: could not delete: '" + urlString
+					+ "'\nError type: '" + e.getClass().getSimpleName() + "'\nMessage: '" + e.getMessage()
+					+ "'\n\nServer Error:\n" + serverError, "Http Connection Error", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -133,6 +175,9 @@ public class RESTUtil
 	{
 		try
 		{
+			String randomMod = StringUtil.randomString(10, 10, new Random(), false);
+			System.err.println("randomMod: " + randomMod);
+
 			String boundary = "*****";
 			String lineEnd = "\r\n";
 			String twoHyphens = "--";
@@ -151,9 +196,8 @@ public class RESTUtil
 			connection.setRequestMethod("POST");
 			DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
 			dos.writeBytes(twoHyphens + boundary + lineEnd);
-			dos.writeBytes("Content-Disposition: form-data; name=\"file\";" + " filename=\""
+			dos.writeBytes("Content-Disposition: form-data; name=\"file\";" + " filename=\"" + randomMod
 					+ new File(filename).getName() + "\"" + lineEnd);
-			//			dos.writeBytes("Content-Type: application/vnd.stardivision.math" + lineEnd);
 
 			dos.writeBytes(lineEnd);
 			FileInputStream fileInputStream = new FileInputStream(new File(filename));
@@ -193,4 +237,5 @@ public class RESTUtil
 		params.put("accept", "text/uri-list");
 		System.out.println(get("http://local-ot/task/10", params));
 	}
+
 }
