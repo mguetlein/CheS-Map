@@ -157,7 +157,9 @@ public class Settings
 		}
 	}
 
-	public static String VERSION_STRING = "Initial Prototype" + ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
+	public static String VERSION = "v0.1.0";
+	public static String VERSION_STRING = VERSION + " Initial Prototype"
+			+ ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
 	public static String TITLE = "CheS-Mapper";
 	public static String CDK_VERSION = "1.2.6.1";
 	public static String CDK_STRING = "The Chemistry Development Kit (CDK) (Version " + CDK_VERSION
@@ -210,7 +212,7 @@ public class Settings
 	// ------------- LOAD AND STORE PROPS ----------------------------------	
 
 	public static Properties PROPS;
-	public static final String PROPERTIES_FILE = BASE_DIR + File.separator + "cluster.framework.props";
+	public static final String PROPERTIES_FILE = BASE_DIR + File.separator + "ches.mapper." + VERSION + ".props";
 
 	static
 	{
