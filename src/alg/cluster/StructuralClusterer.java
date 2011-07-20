@@ -1,5 +1,6 @@
 package alg.cluster;
 
+import gui.Progressable;
 import gui.property.DoubleProperty;
 import gui.property.IntegerProperty;
 import gui.property.Property;
@@ -7,6 +8,7 @@ import gui.property.Property;
 import java.util.List;
 
 import main.Settings;
+import data.DatasetFile;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MoleculeProperty;
@@ -30,8 +32,8 @@ public class StructuralClusterer implements DatasetClusterer
 	}
 
 	@Override
-	public void clusterDataset(String datasetName, String filename, List<CompoundData> compounds,
-			List<MoleculeProperty> features)
+	public void clusterDataset(DatasetFile datasetFile, List<CompoundData> compounds, List<MoleculeProperty> features,
+			Progressable progress)
 	{
 		//		clusters = new ArrayList<Cluster>();
 		//

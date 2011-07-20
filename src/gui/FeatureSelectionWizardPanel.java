@@ -19,14 +19,14 @@ import com.jgoodies.forms.layout.FormLayout;
 import data.CDKFeatureComputer;
 import data.CDKProperty;
 import data.CDKProperty.CDKDescriptor;
-import data.CDKService;
-import data.SDFProperty;
+import data.DatasetFile;
+import data.IntegratedProperty;
 
 public class FeatureSelectionWizardPanel extends WizardPanel
 {
-	MouseOverCheckBoxList sdfList;
-	DefaultListModel sdfModel;
-	MouseOverCheckBoxListComponent sdfPanel;
+	MouseOverCheckBoxList integratedList;
+	DefaultListModel integratedModel;
+	MouseOverCheckBoxListComponent integratedPanel;
 
 	MouseOverCheckBoxList cdkList;
 	DefaultListModel cdkModel;
@@ -34,7 +34,7 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 
 	JLabel numFeaturesLabel;
 
-	String dataset = "";
+	DatasetFile dataset = null;
 	int numSelected;
 	boolean selfUpdate;
 
@@ -46,9 +46,9 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 		builder.append("Numeric features included in dataset:");
 		builder.nextLine();
 
-		sdfModel = new DefaultListModel();
-		sdfList = new MouseOverCheckBoxList(sdfModel);
-		sdfList.getCheckBoxSelection().addListener(new PropertyChangeListener()
+		integratedModel = new DefaultListModel();
+		integratedList = new MouseOverCheckBoxList(integratedModel);
+		integratedList.getCheckBoxSelection().addListener(new PropertyChangeListener()
 		{
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
@@ -58,11 +58,11 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 					wizard.update();
 			}
 		});
-		sdfList.setVisibleRowCount(5);
-		sdfPanel = new MouseOverCheckBoxListComponent(sdfList);
+		integratedList.setVisibleRowCount(5);
+		integratedPanel = new MouseOverCheckBoxListComponent(integratedList);
 
 		//builder.appendRow("fill:pref");
-		builder.append(sdfPanel);
+		builder.append(integratedPanel);
 		builder.nextLine();
 
 		builder.appendParagraphGapRow();
@@ -116,12 +116,12 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 
 		setLayout(new BorderLayout());
 		add(builder.getPanel());
-
 	}
 
 	public void update()
 	{
-		numSelected = sdfList.getCheckBoxSelection().getNumSelected() + cdkList.getCheckBoxSelection().getNumSelected();
+		numSelected = integratedList.getCheckBoxSelection().getNumSelected()
+				+ cdkList.getCheckBoxSelection().getNumSelected();
 		numFeaturesLabel.setText("Number of selected features: " + numSelected);
 	}
 
@@ -130,25 +130,25 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 		return numSelected;
 	}
 
-	public void updateSDFFeatures(String dataset)
+	public void updateIntegratedFeatures(DatasetFile dataset)
 	{
 		if (dataset.equals(this.dataset))
 			return;
 		this.dataset = dataset;
 		selfUpdate = true;
-		sdfList.getCheckBoxSelection().clearSelection();
-		sdfModel.clear();
-		SDFProperty props[] = CDKService.getNumericSDFProperties(dataset);
-		for (SDFProperty sdfProperty : props)
-			sdfModel.addElement(sdfProperty);
+		integratedList.getCheckBoxSelection().clearSelection();
+		integratedModel.clear();
+		IntegratedProperty props[] = dataset.getIntegratedNumericProperties();
+		for (IntegratedProperty integratedProperty : props)
+			integratedModel.addElement(integratedProperty);
 
-		String sdfFeatures = (String) Settings.PROPS.get("features-sdf");
-		Vector<String> selection = VectorUtil.fromCSVString(sdfFeatures);
+		String integratedFeatures = (String) Settings.PROPS.get("features-integrated");
+		Vector<String> selection = VectorUtil.fromCSVString(integratedFeatures);
 		for (String string : selection)
 		{
-			SDFProperty p = new SDFProperty(string);
-			if (sdfModel.contains(p))
-				sdfList.setCheckboxSelectedValue(p);
+			IntegratedProperty p = new IntegratedProperty(string);
+			if (integratedModel.contains(p))
+				integratedList.setCheckboxSelectedValue(p);
 		}
 		selfUpdate = false;
 	}
@@ -156,7 +156,7 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 	@Override
 	public void proceed()
 	{
-		Settings.PROPS.put("features-sdf", ArrayUtil.toCSVString(sdfList.getCheckboxSelectedValues()));
+		Settings.PROPS.put("features-integrated", ArrayUtil.toCSVString(integratedList.getCheckboxSelectedValues()));
 		Settings.PROPS.put("features-cdk", ArrayUtil.toCSVString(cdkList.getCheckboxSelectedValues()));
 		Settings.storeProps();
 	}
@@ -175,8 +175,9 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 
 	public FeatureComputer getFeatureComputer()
 	{
-		return new CDKFeatureComputer(ArrayUtil.cast(SDFProperty.class, sdfList.getCheckboxSelectedValues()),
-				ArrayUtil.cast(CDKDescriptor.class, cdkList.getCheckboxSelectedValues()));
+		return new CDKFeatureComputer(ArrayUtil.cast(IntegratedProperty.class,
+				integratedList.getCheckboxSelectedValues()), ArrayUtil.cast(CDKDescriptor.class,
+				cdkList.getCheckboxSelectedValues()));
 	}
 
 	@Override

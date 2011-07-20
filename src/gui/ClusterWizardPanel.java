@@ -3,8 +3,9 @@ package gui;
 import util.ArrayUtil;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
-import alg.cluster.StructuralClusterer;
+import alg.cluster.StructuralClustererService;
 import alg.cluster.WekaClusterer;
+import data.DatasetFile;
 
 public class ClusterWizardPanel extends GenericWizardPanel
 {
@@ -12,7 +13,7 @@ public class ClusterWizardPanel extends GenericWizardPanel
 	public static DatasetClusterer CLUSTERERS[];
 	static
 	{
-		CLUSTERERS = new DatasetClusterer[] { new NoClusterer(), new StructuralClusterer() }; //new KMeansClusterer(),
+		CLUSTERERS = new DatasetClusterer[] { new NoClusterer(), new StructuralClustererService() }; //new KMeansClusterer(),
 		CLUSTERERS = ArrayUtil.concat(DatasetClusterer.class, CLUSTERERS, WekaClusterer.WEKA_CLUSTERER);
 	}
 
@@ -22,7 +23,7 @@ public class ClusterWizardPanel extends GenericWizardPanel
 	}
 
 	@Override
-	public void update(String dataset, int numNumericFeatures)
+	public void update(DatasetFile dataset, int numNumericFeatures)
 	{
 		if (!preconditionsMet)
 			return;

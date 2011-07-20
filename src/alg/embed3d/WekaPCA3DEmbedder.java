@@ -16,6 +16,7 @@ import weka.WekaPropertyUtil;
 import weka.attributeSelection.PrincipalComponents;
 import weka.core.Instance;
 import weka.core.Instances;
+import data.DatasetFile;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 
@@ -27,7 +28,7 @@ public class WekaPCA3DEmbedder implements ThreeDEmbedder
 	List<Vector3f> positions;
 
 	@Override
-	public void embed(String filename, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
+	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
 			DistanceMatrix<MolecularPropertyOwner> distances)
 	{
 		try
@@ -59,7 +60,7 @@ public class WekaPCA3DEmbedder implements ThreeDEmbedder
 			//e.printStackTrace();
 			System.err.println("WARNING: WekaPCA3DEmbedder failed: '" + e.getMessage()
 					+ "', returning random 3d positions");
-			random.embed(filename, instances, features, distances);
+			random.embed(dataset, instances, features, distances);
 			positions = random.positions;
 		}
 	}

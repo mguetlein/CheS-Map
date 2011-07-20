@@ -11,8 +11,8 @@ import dataInterface.MoleculeProperty;
 
 public class CDKFeatureComputer implements FeatureComputer
 {
-	SDFProperty sdfFeatures[];
-	data.CDKProperty.CDKDescriptor cdkFeatures[];
+	IntegratedProperty integratedFeatures[];
+	data.CDKProperty.CDKDescriptor cdkDescriptors[];
 
 	List<MoleculeProperty> features;
 	List<MoleculeProperty> properties;
@@ -28,47 +28,49 @@ public class CDKFeatureComputer implements FeatureComputer
 		//{ CDKProperty.HBondAcceptorCount, CDKProperty.HBondDonorCount, CDKProperty.Weight,CDKProperty.ALOGP };
 	}
 
-	public CDKFeatureComputer(SDFProperty sdfFeatures[], CDKDescriptor cdkFeatures[])
+	public CDKFeatureComputer(IntegratedProperty integratedFeatures[], CDKDescriptor cdkDescriptors[])
 	{
-		this.sdfFeatures = sdfFeatures;
-		this.cdkFeatures = cdkFeatures;
+		this.integratedFeatures = integratedFeatures;
+		this.cdkDescriptors = cdkDescriptors;
 	}
 
 	@Override
-	public void computeFeatures(String sdfFile)
+	public void computeFeatures(DatasetFile dataset)
 	{
 		features = new ArrayList<MoleculeProperty>();
 		properties = new ArrayList<MoleculeProperty>();
 		compounds = new ArrayList<CompoundData>();
 
-		int numCompounds = CDKService.loadSdf(sdfFile);
+		int numCompounds = dataset.numCompounds();
 
 		List<MoleculeProperty> props = new ArrayList<MoleculeProperty>();
-		for (SDFProperty p : sdfFeatures)
+		for (IntegratedProperty p : integratedFeatures)
 		{
 			props.add(p);
 			features.add(p);
 		}
-		for (CDKDescriptor p : cdkFeatures)
-			for (int i = 0; i < CDKProperty.numFeatureValues(p); i++)
-			{
-				CDKProperty pp = new CDKProperty(p, i);
-				props.add(pp);
-				features.add(pp);
-			}
-		for (SDFProperty p : CDKService.getSDFProperties(sdfFile))
-			if (ArrayUtil.indexOf(sdfFeatures, p) == -1)
+		if (cdkDescriptors != null)
+			for (CDKDescriptor p : cdkDescriptors)
+				for (int i = 0; i < CDKProperty.numFeatureValues(p); i++)
+				{
+					CDKProperty pp = new CDKProperty(p, i);
+					props.add(pp);
+					features.add(pp);
+				}
+		for (IntegratedProperty p : dataset.getIntegratedProperties(false))
+			if (ArrayUtil.indexOf(integratedFeatures, p) == -1)
 			{
 				props.add(p);
 				properties.add(p);
 			}
 
 		System.out.print("computing features ");
+		String[] smiles = dataset.getSmiles();
 		for (MoleculeProperty p : props)
 		{
 			System.out.print(".");
-			Object o[] = CDKService.getObjectFromSdf(sdfFile, p);
-			Object o2[] = CDKService.getFromSdf(sdfFile, p, true);
+			Object o[] = dataset.getObjectValues(p);
+			Object o2[] = dataset.getDoubleValues(p, true);
 
 			for (int i = 0; i < numCompounds; i++)
 			{
@@ -77,7 +79,7 @@ public class CDKFeatureComputer implements FeatureComputer
 					c = (CompoundDataImpl) compounds.get(i);
 				else
 				{
-					c = new CompoundDataImpl();
+					c = new CompoundDataImpl(smiles[i]);
 					c.setIndex(i);
 					compounds.add(c);
 				}

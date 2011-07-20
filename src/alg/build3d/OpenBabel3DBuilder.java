@@ -3,13 +3,15 @@ package alg.build3d;
 import gui.property.Property;
 import main.Settings;
 import util.ExternalToolUtil;
+import data.DatasetFile;
 
 public class OpenBabel3DBuilder extends Abstract3DBuilder
 {
 	@Override
-	public void build3D(String sdfFile, String outfile)
+	public void build3D(DatasetFile datasetFile, String outfile)
 	{
-		ExternalToolUtil.run("obgen3d", Settings.CV_BABEL_PATH + " --gen3d -d -isdf " + sdfFile + " -osdf " + outfile);
+		ExternalToolUtil.run("obgen3d", Settings.CV_BABEL_PATH + " --gen3d -d -isdf " + datasetFile.getSDFPath()
+				+ " -osdf " + outfile);
 	}
 
 	@Override

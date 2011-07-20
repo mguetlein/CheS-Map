@@ -12,6 +12,7 @@ import alg.embed3d.AbstractRFeatureTo3DEmbedder;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
 import alg.embed3d.WekaPCA3DEmbedder;
+import data.DatasetFile;
 
 public class EmbedWizardPanel extends GenericWizardPanel
 {
@@ -36,7 +37,7 @@ public class EmbedWizardPanel extends GenericWizardPanel
 	}
 
 	@Override
-	public void update(String dataset, int numNumericFeatures)
+	public void update(DatasetFile dataset, int numNumericFeatures)
 	{
 		if (!preconditionsMet)
 			return;

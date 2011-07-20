@@ -14,6 +14,12 @@ public class CompoundDataImpl implements CompoundData
 	private int index;
 	private HashMap<MoleculeProperty, Object> values = new HashMap<MoleculeProperty, Object>();
 	private HashMap<MoleculeProperty, Object> normalizedValues = new HashMap<MoleculeProperty, Object>();
+	private String smiles;
+
+	public CompoundDataImpl(String smiles)
+	{
+		this.smiles = smiles;
+	}
 
 	public Vector3f getPosition()
 	{
@@ -63,6 +69,12 @@ public class CompoundDataImpl implements CompoundData
 			return HashMapUtil.toString(values);
 		else
 			return HashMapUtil.toString(normalizedValues);
+	}
+
+	@Override
+	public String getSmiles()
+	{
+		return smiles;
 	}
 
 }

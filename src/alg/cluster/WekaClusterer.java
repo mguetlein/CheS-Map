@@ -1,5 +1,6 @@
 package alg.cluster;
 
+import gui.Progressable;
 import gui.property.Property;
 
 import java.io.BufferedReader;
@@ -24,6 +25,7 @@ import weka.clusterers.SimpleKMeans;
 import weka.core.Instances;
 import weka.core.Version;
 import data.ClusterDataImpl;
+import data.DatasetFile;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MolecularPropertyOwner;
@@ -52,8 +54,8 @@ public class WekaClusterer implements DatasetClusterer
 	}
 
 	@Override
-	public void clusterDataset(String datasetName, String filename, List<CompoundData> compounds,
-			List<MoleculeProperty> features)
+	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features,
+			Progressable progresss)
 	{
 		File f = CompoundArffWriter.writeArffFile(ListUtil.cast(MolecularPropertyOwner.class, compounds), features);
 		try
@@ -76,7 +78,8 @@ public class WekaClusterer implements DatasetClusterer
 			}
 			for (int j = 0; j < eval.getClusterAssignments().length; j++)
 				((ClusterDataImpl) clusters.get((int) eval.getClusterAssignments()[j])).addCompound(compounds.get(j));
-			DatasetClustererUtil.storeClusters(filename, wekaClusterer.getClass().getSimpleName(), clusters);
+			DatasetClustererUtil
+					.storeClusters(dataset.getSDFPath(), wekaClusterer.getClass().getSimpleName(), clusters);
 		}
 		catch (FileNotFoundException e)
 		{

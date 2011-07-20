@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import main.Settings;
 import util.FileUtil;
+import data.DatasetFile;
 
 public abstract class Abstract3DBuilder implements ThreeDBuilder
 {
@@ -15,9 +16,9 @@ public abstract class Abstract3DBuilder implements ThreeDBuilder
 
 	private String threeDFilename;
 
-	public abstract void build3D(String inFile, String outFile);
+	public abstract void build3D(DatasetFile dataset, String outFile);
 
-	public String get3DFile()
+	public String get3DSDFFile()
 	{
 		return threeDFilename;
 	}
@@ -31,7 +32,7 @@ public abstract class Abstract3DBuilder implements ThreeDBuilder
 	public abstract String getInitials();
 
 	@Override
-	public void build3D(final String sdfFile, final Progressable progress)
+	public void build3D(final DatasetFile dataset, final Progressable progress)
 	{
 		//		if (sdfFile.matches("(?i).*3d.*"))
 		//		{
@@ -40,6 +41,7 @@ public abstract class Abstract3DBuilder implements ThreeDBuilder
 		//		}
 		//		else
 		//		{
+		String sdfFile = dataset.getSDFPath();
 		File orig = new File(sdfFile);
 		if (!orig.exists())
 			throw new IllegalStateException("sdf file not found");
@@ -83,7 +85,7 @@ public abstract class Abstract3DBuilder implements ThreeDBuilder
 					}
 				});
 				th.start();
-				build3D(sdfFile, tmpFile.getAbsolutePath());
+				build3D(dataset, tmpFile.getAbsolutePath());
 				running = false;
 
 				if (Settings.isAborted(Thread.currentThread()))

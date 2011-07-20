@@ -1,5 +1,6 @@
 package alg.cluster;
 
+import gui.Progressable;
 import gui.property.IntegerProperty;
 import gui.property.Property;
 
@@ -14,6 +15,7 @@ import main.Settings;
 import util.ListUtil;
 import data.ClusterDataImpl;
 import data.CompoundDataImpl;
+import data.DatasetFile;
 import data.DistanceUtil;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
@@ -35,6 +37,11 @@ public class KMeansClusterer implements DatasetClusterer
 
 	class Mean extends CompoundDataImpl
 	{
+		public Mean()
+		{
+			super(null);
+		}
+
 		Vector<CompoundData> assigned = new Vector<CompoundData>();
 
 		double dist(CompoundData c, List<MoleculeProperty> props)
@@ -71,8 +78,8 @@ public class KMeansClusterer implements DatasetClusterer
 	List<int[]> clusterIndices;
 
 	@Override
-	public void clusterDataset(String datasetName, String filename, List<CompoundData> compounds,
-			List<MoleculeProperty> features)
+	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features,
+			Progressable progress)
 	{
 		clusters = new ArrayList<ClusterData>();
 
@@ -170,7 +177,7 @@ public class KMeansClusterer implements DatasetClusterer
 				c.addCompound(cc);
 			clusters.add(c);
 		}
-		DatasetClustererUtil.storeClusters(filename, "k_means", clusters);
+		DatasetClustererUtil.storeClusters(dataset.getSDFPath(), "k_means", clusters);
 		//
 		//		clusterDist = new double[means.size()][means.size()];
 		//		for (int i = 0; i < clusterDist.length; i++)

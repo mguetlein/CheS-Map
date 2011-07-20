@@ -22,6 +22,8 @@ import alg.Algorithm;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
+import data.DatasetFile;
+
 public abstract class GenericWizardPanel extends WizardPanel
 {
 	private JLabel infoIcon;
@@ -220,7 +222,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 		repaint();
 	}
 
-	public void update(String dataset, int numNumericFeatures)
+	public void update(DatasetFile dataset, int numNumericFeatures)
 	{
 	}
 

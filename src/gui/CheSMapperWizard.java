@@ -37,6 +37,7 @@ public class CheSMapperWizard extends WizardDialog
 	public CheSMapperWizard(JFrame owner, int startPanel)
 	{
 		super(owner, Settings.TITLE + " Wizard (" + Settings.VERSION_STRING + ")", Settings.CHES_MAPPER_IMAGE);
+		Settings.TOP_LEVEL_COMPONENT = this;
 
 		setIconImage(Settings.CHES_MAPPER_IMAGE_SMALL.getImage());
 
@@ -67,6 +68,7 @@ public class CheSMapperWizard extends WizardDialog
 				update(status + 1);
 			}
 		}
+
 		setVisible(true);
 	}
 
@@ -81,8 +83,8 @@ public class CheSMapperWizard extends WizardDialog
 		//		{
 		if (dataset.getDatasetFile() != null)
 		{
-			create3D.update(dataset.getDatasetFile(), dataset.getDatasetName());
-			features.updateSDFFeatures(dataset.getDatasetFile());
+			create3D.update(dataset.getDatasetFile());
+			features.updateIntegratedFeatures(dataset.getDatasetFile());
 		}
 		//		}
 		//		if (status == 2)

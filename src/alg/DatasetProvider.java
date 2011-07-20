@@ -1,8 +1,8 @@
 package alg;
 
+import data.DatasetFile;
+
 public interface DatasetProvider
 {
-	public String getDatasetName();
-
-	public String getDatasetFile();
+	public DatasetFile getDatasetFile();
 }

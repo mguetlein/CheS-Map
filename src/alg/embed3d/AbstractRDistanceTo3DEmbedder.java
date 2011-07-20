@@ -17,6 +17,7 @@ import org.apache.commons.math.geometry.Vector3D;
 import util.ArrayUtil;
 import util.DistanceMatrix;
 import util.FileUtil;
+import data.DatasetFile;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 
@@ -33,7 +34,7 @@ public abstract class AbstractRDistanceTo3DEmbedder implements ThreeDEmbedder
 	}
 
 	@Override
-	public void embed(String filename, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
+	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
 			final DistanceMatrix<MolecularPropertyOwner> distances)
 	{
 		//		String clusterNames[] = new String[clusterFiles.length];
@@ -44,15 +45,15 @@ public abstract class AbstractRDistanceTo3DEmbedder implements ThreeDEmbedder
 		{
 			System.out.println("WARNING: " + getInitials() + " needs at least " + getMinNumInstances()
 					+ " instances for embedding, returning 0-0-0 positions");
-			random.embed(filename, instances, features, distances);
+			random.embed(dataset, instances, features, distances);
 			positions = random.positions;
 			return;
 		}
 
-		String tableFile = Settings.destinationFile(filename, FileUtil.getFilename(filename, false) + "."
-				+ getInitials() + ".distances.table");
-		String embeddingFile = Settings.destinationFile(filename, FileUtil.getFilename(filename, false) + "."
-				+ getInitials() + ".distances.embedding");
+		String tableFile = Settings.destinationFile(dataset.getSDFPath(),
+				FileUtil.getFilename(dataset.getSDFPath(), false) + "." + getInitials() + ".distances.table");
+		String embeddingFile = Settings.destinationFile(dataset.getSDFPath(),
+				FileUtil.getFilename(dataset.getSDFPath(), false) + "." + getInitials() + ".distances.embedding");
 
 		FileResultCacher.InFileWriter inWriter = new FileResultCacher.InFileWriter()
 		{

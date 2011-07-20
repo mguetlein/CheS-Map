@@ -10,6 +10,7 @@ import javax.vecmath.Vector3f;
 import main.Settings;
 import util.DistanceMatrix;
 import util.Vector3fUtil;
+import data.DatasetFile;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 
@@ -63,7 +64,7 @@ public class Random3DEmbedder implements ThreeDEmbedder
 	List<Vector3f> positions;
 
 	@Override
-	public void embed(String filename, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
+	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
 			DistanceMatrix<MolecularPropertyOwner> distances)
 	{
 		positions = getPositions(instances.size());

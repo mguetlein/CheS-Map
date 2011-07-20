@@ -13,7 +13,8 @@ import dataInterface.MoleculeProperty;
 public class ClusteringData
 {
 	private String name;
-	private String filename;
+	private String sdfFilename;
+
 	private List<MoleculeProperty> features = new ArrayList<MoleculeProperty>();
 	private List<MoleculeProperty> properties = new ArrayList<MoleculeProperty>();
 	private boolean clusterFilesAligned;
@@ -36,9 +37,10 @@ public class ClusteringData
 
 	// --------------------------------------------
 
-	public ClusteringData(String name)
+	public ClusteringData(String name, String sdfFilename)
 	{
 		this.name = name;
+		this.sdfFilename = sdfFilename;
 	}
 
 	public String getName()
@@ -56,15 +58,6 @@ public class ClusteringData
 		this.clusterFilesAligned = clusterFilesAligned;
 	}
 
-	public String getFilename()
-	{
-		return filename;
-	}
-
-	public void setFilename(String filename)
-	{
-		this.filename = filename;
-	}
 
 	public void addCluster(ClusterData cluster)
 	{
@@ -120,6 +113,11 @@ public class ClusteringData
 			compoundDistances = DistanceUtil.computeDistances(ListUtil.cast(MolecularPropertyOwner.class, compounds),
 					features).cast(CompoundData.class);
 		return compoundDistances;
+	}
+
+	public String getSDFFilename()
+	{
+		return sdfFilename;
 	}
 
 }

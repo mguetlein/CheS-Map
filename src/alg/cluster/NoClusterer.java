@@ -1,5 +1,6 @@
 package alg.cluster;
 
+import gui.Progressable;
 import gui.property.Property;
 
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.List;
 import javax.vecmath.Vector3f;
 
 import data.ClusterDataImpl;
+import data.DatasetFile;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MoleculeProperty;
@@ -47,11 +49,11 @@ public class NoClusterer implements DatasetClusterer
 	ClusterDataImpl c;
 
 	@Override
-	public void clusterDataset(String datasetName, String filename, List<CompoundData> compounds,
-			List<MoleculeProperty> features)
+	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features,
+			Progressable progress)
 	{
 		c = new ClusterDataImpl();
-		c.setFilename(filename);
+		c.setFilename(dataset.getSDFPath());
 		c.setName("Single cluster");
 		c.setPosition(new Vector3f(0f, 0f, 0f));
 		for (CompoundData compound : compounds)

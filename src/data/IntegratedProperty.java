@@ -2,12 +2,12 @@ package data;
 
 import dataInterface.MoleculeProperty;
 
-public class SDFProperty implements MoleculeProperty
+public class IntegratedProperty implements MoleculeProperty
 {
 	String property;
 	boolean numeric = false;
 
-	public SDFProperty(String property)
+	public IntegratedProperty(String property)
 	{
 		this.property = property;
 	}
@@ -21,7 +21,7 @@ public class SDFProperty implements MoleculeProperty
 	@Override
 	public boolean equals(Object o)
 	{
-		return (o instanceof SDFProperty) && ((SDFProperty) o).property.equals(property);
+		return (o instanceof IntegratedProperty) && ((IntegratedProperty) o).property.equals(property);
 	}
 
 	@Override

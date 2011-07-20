@@ -7,13 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Vector;
 
 import javax.swing.DefaultListCellRenderer;
@@ -32,7 +26,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import main.Settings;
-import util.FileUtil;
+import opentox.DatasetUtil;
 import util.SwingUtil;
 import util.VectorUtil;
 import alg.DatasetProvider;
@@ -41,7 +35,7 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.FormLayout;
 
-import data.CDKService;
+import data.DatasetFile;
 
 public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 {
@@ -54,73 +48,16 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 	JLabel labelFile;
 	JLabel labelSize;
 	JLabel labelProps;
+	JLabel labelNumericProps;
 	JLabel label3D;
 
 	WizardDialog wizard;
 
 	boolean loading = false;
 
-	private static class Dataset
-	{
-		boolean isURL;
-		String name;
-		String url;
-		String localPath;
+	Vector<DatasetFile> oldDatasets;
 
-		private Dataset(boolean isURL, String name, String url, String localPath)
-		{
-			this.isURL = isURL;
-			this.name = name;
-			this.url = url;
-			this.localPath = localPath;
-		}
-
-		public static Dataset getURLDataset(String url)
-		{
-			return new Dataset(true, url, url, Settings.destinationFileForURL(url));
-		}
-
-		public static Dataset getLocalDataset(String path)
-		{
-			return new Dataset(false, FileUtil.getFilename(path), null, path);
-		}
-
-		public static Dataset fromString(String s)
-		{
-			String ss[] = s.split("#");
-			return new Dataset(Boolean.parseBoolean(ss[0]), ss[1], ss[2], ss[3]);
-		}
-
-		/**
-		 * textfield
-		 * 
-		 * @return
-		 */
-		public String getPath()
-		{
-			if (isURL)
-				return url;
-			else
-				return localPath;
-		}
-
-		public String toString()
-		{
-			return isURL + "#" + name + "#" + url + "#" + localPath;
-		}
-
-		public boolean equals(Object o)
-		{
-			if (o instanceof Dataset)
-				return toString().equals(((Dataset) o).toString());
-			else
-				return false;
-		}
-	}
-
-	Vector<Dataset> oldDatasets;
-
-	private Dataset dataset;
+	private DatasetFile dataset;
 
 	public DatasetWizardPanel(WizardDialog wizard)
 	{
@@ -128,7 +65,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout(
 				"pref,5dlu,pref:grow(0.99),5dlu,right:p:grow(0.01)"));
 
-		builder.append("Select sdf file:");
+		builder.append("Select dataset file:");
 		builder.nextLine();
 
 		textField = new JTextField(45);
@@ -188,15 +125,15 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		builder.nextLine();
 
 		String dir = (String) Settings.PROPS.get("dataset-recently-used");
-		oldDatasets = new Vector<Dataset>();
+		oldDatasets = new Vector<DatasetFile>();
 		if (dir != null)
 		{
 			Vector<String> strings = VectorUtil.fromCSVString(dir);
 			for (String s : strings)
-				oldDatasets.add(Dataset.fromString(s));
+				oldDatasets.add(DatasetFile.fromString(s));
 		}
 		final DefaultListModel m = new DefaultListModel();
-		for (Dataset d : oldDatasets)
+		for (DatasetFile d : oldDatasets)
 			m.addElement(d);
 		recentlyUsed = new JList(m);
 		recentlyUsed.setFont(recentlyUsed.getFont().deriveFont(Font.PLAIN));
@@ -206,8 +143,8 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus)
 			{
-				Dataset d = (Dataset) value;
-				String s = "<html><b>" + d.name + "</b><br>(" + d.localPath + ")</html>";
+				DatasetFile d = (DatasetFile) value;
+				String s = "<html><b>" + d.getName() + "</b><br>(" + d.getLocalPath() + ")</html>";
 				setBorder(new EmptyBorder(0, 0, 3, 0));
 				return super.getListCellRendererComponent(list, s, index, isSelected, cellHasFocus);
 			}
@@ -222,7 +159,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 				if (recentlyUsed.getSelectedIndex() != -1)
 				{
 					//textField.setText(((Dataset) recentlyUsed.getSelectedValue()).getPath());
-					load((Dataset) recentlyUsed.getSelectedValue());
+					load(((DatasetFile) recentlyUsed.getSelectedValue()).getPath());
 				}
 
 			}
@@ -270,6 +207,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		labelFile = new JLabel("-");
 		labelSize = new JLabel("-");
 		labelProps = new JLabel("-");
+		labelNumericProps = new JLabel("-");
 		label3D = new JLabel("-");
 
 		builder.append("File:");
@@ -284,6 +222,10 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		builder.append(labelProps, 3);
 		builder.nextLine();
 
+		builder.append("Num numeric properties per compound:");
+		builder.append(labelNumericProps, 3);
+		builder.nextLine();
+
 		builder.append("3D available:");
 		builder.append(label3D, 3);
 		builder.nextLine();
@@ -292,7 +234,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 
 		// auto load last selected dataset
 		if (oldDatasets.size() > 0)
-			load(oldDatasets.get(0));
+			load(oldDatasets.get(0).getPath());
 		//textField.setText(oldDatasets.get(0).getPath());
 	}
 
@@ -302,56 +244,25 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		{
 			labelFile.setText("-");
 			labelProps.setText("-");
+			labelNumericProps.setText("-");
 			labelSize.setText("-");
 			label3D.setText("-");
 			recentlyUsed.clearSelection();
 		}
 		else
 		{
-			int num = CDKService.loadSdf(dataset.localPath);
-			labelFile.setText(dataset.name);
-			labelProps.setText(CDKService.getSDFProperties(dataset.localPath).length + "");
-			labelSize.setText(num + "");
-			label3D.setText(CDKService.has3D(dataset.localPath) + "");
+			labelFile.setText(dataset.getName());
+			labelProps.setText(dataset.getIntegratedProperties(true).length + "");
+			labelNumericProps.setText(dataset.getIntegratedNumericProperties().length + "");
+			labelSize.setText(dataset.numCompounds() + "");
+			label3D.setText(dataset.has3D() + "");
 			if (oldDatasets.indexOf(dataset) == -1)
-				recentlyUsed.setSelectedValue(dataset, true);
+				if (oldDatasets.contains(dataset))
+					recentlyUsed.setSelectedValue(dataset, true);
+				else
+					recentlyUsed.clearSelection();
 		}
 		wizard.update();
-	}
-
-	private String loadHttpFile(String datasetUrl)
-	{
-		try
-		{
-			URL url = new URL(datasetUrl);
-			File f = new File(Settings.destinationFileForURL(datasetUrl));
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setDoOutput(true);
-			connection.setInstanceFollowRedirects(false);
-			connection.setRequestMethod("GET");
-			connection.setRequestProperty("accept", "chemical/x-mdl-sdf");
-			BufferedWriter buffy = new BufferedWriter(new FileWriter(f));
-			BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			String s = "";
-			while ((s = reader.readLine()) != null)
-				buffy.write(s + "\n");
-			buffy.flush();
-			buffy.close();
-			reader.close();
-			connection.disconnect();
-			if (connection.getResponseCode() >= 400)
-				throw new Exception("Response code: " + connection.getResponseCode());
-			return f.getAbsolutePath();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(DatasetWizardPanel.this.getTopLevelAncestor(),
-					"Error: could not load dataset from: '" + datasetUrl + "'\nError type: '"
-							+ e.getClass().getSimpleName() + "'\nMessage: '" + e.getMessage() + "'",
-					"Http Connection Error", JOptionPane.ERROR_MESSAGE);
-		}
-		return null;
 	}
 
 	//	public static void main(String args[])
@@ -359,13 +270,13 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 	//		System.out.println(loadHttpFile("http://apps.ideaconsult.net:8080/ambit2/dataset/272?max=5"));
 	//	}
 
-	private void load(Dataset d)
-	{
-		if (d.isURL)
-			load(d.url);
-		else
-			load(d.localPath);
-	}
+	//	private void load(DatasetFile d)
+	//	{
+	//		if (d.isLocal())
+	//			load(d.getLocalPath());
+	//		else
+	//			load(d.getURI());
+	//	}
 
 	public void load(String f)
 	{
@@ -378,17 +289,16 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 			textField.setText(f);
 		buttonLoad.setEnabled(false);
 
-		final Dataset d;
+		final DatasetFile d;
 		boolean http = f.startsWith("http");
 		if (http)
-			d = Dataset.getURLDataset(f);
+			d = DatasetFile.getURLDataset(f);
 		else
-			d = Dataset.getLocalDataset(f);
+			d = DatasetFile.localFile(f);
 
-		if (CDKService.isLoaded(f))
+		if (d.isLoaded())
 		{
-			if (CDKService.loadSdf(f) > 0)
-				dataset = d;
+			dataset = d;
 			updateDataset();
 			loading = false;
 		}
@@ -396,6 +306,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		{
 			SwingUtil.loadingLabel(labelFile);
 			labelProps.setText("-");
+			labelNumericProps.setText("-");
 			labelSize.setText("-");
 			label3D.setText("-");
 
@@ -403,22 +314,38 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 			{
 				public void run()
 				{
-					if (d.isURL)
-						loadHttpFile(d.url);
-					File datasetFile = new File(d.localPath);
-					if (datasetFile != null && datasetFile.exists() && CDKService.loadSdf(d.localPath) > 0)
-						dataset = d;
-					else
+					boolean urlDatasetDownloadFailed = false;
+					if (!d.isLocal())
+						urlDatasetDownloadFailed = !DatasetUtil.downloadDataset(d.getURI());
+
+					if (!urlDatasetDownloadFailed)
 					{
-						if (!d.isURL && d.localPath.length() > 0)
+						File datasetFile = new File(d.getLocalPath());
+						try
+						{
+							if (datasetFile != null && datasetFile.exists())
+							{
+								d.loadDataset();
+								if (d.numCompounds() == 0)
+									throw new Exception("No compounds in file");
+								dataset = d;
+							}
+						}
+						catch (Exception e)
+						{
+							e.printStackTrace();
 							JOptionPane.showMessageDialog(
-									DatasetWizardPanel.this.getTopLevelAncestor(),
-									"Local dataset not found:\n"
+									Settings.TOP_LEVEL_COMPONENT,
+									"Could not load local dataset:\n"
 											+ d.getPath()
-											+ "\n\n(Make sure to start the dataset URL with 'http' if you want to load an external dataset.)",
+											+ "\nError: '"
+											+ e.getMessage()
+											+ "'\n\n(Make sure to start the dataset URL with 'http' if you want to load an external dataset.)",
 									"Dataset not found", JOptionPane.ERROR_MESSAGE);
-						buttonLoad.setEnabled(true);
+						}
 					}
+					if (dataset == null)
+						buttonLoad.setEnabled(true);
 					updateDataset();
 					loading = false;
 				}
@@ -435,7 +362,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 			oldDatasets.removeElement(dataset);
 		oldDatasets.add(0, dataset);
 		Vector<String> strings = new Vector<String>();
-		for (Dataset d : oldDatasets)
+		for (DatasetFile d : oldDatasets)
 			strings.add(d.toString());
 		Settings.PROPS.put("dataset-recently-used", VectorUtil.toCSVString(strings));
 		Settings.storeProps();
@@ -454,21 +381,9 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 	}
 
 	@Override
-	public String getDatasetFile()
+	public DatasetFile getDatasetFile()
 	{
-		if (dataset != null)
-			return dataset.localPath;
-		else
-			return null;
-	}
-
-	@Override
-	public String getDatasetName()
-	{
-		if (dataset != null)
-			return dataset.name;
-		else
-			return null;
+		return dataset;
 	}
 
 	public DatasetProvider getDatasetProvider()

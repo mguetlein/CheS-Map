@@ -11,7 +11,7 @@ import java.util.List;
 
 import main.Settings;
 import util.FileUtil;
-import data.CDKService;
+import data.DatasetFile;
 import dataInterface.ClusterData;
 
 public class SubstructureAligner implements ThreeDAligner
@@ -90,7 +90,9 @@ public class SubstructureAligner implements ThreeDAligner
 					//						new String[] { "obfit", commonSubstructure[i], tmpFirst.getAbsolutePath(),
 					//								tmpRemainder.getAbsolutePath(), ">", alignedStructures }
 							);
-					CDKService.clear(alignedStructures);
+
+					DatasetFile.clearFilesWithSDF(alignedStructures);
+
 					FileUtil.join(tmpFirst.getAbsolutePath(), tmpAligned.getAbsolutePath(), alignedStructures);
 					alignedFiles.add(alignedStructures);
 					//					if (SDFUtil.countCompounds(alignedStructures) != SDFUtil.countCompounds(clusterFile))

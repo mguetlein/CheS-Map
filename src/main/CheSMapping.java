@@ -17,8 +17,10 @@ import alg.cluster.StructuralClusterer;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
 import data.CDKFeatureComputer;
+import data.CDKService;
 import data.ClusterDataImpl;
 import data.ClusteringData;
+import data.DatasetFile;
 import data.EmbedClusters;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
@@ -38,13 +40,7 @@ public class CheSMapping
 		DatasetProvider datasetProvider = new DatasetProvider()
 		{
 			@Override
-			public String getDatasetName()
-			{
-				return null;
-			}
-
-			@Override
-			public String getDatasetFile()
+			public DatasetFile getDatasetFile()
 			{
 				return null;
 			}
@@ -72,11 +68,11 @@ public class CheSMapping
 		this.threeDAligner = threeDAligner;
 	}
 
-	ClusteringData dataset;
+	ClusteringData clusteringData;
 
 	public ClusteringData doMapping(final Progressable progress)
 	{
-		dataset = null;
+		clusteringData = null;
 		final Thread loadDatasetThread = new Thread(new Runnable()
 		{
 			@Override
@@ -84,68 +80,76 @@ public class CheSMapping
 			{
 				try
 				{
-					double step = 100 / 6.0;
+					double step = 100 / 7.0;
 
-					ClusteringData cDataset = new ClusteringData(datasetProvider.getDatasetName());
-					cDataset.setFilename(datasetProvider.getDatasetFile());
+					DatasetFile dataset = datasetProvider.getDatasetFile();
+
+					if (dataset.getSDFPath() == null)
+					{
+						progress.update(0, "convert dataset to sdf file");
+						CDKService.writeSDFFile(dataset);
+					}
 
 					if (progress != null)
-						progress.update(0, "compute 3d compound structures");
+						progress.update(step, "compute 3d compound structures");
 					System.out.println("compute 3d compound structures");
-					threeDGenerator.build3D(cDataset.getFilename(), SubProgress.create(progress, 0, 20));
-					cDataset.setFilename(threeDGenerator.get3DFile());
+					threeDGenerator.build3D(dataset, SubProgress.create(progress, step, step * 2));
+					dataset.setSDFPath(threeDGenerator.get3DSDFFile());
+
+					ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getSDFPath());
 
 					if (Settings.isAborted(Thread.currentThread()))
 						return;
 					if (progress != null)
-						progress.update(step, "compute features");
+						progress.update(step * 2, "compute features");
 					System.out.println("compute features");
-					featureComputer.computeFeatures(threeDGenerator.get3DFile());
+					featureComputer.computeFeatures(dataset);
 					for (MoleculeProperty f : featureComputer.getFeatures())
-						cDataset.addFeature(f);
+						clustering.addFeature(f);
 					for (MoleculeProperty p : featureComputer.getProperties())
-						cDataset.addProperty(p);
+						clustering.addProperty(p);
 					for (CompoundData c : featureComputer.getCompounds())
-						cDataset.addCompound(c);
+						clustering.addCompound(c);
 
 					if (Settings.isAborted(Thread.currentThread()))
 						return;
 					if (progress != null)
-						progress.update(step * 2, "compute clusters");
+						progress.update(step * 3, "compute clusters");
 					System.out.println("compute clusters");
-					datasetClusterer.clusterDataset(cDataset.getName(), cDataset.getFilename(),
-							cDataset.getCompounds(), cDataset.getFeatures());
+					datasetClusterer.clusterDataset(dataset, clustering.getCompounds(), clustering.getFeatures(),
+							SubProgress.create(progress, step * 3, step * 4));
 					for (ClusterData c : datasetClusterer.getClusters())
-						cDataset.addCluster(c);
+						clustering.addCluster(c);
 
 					if (threeDEmbedder.requiresDistances())
 					{
 						if (progress != null)
-							progress.update(step * 3, "compute distances");
+							progress.update(step * 4, "compute distances");
 						System.out.println("compute distances");
-						cDataset.getClusterDistances();
-						for (ClusterDataImpl c : ListUtil.cast(ClusterDataImpl.class, cDataset.getClusters()))
-							c.getCompoundDistances(cDataset.getFeatures());
+						clustering.getClusterDistances();
+						for (ClusterDataImpl c : ListUtil.cast(ClusterDataImpl.class, clustering.getClusters()))
+							c.getCompoundDistances(clustering.getFeatures());
 					}
 
 					if (Settings.isAborted(Thread.currentThread()))
 						return;
 					if (progress != null)
-						progress.update(step * 4, "3D embedding clusters");
-					System.out.println("3D embedding clusters (" + cDataset.getClusters().size() + ")");
+						progress.update(step * 5, "3D embedding clusters");
+					System.out.println("3D embedding clusters (" + clustering.getClusters().size() + ")");
 					EmbedClusters embedder = new EmbedClusters();
-					embedder.embed(threeDEmbedder, cDataset, SubProgress.create(progress, step * 4, step * 5));
+					embedder.embed(threeDEmbedder, dataset, clustering,
+							SubProgress.create(progress, step * 4, step * 5));
 
 					if (Settings.isAborted(Thread.currentThread()))
 						return;
 					if (progress != null)
-						progress.update(step * 5, "3D align compounds");
+						progress.update(step * 6, "3D align compounds");
 					System.out.println("3D align compounds");
-					threeDAligner.algin(cDataset.getClusters());
+					threeDAligner.algin(clustering.getClusters());
 					int cCount = 0;
 					for (String alignedFile : threeDAligner.getAlginedClusterFiles())
-						((ClusterDataImpl) cDataset.getClusters().get(cCount++)).setFilename(alignedFile);
-					cDataset.setClusterFilesAligned(threeDAligner.isRealAligner());
+						((ClusterDataImpl) clustering.getClusters().get(cCount++)).setFilename(alignedFile);
+					clustering.setClusterFilesAligned(threeDAligner.isRealAligner());
 
 					//		// make sure the files contain appropriate number of compounds 
 					//		int cCount = 0;
@@ -156,7 +160,7 @@ public class CheSMapping
 					if (progress != null)
 						progress.update(100, "Clustering complete");
 
-					dataset = cDataset;
+					clusteringData = clustering;
 				}
 				catch (Throwable e)
 				{
@@ -186,6 +190,6 @@ public class CheSMapping
 		{
 			e.printStackTrace();
 		}
-		return dataset;
+		return clusteringData;
 	}
 }

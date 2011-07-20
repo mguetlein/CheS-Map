@@ -17,6 +17,7 @@ import org.apache.commons.math.geometry.Vector3D;
 
 import util.ArrayUtil;
 import util.DistanceMatrix;
+import data.DatasetFile;
 import data.DistanceUtil;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
@@ -34,14 +35,14 @@ public abstract class AbstractRFeatureTo3DEmbedder implements ThreeDEmbedder
 	}
 
 	@Override
-	public void embed(String filename, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
+	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
 			final DistanceMatrix<MolecularPropertyOwner> distances)
 	{
 		if (features.size() < getMinNumFeatures())
 		{
 			System.out.println("WARNING: " + getRScript() + " needs at least " + getMinNumFeatures()
 					+ " features for embedding, returning 0-0-0 positions");
-			random.embed(filename, instances, features, distances);
+			random.embed(dataset, instances, features, distances);
 			positions = random.positions;
 			return;
 		}

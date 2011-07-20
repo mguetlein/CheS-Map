@@ -2,21 +2,22 @@ package alg.build3d;
 
 import gui.Progressable;
 import gui.property.Property;
+import data.DatasetFile;
 
 public class UseOrigStructures implements ThreeDBuilder
 {
 	String f;
 
 	@Override
-	public String get3DFile()
+	public String get3DSDFFile()
 	{
 		return f;
 	}
 
 	@Override
-	public void build3D(String sdfFile, Progressable progress)
+	public void build3D(DatasetFile dataset, Progressable progress)
 	{
-		f = sdfFile;
+		f = dataset.getSDFPath();
 	}
 
 	@Override
