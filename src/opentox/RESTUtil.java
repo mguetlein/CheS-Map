@@ -42,6 +42,9 @@ public class RESTUtil
 			{
 				e.printStackTrace();
 			}
+			if (Settings.isAborted(Thread.currentThread()))
+				return null;
+
 			HashMap<String, String> params = new HashMap<String, String>();
 			params.put("accept", "text/uri-list");
 			return get(b.toString(), params);

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import main.Settings;
 import opentox.DatasetUtil;
 import opentox.RESTUtil;
 import data.CDKFeatureComputer;
@@ -44,13 +45,25 @@ public class StructuralClustererService implements DatasetClusterer
 		HashMap<String, String> params = new HashMap<String, String>();
 		params.put("threshold", threshold + "");
 		params.put("dataset_uri", origURI);
+
+		if (Settings.isAborted(Thread.currentThread()))
+			return;
 		progress.update(10, "Building cluster model with TUM algorithm web service");
+
 		String modelURI = RESTUtil.post(ALGORITHM_URI, params);
 		urisToDelete.add(modelURI);
+
+		if (Settings.isAborted(Thread.currentThread()))
+			return;
 		progress.update(50, "Clustering dataset with TUM model web service");
+
 		String resultDatasetURI = RESTUtil.post(modelURI, params);
 		urisToDelete.add(resultDatasetURI);
+
+		if (Settings.isAborted(Thread.currentThread()))
+			return;
 		progress.update(90, "Downloading clustered dataset");
+
 		DatasetFile resultDataset = DatasetFile.getURLDataset(resultDatasetURI);
 		DatasetUtil.downloadDataset(resultDataset.getURI());
 		try
