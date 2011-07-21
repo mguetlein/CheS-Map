@@ -73,8 +73,8 @@ public class Settings
 
 	// ------------------------ EXTERNAL PROGRAMMS -----------------------
 
-	public static final String CV_BABEL_PATH;
-	public static final String CV_OBFIT_PATH = null;//"obfit";
+	public static String CV_BABEL_PATH = null;
+	public static String CV_OBFIT_PATH = null;//"obfit";
 	public static final String CV_RSCRIPT_PATH = null;//"Rscript";
 	public static final String CV_GSPAN_PATH = null;//"Rscript";
 
@@ -84,16 +84,19 @@ public class Settings
 
 		if (env.get("CV_BABEL_PATH") != null)
 			CV_BABEL_PATH = env.get("CV_BABEL_PATH");
+		if (env.get("CV_OBFIT_PATH") != null)
+			CV_OBFIT_PATH = env.get("CV_OBFIT_PATH");
+
+		if (OSUtil.isUnix())
+		{
+			if (CV_BABEL_PATH == null)
+				CV_BABEL_PATH = findExecutableLinux("babel");
+			if (CV_OBFIT_PATH == null)
+				CV_OBFIT_PATH = findExecutableLinux("obfit");
+		}
 		else
 		{
-			if (OSUtil.isUnix())
-			{
-				CV_BABEL_PATH = findExecutableLinux("babel");
-			}
-			else
-			{
-				CV_BABEL_PATH = null;
-			}
+			CV_BABEL_PATH = null;
 		}
 	}
 
@@ -157,11 +160,11 @@ public class Settings
 		}
 	}
 
-	public static String VERSION = "v0.1.0";
+	public static String VERSION = "v0.2.0";
 	public static String VERSION_STRING = VERSION + " Initial Prototype"
 			+ ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
 	public static String TITLE = "CheS-Mapper";
-	public static String CDK_VERSION = "1.2.6.1";
+	public static String CDK_VERSION = "1.4.0";
 	public static String CDK_STRING = "The Chemistry Development Kit (CDK) (Version " + CDK_VERSION
 			+ ", see http://cdk.sourceforge.net)";
 

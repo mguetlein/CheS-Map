@@ -22,9 +22,11 @@ import data.ClusterDataImpl;
 import data.ClusteringData;
 import data.DatasetFile;
 import data.EmbedClusters;
+import data.MCSComputer;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MoleculeProperty;
+import dataInterface.SubstructureSmartsType;
 
 public class CheSMapping
 {
@@ -80,7 +82,7 @@ public class CheSMapping
 			{
 				try
 				{
-					double step = 100 / 7.0;
+					double step = 100 / 8.0;
 
 					DatasetFile dataset = datasetProvider.getDatasetFile();
 
@@ -138,14 +140,23 @@ public class CheSMapping
 					System.out.println("3D embedding clusters (" + clustering.getClusters().size() + ")");
 					EmbedClusters embedder = new EmbedClusters();
 					embedder.embed(threeDEmbedder, dataset, clustering,
-							SubProgress.create(progress, step * 4, step * 5));
+							SubProgress.create(progress, step * 5, step * 6));
 
 					if (Settings.isAborted(Thread.currentThread()))
 						return;
 					if (progress != null)
-						progress.update(step * 6, "3D align compounds");
+						progress.update(step * 6, "Compute MCS of clusters");
+					System.out.println("Compute MCS of clusters");
+					MCSComputer.computeMCS(dataset, clustering.getClusters(),
+							SubProgress.create(progress, step * 6, step * 7));
+					clustering.addSubstructureSmartsTypes(SubstructureSmartsType.MCS);
+
+					if (Settings.isAborted(Thread.currentThread()))
+						return;
+					if (progress != null)
+						progress.update(step * 7, "3D align compounds");
 					System.out.println("3D align compounds");
-					threeDAligner.algin(clustering.getClusters());
+					threeDAligner.algin(dataset, clustering.getClusters());
 					int cCount = 0;
 					for (String alignedFile : threeDAligner.getAlginedClusterFiles())
 						((ClusterDataImpl) clustering.getClusters().get(cCount++)).setFilename(alignedFile);

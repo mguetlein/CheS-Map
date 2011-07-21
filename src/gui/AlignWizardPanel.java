@@ -2,15 +2,14 @@ package gui;
 
 import alg.Algorithm;
 import alg.align3d.NoAligner;
-import alg.align3d.SubstructureAligner;
+import alg.align3d.MCSAligner;
 import alg.align3d.ThreeDAligner;
 import alg.cluster.DatasetClusterer;
-import alg.cluster.StructuralClusterer;
 
 public class AlignWizardPanel extends GenericWizardPanel
 {
 	boolean canProceed = false;
-	public static final ThreeDAligner ALIGNER[] = new ThreeDAligner[] { new NoAligner(), new SubstructureAligner() };
+	public static final ThreeDAligner ALIGNER[] = new ThreeDAligner[] { new NoAligner(), new MCSAligner() };
 
 	public AlignWizardPanel(CheSMapperWizard w)
 	{
@@ -44,11 +43,12 @@ public class AlignWizardPanel extends GenericWizardPanel
 	{
 		if (!preconditionsMet)
 			return;
-		canProceed = !getAlginer().isRealAligner() || (clusterer instanceof StructuralClusterer);
-		if (!canProceed)
-			setInfo(getAlginer().getClass().getSimpleName() + " requires structural features.", MsgType.ERROR);
-		else
-			setInfo("", MsgType.EMPTY);
+		canProceed = true;
+		//		canProceed = !getAlginer().isRealAligner() || (clusterer instanceof StructuralClusterer);
+		//		if (!canProceed)
+		//			setInfo(getAlginer().getClass().getSimpleName() + " requires structural features.", MsgType.ERROR);
+		//		else
+		//			setInfo("", MsgType.EMPTY);
 	}
 
 	@Override

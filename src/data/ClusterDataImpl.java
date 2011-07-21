@@ -17,6 +17,7 @@ import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
+import dataInterface.SubstructureSmartsType;
 
 public class ClusterDataImpl implements ClusterData
 {
@@ -25,7 +26,7 @@ public class ClusterDataImpl implements ClusterData
 	private Vector3f position;
 	private List<CompoundData> compounds = new ArrayList<CompoundData>();
 	private DistanceMatrix<CompoundData> compoundDistances;
-	private String substructureSmarts;
+	private HashMap<SubstructureSmartsType, String> substructureSmarts = new HashMap<SubstructureSmartsType, String>();
 	private HashMap<MoleculeProperty, ArraySummary> values = new HashMap<MoleculeProperty, ArraySummary>();
 	private HashMap<MoleculeProperty, ArraySummary> normalizedValues = new HashMap<MoleculeProperty, ArraySummary>();
 
@@ -77,14 +78,15 @@ public class ClusterDataImpl implements ClusterData
 		compounds.add(compound);
 	}
 
-	public String getSubstructureSmarts()
+	@Override
+	public String getSubstructureSmarts(SubstructureSmartsType type)
 	{
-		return substructureSmarts;
+		return substructureSmarts.get(type);
 	}
 
-	public void setSubstructureSmarts(String substructureSmarts)
+	public void setSubstructureSmarts(SubstructureSmartsType type, String smarts)
 	{
-		this.substructureSmarts = substructureSmarts;
+		substructureSmarts.put(type, smarts);
 	}
 
 	public ArraySummary getObjectValue(MoleculeProperty p, boolean normalized)
@@ -135,4 +137,5 @@ public class ClusterDataImpl implements ClusterData
 	{
 		return compounds.size();
 	}
+
 }

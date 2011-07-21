@@ -5,6 +5,7 @@ import gui.property.Property;
 import java.util.ArrayList;
 import java.util.List;
 
+import data.DatasetFile;
 import dataInterface.ClusterData;
 
 public class NoAligner implements ThreeDAligner
@@ -35,7 +36,7 @@ public class NoAligner implements ThreeDAligner
 	}
 
 	@Override
-	public void algin(List<ClusterData> clusters)
+	public void algin(DatasetFile dataset, List<ClusterData> clusters)
 	{
 		clusterFiles = new ArrayList<String>();
 		for (ClusterData c : clusters)

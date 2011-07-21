@@ -29,6 +29,8 @@ public class CheSMapperWizard extends WizardDialog
 	EmbedWizardPanel embed;
 	AlignWizardPanel align;
 
+	CheSMapping chesMapping;
+
 	public CheSMapperWizard(JFrame owner)
 	{
 		this(null, 0);
@@ -96,23 +98,21 @@ public class CheSMapperWizard extends WizardDialog
 		super.update(status);
 	}
 
-	CheSMapping cdw;
-
 	@Override
 	public void finish()
 	{
-		cdw = new CheSMapping(dataset.getDatasetProvider(), features.getFeatureComputer(),
+		chesMapping = new CheSMapping(dataset.getDatasetProvider(), features.getFeatureComputer(),
 				cluster.getDatasetClusterer(), create3D.get3DBuilder(), embed.get3DEmbedder(), align.getAlginer());
 	}
 
 	public boolean isWorkflowSelected()
 	{
-		return cdw != null;
+		return chesMapping != null;
 	}
 
 	public ClusteringData loadDataset(Progressable progressable)
 	{
-		return cdw.doMapping(progressable);
+		return chesMapping.doMapping(progressable);
 	}
 
 	public static void main(String args[])

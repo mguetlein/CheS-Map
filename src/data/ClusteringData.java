@@ -9,6 +9,7 @@ import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
+import dataInterface.SubstructureSmartsType;
 
 public class ClusteringData
 {
@@ -17,6 +18,8 @@ public class ClusteringData
 
 	private List<MoleculeProperty> features = new ArrayList<MoleculeProperty>();
 	private List<MoleculeProperty> properties = new ArrayList<MoleculeProperty>();
+	private List<SubstructureSmartsType> substructureSmartsTypes = new ArrayList<SubstructureSmartsType>();
+
 	private boolean clusterFilesAligned;
 	private List<ClusterData> clusters = new ArrayList<ClusterData>();
 	private DistanceMatrix<ClusterData> clusterDistances;
@@ -57,7 +60,6 @@ public class ClusteringData
 	{
 		this.clusterFilesAligned = clusterFilesAligned;
 	}
-
 
 	public void addCluster(ClusterData cluster)
 	{
@@ -118,6 +120,16 @@ public class ClusteringData
 	public String getSDFFilename()
 	{
 		return sdfFilename;
+	}
+
+	public List<SubstructureSmartsType> getSubstructureSmartsTypes()
+	{
+		return substructureSmartsTypes;
+	}
+
+	public void addSubstructureSmartsTypes(SubstructureSmartsType type)
+	{
+		substructureSmartsTypes.add(type);
 	}
 
 }

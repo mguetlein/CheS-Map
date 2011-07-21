@@ -16,5 +16,5 @@ public interface ClusterData extends MolecularPropertyOwner
 
 	public Vector3f getPosition();
 
-	public String getSubstructureSmarts();
+	public String getSubstructureSmarts(SubstructureSmartsType type);
 }
