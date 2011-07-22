@@ -15,7 +15,9 @@ import org.openscience.cdk.Molecule;
 import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.interfaces.IMolecule;
+import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.smsd.AtomAtomMapping;
@@ -71,23 +73,49 @@ public class MCSComputer
 		return subgraph;
 	}
 
+	private static Isomorphism run(IMolecule mcsMolecule, IMolecule target, int filter, boolean matchBonds)
+	{
+		Isomorphism smsd = new Isomorphism(mcsMolecule, target, Algorithm.DEFAULT, matchBonds);
+		if (filter == 0)
+		{
+			smsd.setChemFilters(false, false, false);
+		}
+		if (filter == 1)
+		{
+			smsd.setChemFilters(true, false, false);
+		}
+		if (filter == 2)
+		{
+			smsd.setChemFilters(true, true, false);
+		}
+		if (filter == 3)
+		{
+			smsd.setChemFilters(true, true, true);
+		}
+		return smsd;
+	}
+
 	public static void computeMCS(DatasetFile dataset, List<ClusterData> clusters, Progressable progress)
 	{
 		int count = 0;
+		boolean matchBonds = true;
+		boolean removeHydrogens = true;
+		int filter = 0;
+
+		IMolecule mols[] = dataset.getMolecules(false);
+
 		for (ClusterData c : clusters)
 		{
 			progress.update(100 / (double) clusters.size() * count, "Computing MCS fo cluster " + (++count) + "/"
 					+ clusters.size());
 
-			IMolecule mols[] = dataset.getMolecules(false);
 			IMolecule mcsMolecule = null;
 			List<IAtomContainer> targets = new ArrayList<IAtomContainer>();
-			boolean matchBonds = true;
-			int filter = 0;
 
 			for (CompoundData m : c.getCompounds())
 			{
 				IMolecule target = mols[m.getIndex()];
+
 				boolean flag = ConnectivityChecker.isConnected(target);
 				if (!flag)
 				{
@@ -100,13 +128,13 @@ public class MCSComputer
 					if (target.getProperty(CDKConstants.TITLE) != null)
 					{
 						target.setID((String) target.getProperty(CDKConstants.TITLE));
-						//					argumentHandler.setTargetMolOutName(target.getID());
+						//						argumentHandler.setTargetMolOutName(target.getID());
 					}
 				}
-				//			if (removeHydrogens)
-				//			{
-				target = new Molecule(AtomContainerManipulator.removeHydrogens(target));
-				//			}
+				if (removeHydrogens)
+				{
+					target = new Molecule(AtomContainerManipulator.removeHydrogens(target));
+				}
 
 				if (mcsMolecule != null)
 				{
@@ -121,16 +149,16 @@ public class MCSComputer
 					else if (mcsMolecule.getProperty(CDKConstants.TITLE) != null)
 					{
 						mcsMolecule.setID((String) mcsMolecule.getProperty(CDKConstants.TITLE));
-						//					argumentHandler.setQueryMolOutName(mcsMolecule.getID());
+						//						argumentHandler.setQueryMolOutName(mcsMolecule.getID());
 					}
-					//				if (removeHydrogens)
-					//				{
-					mcsMolecule = new Molecule(AtomContainerManipulator.removeHydrogens(mcsMolecule));
-					//
-					//				}
+					if (removeHydrogens)
+					{
+						mcsMolecule = new Molecule(AtomContainerManipulator.removeHydrogens(mcsMolecule));
+
+					}
 				}
 
-				//			inputHandler.configure(target, targetType);
+				//				inputHandler.configure(target, targetType);
 
 				if (mcsMolecule == null)
 				{
@@ -139,35 +167,49 @@ public class MCSComputer
 				}
 				else
 				{
-					Isomorphism smsd = new Isomorphism(mcsMolecule, target, Algorithm.DEFAULT, matchBonds);
-					if (filter == 0)
-					{
-						smsd.setChemFilters(false, false, false);
-					}
-					if (filter == 1)
-					{
-						smsd.setChemFilters(true, false, false);
-					}
-					if (filter == 2)
-					{
-						smsd.setChemFilters(true, true, false);
-					}
-					if (filter == 3)
-					{
-						smsd.setChemFilters(true, true, true);
-					}
-
-					target = target.getBuilder().newInstance(Molecule.class, smsd.getFirstAtomMapping().getTarget());
+					Isomorphism smsd = run(mcsMolecule, target, filter, matchBonds);
+					target = target.getBuilder().newInstance(IMolecule.class, smsd.getFirstAtomMapping().getTarget());
 					targets.add(target);
 					Map<Integer, Integer> mapping = getIndexMapping(smsd.getFirstAtomMapping());
 					IAtomContainer subgraph = getSubgraph(target, mapping);
 					mcsMolecule = new Molecule(subgraph);
 				}
-
 				if (Settings.isAborted(Thread.currentThread()))
 					break;
+			}
+			if (Settings.isAborted(Thread.currentThread()))
+				break;
+			//			inputHandler.configure(mcsMolecule, targetType);
+
+			//			if (argumentHandler.shouldOutputSubgraph())
+			//			{
+			//				String outpath = argumentHandler.getOutputFilepath();
+			//				String outtype = argumentHandler.getOutputFiletype();
+			//				outputHandler.writeMol(outtype, mcsMolecule, outpath);
+			//			}
+			if (mcsMolecule != null)// && argumentHandler.isImage())
+			{
+				// now that we have the N-MCS, remap
+				List<Map<Integer, Integer>> mappings = new ArrayList<Map<Integer, Integer>>();
+				List<IAtomContainer> secondRoundTargets = new ArrayList<IAtomContainer>();
+				IChemObjectBuilder builder = NoNotificationChemObjectBuilder.getInstance();
+				for (IAtomContainer target : targets)
+				{
+					Isomorphism smsd = run(mcsMolecule, (IMolecule) target, filter, matchBonds);
+					mappings.add(getIndexMapping(smsd.getFirstAtomMapping()));
+					secondRoundTargets.add(builder.newInstance(IAtomContainer.class, smsd.getFirstAtomMapping()
+							.getTarget()));
+					if (Settings.isAborted(Thread.currentThread()))
+						break;
+				}
+
+				//				String name = inputHandler.getTargetName();
+				//				outputHandler.writeCircleImage(mcsMolecule, secondRoundTargets, name, mappings);
 
 			}
+
+			if (Settings.isAborted(Thread.currentThread()))
+				break;
 			if (mcsMolecule != null)
 			{
 				SmilesGenerator g = new SmilesGenerator();
@@ -175,10 +217,8 @@ public class MCSComputer
 				((ClusterDataImpl) c).setSubstructureSmarts(SubstructureSmartsType.MCS, g.createSMILES(mcsMolecule));
 				System.out.println("MCSMolecule: " + c.getSubstructureSmarts(SubstructureSmartsType.MCS));
 			}
-
-			if (Settings.isAborted(Thread.currentThread()))
-				break;
 		}
 
 	}
+
 }
