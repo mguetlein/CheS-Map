@@ -17,9 +17,9 @@ import data.DatasetFile;
 public class EmbedWizardPanel extends GenericWizardPanel
 {
 	public static final ThreeDEmbedder EMBEDDERS[] = { new WekaPCA3DEmbedder(), new Random3DEmbedder(),
-			new AbstractRDistanceTo3DEmbedder.PCADistance3DEmbedder(),
+			//new AbstractRDistanceTo3DEmbedder.PCADistance3DEmbedder(),
 			new AbstractRDistanceTo3DEmbedder.SMACOF3DEmbedder(),
-			new AbstractRDistanceTo3DEmbedder.TSNEDistance3DEmbedder(),
+			//new AbstractRDistanceTo3DEmbedder.TSNEDistance3DEmbedder(),
 			new AbstractRFeatureTo3DEmbedder.PCAFeature3DEmbedder(),
 			new AbstractRFeatureTo3DEmbedder.TSNEFeature3DEmbedder(), };
 

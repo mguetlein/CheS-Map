@@ -38,7 +38,11 @@ public class CheSMapperWizard extends WizardDialog
 
 	public CheSMapperWizard(JFrame owner, int startPanel)
 	{
-		super(owner, Settings.TITLE + " Wizard (" + Settings.VERSION_STRING + ")", Settings.CHES_MAPPER_IMAGE);
+		super(owner, Settings.TITLE + " Wizard (" + Settings.VERSION_STRING + ")", Settings.CHES_MAPPER_IMAGE,
+				Settings.OPENTOX_ICON);
+		addClickLinkToIcon(Settings.HOMEPAGE);
+		addClickLinkToAdditionalIcon("http://opentox.org");
+
 		Settings.TOP_LEVEL_COMPONENT = this;
 
 		setIconImage(Settings.CHES_MAPPER_IMAGE_SMALL.getImage());

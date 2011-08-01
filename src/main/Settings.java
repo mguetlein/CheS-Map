@@ -64,18 +64,20 @@ public class Settings
 	public static Boolean DBG = false;
 	public static final ImageIcon CHES_MAPPER_IMAGE;
 	public static final ImageIcon CHES_MAPPER_IMAGE_SMALL;
+	public static final ImageIcon OPENTOX_ICON;
 	static
 	{
-
 		CHES_MAPPER_IMAGE = ImageLoader.loadImageIcon("data/leucin-3d-small.png", Settings.class);
 		CHES_MAPPER_IMAGE_SMALL = ImageLoader.loadImageIcon("data/leucin-3d-small_36.png", Settings.class);
+		OPENTOX_ICON = ImageLoader.loadImageIcon("data/OpenTox_logo.png", Settings.class);
 	}
 
 	// ------------------------ EXTERNAL PROGRAMMS -----------------------
 
 	public static String CV_BABEL_PATH = null;
-	public static String CV_OBFIT_PATH = null;//"obfit";
-	public static final String CV_RSCRIPT_PATH = null;//"Rscript";
+	public static String CV_OBFIT_PATH = null;
+	public static String CV_RSCRIPT_PATH = null;
+
 	public static final String CV_GSPAN_PATH = null;//"Rscript";
 
 	static
@@ -86,13 +88,17 @@ public class Settings
 			CV_BABEL_PATH = env.get("CV_BABEL_PATH");
 		if (env.get("CV_OBFIT_PATH") != null)
 			CV_OBFIT_PATH = env.get("CV_OBFIT_PATH");
+		if (env.get("CV_RSCRIPT_PATH") != null)
+			CV_RSCRIPT_PATH = env.get("CV_RSCRIPT_PATH");
 
-		if (OSUtil.isUnix())
+		if (OSUtil.isUnix() || OSUtil.isMac())
 		{
 			if (CV_BABEL_PATH == null)
 				CV_BABEL_PATH = findExecutableLinux("babel");
 			if (CV_OBFIT_PATH == null)
 				CV_OBFIT_PATH = findExecutableLinux("obfit");
+			if (CV_RSCRIPT_PATH == null)
+				CV_RSCRIPT_PATH = findExecutableLinux("Rscript");
 		}
 		else
 		{
@@ -160,10 +166,11 @@ public class Settings
 		}
 	}
 
-	public static String VERSION = "v0.2.0";
+	public static String VERSION = "v0.2.1";
 	public static String VERSION_STRING = VERSION + " Initial Prototype"
 			+ ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
 	public static String TITLE = "CheS-Mapper";
+	public static String HOMEPAGE = "http://opentox.informatik.uni-freiburg.de/ches-mapper";
 	public static String CDK_VERSION = "1.4.0";
 	public static String CDK_STRING = "The Chemistry Development Kit (CDK) (Version " + CDK_VERSION
 			+ ", see http://cdk.sourceforge.net)";

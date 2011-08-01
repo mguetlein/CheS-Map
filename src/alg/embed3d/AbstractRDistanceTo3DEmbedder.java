@@ -1,7 +1,6 @@
 package alg.embed3d;
 
 import gui.property.Property;
-import io.ExternalTool;
 import io.FileResultCacher;
 import io.RUtil;
 
@@ -16,12 +15,14 @@ import org.apache.commons.math.geometry.Vector3D;
 
 import util.ArrayUtil;
 import util.DistanceMatrix;
+import util.ExternalToolUtil;
 import util.FileUtil;
 import data.DatasetFile;
+import data.RScriptUser;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 
-public abstract class AbstractRDistanceTo3DEmbedder implements ThreeDEmbedder
+public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implements ThreeDEmbedder
 {
 	List<Vector3f> positions;
 
@@ -43,7 +44,7 @@ public abstract class AbstractRDistanceTo3DEmbedder implements ThreeDEmbedder
 
 		if (instances.size() < getMinNumInstances())
 		{
-			System.out.println("WARNING: " + getInitials() + " needs at least " + getMinNumInstances()
+			System.out.println("WARNING: " + getRScriptName() + " needs at least " + getMinNumInstances()
 					+ " instances for embedding, returning 0-0-0 positions");
 			random.embed(dataset, instances, features, distances);
 			positions = random.positions;
@@ -51,9 +52,9 @@ public abstract class AbstractRDistanceTo3DEmbedder implements ThreeDEmbedder
 		}
 
 		String tableFile = Settings.destinationFile(dataset.getSDFPath(),
-				FileUtil.getFilename(dataset.getSDFPath(), false) + "." + getInitials() + ".distances.table");
+				FileUtil.getFilename(dataset.getSDFPath(), false) + "." + getRScriptName() + ".distances.table");
 		String embeddingFile = Settings.destinationFile(dataset.getSDFPath(),
-				FileUtil.getFilename(dataset.getSDFPath(), false) + "." + getInitials() + ".distances.embedding");
+				FileUtil.getFilename(dataset.getSDFPath(), false) + "." + getRScriptName() + ".distances.embedding");
 
 		FileResultCacher.InFileWriter inWriter = new FileResultCacher.InFileWriter()
 		{
@@ -68,8 +69,8 @@ public abstract class AbstractRDistanceTo3DEmbedder implements ThreeDEmbedder
 			@Override
 			public void write(String infile, String outfile)
 			{
-				ExternalTool.run(getRScript(), null, null, Settings.CV_RSCRIPT_PATH + " /home/martin/software/R/"
-						+ getRScript() + " " + infile + " " + outfile);
+				ExternalToolUtil.run(getRScriptName(), Settings.CV_RSCRIPT_PATH + " " + getScriptPath() + " " + infile
+						+ " " + outfile);
 			}
 		};
 		FileResultCacher frc = new FileResultCacher(tableFile, embeddingFile, inWriter, outWriter);
@@ -130,10 +131,6 @@ public abstract class AbstractRDistanceTo3DEmbedder implements ThreeDEmbedder
 		return true;
 	}
 
-	public abstract String getRScript();
-
-	public abstract String getInitials();
-
 	public abstract int getMinNumInstances();
 
 	public static class SMACOF3DEmbedder extends AbstractRDistanceTo3DEmbedder
@@ -143,15 +140,10 @@ public abstract class AbstractRDistanceTo3DEmbedder implements ThreeDEmbedder
 			return 4;
 		}
 
-		public String getInitials()
+		@Override
+		protected String getRScriptName()
 		{
 			return "smacof";
-		}
-
-		@Override
-		public String getRScript()
-		{
-			return "smacof.R";
 		}
 
 		@Override
@@ -163,8 +155,20 @@ public abstract class AbstractRDistanceTo3DEmbedder implements ThreeDEmbedder
 		@Override
 		public String getDescription()
 		{
-			// TODO Auto-generated method stub
 			return null;
+		}
+
+		@Override
+		protected String getRScriptCode()
+		{
+			return "args <- commandArgs(TRUE)\n"
+					+ //
+					"\n"
+					+ "library(\"smacof\")\n"
+					+ "df = read.table(args[1])\n"
+					+ "res <- smacofSym(df, ndim = 3, metric = FALSE, ties = \"secondary\", verbose = TRUE, itmax = 150)\n"
+					+ "#res <- smacofSphere.dual(df, ndim = 3)\n" + "print(res$conf)\n" + "print(class(res$conf))\n"
+					+ "write.table(res$conf,args[2]) ";
 		}
 	}
 
@@ -175,15 +179,10 @@ public abstract class AbstractRDistanceTo3DEmbedder implements ThreeDEmbedder
 			return 3;
 		}
 
-		public String getInitials()
+		@Override
+		protected String getRScriptName()
 		{
 			return "pca";
-		}
-
-		@Override
-		public String getRScript()
-		{
-			return "pca.R";
 		}
 
 		@Override
@@ -195,8 +194,16 @@ public abstract class AbstractRDistanceTo3DEmbedder implements ThreeDEmbedder
 		@Override
 		public String getDescription()
 		{
-			// TODO Auto-generated method stub
 			return null;
+		}
+
+		@Override
+		protected String getRScriptCode()
+		{
+			return "args <- commandArgs(TRUE)\n" //
+					+ "df = read.table(args[1])\n" + "res <- princomp(df)\n"
+					+ "print(res$scores[,1:3])\n"
+					+ "write.table(res$scores[,1:3],args[2]) ";
 		}
 	}
 
@@ -208,27 +215,35 @@ public abstract class AbstractRDistanceTo3DEmbedder implements ThreeDEmbedder
 			return 2;
 		}
 
-		public String getInitials()
+		@Override
+		protected String getRScriptName()
 		{
 			return "tsne";
 		}
 
 		@Override
-		public String getRScript()
-		{
-			return "tsne.R";
-		}
-
-		@Override
 		public String getName()
 		{
-			return "SMACOF 3D-Embedder (using Distance)";
+			return "TSNE 3D-Embedder (using Distances)";
 		}
 
 		@Override
 		public String getDescription()
 		{
 			return null;
+		}
+
+		@Override
+		protected String getRScriptCode()
+		{
+			return "args <- commandArgs(TRUE)\n" //
+					+ "\n" + "library(\"tsne\")\n"
+					+ "df = read.table(args[1])\n"
+					+ "res <- tsne(df, k = 3, perplexity=150)\n" + "print(res$ydata)\n"
+					+ "\n"
+					+ "##res <- smacofSphere.dual(df, ndim = 3)\n" + "#print(res$conf)\n"
+					+ "#print(class(res$conf))\n"
+					+ "\n" + "write.table(res$ydata,args[2]) \n" + "";
 		}
 	}
 

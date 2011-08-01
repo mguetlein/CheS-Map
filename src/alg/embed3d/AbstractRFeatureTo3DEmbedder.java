@@ -19,10 +19,11 @@ import util.ArrayUtil;
 import util.DistanceMatrix;
 import data.DatasetFile;
 import data.DistanceUtil;
+import data.RScriptUser;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 
-public abstract class AbstractRFeatureTo3DEmbedder implements ThreeDEmbedder
+public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implements ThreeDEmbedder
 {
 	List<Vector3f> positions;
 
@@ -40,7 +41,7 @@ public abstract class AbstractRFeatureTo3DEmbedder implements ThreeDEmbedder
 	{
 		if (features.size() < getMinNumFeatures())
 		{
-			System.out.println("WARNING: " + getRScript() + " needs at least " + getMinNumFeatures()
+			System.out.println("WARNING: " + getRScriptName() + " needs at least " + getMinNumFeatures()
 					+ " features for embedding, returning 0-0-0 positions");
 			random.embed(dataset, instances, features, distances);
 			positions = random.positions;
@@ -61,8 +62,12 @@ public abstract class AbstractRFeatureTo3DEmbedder implements ThreeDEmbedder
 
 		RUtil.toRTable(features, DistanceUtil.values(features, instances, true), f.getAbsolutePath());
 
-		ExternalTool.run(getRScript(), null, null, Settings.CV_RSCRIPT_PATH + " /home/martin/software/R/"
-				+ getRScript() + " " + f.getAbsolutePath() + " " + f2.getAbsolutePath());
+		ExternalTool.run(
+				getRScriptName(),
+				null,
+				null,
+				Settings.CV_RSCRIPT_PATH + " " + getScriptPath() + " " + f.getAbsolutePath() + " "
+						+ f2.getAbsolutePath());
 
 		List<Vector3D> v3d = RUtil.readRVectorMatrix(f2.getAbsolutePath());
 
@@ -117,8 +122,6 @@ public abstract class AbstractRFeatureTo3DEmbedder implements ThreeDEmbedder
 		return false;
 	}
 
-	public abstract String getRScript();
-
 	public abstract int getMinNumFeatures();
 
 	public static class TSNEFeature3DEmbedder extends AbstractRFeatureTo3DEmbedder
@@ -130,9 +133,9 @@ public abstract class AbstractRFeatureTo3DEmbedder implements ThreeDEmbedder
 		}
 
 		@Override
-		public String getRScript()
+		public String getRScriptName()
 		{
-			return "tsne.R";
+			return "tsne";
 		}
 
 		@Override
@@ -146,6 +149,19 @@ public abstract class AbstractRFeatureTo3DEmbedder implements ThreeDEmbedder
 		{
 			return null;
 		}
+
+		@Override
+		protected String getRScriptCode()
+		{
+			return "args <- commandArgs(TRUE)\n" //
+					+ "\n" + "library(\"tsne\")\n"
+					+ "df = read.table(args[1])\n"
+					+ "res <- tsne(df, k = 3, perplexity=150)\n" + "print(res$ydata)\n"
+					+ "\n"
+					+ "##res <- smacofSphere.dual(df, ndim = 3)\n" + "#print(res$conf)\n"
+					+ "#print(class(res$conf))\n"
+					+ "\n" + "write.table(res$ydata,args[2]) \n" + "";
+		}
 	}
 
 	public static class PCAFeature3DEmbedder extends AbstractRFeatureTo3DEmbedder
@@ -156,9 +172,9 @@ public abstract class AbstractRFeatureTo3DEmbedder implements ThreeDEmbedder
 		}
 
 		@Override
-		public String getRScript()
+		public String getRScriptName()
 		{
-			return "pca.R";
+			return "pca";
 		}
 
 		@Override
@@ -171,6 +187,15 @@ public abstract class AbstractRFeatureTo3DEmbedder implements ThreeDEmbedder
 		public String getName()
 		{
 			return "PCA 3D-Embedder (using Features)";
+		}
+
+		@Override
+		protected String getRScriptCode()
+		{
+			return "args <- commandArgs(TRUE)\n" //
+					+ "df = read.table(args[1])\n" + "res <- princomp(df)\n"
+					+ "print(res$scores[,1:3])\n"
+					+ "write.table(res$scores[,1:3],args[2]) ";
 		}
 	}
 
