@@ -29,6 +29,7 @@ public class ClusterDataImpl implements ClusterData
 	private HashMap<SubstructureSmartsType, String> substructureSmarts = new HashMap<SubstructureSmartsType, String>();
 	private HashMap<MoleculeProperty, ArraySummary> values = new HashMap<MoleculeProperty, ArraySummary>();
 	private HashMap<MoleculeProperty, ArraySummary> normalizedValues = new HashMap<MoleculeProperty, ArraySummary>();
+	private boolean aligned = false;
 
 	public String getName()
 	{
@@ -136,6 +137,17 @@ public class ClusterDataImpl implements ClusterData
 	public int getSize()
 	{
 		return compounds.size();
+	}
+
+	public void setAligned(boolean b)
+	{
+		this.aligned = b;
+	}
+
+	@Override
+	public boolean isAligned()
+	{
+		return aligned;
 	}
 
 }

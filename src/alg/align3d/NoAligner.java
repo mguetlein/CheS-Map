@@ -30,12 +30,6 @@ public class NoAligner implements ThreeDAligner
 	}
 
 	@Override
-	public boolean isRealAligner()
-	{
-		return false;
-	}
-
-	@Override
 	public void algin(DatasetFile dataset, List<ClusterData> clusters)
 	{
 		clusterFiles = new ArrayList<String>();

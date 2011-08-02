@@ -1,6 +1,7 @@
 package alg.cluster;
 
 import gui.Progressable;
+import gui.property.DoubleProperty;
 import gui.property.Property;
 
 import java.util.ArrayList;
@@ -21,10 +22,9 @@ import dataInterface.MoleculeProperty;
 
 public class StructuralClustererService implements DatasetClusterer
 {
-
 	String origURI;
 	private static final String ALGORITHM_URI = "http://opentox-dev.informatik.tu-muenchen.de:8080/OpenTox/algorithm/StructuralClustering";
-	private double threshold = 0.5;
+	private double threshold = 0.8;
 	List<ClusterData> clusters;
 
 	@Override
@@ -133,15 +133,20 @@ public class StructuralClustererService implements DatasetClusterer
 		return false;
 	}
 
+	public static final String PROPERTY_THETA = "theta (size of common substructure)";
+
 	@Override
 	public Property[] getProperties()
 	{
-		return null;
+		return new Property[] { new DoubleProperty(PROPERTY_THETA, threshold) };
 	}
 
 	@Override
 	public void setProperties(Property[] properties)
 	{
+		for (Property property : properties)
+			if (property.getName().equals(PROPERTY_THETA))
+				threshold = ((DoubleProperty) property).getValue();
 	}
 
 	@Override

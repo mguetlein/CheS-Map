@@ -17,4 +17,6 @@ public interface ClusterData extends MolecularPropertyOwner
 	public Vector3f getPosition();
 
 	public String getSubstructureSmarts(SubstructureSmartsType type);
+
+	public boolean isAligned();
 }

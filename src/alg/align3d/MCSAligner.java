@@ -11,6 +11,7 @@ import java.util.List;
 
 import main.Settings;
 import util.FileUtil;
+import data.ClusterDataImpl;
 import data.DatasetFile;
 import dataInterface.ClusterData;
 import dataInterface.SubstructureSmartsType;
@@ -52,7 +53,8 @@ public class MCSAligner implements ThreeDAligner
 
 		for (ClusterData cluster : clusters)
 		{
-			if (cluster.getCompounds().size() < 2)
+			if (cluster.getCompounds().size() < 2
+					|| cluster.getSubstructureSmarts(SubstructureSmartsType.MCS).trim().length() == 0)
 				alignedFiles.add(cluster.getFilename());
 			else
 			{
@@ -97,6 +99,7 @@ public class MCSAligner implements ThreeDAligner
 					//						throw new IllegalStateException(alignedStructures + " "
 					//								+ SDFUtil.countCompounds(alignedStructures) + " != " + clusterFile + " "
 					//								+ SDFUtil.countCompounds(clusterFile));
+					((ClusterDataImpl) cluster).setAligned(true);
 				}
 				catch (Error e)
 				{
@@ -127,12 +130,6 @@ public class MCSAligner implements ThreeDAligner
 						null,
 						null,
 						"obfit Oc1ccc(cc1)-c1cocc(:c:c)c1=O /tmp/first4154035072070520801sdf /tmp/remainder4312806650036993699sdf > /tmp/structural_cluster_3.aligned.sdf");
-	}
-
-	@Override
-	public boolean isRealAligner()
-	{
-		return true;
 	}
 
 	@Override

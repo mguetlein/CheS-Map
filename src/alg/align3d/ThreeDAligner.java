@@ -11,6 +11,4 @@ public interface ThreeDAligner extends Algorithm
 	public void algin(DatasetFile dataset, List<ClusterData> clusters);
 
 	public List<String> getAlginedClusterFiles();
-
-	public boolean isRealAligner();
 }

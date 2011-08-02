@@ -20,7 +20,6 @@ public class ClusteringData
 	private List<MoleculeProperty> properties = new ArrayList<MoleculeProperty>();
 	private List<SubstructureSmartsType> substructureSmartsTypes = new ArrayList<SubstructureSmartsType>();
 
-	private boolean clusterFilesAligned;
 	private List<ClusterData> clusters = new ArrayList<ClusterData>();
 	private DistanceMatrix<ClusterData> clusterDistances;
 	private List<CompoundData> compounds = new ArrayList<CompoundData>();
@@ -49,16 +48,6 @@ public class ClusteringData
 	public String getName()
 	{
 		return name;
-	}
-
-	public boolean isClusterFilesAligned()
-	{
-		return clusterFilesAligned;
-	}
-
-	public void setClusterFilesAligned(boolean clusterFilesAligned)
-	{
-		this.clusterFilesAligned = clusterFilesAligned;
 	}
 
 	public void addCluster(ClusterData cluster)

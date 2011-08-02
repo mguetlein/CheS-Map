@@ -160,7 +160,6 @@ public class CheSMapping
 					int cCount = 0;
 					for (String alignedFile : threeDAligner.getAlginedClusterFiles())
 						((ClusterDataImpl) clustering.getClusters().get(cCount++)).setFilename(alignedFile);
-					clustering.setClusterFilesAligned(threeDAligner.isRealAligner());
 
 					//		// make sure the files contain appropriate number of compounds 
 					//		int cCount = 0;

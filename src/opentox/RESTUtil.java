@@ -158,6 +158,14 @@ public class RESTUtil
 			connection.setRequestMethod("POST");
 			DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
 			System.err.println("POST " + p + " " + urlString);
+
+			String curl_call = "curl ";
+			for (String key : params.keySet())
+				curl_call += "-d " + key + "=" + params.get(key) + " ";
+			curl_call += urlString;
+			System.err.println("(for debbuging: '" + curl_call + "')");
+			System.err.println("For debugging: curl -d ");
+
 			dos.writeBytes(p);
 			dos.flush();
 			dos.close();
