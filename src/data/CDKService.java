@@ -239,7 +239,7 @@ public class CDKService
 				if (reader == null)
 					throw new IllegalArgumentException("Could not determine input file type");
 				else if (reader instanceof MDLReader || reader instanceof MDLV2000Reader)
-					dataset.setSDFPath(dataset.getLocalPath());
+					dataset.setSDFPath(dataset.getLocalPath(), false);
 				IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
 				list = ChemFileManipulator.getAllAtomContainers(content);
 				reader.close();
@@ -577,7 +577,7 @@ public class CDKService
 			}
 			else
 				System.out.println("sdf 2d file already exists: " + sdfFile);
-			dataset.setSDFPath(sdfFile);
+			dataset.setSDFPath(sdfFile, false);
 		}
 		catch (CDKException e)
 		{

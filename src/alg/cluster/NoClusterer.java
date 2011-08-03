@@ -53,7 +53,7 @@ public class NoClusterer implements DatasetClusterer
 			Progressable progress)
 	{
 		c = new ClusterDataImpl();
-		c.setFilename(dataset.getSDFPath());
+		c.setFilename(dataset.getSDFPath(true));
 		c.setName("Single cluster");
 		c.setPosition(new Vector3f(0f, 0f, 0f));
 		for (CompoundData compound : compounds)

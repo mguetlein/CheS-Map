@@ -34,14 +34,15 @@ public abstract class Abstract3DBuilder implements ThreeDBuilder
 	@Override
 	public void build3D(final DatasetFile dataset, final Progressable progress)
 	{
-		//		if (sdfFile.matches("(?i).*3d.*"))
-		//		{
-		//			System.out.println("filename includes 3d, assuming its already 3d");
-		//			threeDFilename = sdfFile;
-		//		}
-		//		else
-		//		{
-		String sdfFile = dataset.getSDFPath();
+		if (dataset.getSDFPath(false).contains("." + getInitials() + "3d"))
+		{
+			System.out.println("file already in " + getInitials() + "3d : " + dataset.getSDFPath(false)
+					+ ", no 3d structure generation");
+			threeDFilename = dataset.getSDFPath(false);
+			return;
+		}
+
+		String sdfFile = dataset.getSDFPath(false);
 		File orig = new File(sdfFile);
 		if (!orig.exists())
 			throw new IllegalStateException("sdf file not found");
@@ -59,6 +60,7 @@ public abstract class Abstract3DBuilder implements ThreeDBuilder
 			File threeD = new File(finalFile);
 			if (!threeD.exists())
 			{
+				System.out.println("computing 3d: " + finalFile);
 				running = true;
 				final int max = SDFUtil.countCompounds(sdfFile);
 				Thread th = new Thread(new Runnable()

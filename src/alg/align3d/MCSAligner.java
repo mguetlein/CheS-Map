@@ -91,7 +91,7 @@ public class MCSAligner implements ThreeDAligner
 					//								tmpRemainder.getAbsolutePath(), ">", alignedStructures }
 							);
 
-					DatasetFile.clearFilesWithSDF(alignedStructures);
+					DatasetFile.clearFilesWith3DSDF(alignedStructures);
 
 					FileUtil.join(tmpFirst.getAbsolutePath(), tmpAligned.getAbsolutePath(), alignedStructures);
 					alignedFiles.add(alignedStructures);

@@ -22,7 +22,7 @@ public final class DatasetClustererUtil
 			name = clusterFilePrefix + " Cluster " + count;
 
 			// already loaded file may be overwritten, clear
-			DatasetFile.clearFilesWithSDF(clusterFile);
+			DatasetFile.clearFilesWith3DSDF(clusterFile);
 
 			SDFUtil.filter(sdfFile, clusterFile, ((ClusterDataImpl) c).calculateCompoundIndices());
 			((ClusterDataImpl) c).setName(name);

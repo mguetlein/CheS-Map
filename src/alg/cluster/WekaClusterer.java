@@ -78,8 +78,8 @@ public class WekaClusterer implements DatasetClusterer
 			}
 			for (int j = 0; j < eval.getClusterAssignments().length; j++)
 				((ClusterDataImpl) clusters.get((int) eval.getClusterAssignments()[j])).addCompound(compounds.get(j));
-			DatasetClustererUtil
-					.storeClusters(dataset.getSDFPath(), wekaClusterer.getClass().getSimpleName(), clusters);
+			DatasetClustererUtil.storeClusters(dataset.getSDFPath(true), wekaClusterer.getClass().getSimpleName(),
+					clusters);
 		}
 		catch (FileNotFoundException e)
 		{

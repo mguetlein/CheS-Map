@@ -86,7 +86,7 @@ public class CheSMapping
 
 					DatasetFile dataset = datasetProvider.getDatasetFile();
 
-					if (dataset.getSDFPath() == null)
+					if (dataset.getSDFPath(false) == null)
 					{
 						progress.update(0, "convert dataset to sdf file");
 						CDKService.writeSDFFile(dataset);
@@ -96,9 +96,9 @@ public class CheSMapping
 						progress.update(step, "compute 3d compound structures");
 					System.out.println("compute 3d compound structures");
 					threeDGenerator.build3D(dataset, SubProgress.create(progress, step, step * 2));
-					dataset.setSDFPath(threeDGenerator.get3DSDFFile());
+					dataset.setSDFPath(threeDGenerator.get3DSDFFile(), true);
 
-					ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getSDFPath());
+					ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getSDFPath(true));
 
 					if (Settings.isAborted(Thread.currentThread()))
 						return;

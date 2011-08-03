@@ -36,7 +36,7 @@ public class StructuralClustererService implements DatasetClusterer
 		if (dataset.isLocal() || !DatasetUtil.isAmbitURI(dataset.getURI()))
 		{
 			progress.update(0, "Upload dataset to Ambit dataset web service");
-			origURI = DatasetUtil.uploadDatasetToAmbit(dataset.getSDFPath());
+			origURI = DatasetUtil.uploadDatasetToAmbit(dataset.getSDFPath(true));
 			urisToDelete.add(origURI);
 		}
 		else
@@ -115,7 +115,7 @@ public class StructuralClustererService implements DatasetClusterer
 				}
 			}
 		}
-		DatasetClustererUtil.storeClusters(dataset.getSDFPath(), "structural", clusters);
+		DatasetClustererUtil.storeClusters(dataset.getSDFPath(true), "structural", clusters);
 
 		for (String uri : urisToDelete)
 			RESTUtil.delete(uri);

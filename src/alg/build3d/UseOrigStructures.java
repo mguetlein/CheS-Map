@@ -17,7 +17,7 @@ public class UseOrigStructures implements ThreeDBuilder
 	@Override
 	public void build3D(DatasetFile dataset, Progressable progress)
 	{
-		f = dataset.getSDFPath();
+		f = dataset.getSDFPath(false);
 	}
 
 	@Override

@@ -111,19 +111,20 @@ public class Settings
 		try
 		{
 			String command = "which " + executable;
+			Status.WARN.println("try to find " + executable + " with '" + command + "'");
 			Process child = Runtime.getRuntime().exec(command);
 			child.waitFor();
 			if (child.exitValue() == 1)
 				throw new Exception("failed: " + command);
 			String res = new BufferedReader(new InputStreamReader(child.getInputStream())).readLine().trim();
 			if (res.length() == 0)
-				return null;
+				throw new Exception("return value of command '" + command + "' empty");
 			else
 				return res;
 		}
 		catch (Exception e)
 		{
-			Status.WARN.println("Could not find executable: " + executable);
+			Status.WARN.println("Could not find executable '" + executable + "' :\n" + e.getMessage());
 			return null;
 		}
 	}
@@ -166,7 +167,7 @@ public class Settings
 		}
 	}
 
-	public static String VERSION = "v0.2.2";
+	public static String VERSION = "v0.2.3";
 	public static String VERSION_STRING = VERSION + " Initial Prototype"
 			+ ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
 	public static String TITLE = "CheS-Mapper";

@@ -177,7 +177,7 @@ public class KMeansClusterer implements DatasetClusterer
 				c.addCompound(cc);
 			clusters.add(c);
 		}
-		DatasetClustererUtil.storeClusters(dataset.getSDFPath(), "k_means", clusters);
+		DatasetClustererUtil.storeClusters(dataset.getSDFPath(true), "k_means", clusters);
 		//
 		//		clusterDist = new double[means.size()][means.size()];
 		//		for (int i = 0; i < clusterDist.length; i++)

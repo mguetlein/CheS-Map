@@ -19,6 +19,7 @@ public class DatasetFile
 	private String localPath;
 	private String name;
 	private String sdfPath;
+	private String sdf3DPath;
 
 	public boolean isLocal()
 	{
@@ -40,9 +41,20 @@ public class DatasetFile
 		return name;
 	}
 
-	public String getSDFPath()
+	public String getSDFPath(boolean threeD)
 	{
-		return sdfPath;
+		if (threeD)
+			return sdf3DPath;
+		else
+			return sdfPath;
+	}
+
+	public void setSDFPath(String sdfPath, boolean threeD)
+	{
+		if (threeD)
+			this.sdf3DPath = sdfPath;
+		else
+			this.sdfPath = sdfPath;
 	}
 
 	private DatasetFile(String uRI, String localPath, String name)
@@ -75,11 +87,6 @@ public class DatasetFile
 		}
 		else
 			return instances.get(index);
-	}
-
-	public void setSDFPath(String sdfPath)
-	{
-		this.sdfPath = sdfPath;
 	}
 
 	public static DatasetFile fromString(String s)
@@ -143,11 +150,11 @@ public class DatasetFile
 		cdkService.clear(this);
 	}
 
-	public static void clearFilesWithSDF(String sdfFile)
+	public static void clearFilesWith3DSDF(String sdfFile)
 	{
 		for (DatasetFile f : instances)
 		{
-			if (f.getLocalPath().equals(sdfFile) || sdfFile.equals(f.getSDFPath()))
+			if (f.getLocalPath().equals(sdfFile) || sdfFile.equals(f.getSDFPath(true)))
 				f.clear();
 		}
 	}

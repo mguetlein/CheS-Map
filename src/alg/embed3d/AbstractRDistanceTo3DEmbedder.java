@@ -51,10 +51,11 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 			return;
 		}
 
-		String tableFile = Settings.destinationFile(dataset.getSDFPath(),
-				FileUtil.getFilename(dataset.getSDFPath(), false) + "." + getRScriptName() + ".distances.table");
-		String embeddingFile = Settings.destinationFile(dataset.getSDFPath(),
-				FileUtil.getFilename(dataset.getSDFPath(), false) + "." + getRScriptName() + ".distances.embedding");
+		String tableFile = Settings.destinationFile(dataset.getSDFPath(true),
+				FileUtil.getFilename(dataset.getSDFPath(true), false) + "." + getRScriptName() + ".distances.table");
+		String embeddingFile = Settings
+				.destinationFile(dataset.getSDFPath(true), FileUtil.getFilename(dataset.getSDFPath(true), false) + "."
+						+ getRScriptName() + ".distances.embedding");
 
 		FileResultCacher.InFileWriter inWriter = new FileResultCacher.InFileWriter()
 		{

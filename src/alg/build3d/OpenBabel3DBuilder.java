@@ -10,7 +10,7 @@ public class OpenBabel3DBuilder extends Abstract3DBuilder
 	@Override
 	public void build3D(DatasetFile datasetFile, String outfile)
 	{
-		ExternalToolUtil.run("obgen3d", Settings.CV_BABEL_PATH + " --gen3d -d -isdf " + datasetFile.getSDFPath()
+		ExternalToolUtil.run("obgen3d", Settings.CV_BABEL_PATH + " --gen3d -d -isdf " + datasetFile.getSDFPath(false)
 				+ " -osdf " + outfile);
 	}
 
