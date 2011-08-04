@@ -401,32 +401,48 @@ public class CDKService
 
 						for (int i = 0; i < mols.length; i++)
 						{
-							IDescriptorResult res = descriptor.calculate(mols[i]).getValue();
-							if (res instanceof IntegerResult)
-								vv.get(0)[i] = (double) ((IntegerResult) res).intValue();
-							else if (res instanceof DoubleResult)
-								vv.get(0)[i] = ((DoubleResult) res).doubleValue();
-							else if (res instanceof DoubleArrayResult)
+							try
 							{
-								if (CDKProperty.numFeatureValues(cdkProp.desc) != ((DoubleArrayResult) res).length())
-									throw new IllegalStateException("num feature values wrong for '" + cdkProp + "' : "
-											+ CDKProperty.numFeatureValues(cdkProp.desc) + " != "
-											+ ((DoubleArrayResult) res).length());
-								for (int j = 0; j < CDKProperty.numFeatureValues(cdkProp.desc); j++)
-									vv.get(j)[i] = ((DoubleArrayResult) res).get(j);
+								IDescriptorResult res = descriptor.calculate(mols[i]).getValue();
+								if (res instanceof IntegerResult)
+									vv.get(0)[i] = (double) ((IntegerResult) res).intValue();
+								else if (res instanceof DoubleResult)
+									vv.get(0)[i] = ((DoubleResult) res).doubleValue();
+								else if (res instanceof DoubleArrayResult)
+								{
+									if (CDKProperty.numFeatureValues(cdkProp.desc) != ((DoubleArrayResult) res)
+											.length())
+										throw new IllegalStateException("num feature values wrong for '" + cdkProp
+												+ "' : " + CDKProperty.numFeatureValues(cdkProp.desc) + " != "
+												+ ((DoubleArrayResult) res).length());
+									for (int j = 0; j < CDKProperty.numFeatureValues(cdkProp.desc); j++)
+										vv.get(j)[i] = ((DoubleArrayResult) res).get(j);
+								}
+								else if (res instanceof IntegerArrayResult)
+								{
+									if (CDKProperty.numFeatureValues(cdkProp.desc) != ((IntegerArrayResult) res)
+											.length())
+										throw new IllegalStateException("num feature values wrong for '" + cdkProp
+												+ "' : " + CDKProperty.numFeatureValues(cdkProp.desc) + " != "
+												+ ((IntegerArrayResult) res).length());
+									for (int j = 0; j < CDKProperty.numFeatureValues(cdkProp.desc); j++)
+										vv.get(j)[i] = (double) ((IntegerArrayResult) res).get(j);
+								}
+								else
+									throw new IllegalStateException("Unknown idescriptor result value for '" + cdkProp
+											+ "' : " + res.getClass());
 							}
-							else if (res instanceof IntegerArrayResult)
+							catch (Exception e)
 							{
-								if (CDKProperty.numFeatureValues(cdkProp.desc) != ((IntegerArrayResult) res).length())
-									throw new IllegalStateException("num feature values wrong for '" + cdkProp + "' : "
-											+ CDKProperty.numFeatureValues(cdkProp.desc) + " != "
-											+ ((IntegerArrayResult) res).length());
+								System.err.println("could not compute cdk feature " + e.getMessage());
+								e.printStackTrace();
+
 								for (int j = 0; j < CDKProperty.numFeatureValues(cdkProp.desc); j++)
-									vv.get(j)[i] = (double) ((IntegerArrayResult) res).get(j);
+									vv.get(j)[i] = 0.0;
 							}
-							else
-								throw new IllegalStateException("Unknown idescriptor result value for '" + cdkProp
-										+ "' : " + res.getClass());
+
+							if (Settings.isAborted(Thread.currentThread()))
+								return null;
 						}
 
 						for (int j = 0; j < CDKProperty.numFeatureValues(cdkProp.desc); j++)

@@ -105,7 +105,7 @@ public class CheSMapping
 					if (progress != null)
 						progress.update(step * 2, "compute features");
 					System.out.println("compute features");
-					featureComputer.computeFeatures(dataset);
+					featureComputer.computeFeatures(dataset, SubProgress.create(progress, step * 2, step * 3));
 					for (MoleculeProperty f : featureComputer.getFeatures())
 						clustering.addFeature(f);
 					for (MoleculeProperty p : featureComputer.getProperties())

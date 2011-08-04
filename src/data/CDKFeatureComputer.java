@@ -1,8 +1,11 @@
 package data;
 
+import gui.Progressable;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import main.Settings;
 import util.ArrayUtil;
 import alg.FeatureComputer;
 import data.CDKProperty.CDKDescriptor;
@@ -35,7 +38,7 @@ public class CDKFeatureComputer implements FeatureComputer
 	}
 
 	@Override
-	public void computeFeatures(DatasetFile dataset)
+	public void computeFeatures(DatasetFile dataset, Progressable progress)
 	{
 		features = new ArrayList<MoleculeProperty>();
 		properties = new ArrayList<MoleculeProperty>();
@@ -66,11 +69,21 @@ public class CDKFeatureComputer implements FeatureComputer
 
 		System.out.print("computing features ");
 		String[] smiles = dataset.getSmiles();
+
+		int count = 0;
 		for (MoleculeProperty p : props)
 		{
 			System.out.print(".");
+			if (progress != null)
+				progress.update((100 / (double) props.size()) * count,
+						"computing feature " + (count + 1) + "/" + props.size() + " : " + p.toString());
+			count++;
+
 			Object o[] = dataset.getObjectValues(p);
 			Object o2[] = dataset.getDoubleValues(p, true);
+
+			if (Settings.isAborted(Thread.currentThread()))
+				break;
 
 			for (int i = 0; i < numCompounds; i++)
 			{

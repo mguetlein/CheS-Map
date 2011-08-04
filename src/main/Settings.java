@@ -82,17 +82,46 @@ public class Settings
 
 	static
 	{
-		Map<String, String> env = System.getenv();
+		System.err.println("\nfinding binaries - start");
 
+		System.err.println("* try env variables");
+		Map<String, String> env = System.getenv();
 		if (env.get("CV_BABEL_PATH") != null)
+		{
 			CV_BABEL_PATH = env.get("CV_BABEL_PATH");
+			System.err.println("babel-path set to: " + CV_BABEL_PATH);
+		}
 		if (env.get("CV_OBFIT_PATH") != null)
+		{
 			CV_OBFIT_PATH = env.get("CV_OBFIT_PATH");
+			System.err.println("obfit-path set to: " + CV_OBFIT_PATH);
+		}
 		if (env.get("CV_RSCRIPT_PATH") != null)
+		{
 			CV_RSCRIPT_PATH = env.get("CV_RSCRIPT_PATH");
+			System.err.println("Rscript-path set to: " + CV_RSCRIPT_PATH);
+		}
+
+		System.err.println("* try locally (binary has to be available in PATH)");
+		if (CV_BABEL_PATH == null && exitValue("babel -H") == 0)
+		{
+			CV_BABEL_PATH = "babel";
+			System.err.println("babel found locally or in PATH");
+		}
+		if (CV_OBFIT_PATH == null && exitValue("obfit") == 255)
+		{
+			CV_OBFIT_PATH = "obfit";
+			System.err.println("obfit found locally or in PATH");
+		}
+		if (CV_RSCRIPT_PATH == null && exitValue("Rscript --help") == 0)
+		{
+			CV_RSCRIPT_PATH = "Rscript";
+			System.err.println("Rscript found locally or in PATH");
+		}
 
 		if (OSUtil.isUnix() || OSUtil.isMac())
 		{
+			System.err.println("* try to find with 'which'");
 			if (CV_BABEL_PATH == null)
 				CV_BABEL_PATH = findExecutableLinux("babel");
 			if (CV_OBFIT_PATH == null)
@@ -104,6 +133,8 @@ public class Settings
 		{
 			CV_BABEL_PATH = null;
 		}
+
+		System.err.println("finding binaries - end\n");
 	}
 
 	private static String findExecutableLinux(String executable)
@@ -126,6 +157,21 @@ public class Settings
 		{
 			Status.WARN.println("Could not find executable '" + executable + "' :\n" + e.getMessage());
 			return null;
+		}
+	}
+
+	private static int exitValue(String command)
+	{
+		try
+		{
+			Status.WARN.println("trying to run '" + command + "'");
+			Process child = Runtime.getRuntime().exec(command);
+			child.waitFor();
+			return child.exitValue();
+		}
+		catch (Exception e)
+		{
+			return -1;
 		}
 	}
 

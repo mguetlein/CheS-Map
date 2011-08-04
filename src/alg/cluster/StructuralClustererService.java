@@ -89,7 +89,7 @@ public class StructuralClustererService implements DatasetClusterer
 			clusters.add(c);
 		}
 		CDKFeatureComputer featureComp = new CDKFeatureComputer(clusterProps, null);
-		featureComp.computeFeatures(resultDataset);
+		featureComp.computeFeatures(resultDataset, null);
 		List<CompoundData> newCompounds = featureComp.getCompounds();
 
 		for (int i = 0; i < size; i++)
