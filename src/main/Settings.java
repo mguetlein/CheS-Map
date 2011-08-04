@@ -80,6 +80,7 @@ public class Settings
 
 	public static final String CV_GSPAN_PATH = null;//"Rscript";
 
+	// TODO ------------ fix spaghetti code ------------------------------
 	static
 	{
 		System.err.println("\nfinding binaries - start");
@@ -123,11 +124,23 @@ public class Settings
 		{
 			System.err.println("* try to find with 'which'");
 			if (CV_BABEL_PATH == null)
+			{
 				CV_BABEL_PATH = findExecutableLinux("babel");
+				if (CV_BABEL_PATH != null)
+					System.err.println("babel-path found at: " + CV_BABEL_PATH);
+			}
 			if (CV_OBFIT_PATH == null)
+			{
 				CV_OBFIT_PATH = findExecutableLinux("obfit");
+				if (CV_OBFIT_PATH != null)
+					System.err.println("obfit found at: " + CV_OBFIT_PATH);
+			}
 			if (CV_RSCRIPT_PATH == null)
+			{
 				CV_RSCRIPT_PATH = findExecutableLinux("Rscript");
+				if (CV_RSCRIPT_PATH != null)
+					System.err.println("Rscript found at: " + CV_RSCRIPT_PATH);
+			}
 		}
 		else
 		{
