@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -154,9 +155,23 @@ public class Settings
 					System.err.println("Rscript found at: " + CV_RSCRIPT_PATH);
 			}
 		}
-		else
+		else if (OSUtil.isWindows())
 		{
-			CV_BABEL_PATH = null;
+			String openbabelDir = findWinOpenBabelDir();
+			if (openbabelDir != null)
+			{
+				System.err.println("* try to find babel/obfit in " + openbabelDir);
+				if (CV_BABEL_PATH == null && exitValue(openbabelDir + "\\babel -H") == 0)
+				{
+					CV_BABEL_PATH = openbabelDir + "\\babel";
+					System.err.println("babel found in " + openbabelDir);
+				}
+				if (CV_OBFIT_PATH == null && exitValue(openbabelDir + "\\obfit") == 255)
+				{
+					CV_OBFIT_PATH = openbabelDir + "\\obfit";
+					System.err.println("obfit found in " + openbabelDir);
+				}
+			}
 		}
 
 		System.err.println("finding binaries - end\n");
@@ -191,6 +206,16 @@ public class Settings
 		{
 			Status.WARN.println("trying to run '" + command + "'");
 			Process child = Runtime.getRuntime().exec(command);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(child.getInputStream()));
+			while (reader.readLine() != null)
+			{
+			}
+			BufferedReader reader2 = new BufferedReader(new InputStreamReader(child.getErrorStream()));
+			while (reader2.readLine() != null)
+			{
+			}
+			reader.close();
+			reader2.close();
 			child.waitFor();
 			return child.exitValue();
 		}
@@ -198,6 +223,33 @@ public class Settings
 		{
 			return -1;
 		}
+	}
+
+	private static String findWinOpenBabelDir()
+	{
+		try
+		{
+			File d = new File("C:\\program files");
+			if (d.isDirectory())
+			{
+				String dirs[] = d.list(new FilenameFilter()
+				{
+					@Override
+					public boolean accept(File dir, String name)
+					{
+						return name.contains("OpenBabel");
+					}
+				});
+				if (dirs != null && dirs.length > 0)
+				{
+					return dirs[0];
+				}
+			}
+		}
+		catch (Exception e)
+		{
+		}
+		return null;
 	}
 
 	// ------------------ TMP/RESULT-FILE SUPPORT ---------------------------------------------
@@ -238,7 +290,7 @@ public class Settings
 		}
 	}
 
-	public static String VERSION = "v0.2.5";
+	public static String VERSION = "v0.2.6";
 	public static String VERSION_STRING = VERSION + " Initial Prototype"
 			+ ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
 	public static String TITLE = "CheS-Mapper";
