@@ -161,12 +161,12 @@ public class Settings
 			if (openbabelDir != null)
 			{
 				System.err.println("* try to find babel/obfit in " + openbabelDir);
-				if (CV_BABEL_PATH == null && exitValue(openbabelDir + "\\babel -H") == 0)
+				if (CV_BABEL_PATH == null && new File(openbabelDir + "\\babel.exe").exists())
 				{
 					CV_BABEL_PATH = openbabelDir + "\\babel";
 					System.err.println("babel found in " + openbabelDir);
 				}
-				if (CV_OBFIT_PATH == null && exitValue(openbabelDir + "\\obfit") == 255)
+				if (CV_OBFIT_PATH == null && new File(openbabelDir + "\\obfit.exe").exists())
 				{
 					CV_OBFIT_PATH = openbabelDir + "\\obfit";
 					System.err.println("obfit found in " + openbabelDir);
@@ -242,7 +242,7 @@ public class Settings
 				});
 				if (dirs != null && dirs.length > 0)
 				{
-					return dirs[0];
+					return "C:\\program files\\" + dirs[0];
 				}
 			}
 		}
@@ -290,7 +290,7 @@ public class Settings
 		}
 	}
 
-	public static String VERSION = "v0.2.6";
+	public static String VERSION = "v0.2.7";
 	public static String VERSION_STRING = VERSION + " Initial Prototype"
 			+ ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
 	public static String TITLE = "CheS-Mapper";
