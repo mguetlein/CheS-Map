@@ -122,6 +122,18 @@ public class Settings
 
 		if (OSUtil.isUnix() || OSUtil.isMac())
 		{
+			System.err.println("* try to find babel/obfit in /usr/local/bin");
+			if (CV_BABEL_PATH == null && exitValue("/usr/local/bin/babel -H") == 0)
+			{
+				CV_BABEL_PATH = "/usr/local/bin/babel";
+				System.err.println("babel found in /usr/local/bin/");
+			}
+			if (CV_OBFIT_PATH == null && exitValue("/usr/local/bin/obfit") == 255)
+			{
+				CV_OBFIT_PATH = "/usr/local/bin/obfit";
+				System.err.println("obfit found in /usr/local/bin/");
+			}
+
 			System.err.println("* try to find with 'which'");
 			if (CV_BABEL_PATH == null)
 			{

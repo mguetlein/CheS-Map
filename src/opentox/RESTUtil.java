@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -19,7 +20,7 @@ import util.StringUtil;
 
 public class RESTUtil
 {
-	private static String waitFor(HttpURLConnection connection) throws IOException, IllegalStateException
+	private static String waitFor(HttpURLConnection connection, long start) throws IOException, IllegalStateException
 	{
 		StringBuffer b = new StringBuffer();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -33,10 +34,13 @@ public class RESTUtil
 
 		if (b.toString().matches("http://.*/task/.*"))
 		{
-			System.err.println("waiting for task " + b.toString());
+			if (start == -1)
+				start = new Date().getTime();
+			System.err.println(StringUtil.formatTime(new Date().getTime() - start) + " waiting for task "
+					+ b.toString());
 			try
 			{
-				Thread.sleep(300);
+				Thread.sleep(1000);
 			}
 			catch (InterruptedException e)
 			{
@@ -47,7 +51,7 @@ public class RESTUtil
 
 			HashMap<String, String> params = new HashMap<String, String>();
 			params.put("accept", "text/uri-list");
-			return get(b.toString(), params);
+			return get(b.toString(), params, start);
 		}
 		else
 		{
@@ -98,6 +102,11 @@ public class RESTUtil
 
 	public static String get(String urlString, HashMap<String, String> headers)
 	{
+		return get(urlString, headers, -1);
+	}
+
+	public static String get(String urlString, HashMap<String, String> headers, long start)
+	{
 		HttpURLConnection connection = null;
 		try
 		{
@@ -109,7 +118,7 @@ public class RESTUtil
 			if (headers != null)
 				for (String key : headers.keySet())
 					connection.setRequestProperty(key, headers.get(key));
-			return waitFor(connection);
+			return waitFor(connection, start);
 		}
 		catch (Exception e)
 		{
@@ -169,7 +178,7 @@ public class RESTUtil
 			dos.writeBytes(p);
 			dos.flush();
 			dos.close();
-			return waitFor(connection);
+			return waitFor(connection, -1);
 		}
 		catch (Exception e)
 		{
@@ -229,7 +238,7 @@ public class RESTUtil
 			dos.flush();
 			dos.close();
 
-			return waitFor(connection);
+			return waitFor(connection, -1);
 		}
 		catch (Exception e)
 		{
