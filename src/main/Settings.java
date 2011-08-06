@@ -290,7 +290,7 @@ public class Settings
 		}
 	}
 
-	public static String VERSION = "v0.2.7";
+	public static String VERSION = "v0.2.8";
 	public static String VERSION_STRING = VERSION + " Initial Prototype"
 			+ ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
 	public static String TITLE = "CheS-Mapper";

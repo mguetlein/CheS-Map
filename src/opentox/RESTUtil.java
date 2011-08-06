@@ -20,6 +20,26 @@ import util.StringUtil;
 
 public class RESTUtil
 {
+	private static String token;
+
+	private static String getToken()
+	{
+		if (token == null)
+			token = getToken("guest", "guest");
+		return token;
+	}
+
+	private static String getToken(String username, String password)
+	{
+		HashMap<String, String> params = new HashMap<String, String>();
+		params.put("username", username);
+		params.put("password", password);
+		String result = post("http://opensso.in-silico.ch/auth/authenticate", params);
+		return result.replace("token.id=", "").trim();
+	}
+
+	private static long lastMsg = -1;
+
 	private static String waitFor(HttpURLConnection connection, long start) throws IOException, IllegalStateException
 	{
 		StringBuffer b = new StringBuffer();
@@ -36,8 +56,12 @@ public class RESTUtil
 		{
 			if (start == -1)
 				start = new Date().getTime();
-			System.err.println(StringUtil.formatTime(new Date().getTime() - start) + " waiting for task "
-					+ b.toString());
+			if (lastMsg == -1 || (lastMsg - new Date().getTime()) > 10000)
+			{
+				lastMsg = new Date().getTime();
+				System.err.println(StringUtil.formatTime(new Date().getTime() - start) + " waiting for task "
+						+ b.toString());
+			}
 			try
 			{
 				Thread.sleep(1000);
@@ -72,6 +96,7 @@ public class RESTUtil
 			connection.setDoOutput(true);
 			connection.setInstanceFollowRedirects(false);
 			connection.setRequestMethod("DELETE");
+			connection.setRequestProperty("Subjectid", URLEncoder.encode(getToken(), "UTF-8"));
 			connection.disconnect();
 			if (connection.getResponseCode() >= 400)
 				throw new IllegalStateException("Response code: " + connection.getResponseCode());
@@ -115,6 +140,7 @@ public class RESTUtil
 			connection.setDoOutput(true);
 			connection.setInstanceFollowRedirects(false);
 			connection.setRequestMethod("GET");
+			connection.setRequestProperty("Subjectid", URLEncoder.encode(getToken(), "UTF-8"));
 			if (headers != null)
 				for (String key : headers.keySet())
 					connection.setRequestProperty(key, headers.get(key));
@@ -164,6 +190,8 @@ public class RESTUtil
 			connection.setRequestProperty("Connection", "Keep-Alive");
 			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 			connection.setRequestProperty("accept", "text/uri-list");
+			if (!urlString.contains("authenticate"))
+				connection.setRequestProperty("Subjectid", URLEncoder.encode(getToken(), "UTF-8"));
 			connection.setRequestMethod("POST");
 			DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
 			System.err.println("POST " + p + " " + urlString);
@@ -172,8 +200,9 @@ public class RESTUtil
 			for (String key : params.keySet())
 				curl_call += "-d " + key + "=" + params.get(key) + " ";
 			curl_call += urlString;
+			if (!urlString.contains("authenticate"))
+				curl_call += " -H \"subjectid=" + getToken() + "\"";
 			System.err.println("(for debbuging: '" + curl_call + "')");
-			System.err.println("For debugging: curl -d ");
 
 			dos.writeBytes(p);
 			dos.flush();
@@ -214,6 +243,7 @@ public class RESTUtil
 			connection.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
 			connection.setRequestProperty("accept", "text/uri-list");
 			connection.setRequestMethod("POST");
+			connection.setRequestProperty("Subjectid", URLEncoder.encode(getToken(), "UTF-8"));
 			DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
 			dos.writeBytes(twoHyphens + boundary + lineEnd);
 			dos.writeBytes("Content-Disposition: form-data; name=\"file\";" + " filename=\"" + randomMod
@@ -253,9 +283,11 @@ public class RESTUtil
 
 	public static void main(String args[])
 	{
-		HashMap<String, String> params = new HashMap<String, String>();
-		params.put("accept", "text/uri-list");
-		System.out.println(get("http://local-ot/task/10", params));
+		//		HashMap<String, String> params = new HashMap<String, String>();
+		//		params.put("accept", "text/uri-list");
+		//		System.out.println(get("http://local-ot/task/10", params));
+
+		System.out.println(getToken("guest", "guest"));
 	}
 
 }

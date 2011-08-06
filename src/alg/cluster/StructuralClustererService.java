@@ -53,7 +53,7 @@ public class StructuralClustererService implements DatasetClusterer
 			progress.update(10, "Building cluster model with TUM algorithm web service");
 
 			String modelURI = RESTUtil.post(clusterAlgorithm, params);
-			urisToDelete.add(modelURI);
+			//			urisToDelete.add(modelURI);
 
 			if (Settings.isAborted(Thread.currentThread()))
 				return;
@@ -179,7 +179,7 @@ public class StructuralClustererService implements DatasetClusterer
 	@Override
 	public String getDescription()
 	{
-		return "TUM werbservice";
+		return "Structural Clusterer Webservice, located at the TU-München\nWARNING: The data is clustered with an external web service, please use small datsets (< 50 compounds) only.";
 	}
 
 	@Override
