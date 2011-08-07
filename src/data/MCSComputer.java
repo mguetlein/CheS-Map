@@ -106,7 +106,7 @@ public class MCSComputer
 
 		for (ClusterData c : clusters)
 		{
-			progress.update(100 / (double) clusters.size() * count, "Computing MCS fo cluster " + (++count) + "/"
+			progress.update(100 / (double) clusters.size() * count, "Computing MCS for cluster " + (++count) + "/"
 					+ clusters.size());
 
 			IMolecule mcsMolecule = null;
