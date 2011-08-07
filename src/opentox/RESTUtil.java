@@ -56,7 +56,7 @@ public class RESTUtil
 		{
 			if (start == -1)
 				start = new Date().getTime();
-			if (lastMsg == -1 || (lastMsg - new Date().getTime()) > 10000)
+			if (lastMsg == -1 || (new Date().getTime() - lastMsg) > 10000)
 			{
 				lastMsg = new Date().getTime();
 				System.err.println(StringUtil.formatTime(new Date().getTime() - start) + " waiting for task "
