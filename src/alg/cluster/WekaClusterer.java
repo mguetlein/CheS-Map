@@ -33,8 +33,21 @@ import dataInterface.MoleculeProperty;
 
 public class WekaClusterer implements DatasetClusterer
 {
-	private static final Clusterer[] CLUSTERER = new Clusterer[] { new SimpleKMeans(), new Cobweb(), new EM(),
-			new FarthestFirst(), new HierarchicalClusterer() };
+	private static SimpleKMeans kMeans = new SimpleKMeans();
+	static
+	{
+		try
+		{
+			kMeans.setNumClusters(8);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	private static final Clusterer[] CLUSTERER = new Clusterer[] { kMeans, new Cobweb(), new EM(), new FarthestFirst(),
+			new HierarchicalClusterer() };
 	public static WekaClusterer[] WEKA_CLUSTERER;
 	static
 	{

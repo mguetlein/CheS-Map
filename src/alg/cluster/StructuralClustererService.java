@@ -25,7 +25,7 @@ public class StructuralClustererService implements DatasetClusterer
 {
 	String origURI;
 	private String clusterAlgorithm = "http://opentox-dev.informatik.tu-muenchen.de:8080/OpenTox-dev/algorithm/StructuralClustering";
-	private double threshold = 0.8;
+	private double threshold = 0.4;
 	List<ClusterData> clusters;
 
 	@Override
