@@ -2,7 +2,7 @@ package alg.build3d;
 
 import gui.property.Property;
 import main.Settings;
-import data.CDKService;
+import data.FeatureService;
 import data.DatasetFile;
 
 public class CDK3DBuilder extends Abstract3DBuilder
@@ -21,7 +21,7 @@ public class CDK3DBuilder extends Abstract3DBuilder
 	@Override
 	public void build3D(DatasetFile dataset, String outfile)
 	{
-		CDKService.generate3D(dataset, outfile);
+		FeatureService.generateCDK3D(dataset, outfile);
 	}
 
 	@Override

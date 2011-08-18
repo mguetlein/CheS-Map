@@ -6,35 +6,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 import main.Settings;
-import util.ArrayUtil;
 import alg.FeatureComputer;
-import data.CDKProperty.CDKDescriptor;
 import dataInterface.CompoundData;
 import dataInterface.MoleculeProperty;
+import dataInterface.MoleculeProperty.Type;
+import dataInterface.MoleculePropertySet;
 
-public class CDKFeatureComputer implements FeatureComputer
+public class DefaultFeatureComputer implements FeatureComputer
 {
-	IntegratedProperty integratedFeatures[];
-	data.CDKProperty.CDKDescriptor cdkDescriptors[];
+	MoleculePropertySet moleculePropertySets[];
 
 	List<MoleculeProperty> features;
 	List<MoleculeProperty> properties;
 	List<CompoundData> compounds;
 
-	public CDKFeatureComputer()
+	public DefaultFeatureComputer()
 	{
-		this(null, new CDKDescriptor[] { CDKDescriptor.Weight, CDKDescriptor.XLogP });
-		//private static Property FEATURES[] = {};
-		//		CDKService.CDK_NUMERIC_FEATURES;
-		//	{ CDKProperty.Weight, CDKProperty.XLogP, CDKProperty.HBondAcceptorCount,
-		//			CDKProperty.ALOGP, CDKProperty.ChiChain, CDKProperty.BondCount, CDKProperty.PetitjeanNumber }; 
-		//{ CDKProperty.HBondAcceptorCount, CDKProperty.HBondDonorCount, CDKProperty.Weight,CDKProperty.ALOGP };
+		this(null);
 	}
 
-	public CDKFeatureComputer(IntegratedProperty integratedFeatures[], CDKDescriptor cdkDescriptors[])
+	public DefaultFeatureComputer(MoleculePropertySet moleculePropertySets[])
 	{
-		this.integratedFeatures = integratedFeatures;
-		this.cdkDescriptors = cdkDescriptors;
+		this.moleculePropertySets = moleculePropertySets;
 	}
 
 	@Override
@@ -47,21 +40,18 @@ public class CDKFeatureComputer implements FeatureComputer
 		int numCompounds = dataset.numCompounds();
 
 		List<MoleculeProperty> props = new ArrayList<MoleculeProperty>();
-		for (IntegratedProperty p : integratedFeatures)
+
+		for (MoleculePropertySet propSet : moleculePropertySets)
 		{
-			props.add(p);
-			features.add(p);
+			for (int i = 0; i < propSet.getSize(); i++)
+			{
+				props.add(propSet.get(i));
+				features.add(propSet.get(i));
+			}
 		}
-		if (cdkDescriptors != null)
-			for (CDKDescriptor p : cdkDescriptors)
-				for (int i = 0; i < CDKProperty.numFeatureValues(p); i++)
-				{
-					CDKProperty pp = new CDKProperty(p, i);
-					props.add(pp);
-					features.add(pp);
-				}
+
 		for (IntegratedProperty p : dataset.getIntegratedProperties(false))
-			if (ArrayUtil.indexOf(integratedFeatures, p) == -1)
+			if (!props.contains(p))
 			{
 				props.add(p);
 				properties.add(p);
@@ -79,8 +69,13 @@ public class CDKFeatureComputer implements FeatureComputer
 						"computing feature " + (count + 1) + "/" + props.size() + " : " + p.toString());
 			count++;
 
-			Object o[] = dataset.getObjectValues(p);
-			Object o2[] = dataset.getDoubleValues(p, true);
+			Double d[] = null;
+			String s[] = null;
+			if (p.getType() == Type.NUMERIC)
+				d = dataset.getDoubleValues(p);
+			else
+				s = dataset.getStringValues(p);
+			Double n[] = dataset.getNormalizedValues(p);
 
 			if (Settings.isAborted(Thread.currentThread()))
 				break;
@@ -96,12 +91,15 @@ public class CDKFeatureComputer implements FeatureComputer
 					c.setIndex(i);
 					compounds.add(c);
 				}
-				c.setValue(p, o[i], false);
-				c.setValue(p, o2[i], true);
+
+				if (p.getType() == Type.NUMERIC)
+					c.setDoubleValue(p, d[i]);
+				else
+					c.setStringValue(p, s[i]);
+				c.setNormalizedValue(p, n[i]);
 			}
 		}
 		System.out.println(" done");
-		//compoundFeatures.get(i)[c] = values[i] == null ? Double.NaN : (Double) values[i];
 	}
 
 	@Override

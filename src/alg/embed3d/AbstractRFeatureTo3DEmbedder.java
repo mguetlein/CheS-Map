@@ -60,7 +60,7 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 			e.printStackTrace();
 		}
 
-		RUtil.toRTable(features, DistanceUtil.values(features, instances, true), f.getAbsolutePath());
+		RUtil.toRTable(features, DistanceUtil.values(features, instances), f.getAbsolutePath());
 
 		ExternalTool.run(
 				getRScriptName(),

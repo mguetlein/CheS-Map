@@ -12,6 +12,8 @@ import org.openscience.cdk.interfaces.IMolecule;
 import util.ArrayUtil;
 import util.FileUtil;
 import dataInterface.MoleculeProperty;
+import dataInterface.MoleculeProperty.Type;
+import dataInterface.MoleculePropertySet;
 
 public class DatasetFile
 {
@@ -123,31 +125,26 @@ public class DatasetFile
 
 	// -------------------- loading stuff ---------------------
 
-	final static CDKService cdkService = new CDKService();
+	final static FeatureService featureService = new FeatureService();
 
 	public IntegratedProperty[] getIntegratedProperties(boolean includingSmiles)
 	{
-		return cdkService.getIntegratedProperties(this, includingSmiles);
-	}
-
-	public IntegratedProperty[] getIntegratedNumericProperties()
-	{
-		return cdkService.getIntegratedNumericProperties(this);
+		return featureService.getIntegratedProperties(this, includingSmiles);
 	}
 
 	public IntegratedProperty[] getIntegratedClusterProperties()
 	{
-		return cdkService.getIntegratedClusterProperties(this);
+		return featureService.getIntegratedClusterProperties(this);
 	}
 
 	public boolean isLoaded()
 	{
-		return cdkService.isLoaded(this);
+		return featureService.isLoaded(this);
 	}
 
 	private void clear()
 	{
-		cdkService.clear(this);
+		featureService.clear(this);
 	}
 
 	public static void clearFilesWith3DSDF(String sdfFile)
@@ -171,52 +168,68 @@ public class DatasetFile
 
 	public void loadDataset(boolean loadHydrogen, final Progressable progress) throws Exception
 	{
-		cdkService.loadDataset(this, loadHydrogen, progress);
+		featureService.loadDataset(this, loadHydrogen, progress);
 	}
 
 	public int numCompounds()
 	{
-		return cdkService.numCompounds(this);
+		return featureService.numCompounds(this);
 	}
 
 	public IMolecule[] getMolecules()
 	{
-		return cdkService.getMolecules(this);
+		return featureService.getMolecules(this);
 	}
 
 	public IMolecule[] getMolecules(boolean loadHydrogen)
 	{
-		return cdkService.getMolecules(this, loadHydrogen);
+		return featureService.getMolecules(this, loadHydrogen);
 	}
+
+	// -------------------------------
 
 	public String[] getStringValues(MoleculeProperty p)
 	{
+		if (p.getType() == Type.NUMERIC)
+			throw new IllegalStateException();
 		return ArrayUtil.cast(String.class, getValues(p, false));
 	}
 
-	public Object[] getObjectValues(MoleculeProperty p)
+	public Double[] getDoubleValues(MoleculeProperty p)
 	{
-		return getValues(p, false);
+		if (p.getType() != Type.NUMERIC)
+			throw new IllegalStateException();
+		return ArrayUtil.parse(getValues(p, false));
 	}
 
-	public Double[] getDoubleValues(MoleculeProperty p, boolean normalize)
+	public Double[] getNormalizedValues(MoleculeProperty p)
 	{
-		return ArrayUtil.cast(Double.class, getValues(p, normalize));
+		return ArrayUtil.cast(Double.class, getValues(p, true));
 	}
+
+	// -------------------------------
 
 	private Object[] getValues(MoleculeProperty p, boolean normalize)
 	{
-		return cdkService.getValues(this, p, normalize);
+		return featureService.getValues(this, p, normalize);
 	}
 
 	public String[] getSmiles()
 	{
-		return cdkService.getSmiles(this);
+		return featureService.getSmiles(this);
 	}
 
 	public boolean has3D()
 	{
-		return cdkService.has3D(this);
+		return featureService.has3D(this);
+	}
+
+	public boolean isComputed(MoleculePropertySet prop)
+	{
+		if (prop instanceof IntegratedProperty)
+			return true;
+		else
+			return featureService.isComputed(this, prop);
 	}
 
 }

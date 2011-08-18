@@ -56,24 +56,20 @@ import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 import util.ArrayUtil;
 import util.CollectionUtil;
 import util.FileUtil;
-import data.CDKProperty.CDKDescriptor;
 import dataInterface.MoleculeProperty;
+import dataInterface.MoleculeProperty.Type;
+import dataInterface.MoleculePropertySet;
 
-public class CDKService
+public class FeatureService
 {
 	private HashMap<DatasetFile, IMolecule[]> fileToMolecules = new HashMap<DatasetFile, IMolecule[]>();
 	private HashMap<DatasetFile, Boolean> fileHas3D = new HashMap<DatasetFile, Boolean>();
 	private HashMap<DatasetFile, Set<IntegratedProperty>> integratedProperties = new HashMap<DatasetFile, Set<IntegratedProperty>>();
 	private HashMap<String, Object[]> values = new HashMap<String, Object[]>();
 	private HashMap<DatasetFile, IntegratedProperty> integratedSmiles = new HashMap<DatasetFile, IntegratedProperty>();
-	private String allCDKDescriptors[];
 
-	public CDKService()
+	public FeatureService()
 	{
-		CDKDescriptor p[] = CDKDescriptor.values();
-		allCDKDescriptors = new String[p.length];
-		for (int i = 0; i < p.length; i++)
-			allCDKDescriptors[i] = p[i].toString();
 	}
 
 	public IntegratedProperty[] getIntegratedProperties(DatasetFile dataset, boolean includingSmiles)
@@ -84,17 +80,6 @@ public class CDKService
 		for (IntegratedProperty pp : integratedProperties.get(dataset))
 			if (includingSmiles || !pp.equals(integratedSmiles.get(dataset)))
 				p[i++] = pp;
-		return p;
-	}
-
-	public IntegratedProperty[] getIntegratedNumericProperties(DatasetFile dataset)
-	{
-		List<IntegratedProperty> props = new ArrayList<IntegratedProperty>();
-		for (IntegratedProperty integratedProperty : integratedProperties.get(dataset))
-			if (integratedProperty.isNumeric())
-				props.add(integratedProperty);
-		IntegratedProperty p[] = new IntegratedProperty[props.size()];
-		props.toArray(p);
 		return p;
 	}
 
@@ -267,7 +252,7 @@ public class CDKService
 					//						if (ArrayUtil.indexOf(allCDKDescriptors, key.toString()) != -1)
 					//							throw new IllegalStateException("sdf-property has equal name as cdk-descriptor: "
 					//									+ key.toString());
-					IntegratedProperty p = new IntegratedProperty(key.toString());
+					IntegratedProperty p = IntegratedProperty.fromString(key.toString());
 					// add key to sdfProperties
 					integratedProperties.get(dataset).add(p);
 
@@ -320,16 +305,33 @@ public class CDKService
 					o = Arrays.copyOf(o, mCount);
 					values.put(valuesKey(dataset, p), o);
 				}
+				Set<Object> distinctValues = ArrayUtil.getDistinctValues(o);
+				int numDistinct = distinctValues.size();
+				p.setNominalDomain(distinctValues.toArray());
+
 				Double d[] = ArrayUtil.parse(o);
 				if (d != null)
 				{
 					//					numericSdfProperties.get(f).add(p);
-					p.setNumeric(true);
-					values.put(valuesKey(dataset, p), d);
+					p.setTypeAllowed(Type.NOMINAL, true);
+					p.setTypeAllowed(Type.NUMERIC, true);
+					if (numDistinct <= 5 || numDistinct <= o.length / 20)
+						p.setType(Type.NOMINAL);
+					else
+						p.setType(Type.NUMERIC);
+
+					values.put(valuesKey(dataset, p), o);
 					values.put(valuesKey(dataset, p, true), ArrayUtil.normalize(d));
 				}
 				else
 				{
+					p.setTypeAllowed(Type.NOMINAL, true);
+					p.setTypeAllowed(Type.NUMERIC, false);
+					if (numDistinct <= 5 || numDistinct <= o.length / 20)
+						p.setType(Type.NOMINAL);
+					else
+						p.setType(null);
+
 					// normalization of string elements
 					values.put(valuesKey(dataset, p, true), ArrayUtil.normalize(o));
 				}
@@ -368,6 +370,11 @@ public class CDKService
 		}
 	}
 
+	public boolean isComputed(DatasetFile dataset, MoleculePropertySet prop)
+	{
+		return (values.get(valuesKey(dataset, prop.get(0), false)) != null);
+	}
+
 	public Object[] getValues(DatasetFile dataset, MoleculeProperty p, boolean normalize)
 	{
 		if (values.get(valuesKey(dataset, p, normalize)) == null)
@@ -377,80 +384,103 @@ public class CDKService
 				// this can happen if a cluster has only null values for a integrated property-> return nulls
 				return new Object[fileToMolecules.get(dataset).length];
 			}
+			if (p instanceof OBFingerprintProperty)
+			{
+				OBFingerprintProperty obProp = (OBFingerprintProperty) p;
+
+				List<String> fingerprintsForMolecules = obProp.compute(dataset);
+				if (fingerprintsForMolecules.size() != fileToMolecules.get(dataset).length)
+					throw new IllegalStateException("num molecules not correct");
+				if (fingerprintsForMolecules.get(0).length() != obProp.numSetValues())
+					throw new IllegalStateException("fingerprint length not correct");
+
+				List<String[]> featureValues = new ArrayList<String[]>();
+				for (int j = 0; j < fingerprintsForMolecules.get(0).length(); j++)
+				{
+					String[] featureValue = new String[fingerprintsForMolecules.size()];
+					for (int i = 0; i < featureValue.length; i++)
+						featureValue[i] = fingerprintsForMolecules.get(i).charAt(j) + "";
+					featureValues.add(featureValue);
+				}
+
+				for (int j = 0; j < obProp.numSetValues(); j++)
+				{
+					values.put(valuesKey(dataset, OBFingerprintProperty.create(obProp.type, j), false),
+							featureValues.get(j));
+					values.put(valuesKey(dataset, OBFingerprintProperty.create(obProp.type, j), true),
+							ArrayUtil.normalize(featureValues.get(j)));
+				}
+			}
 			else if (p instanceof CDKProperty)
 			{
 				CDKProperty cdkProp = (CDKProperty) p;
 				IMolecule mols[] = fileToMolecules.get(dataset);
-				switch (cdkProp.desc)
+				if (cdkProp == CDKProperty.SMILES)
 				{
-					case SMILES:
-						SmilesGenerator sg = new SmilesGenerator();
-						String smiles[] = new String[mols.length];
-						for (int i = 0; i < mols.length; i++)
-							smiles[i] = sg.createSMILES(mols[i]);
-						values.put(valuesKey(dataset, cdkProp), smiles);
-						break;
-					default:
-						IMolecularDescriptor descriptor = cdkProp.newMolecularDescriptor();
-						if (descriptor == null)
-							throw new IllegalStateException("Not a CDK molecular descriptor: " + cdkProp.desc);
+					SmilesGenerator sg = new SmilesGenerator();
+					String smiles[] = new String[mols.length];
+					for (int i = 0; i < mols.length; i++)
+						smiles[i] = sg.createSMILES(mols[i]);
+					values.put(valuesKey(dataset, cdkProp), smiles);
+				}
+				else
+				{
+					IMolecularDescriptor descriptor = cdkProp.newMolecularDescriptor();
+					if (descriptor == null)
+						throw new IllegalStateException("Not a CDK molecular descriptor: " + cdkProp.desc);
 
-						List<Double[]> vv = new ArrayList<Double[]>();
-						for (int j = 0; j < CDKProperty.numFeatureValues(cdkProp.desc); j++)
-							vv.add(new Double[mols.length]);
+					List<Double[]> vv = new ArrayList<Double[]>();
+					for (int j = 0; j < cdkProp.numSetValues(); j++)
+						vv.add(new Double[mols.length]);
 
-						for (int i = 0; i < mols.length; i++)
+					for (int i = 0; i < mols.length; i++)
+					{
+						try
 						{
-							try
+							IDescriptorResult res = descriptor.calculate(mols[i]).getValue();
+							if (res instanceof IntegerResult)
+								vv.get(0)[i] = (double) ((IntegerResult) res).intValue();
+							else if (res instanceof DoubleResult)
+								vv.get(0)[i] = ((DoubleResult) res).doubleValue();
+							else if (res instanceof DoubleArrayResult)
 							{
-								IDescriptorResult res = descriptor.calculate(mols[i]).getValue();
-								if (res instanceof IntegerResult)
-									vv.get(0)[i] = (double) ((IntegerResult) res).intValue();
-								else if (res instanceof DoubleResult)
-									vv.get(0)[i] = ((DoubleResult) res).doubleValue();
-								else if (res instanceof DoubleArrayResult)
-								{
-									if (CDKProperty.numFeatureValues(cdkProp.desc) != ((DoubleArrayResult) res)
-											.length())
-										throw new IllegalStateException("num feature values wrong for '" + cdkProp
-												+ "' : " + CDKProperty.numFeatureValues(cdkProp.desc) + " != "
-												+ ((DoubleArrayResult) res).length());
-									for (int j = 0; j < CDKProperty.numFeatureValues(cdkProp.desc); j++)
-										vv.get(j)[i] = ((DoubleArrayResult) res).get(j);
-								}
-								else if (res instanceof IntegerArrayResult)
-								{
-									if (CDKProperty.numFeatureValues(cdkProp.desc) != ((IntegerArrayResult) res)
-											.length())
-										throw new IllegalStateException("num feature values wrong for '" + cdkProp
-												+ "' : " + CDKProperty.numFeatureValues(cdkProp.desc) + " != "
-												+ ((IntegerArrayResult) res).length());
-									for (int j = 0; j < CDKProperty.numFeatureValues(cdkProp.desc); j++)
-										vv.get(j)[i] = (double) ((IntegerArrayResult) res).get(j);
-								}
-								else
-									throw new IllegalStateException("Unknown idescriptor result value for '" + cdkProp
-											+ "' : " + res.getClass());
+								if (cdkProp.numSetValues() != ((DoubleArrayResult) res).length())
+									throw new IllegalStateException("num feature values wrong for '" + cdkProp + "' : "
+											+ cdkProp.numSetValues() + " != " + ((DoubleArrayResult) res).length());
+								for (int j = 0; j < cdkProp.numSetValues(); j++)
+									vv.get(j)[i] = ((DoubleArrayResult) res).get(j);
 							}
-							catch (Exception e)
+							else if (res instanceof IntegerArrayResult)
 							{
-								System.err.println("could not compute cdk feature " + e.getMessage());
-								e.printStackTrace();
-
-								for (int j = 0; j < CDKProperty.numFeatureValues(cdkProp.desc); j++)
-									vv.get(j)[i] = 0.0;
+								if (cdkProp.numSetValues() != ((IntegerArrayResult) res).length())
+									throw new IllegalStateException("num feature values wrong for '" + cdkProp + "' : "
+											+ cdkProp.numSetValues() + " != " + ((IntegerArrayResult) res).length());
+								for (int j = 0; j < cdkProp.numSetValues(); j++)
+									vv.get(j)[i] = (double) ((IntegerArrayResult) res).get(j);
 							}
+							else
+								throw new IllegalStateException("Unknown idescriptor result value for '" + cdkProp
+										+ "' : " + res.getClass());
+						}
+						catch (Exception e)
+						{
+							System.err.println("could not compute cdk feature " + e.getMessage());
+							e.printStackTrace();
 
-							if (Settings.isAborted(Thread.currentThread()))
-								return null;
+							for (int j = 0; j < cdkProp.numSetValues(); j++)
+								vv.get(j)[i] = 0.0;
 						}
 
-						for (int j = 0; j < CDKProperty.numFeatureValues(cdkProp.desc); j++)
-						{
-							values.put(valuesKey(dataset, new CDKProperty(cdkProp.desc, j), false), vv.get(j));
-							values.put(valuesKey(dataset, new CDKProperty(cdkProp.desc, j), true),
-									ArrayUtil.normalize(vv.get(j)));
-						}
+						if (Settings.isAborted(Thread.currentThread()))
+							return null;
+					}
+
+					for (int j = 0; j < cdkProp.numSetValues(); j++)
+					{
+						values.put(valuesKey(dataset, CDKProperty.create(cdkProp.desc, j), false), vv.get(j));
+						values.put(valuesKey(dataset, CDKProperty.create(cdkProp.desc, j), true),
+								ArrayUtil.normalize(vv.get(j)));
+					}
 				}
 			}
 		}
@@ -504,7 +534,7 @@ public class CDKService
 		return fileHas3D.get(dataset);
 	}
 
-	public static void generate3D(DatasetFile dataset, String threeDFilename)
+	public static void generateCDK3D(DatasetFile dataset, String threeDFilename)
 	{
 		try
 		{
@@ -604,4 +634,5 @@ public class CDKService
 			e.printStackTrace();
 		}
 	}
+
 }

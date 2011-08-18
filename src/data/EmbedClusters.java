@@ -16,8 +16,12 @@ public class EmbedClusters
 			Progressable progress)
 	{
 		System.out.println("embed " + clustering.getClusters().size() + " clusters");
-		clusterEmbedder.embed(dataset, ListUtil.cast(MolecularPropertyOwner.class, clustering.getClusters()),
-				clustering.getFeatures(), clustering.getClusterDistances().cast(MolecularPropertyOwner.class));
+		clusterEmbedder.embed(
+				dataset,
+				ListUtil.cast(MolecularPropertyOwner.class, clustering.getClusters()),
+				clustering.getFeatures(),
+				clusterEmbedder.requiresDistances() ? clustering.getClusterDistances().cast(
+						MolecularPropertyOwner.class) : null);
 		int cCount = 0;
 		for (Vector3f v : clusterEmbedder.getPositions())
 			((ClusterDataImpl) clustering.getClusters().get(cCount++)).setPosition(v);
@@ -48,9 +52,12 @@ public class EmbedClusters
 			//							+ ArrayUtil.toString(clusterCompoundDistances, true));
 			//			}
 
-			clusterEmbedder.embed(dataset, ListUtil.cast(MolecularPropertyOwner.class, c.getCompounds()),
+			clusterEmbedder.embed(
+					dataset,
+					ListUtil.cast(MolecularPropertyOwner.class, c.getCompounds()),
 					clustering.getFeatures(),
-					c.getCompoundDistances(clustering.getFeatures()).cast(MolecularPropertyOwner.class));
+					clusterEmbedder.requiresDistances() ? c.getCompoundDistances(clustering.getFeatures()).cast(
+							MolecularPropertyOwner.class) : null);
 			int mCount = 0;
 			for (Vector3f v : clusterEmbedder.getPositions())
 				((CompoundDataImpl) c.getCompounds().get(mCount++)).setPosition(v);

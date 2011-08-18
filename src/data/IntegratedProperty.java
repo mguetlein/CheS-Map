@@ -1,15 +1,35 @@
 package data;
 
-import dataInterface.MoleculeProperty;
+import java.util.ArrayList;
+import java.util.List;
 
-public class IntegratedProperty implements MoleculeProperty
+import dataInterface.AbstractMoleculeProperty;
+import dataInterface.MoleculeProperty;
+import dataInterface.MoleculePropertySet;
+
+public class IntegratedProperty extends AbstractMoleculeProperty implements MoleculePropertySet
 {
 	String property;
-	boolean numeric = false;
 
-	public IntegratedProperty(String property)
+	private static List<IntegratedProperty> instances = new ArrayList<IntegratedProperty>();
+
+	private IntegratedProperty(String property)
 	{
 		this.property = property;
+	}
+
+	public static IntegratedProperty fromString(String property)
+	{
+		IntegratedProperty p = new IntegratedProperty(property);
+		if (instances.indexOf(p) == -1)
+		{
+			instances.add(p);
+			return p;
+		}
+		else
+		{
+			return instances.get(instances.indexOf(p));
+		}
 	}
 
 	@Override
@@ -31,13 +51,16 @@ public class IntegratedProperty implements MoleculeProperty
 	}
 
 	@Override
-	public boolean isNumeric()
+	public int getSize()
 	{
-		return numeric;
+		return 1;
 	}
 
-	public void setNumeric(boolean numeric)
+	@Override
+	public MoleculeProperty get(int index)
 	{
-		this.numeric = numeric;
+		if (index != 0)
+			throw new Error("only one prop available");
+		return this;
 	}
 }

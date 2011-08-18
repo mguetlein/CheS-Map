@@ -19,4 +19,6 @@ public interface ClusterData extends MolecularPropertyOwner
 	public String getSubstructureSmarts(SubstructureSmartsType type);
 
 	public boolean isAligned();
+
+	public String getSummaryStringValue(MoleculeProperty p);
 }

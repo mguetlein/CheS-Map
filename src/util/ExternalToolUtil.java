@@ -1,13 +1,21 @@
 package util;
 
 import io.ExternalTool;
+
+import java.io.File;
+
 import main.Settings;
 
 public class ExternalToolUtil
 {
 	public static void run(String processName, String cmd)
 	{
-		Process p = ExternalTool.run(processName, cmd, false);
+		run(processName, cmd, null);
+	}
+
+	public static void run(String processName, String cmd, File stdOutFile)
+	{
+		Process p = ExternalTool.run(processName, cmd, stdOutFile, stdOutFile != null);
 		while (true)
 		{
 			try

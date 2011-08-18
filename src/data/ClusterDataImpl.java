@@ -17,6 +17,7 @@ import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
+import dataInterface.MoleculeProperty.Type;
 import dataInterface.SubstructureSmartsType;
 
 public class ClusterDataImpl implements ClusterData
@@ -90,7 +91,7 @@ public class ClusterDataImpl implements ClusterData
 		substructureSmarts.put(type, smarts);
 	}
 
-	public ArraySummary getObjectValue(MoleculeProperty p, boolean normalized)
+	private ArraySummary getSummaryValue(MoleculeProperty p, boolean normalized)
 	{
 		HashMap<MoleculeProperty, ArraySummary> map;
 		if (normalized)
@@ -99,22 +100,52 @@ public class ClusterDataImpl implements ClusterData
 			map = values;
 		if (map.get(p) == null)
 		{
-			Object vals[] = new Object[getSize()];
-			int i = 0;
-			for (CompoundData c : compounds)
-				vals[i++] = c.getObjectValue(p, normalized);
-			if (p.isNumeric())
+			if (p.getType() == Type.NUMERIC || normalized)
+			{
+				Double vals[] = new Double[getSize()];
+				int i = 0;
+				for (CompoundData c : compounds)
+					if (normalized)
+						vals[i++] = c.getNormalizedValue(p);
+					else
+						vals[i++] = c.getDoubleValue(p);
 				map.put(p, DoubleArraySummary.create(Arrays.asList(vals)));
+			}
 			else
+			{
+				String vals[] = new String[getSize()];
+				int i = 0;
+				for (CompoundData c : compounds)
+					vals[i++] = c.getStringValue(p);
 				map.put(p, CountedSet.create(Arrays.asList(vals)));
+			}
 		}
 		return map.get(p);
 	}
 
-	@Override
-	public Double getValue(MoleculeProperty p, boolean normalized)
+	public Double getDoubleValue(MoleculeProperty p)
 	{
-		return ((DoubleArraySummary) getObjectValue(p, normalized)).getMedian();
+		if (p.getType() != Type.NUMERIC)
+			throw new IllegalStateException();
+		return ((DoubleArraySummary) getSummaryValue(p, false)).getMedian();
+	}
+
+	@SuppressWarnings("unchecked")
+	public String getStringValue(MoleculeProperty p)
+	{
+		if (p.getType() != Type.NOMINAL)
+			throw new IllegalStateException();
+		return ((CountedSet<String>) getSummaryValue(p, false)).values().get(0);
+	}
+
+	public double getNormalizedValue(MoleculeProperty p)
+	{
+		return ((DoubleArraySummary) getSummaryValue(p, true)).getMedian();
+	}
+
+	public String getSummaryStringValue(MoleculeProperty p)
+	{
+		return getSummaryValue(p, false).toString();
 	}
 
 	public DistanceMatrix<CompoundData> getCompoundDistances(List<MoleculeProperty> props)

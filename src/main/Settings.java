@@ -290,7 +290,7 @@ public class Settings
 		}
 	}
 
-	public static String VERSION = "v0.2.11";
+	public static String VERSION = "v0.3.0";
 	public static String VERSION_STRING = VERSION + " Initial Prototype"
 			+ ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
 	public static String TITLE = "CheS-Mapper";
@@ -326,6 +326,17 @@ public class Settings
 
 	public static String destinationFile(String sourceFilePath, String destinationFilename)
 	{
+		try
+		{
+			if (destinationFilename.startsWith("http://"))
+				destinationFilename = URLEncoder.encode(destinationFilename, "UTF-8");
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			e.printStackTrace();
+			return null;
+		}
+
 		if (sourceFilePath.startsWith(BASE_DIR))
 			return FileUtil.getParent(sourceFilePath) + File.separator + destinationFilename;
 		else

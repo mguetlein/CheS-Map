@@ -8,6 +8,7 @@ import org.apache.commons.lang.NotImplementedException;
 
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
+import dataInterface.MoleculeProperty.Type;
 
 public class CompoundArffWriter implements ArffWritable
 {
@@ -56,7 +57,17 @@ public class CompoundArffWriter implements ArffWritable
 	@Override
 	public String getAttributeValueSpace(int attribute)
 	{
-		return "numeric";
+		if (features.get(attribute).getType() == Type.NUMERIC)
+			return "numeric";
+		else
+		{
+			String s = "{";
+			for (Object o : features.get(attribute).getNominalDomain())
+				s += o + ",";
+			s = s.substring(0, s.length() - 1);
+			s += "}";
+			return s;
+		}
 	}
 
 	@Override
@@ -68,7 +79,12 @@ public class CompoundArffWriter implements ArffWritable
 	@Override
 	public String getAttributeValue(int instance, int attribute)
 	{
-		return compounds.get(instance).getValue(features.get(attribute), true).toString();
+		if (features.get(attribute).getType() == Type.NUMERIC)
+			return compounds.get(instance).getNormalizedValue(features.get(attribute)) + "";
+		else
+		{
+			return compounds.get(instance).getStringValue(features.get(attribute));
+		}
 	}
 
 	@Override

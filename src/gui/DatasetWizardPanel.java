@@ -222,10 +222,6 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		builder.append(labelProps, 3);
 		builder.nextLine();
 
-		builder.append("Num numeric properties per compound:");
-		builder.append(labelNumericProps, 3);
-		builder.nextLine();
-
 		builder.append("3D available:");
 		builder.append(label3D, 3);
 		builder.nextLine();
@@ -244,7 +240,6 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		{
 			labelFile.setText("-");
 			labelProps.setText("-");
-			labelNumericProps.setText("-");
 			labelSize.setText("-");
 			label3D.setText("-");
 			recentlyUsed.clearSelection();
@@ -253,7 +248,6 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		{
 			labelFile.setText(dataset.getName());
 			labelProps.setText(dataset.getIntegratedProperties(true).length + "");
-			labelNumericProps.setText(dataset.getIntegratedNumericProperties().length + "");
 			labelSize.setText(dataset.numCompounds() + "");
 			label3D.setText(dataset.has3D() + "");
 			if (oldDatasets.indexOf(dataset) == -1)

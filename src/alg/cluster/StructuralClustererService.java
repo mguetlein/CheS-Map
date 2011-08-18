@@ -12,7 +12,7 @@ import java.util.List;
 import main.Settings;
 import opentox.DatasetUtil;
 import opentox.RESTUtil;
-import data.CDKFeatureComputer;
+import data.DefaultFeatureComputer;
 import data.CDKProperty;
 import data.ClusterDataImpl;
 import data.DatasetFile;
@@ -94,7 +94,7 @@ public class StructuralClustererService implements DatasetClusterer
 				ClusterDataImpl c = new ClusterDataImpl();
 				clusters.add(c);
 			}
-			CDKFeatureComputer featureComp = new CDKFeatureComputer(clusterProps, null);
+			DefaultFeatureComputer featureComp = new DefaultFeatureComputer(clusterProps);
 			featureComp.computeFeatures(resultDataset, null);
 			List<CompoundData> newCompounds = featureComp.getCompounds();
 
@@ -116,7 +116,7 @@ public class StructuralClustererService implements DatasetClusterer
 				boolean assigned = false;
 				for (int j = 0; j < clusterProps.length; j++)
 				{
-					if (newCompounds.get(i).getValue(clusterProps[j], false) == 1)
+					if (newCompounds.get(i).getStringValue(clusterProps[j]).equals("1"))
 					{
 						((ClusterDataImpl) clusters.get(j)).addCompound(compounds.get(i));
 						assigned = true;

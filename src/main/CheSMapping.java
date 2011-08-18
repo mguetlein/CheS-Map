@@ -9,6 +9,7 @@ import java.beans.PropertyChangeListener;
 import util.ListUtil;
 import alg.DatasetProvider;
 import alg.FeatureComputer;
+import alg.align3d.MCSAligner;
 import alg.align3d.ThreeDAligner;
 import alg.build3d.OpenBabel3DBuilder;
 import alg.build3d.ThreeDBuilder;
@@ -16,8 +17,8 @@ import alg.cluster.DatasetClusterer;
 import alg.cluster.StructuralClusterer;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
-import data.CDKFeatureComputer;
-import data.CDKService;
+import data.DefaultFeatureComputer;
+import data.FeatureService;
 import data.ClusterDataImpl;
 import data.ClusteringData;
 import data.DatasetFile;
@@ -47,7 +48,7 @@ public class CheSMapping
 				return null;
 			}
 		};
-		FeatureComputer featureComputer = new CDKFeatureComputer();
+		FeatureComputer featureComputer = new DefaultFeatureComputer();
 		//DatasetClusterer datasetClusterer = new KMeansClusterer();
 		DatasetClusterer datasetClusterer = new StructuralClusterer();
 		ThreeDBuilder threeDGenerator = new OpenBabel3DBuilder();
@@ -89,7 +90,7 @@ public class CheSMapping
 					if (dataset.getSDFPath(false) == null)
 					{
 						progress.update(0, "convert dataset to sdf file");
-						CDKService.writeSDFFile(dataset);
+						FeatureService.writeSDFFile(dataset);
 					}
 
 					if (progress != null)
@@ -142,14 +143,17 @@ public class CheSMapping
 					embedder.embed(threeDEmbedder, dataset, clustering,
 							SubProgress.create(progress, step * 5, step * 6));
 
-					if (Settings.isAborted(Thread.currentThread()))
-						return;
-					if (progress != null)
-						progress.update(step * 6, "Compute MCS of clusters");
-					System.out.println("Compute MCS of clusters");
-					MCSComputer.computeMCS(dataset, clustering.getClusters(),
-							SubProgress.create(progress, step * 6, step * 7));
-					clustering.addSubstructureSmartsTypes(SubstructureSmartsType.MCS);
+					if (threeDAligner instanceof MCSAligner)
+					{
+						if (Settings.isAborted(Thread.currentThread()))
+							return;
+						if (progress != null)
+							progress.update(step * 6, "Compute MCS of clusters");
+						System.out.println("Compute MCS of clusters");
+						MCSComputer.computeMCS(dataset, clustering.getClusters(),
+								SubProgress.create(progress, step * 6, step * 7));
+						clustering.addSubstructureSmartsTypes(SubstructureSmartsType.MCS);
+					}
 
 					if (Settings.isAborted(Thread.currentThread()))
 						return;
