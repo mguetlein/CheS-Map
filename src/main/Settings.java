@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -290,7 +291,26 @@ public class Settings
 		}
 	}
 
-	public static String VERSION = "v0.3.1";
+	public static String VERSION = "v?.?.?";
+	static
+	{
+		try
+		{
+			URL u = Settings.class.getResource("VERSION");
+			BufferedReader r;
+			if (u == null)
+				r = new BufferedReader(new FileReader(new File("VERSION")));
+			else
+				r = new BufferedReader(new InputStreamReader(u.openStream()));
+			VERSION = r.readLine();
+			r.close();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
 	public static String VERSION_STRING = VERSION + " Initial Prototype"
 			+ ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
 	public static String TITLE = "CheS-Mapper";
