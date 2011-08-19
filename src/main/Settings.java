@@ -267,10 +267,7 @@ public class Settings
 		//            </manifest>
 		try
 		{
-			String classContainer = Settings.class.getProtectionDomain().getCodeSource().getLocation().toString();
-			//			System.out.println(classContainer);
-			URL manifestUrl = new URL("jar:" + classContainer + "!/META-INF/MANIFEST.MF");
-			// Manifest manifest = new Manifest(manifestUrl.openStream());
+			URL manifestUrl = Settings.class.getResource("/META-INF/MANIFEST.MF");
 			//			System.out.println(manifestUrl);
 			BufferedReader br = new BufferedReader(new InputStreamReader(manifestUrl.openStream()));
 			String line;
@@ -296,7 +293,7 @@ public class Settings
 	{
 		try
 		{
-			URL u = Settings.class.getResource("VERSION");
+			URL u = Settings.class.getResource("/VERSION");
 			BufferedReader r;
 			if (u == null)
 				r = new BufferedReader(new FileReader(new File("VERSION")));
