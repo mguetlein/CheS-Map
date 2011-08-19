@@ -143,6 +143,9 @@ public class OBFingerprintProperty extends AbstractMoleculeProperty
 
 			while ((s = buffy.readLine()) != null)
 			{
+				// babel 2.3.0
+				if (s.startsWith(">"))
+					continue;
 				StringTokenizer tok = new StringTokenizer(s, " ");
 				while (tok.hasMoreElements())
 				{
