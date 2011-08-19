@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import main.Settings;
+import util.CharUtil;
 import util.ExternalToolUtil;
 import util.StringUtil;
 import dataInterface.AbstractMoleculeProperty;
@@ -144,7 +145,7 @@ public class OBFingerprintProperty extends AbstractMoleculeProperty
 			while ((s = buffy.readLine()) != null)
 			{
 				// babel 2.3.0
-				if (s.startsWith(">"))
+				if (!CharUtil.isHexChar(s.charAt(0)))
 					continue;
 				StringTokenizer tok = new StringTokenizer(s, " ");
 				while (tok.hasMoreElements())
