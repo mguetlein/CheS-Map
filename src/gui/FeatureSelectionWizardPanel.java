@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -30,6 +31,7 @@ import data.DefaultFeatureComputer;
 import data.IntegratedProperty;
 import data.OBFingerprintProperty;
 import data.OBFingerprintProperty.OBFingerPrints;
+import data.StructuralAlerts;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculeProperty.Type;
 import dataInterface.MoleculePropertySet;
@@ -48,8 +50,9 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 	boolean selfUpdate;
 
 	public static final String INTEGRATED_FEATURES = "Included in Dataset";
-	public static final String CDK_FEATURES = "CDK descriptors (" + Settings.CDK_STRING + ")";
+	public static final String CDK_FEATURES = "CDK descriptors";
 	public static final String OB_FINGERPRINT_FEATURES = "OpenBabel Fingerprints";
+	public static final String STRUCTURAL_ALERTS = "Structural Alerts";
 
 	public FeatureSelectionWizardPanel(final CheSMapperWizard wizard)
 	{
@@ -110,7 +113,13 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
-				moleculePropertyPanel.setSelectedPropertySet(selector.getHighlightedElement());
+				if (selector.getHighlightedElement() != null)
+					moleculePropertyPanel.setSelectedPropertySet(selector.getHighlightedElement());
+				else
+				{
+					moleculePropertyPanel.setSelectedPropertySet(null);
+					updateFeatureInfo(selector.getHighlightedCategory());
+				}
 			}
 		});
 		selector.addPropertyChangeListener(Selector.PROPERTY_TRY_ADDING_INVALID, new PropertyChangeListener()
@@ -160,6 +169,40 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 		add(builder.getPanel());
 	}
 
+	protected void updateFeatureInfo(String highlightedCategory)
+	{
+		if (highlightedCategory == null)
+			moleculePropertyPanel.showInfoText("");
+		else
+		{
+			String info = "";
+			if (highlightedCategory.equals(INTEGRATED_FEATURES))
+				info = "Features that are already included in your dataset.\n"
+						+ "Not all features may be suitable for clustering and/or embedding (like for example SMILES strings, or info text).";
+			else if (highlightedCategory.equals(CDK_FEATURES))
+				info = Settings.CDK_STRING
+						+ "\nThis integrated library can be used to compute a range of numeric chemical descriptors (like LogP or Weight).";
+			else if (highlightedCategory.equals(OB_FINGERPRINT_FEATURES))
+				info = "OpenBabel provides several Fingerprints that can be computed for each comopund."
+						+ "\nEach bit of the fingerprint is converted to a binary nominal feature.";
+			else if (highlightedCategory.equals(STRUCTURAL_ALERTS))
+				info = "Structural alerts are smarts that define a molecular subgraph."
+						+ "\nEach alert is used as a binary nominal feature (1 -> subgraph occurs, 0 -> subgraph does not occur)."
+						+ "\n\nCopy your smarts.csv into the following folder to integrate your own structural alerts: "
+						+ Settings.STRUCTURAL_ALERTS_DIR + File.separator
+						+ "\nEach line in the csv-file should look like this:"
+						+ "\n\"alert\",\"description\",\"smarts\",[optional: more smarts - only one has to match]"
+						+ "\nComments (starting with '#') will be printed as description. Example csv file:\n"
+						+ "\n\"Benzene\",\"Most used example fragment\",\"c1ccccc1\""
+						+ "\n\"Carbonyl with Carbon\",,\"[CX3](=[OX1])C\""
+						+ "\n\"Carbonyl with Nitrogen or Oxygen\",,\"[OX1]=CN\",\"[CX3](=[OX1])O\"";
+			else
+				info = StructuralAlerts.instance.getDescriptionForName(highlightedCategory);
+
+			moleculePropertyPanel.showInfoText(info);
+		}
+	}
+
 	int selectedPropertyIndex = 0;
 	List<MoleculeProperty> selectedProperties = new ArrayList<MoleculeProperty>();
 
@@ -190,8 +233,14 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 
 		selector.addElementList(INTEGRATED_FEATURES, integrated);
 		selector.addElementList(CDK_FEATURES, CDKProperty.NUMERIC_DESCRIPTORS);
-		if (Settings.CV_BABEL_PATH != null)
+		if (Settings.CM_BABEL_PATH != null)
 			selector.addElementList(OB_FINGERPRINT_FEATURES, OBFingerprintProperty.FINGERPRINTS);
+		selector.addElements(STRUCTURAL_ALERTS);
+		for (int i = 0; i < StructuralAlerts.instance.getNumSets(); i++)
+		{
+			selector.addElementList(new String[] { STRUCTURAL_ALERTS, StructuralAlerts.instance.getSetName(i) },
+					StructuralAlerts.instance.getSet(i));
+		}
 
 		String integratedFeatures = (String) Settings.PROPS.get("features-integrated");
 		Vector<String> selection = VectorUtil.fromCSVString(integratedFeatures);
@@ -217,18 +266,28 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 			selector.setSelected(d);
 		}
 
-		update();
+		String alertFeatures = (String) Settings.PROPS.get("features-alerts");
+		selection = VectorUtil.fromCSVString(alertFeatures);
+		for (String string : selection)
+		{
+			StructuralAlerts.Alert d = StructuralAlerts.instance.findFromString(string);
+			if (d != null)
+				selector.setSelected(d);
+		}
 
+		update();
 		selfUpdate = false;
 	}
 
 	@Override
 	public void proceed()
 	{
-		Settings.PROPS.put("features-integrated", ArrayUtil.toCSVString(selector.getSelected(INTEGRATED_FEATURES)));
-		Settings.PROPS.put("features-cdk", ArrayUtil.toCSVString(selector.getSelected(CDK_FEATURES)));
+		Settings.PROPS.put("features-integrated",
+				ArrayUtil.toCSVString(selector.getSelected(INTEGRATED_FEATURES), true));
+		Settings.PROPS.put("features-cdk", ArrayUtil.toCSVString(selector.getSelected(CDK_FEATURES), true));
 		Settings.PROPS.put("features-ob-fingerprints",
-				ArrayUtil.toCSVString(selector.getSelected(OB_FINGERPRINT_FEATURES)));
+				ArrayUtil.toCSVString(selector.getSelected(OB_FINGERPRINT_FEATURES), true));
+		Settings.PROPS.put("features-alerts", ArrayUtil.toCSVString(selector.getSelected(STRUCTURAL_ALERTS), true));
 		Settings.storeProps();
 	}
 

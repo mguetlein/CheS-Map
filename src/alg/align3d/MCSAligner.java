@@ -85,7 +85,7 @@ public class MCSAligner implements ThreeDAligner
 				try
 				{
 					ExternalTool.run("obfit", tmpAligned, null,
-							Settings.CV_OBFIT_PATH + " " + cluster.getSubstructureSmarts(SubstructureSmartsType.MCS)
+							Settings.CM_OBFIT_PATH + " " + cluster.getSubstructureSmarts(SubstructureSmartsType.MCS)
 									+ " " + tmpFirst.getAbsolutePath() + " " + tmpRemainder.getAbsolutePath()
 					//						new String[] { "obfit", commonSubstructure[i], tmpFirst.getAbsolutePath(),
 					//								tmpRemainder.getAbsolutePath(), ">", alignedStructures }
@@ -135,7 +135,7 @@ public class MCSAligner implements ThreeDAligner
 	@Override
 	public String getPreconditionErrors()
 	{
-		if (Settings.CV_OBFIT_PATH != null)
+		if (Settings.CM_OBFIT_PATH != null)
 			return null;
 		else
 			return "OpenBabel command 'obfit' could not be found";

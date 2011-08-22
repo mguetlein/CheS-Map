@@ -9,7 +9,6 @@ import java.awt.event.ActionListener;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -32,8 +31,9 @@ public abstract class GenericWizardPanel extends WizardPanel
 	ButtonGroup group;
 	JPanel propertyPanel;
 	PropertyPanel clusterPropertyPanel;
-	JTextArea propertyDescriptionTextArea;
-	LinkButton moreDescriptionButton;
+
+	DescriptionPanel descriptionPanel;
+
 	protected Algorithm selectedAlgorithm;
 	protected boolean preconditionsMet = true;
 
@@ -113,28 +113,8 @@ public abstract class GenericWizardPanel extends WizardPanel
 		builder.appendSeparator(getTitle() + " Properties");
 		builder.nextLine();
 
-		propertyDescriptionTextArea = new JTextArea();
-		propertyDescriptionTextArea.setBorder(null);
-		propertyDescriptionTextArea.setEditable(false);
-		propertyDescriptionTextArea.setOpaque(false);
-		propertyDescriptionTextArea.setWrapStyleWord(true);
-		propertyDescriptionTextArea.setLineWrap(true);
-		builder.append(propertyDescriptionTextArea);
-		builder.nextLine();
-
-		moreDescriptionButton = new LinkButton("complete description...");
-		builder.append(moreDescriptionButton);
-		builder.nextLine();
-		moreDescriptionButton.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				JOptionPane.showMessageDialog(GenericWizardPanel.this.getTopLevelAncestor(),
-						selectedAlgorithm.getDescription(), selectedAlgorithm.getName(),
-						JOptionPane.INFORMATION_MESSAGE);
-			}
-		});
+		descriptionPanel = new DescriptionPanel();
+		builder.append(descriptionPanel);
 
 		builder.appendParagraphGapRow();
 		builder.nextLine();
@@ -190,19 +170,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 		propertyPanel.removeAll();
 		selectedAlgorithm = getAlgorithms()[index];
 
-		String description = selectedAlgorithm.getDescription();
-		if (description == null)
-			description = "";
-		if (description.length() > 400)
-		{
-			propertyDescriptionTextArea.setText(description.substring(0, 200) + "...");
-			moreDescriptionButton.setVisible(true);
-		}
-		else
-		{
-			propertyDescriptionTextArea.setText(selectedAlgorithm.getDescription());
-			moreDescriptionButton.setVisible(false);
-		}
+		descriptionPanel.setText(selectedAlgorithm.getName(), selectedAlgorithm.getDescription());
 
 		preconditionsMet = true;
 		String errors = selectedAlgorithm.getPreconditionErrors();

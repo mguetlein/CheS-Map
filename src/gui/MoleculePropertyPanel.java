@@ -44,9 +44,12 @@ public class MoleculePropertyPanel extends JPanel
 	private int selectedPropertyIndex = 0;
 	private MoleculePropertySet selectedPropertySet;
 
+	JTextArea infoTextArea = new JTextArea();
+	JPanel cardPanel = new JPanel(new CardLayout());
+
 	JButton loadButton = new JButton("Load feature values");
 
-	JLabel loading = new JLabel("Loading feature...");
+	JLabel loadingLabel = new JLabel("Loading feature...");
 
 	JPanel comboPanel = new JPanel();
 	JLabel comboLabel = new JLabel();
@@ -69,6 +72,16 @@ public class MoleculePropertyPanel extends JPanel
 
 	private void buildLayout()
 	{
+		setLayout(new BorderLayout(10, 10));
+		infoTextArea.setFont(infoTextArea.getFont().deriveFont(Font.PLAIN));
+		infoTextArea.setBorder(null);
+		infoTextArea.setEditable(false);
+		infoTextArea.setOpaque(false);
+		infoTextArea.setWrapStyleWord(true);
+		infoTextArea.setLineWrap(true);
+		add(infoTextArea, BorderLayout.NORTH);
+		add(cardPanel);
+
 		JPanel main = new JPanel(new BorderLayout(10, 10));
 
 		radioGroup.add(nominalFeatureButton);
@@ -88,16 +101,15 @@ public class MoleculePropertyPanel extends JPanel
 		main.add(featurePlotPanel);
 		main.add(radioBuilder.getPanel(), BorderLayout.WEST);
 
-		setLayout(new CardLayout());
-		add(main, "main");
+		cardPanel.add(main, "main");
 
-		DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("p"));
-		b.append(loading);
-		add(b.getPanel(), "loading");
+		JPanel p = new JPanel(new BorderLayout());
+		p.add(loadingLabel);
+		cardPanel.add(p, "loading");
 
 		DefaultFormBuilder b2 = new DefaultFormBuilder(new FormLayout("p"));
 		b2.append(loadButton);
-		add(b2.getPanel(), "loadButton");
+		cardPanel.add(b2.getPanel(), "loadButton");
 	}
 
 	private void addListeners()
@@ -179,8 +191,8 @@ public class MoleculePropertyPanel extends JPanel
 	{
 		if (background)
 		{
-			((CardLayout) getLayout()).show(this, "loading");
-			setVisible(true);
+			((CardLayout) cardPanel.getLayout()).show(cardPanel, "loading");
+			cardPanel.setVisible(true);
 		}
 
 		Thread th = new Thread(new Runnable()
@@ -255,18 +267,18 @@ public class MoleculePropertyPanel extends JPanel
 							//				for (int i = 0; i < values.size(); i++)
 							//					text += "(" + counts.get(i).intValue() + ") " + values.get(i) + "\n";
 
-							JTextArea infoTextArea = new JTextArea(text);
+							JTextArea infoTextArea2 = new JTextArea(text);
 							JLabel infoIcon = new JLabel(ImageLoader.WARNING);
 							infoIcon.setVerticalAlignment(SwingConstants.TOP);
-							infoTextArea.setFont(infoTextArea.getFont().deriveFont(Font.BOLD));
-							infoTextArea.setBorder(null);
-							infoTextArea.setEditable(false);
-							infoTextArea.setOpaque(false);
-							infoTextArea.setWrapStyleWord(true);
-							infoTextArea.setLineWrap(true);
+							infoTextArea2.setFont(infoTextArea2.getFont().deriveFont(Font.BOLD));
+							infoTextArea2.setBorder(null);
+							infoTextArea2.setEditable(false);
+							infoTextArea2.setOpaque(false);
+							infoTextArea2.setWrapStyleWord(true);
+							infoTextArea2.setLineWrap(true);
 							p = new JPanel(new BorderLayout(5, 0));
 							p.add(infoIcon, BorderLayout.WEST);
-							p.add(infoTextArea);
+							p.add(infoTextArea2);
 							p.setBorder(new EmptyBorder(0, 10, 0, 0));
 						}
 						if (p != null)
@@ -277,7 +289,7 @@ public class MoleculePropertyPanel extends JPanel
 					selfUpdate = false;
 
 					if (currentSet == selectedPropertySet && currentIndex == selectedPropertyIndex)
-						((CardLayout) getLayout()).show(MoleculePropertyPanel.this, "main");
+						((CardLayout) cardPanel.getLayout()).show(cardPanel, "main");
 				}
 			}
 		});
@@ -298,15 +310,15 @@ public class MoleculePropertyPanel extends JPanel
 	private void update(boolean load)
 	{
 		if (selectedPropertySet == null)
-			setVisible(false);
+			cardPanel.setVisible(false);
 		else
 		{
 			if (load)
 				load(true);
 			else
 			{
-				((CardLayout) getLayout()).show(this, "loadButton");
-				setVisible(true);
+				((CardLayout) cardPanel.getLayout()).show(cardPanel, "loadButton");
+				cardPanel.setVisible(true);
 			}
 		}
 
@@ -320,13 +332,22 @@ public class MoleculePropertyPanel extends JPanel
 	public void setDataset(DatasetFile dataset)
 	{
 		this.dataset = dataset;
-		setVisible(false);
+		cardPanel.setVisible(false);
 	}
 
 	public void setSelectedPropertySet(MoleculePropertySet prop)
 	{
 		selectedPropertySet = prop;
 		selectedPropertyIndex = 0;
+		infoTextArea.setText((prop != null) ? prop.getDescription() : "");
 		update(prop != null && dataset.isComputed(prop));
+	}
+
+	public void showInfoText(String text)
+	{
+		selectedPropertySet = null;
+		selectedPropertyIndex = -1;
+		infoTextArea.setText(text);
+		cardPanel.setVisible(false);
 	}
 }

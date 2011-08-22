@@ -384,6 +384,14 @@ public class FeatureService
 				// this can happen if a cluster has only null values for a integrated property-> return nulls
 				return new Object[fileToMolecules.get(dataset).length];
 			}
+			if (p instanceof StructuralAlerts.Alert)
+			{
+				StructuralAlerts.Alert alert = (StructuralAlerts.Alert) p;
+
+				String match[] = Settings.SMARTS_HANDLER.match(alert, dataset);
+				values.put(valuesKey(dataset, alert, false), match);
+				values.put(valuesKey(dataset, alert, true), ArrayUtil.normalize(match));
+			}
 			if (p instanceof OBFingerprintProperty)
 			{
 				OBFingerprintProperty obProp = (OBFingerprintProperty) p;

@@ -70,7 +70,7 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 			@Override
 			public void write(String infile, String outfile)
 			{
-				ExternalToolUtil.run(getRScriptName(), Settings.CV_RSCRIPT_PATH + " " + getScriptPath() + " " + infile
+				ExternalToolUtil.run(getRScriptName(), Settings.CM_RSCRIPT_PATH + " " + getScriptPath() + " " + infile
 						+ " " + outfile);
 			}
 		};
@@ -102,7 +102,7 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 	@Override
 	public String getPreconditionErrors()
 	{
-		if (Settings.CV_RSCRIPT_PATH == null)
+		if (Settings.CM_RSCRIPT_PATH == null)
 			return "R command 'Rscript' could not be found";
 		else
 			return null;

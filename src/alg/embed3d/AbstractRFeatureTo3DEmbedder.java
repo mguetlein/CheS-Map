@@ -66,7 +66,7 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 				getRScriptName(),
 				null,
 				null,
-				Settings.CV_RSCRIPT_PATH + " " + getScriptPath() + " " + f.getAbsolutePath() + " "
+				Settings.CM_RSCRIPT_PATH + " " + getScriptPath() + " " + f.getAbsolutePath() + " "
 						+ f2.getAbsolutePath());
 
 		List<Vector3D> v3d = RUtil.readRVectorMatrix(f2.getAbsolutePath());
@@ -92,7 +92,7 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 	@Override
 	public String getPreconditionErrors()
 	{
-		if (Settings.CV_RSCRIPT_PATH == null)
+		if (Settings.CM_RSCRIPT_PATH == null)
 			return "R command 'Rscript' could not be found";
 		else
 			return null;

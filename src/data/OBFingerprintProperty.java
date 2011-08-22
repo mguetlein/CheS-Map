@@ -76,6 +76,20 @@ public class OBFingerprintProperty extends AbstractMoleculeProperty
 		{
 			return (o instanceof OBFingerPrints) && ((OBFingerPrints) o).type.equals(type);
 		}
+
+		@Override
+		public String getDescription()
+		{
+			if (type == FingerprintType.FP2)
+				return "FP2 - Indexes linear fragments up to 7 atoms.";
+			if (type == FingerprintType.FP3)
+				return "FP3 - SMARTS patterns specified in the file patterns.txt";
+			if (type == FingerprintType.FP4)
+				return "FP4 - SMARTS patterns specified in the file SMARTS_InteLigand.txt";
+			if (type == FingerprintType.MACCS)
+				return "MACCS - SMARTS patterns specified in the file MACCS.txt";
+			throw new IllegalStateException();
+		}
 	}
 
 	FingerprintType type;
@@ -133,7 +147,7 @@ public class OBFingerprintProperty extends AbstractMoleculeProperty
 		{
 			String filepath = Settings.destinationFile(dataset.getLocalPath(), dataset.getName() + ".fingerprint.hex");
 
-			String cmd = Settings.CV_BABEL_PATH + " " + dataset.getSDFPath(false) + " -ofpt -xf" + type + " -xho";
+			String cmd = Settings.CM_BABEL_PATH + " " + dataset.getSDFPath(false) + " -ofpt -xf" + type + " -xho";
 			ExternalToolUtil.run("ob-fingerprints", cmd, new File(filepath));
 
 			BufferedReader buffy = new BufferedReader(new FileReader(new File(filepath)));

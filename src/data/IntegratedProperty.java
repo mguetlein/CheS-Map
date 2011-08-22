@@ -63,4 +63,10 @@ public class IntegratedProperty extends AbstractMoleculeProperty implements Mole
 			throw new Error("only one prop available");
 		return this;
 	}
+
+	@Override
+	public String getDescription()
+	{
+		return toString();
+	}
 }

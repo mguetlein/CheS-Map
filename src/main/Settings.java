@@ -25,6 +25,8 @@ import javax.swing.UIManager;
 import util.FileUtil;
 import util.ImageLoader;
 import util.OSUtil;
+import data.CDKSmartsHandler;
+import dataInterface.SmartsHandler;
 
 public class Settings
 {
@@ -64,23 +66,15 @@ public class Settings
 	public static Component TOP_LEVEL_COMPONENT = null;
 	public static Random RANDOM = new Random();
 	public static Boolean DBG = false;
-	public static final ImageIcon CHES_MAPPER_IMAGE;
-	public static final ImageIcon CHES_MAPPER_IMAGE_SMALL;
-	public static final ImageIcon OPENTOX_ICON;
-	static
-	{
-		CHES_MAPPER_IMAGE = ImageLoader.loadImageIcon("data/leucin-3d-small.png", Settings.class);
-		CHES_MAPPER_IMAGE_SMALL = ImageLoader.loadImageIcon("data/leucin-3d-small_36.png", Settings.class);
-		OPENTOX_ICON = ImageLoader.loadImageIcon("data/OpenTox_logo.png", Settings.class);
-	}
+	public static final ImageIcon CHES_MAPPER_IMAGE = ImageLoader.CHES_MAPPER;
+	public static final ImageIcon CHES_MAPPER_IMAGE_SMALL = ImageLoader.CHES_MAPPER_SMALL;
+	public static final ImageIcon OPENTOX_ICON = ImageLoader.OPENTOX;
 
 	// ------------------------ EXTERNAL PROGRAMMS -----------------------
 
-	public static String CV_BABEL_PATH = null;
-	public static String CV_OBFIT_PATH = null;
-	public static String CV_RSCRIPT_PATH = null;
-
-	public static final String CV_GSPAN_PATH = null;//"Rscript";
+	public static String CM_BABEL_PATH = null;
+	public static String CM_OBFIT_PATH = null;
+	public static String CM_RSCRIPT_PATH = null;
 
 	// TODO ------------ fix spaghetti code ------------------------------
 	static
@@ -89,71 +83,71 @@ public class Settings
 
 		System.err.println("* try env variables");
 		Map<String, String> env = System.getenv();
-		if (env.get("CV_BABEL_PATH") != null)
+		if (env.get("CM_BABEL_PATH") != null)
 		{
-			CV_BABEL_PATH = env.get("CV_BABEL_PATH");
-			System.err.println("babel-path set to: " + CV_BABEL_PATH);
+			CM_BABEL_PATH = env.get("CM_BABEL_PATH");
+			System.err.println("babel-path set to: " + CM_BABEL_PATH);
 		}
-		if (env.get("CV_OBFIT_PATH") != null)
+		if (env.get("CM_OBFIT_PATH") != null)
 		{
-			CV_OBFIT_PATH = env.get("CV_OBFIT_PATH");
-			System.err.println("obfit-path set to: " + CV_OBFIT_PATH);
+			CM_OBFIT_PATH = env.get("CM_OBFIT_PATH");
+			System.err.println("obfit-path set to: " + CM_OBFIT_PATH);
 		}
-		if (env.get("CV_RSCRIPT_PATH") != null)
+		if (env.get("CM_RSCRIPT_PATH") != null)
 		{
-			CV_RSCRIPT_PATH = env.get("CV_RSCRIPT_PATH");
-			System.err.println("Rscript-path set to: " + CV_RSCRIPT_PATH);
+			CM_RSCRIPT_PATH = env.get("CM_RSCRIPT_PATH");
+			System.err.println("Rscript-path set to: " + CM_RSCRIPT_PATH);
 		}
 
 		System.err.println("* try locally (binary has to be available in PATH)");
-		if (CV_BABEL_PATH == null && exitValue("babel -H") == 0)
+		if (CM_BABEL_PATH == null && exitValue("babel -H") == 0)
 		{
-			CV_BABEL_PATH = "babel";
+			CM_BABEL_PATH = "babel";
 			System.err.println("babel found locally or in PATH");
 		}
-		if (CV_OBFIT_PATH == null && exitValue("obfit") == 255)
+		if (CM_OBFIT_PATH == null && exitValue("obfit") == 255)
 		{
-			CV_OBFIT_PATH = "obfit";
+			CM_OBFIT_PATH = "obfit";
 			System.err.println("obfit found locally or in PATH");
 		}
-		if (CV_RSCRIPT_PATH == null && exitValue("Rscript --help") == 0)
+		if (CM_RSCRIPT_PATH == null && exitValue("Rscript --help") == 0)
 		{
-			CV_RSCRIPT_PATH = "Rscript";
+			CM_RSCRIPT_PATH = "Rscript";
 			System.err.println("Rscript found locally or in PATH");
 		}
 
 		if (OSUtil.isUnix() || OSUtil.isMac())
 		{
 			System.err.println("* try to find babel/obfit in /usr/local/bin");
-			if (CV_BABEL_PATH == null && exitValue("/usr/local/bin/babel -H") == 0)
+			if (CM_BABEL_PATH == null && exitValue("/usr/local/bin/babel -H") == 0)
 			{
-				CV_BABEL_PATH = "/usr/local/bin/babel";
+				CM_BABEL_PATH = "/usr/local/bin/babel";
 				System.err.println("babel found in /usr/local/bin/");
 			}
-			if (CV_OBFIT_PATH == null && exitValue("/usr/local/bin/obfit") == 255)
+			if (CM_OBFIT_PATH == null && exitValue("/usr/local/bin/obfit") == 255)
 			{
-				CV_OBFIT_PATH = "/usr/local/bin/obfit";
+				CM_OBFIT_PATH = "/usr/local/bin/obfit";
 				System.err.println("obfit found in /usr/local/bin/");
 			}
 
 			System.err.println("* try to find with 'which'");
-			if (CV_BABEL_PATH == null)
+			if (CM_BABEL_PATH == null)
 			{
-				CV_BABEL_PATH = findExecutableLinux("babel");
-				if (CV_BABEL_PATH != null)
-					System.err.println("babel-path found at: " + CV_BABEL_PATH);
+				CM_BABEL_PATH = findExecutableLinux("babel");
+				if (CM_BABEL_PATH != null)
+					System.err.println("babel-path found at: " + CM_BABEL_PATH);
 			}
-			if (CV_OBFIT_PATH == null)
+			if (CM_OBFIT_PATH == null)
 			{
-				CV_OBFIT_PATH = findExecutableLinux("obfit");
-				if (CV_OBFIT_PATH != null)
-					System.err.println("obfit found at: " + CV_OBFIT_PATH);
+				CM_OBFIT_PATH = findExecutableLinux("obfit");
+				if (CM_OBFIT_PATH != null)
+					System.err.println("obfit found at: " + CM_OBFIT_PATH);
 			}
-			if (CV_RSCRIPT_PATH == null)
+			if (CM_RSCRIPT_PATH == null)
 			{
-				CV_RSCRIPT_PATH = findExecutableLinux("Rscript");
-				if (CV_RSCRIPT_PATH != null)
-					System.err.println("Rscript found at: " + CV_RSCRIPT_PATH);
+				CM_RSCRIPT_PATH = findExecutableLinux("Rscript");
+				if (CM_RSCRIPT_PATH != null)
+					System.err.println("Rscript found at: " + CM_RSCRIPT_PATH);
 			}
 		}
 		else if (OSUtil.isWindows())
@@ -162,14 +156,14 @@ public class Settings
 			if (openbabelDir != null)
 			{
 				System.err.println("* try to find babel/obfit in " + openbabelDir);
-				if (CV_BABEL_PATH == null && new File(openbabelDir + "\\babel.exe").exists())
+				if (CM_BABEL_PATH == null && new File(openbabelDir + "\\babel.exe").exists())
 				{
-					CV_BABEL_PATH = openbabelDir + "\\babel";
+					CM_BABEL_PATH = openbabelDir + "\\babel";
 					System.err.println("babel found in " + openbabelDir);
 				}
-				if (CV_OBFIT_PATH == null && new File(openbabelDir + "\\obfit.exe").exists())
+				if (CM_OBFIT_PATH == null && new File(openbabelDir + "\\obfit.exe").exists())
 				{
-					CV_OBFIT_PATH = openbabelDir + "\\obfit";
+					CM_OBFIT_PATH = openbabelDir + "\\obfit";
 					System.err.println("obfit found in " + openbabelDir);
 				}
 			}
@@ -319,13 +313,37 @@ public class Settings
 	// ------------------ TMP/RESULT-FILE SUPPORT --------------------------------------------- 
 
 	public static String BASE_DIR = System.getProperty("user.home") + File.separator + ".ches-mapper";
+	public static String STRUCTURAL_ALERTS_DIR = BASE_DIR + File.separator + "structural_alerts";
+
+	public static SmartsHandler SMARTS_HANDLER = new CDKSmartsHandler();
+
 	static
 	{
-		File dir = new File(BASE_DIR);
-		if (!dir.exists())
-			dir.mkdir();
-		if (!dir.exists())
-			throw new Error("Could not create '" + BASE_DIR + "'");
+		for (String d : new String[] { BASE_DIR, STRUCTURAL_ALERTS_DIR })
+		{
+			File dir = new File(d);
+			if (!dir.exists())
+				dir.mkdir();
+			if (!dir.exists())
+				throw new Error("Could not create '" + d + "'");
+		}
+		// extract alerts
+	}
+
+	public static String[] getAlertFiles()
+	{
+		String alerts[] = new File(STRUCTURAL_ALERTS_DIR).list(new FilenameFilter()
+		{
+
+			@Override
+			public boolean accept(File dir, String name)
+			{
+				return name.endsWith(".csv");
+			}
+		});
+		for (int i = 0; i < alerts.length; i++)
+			alerts[i] = STRUCTURAL_ALERTS_DIR + File.separator + alerts[i];
+		return alerts;
 	}
 
 	public static String destinationFileForURL(String url)
@@ -339,6 +357,11 @@ public class Settings
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	public static String getAlertFileDestination(String string)
+	{
+		return STRUCTURAL_ALERTS_DIR + File.separator + string;
 	}
 
 	public static String destinationFile(String sourceFilePath, String destinationFilename)

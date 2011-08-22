@@ -10,14 +10,14 @@ public class OpenBabel3DBuilder extends Abstract3DBuilder
 	@Override
 	public void build3D(DatasetFile datasetFile, String outfile)
 	{
-		ExternalToolUtil.run("obgen3d", Settings.CV_BABEL_PATH + " --gen3d -d -isdf " + datasetFile.getSDFPath(false)
+		ExternalToolUtil.run("obgen3d", Settings.CM_BABEL_PATH + " --gen3d -d -isdf " + datasetFile.getSDFPath(false)
 				+ " -osdf " + outfile);
 	}
 
 	@Override
 	public String getPreconditionErrors()
 	{
-		if (Settings.CV_BABEL_PATH != null)
+		if (Settings.CM_BABEL_PATH != null)
 			return null;
 		else
 			return "OpenBabel command 'babel' could not be found";

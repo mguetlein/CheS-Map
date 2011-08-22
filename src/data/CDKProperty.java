@@ -3,6 +3,7 @@ package data;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openscience.cdk.qsar.DescriptorSpecification;
 import org.openscience.cdk.qsar.IMolecularDescriptor;
 
 import util.ArrayUtil;
@@ -110,6 +111,11 @@ public class CDKProperty extends AbstractMoleculeProperty
 	}
 
 	public IMolecularDescriptor newMolecularDescriptor()
+	{
+		return newMolecularDescriptor(desc);
+	}
+
+	private static IMolecularDescriptor newMolecularDescriptor(CDKDescriptorClass desc)
 	{
 		try
 		{
@@ -225,6 +231,19 @@ public class CDKProperty extends AbstractMoleculeProperty
 		public boolean equals(Object o)
 		{
 			return (o instanceof CDKDescriptor) && ((CDKDescriptor) o).desc.equals(desc);
+		}
+
+		@Override
+		public String getDescription()
+		{
+			IMolecularDescriptor descriptor = newMolecularDescriptor(desc);
+			DescriptorSpecification spec = descriptor.getSpecification();
+			String s = toString() + "\n";
+			s += "Reference: " + spec.getSpecificationReference() + "\n";
+			s += "Implementation Title: " + spec.getImplementationTitle() + "\n";
+			//			s += "Identifier: " + spec.getImplementationIdentifier() + "\n";
+			//			s += "Vendor: " + spec.getImplementationVendor() + "\n";
+			return s;
 		}
 	}
 }
