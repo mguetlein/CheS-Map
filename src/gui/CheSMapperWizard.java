@@ -4,6 +4,7 @@ import javax.swing.JFrame;
 
 import main.CheSMapping;
 import main.Settings;
+import util.SwingUtil;
 import weka.gui.GenericObjectEditor;
 import data.ClusteringData;
 
@@ -122,6 +123,7 @@ public class CheSMapperWizard extends WizardDialog
 	public static void main(String args[])
 	{
 		CheSMapperWizard wwd = new CheSMapperWizard(null);
+		SwingUtil.waitWhileVisible(wwd);
 		wwd.loadDataset(null);
 		System.exit(0);
 	}

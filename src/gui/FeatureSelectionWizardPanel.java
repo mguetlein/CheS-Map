@@ -49,6 +49,10 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 	int numSelected;
 	boolean selfUpdate;
 
+	private String addFeaturesText = "Add feature";
+	private String remFeaturesText = "Remove feature";
+
+	public static final String ROOT = "Features";
 	public static final String INTEGRATED_FEATURES = "Included in Dataset";
 	public static final String CDK_FEATURES = "CDK descriptors";
 	public static final String OB_FINGERPRINT_FEATURES = "OpenBabel Fingerprints";
@@ -65,10 +69,13 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 		builder.append(lPanel);
 		builder.nextLine();
 
-		selector = new Selector<MoleculePropertySet>(MoleculePropertySet.class, "Features")
+		selector = new Selector<MoleculePropertySet>(MoleculePropertySet.class, ROOT)
 		{
 			public ImageIcon getIcon(MoleculePropertySet elem)
 			{
+				if (elem instanceof OBFingerprintProperty.OBFingerPrints && Settings.CM_BABEL_PATH == null)
+					return ImageLoader.ERROR;
+
 				MoleculeProperty.Type type = MoleculePropertySetUtil.getType(elem);
 				if (type == Type.NUMERIC)
 					return ImageLoader.NUMERIC;
@@ -86,18 +93,31 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 			@Override
 			public boolean isValid(MoleculePropertySet elem)
 			{
+				if (elem instanceof OBFingerprintProperty.OBFingerPrints && Settings.CM_BABEL_PATH == null)
+					return false;
 				return MoleculePropertySetUtil.getType(elem) != null;
 			}
 
 			@Override
 			public ImageIcon getCategoryIcon(String name)
 			{
+				if (OB_FINGERPRINT_FEATURES.equals(name) && Settings.CM_BABEL_PATH == null)
+					return ImageLoader.ERROR;
 				return null;
+			}
+
+			@Override
+			public String getString(MoleculePropertySet elem)
+			{
+				if (elem.getSize() == 1)
+					return elem.toString();
+				else
+					return elem + " (" + elem.getSize() + " features)";
 			}
 		};
 
-		selector.setAddButtonText("Add feature");
-		selector.setRemoveButtonText("Remove feature");
+		selector.setAddButtonText(addFeaturesText);
+		selector.setRemoveButtonText(remFeaturesText);
 		selector.addPropertyChangeListener(Selector.PROPERTY_SELECTION_CHANGED, new PropertyChangeListener()
 		{
 			@Override
@@ -124,15 +144,42 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 		});
 		selector.addPropertyChangeListener(Selector.PROPERTY_TRY_ADDING_INVALID, new PropertyChangeListener()
 		{
+			@SuppressWarnings("unchecked")
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
-				JOptionPane.showMessageDialog(
-						Settings.TOP_LEVEL_COMPONENT,
-						"Could not add the following feature(s):\n"
-								+ ListUtil.toString((List<?>) evt.getNewValue(), "\n")
-								+ "\n\nThe feature(s) is/are most likely not suited for clustering and embedding.\nYou have to asign the feature type manually (by clicking on 'Nominal') before adding the feature/s.",
+				List<MoleculePropertySet> set = (List<MoleculePropertySet>) evt.getNewValue();
+				String warning;
+				if (set.get(0) instanceof OBFingerprintProperty.OBFingerPrints)
+					warning = Settings.BABEL_NOT_FOUND_WARNING;
+				else
+					warning = "The feature(s) is/are most likely not suited for clustering and embedding.\\nYou have to asign the feature type manually (by clicking on 'Nominal') before adding the feature/s.";
+
+				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, "Could not add the following feature(s):\n"
+						+ ListUtil.toString((List<?>) evt.getNewValue(), "\n") + "\n\n" + warning,
 						"Warning - Could not add feature", JOptionPane.WARNING_MESSAGE);
+			}
+		});
+		selector.addPropertyChangeListener(Selector.PROPERTY_EMPTY_ADD, new PropertyChangeListener()
+		{
+			@Override
+			public void propertyChange(PropertyChangeEvent evt)
+			{
+				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT,
+						"You have no feature/s selected. Please select (a group of) feature/s in the left panel before clicking '"
+								+ addFeaturesText + "'.", "Warning - No feature/s selected",
+						JOptionPane.WARNING_MESSAGE);
+			}
+		});
+		selector.addPropertyChangeListener(Selector.PROPERTY_EMPTY_REMOVE, new PropertyChangeListener()
+		{
+			@Override
+			public void propertyChange(PropertyChangeEvent evt)
+			{
+				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT,
+						"You have no feature/s selected. Please select (a group of) feature/s in the right panel before clicking '"
+								+ remFeaturesText + "'.", "Warning - No feature/s selected",
+						JOptionPane.WARNING_MESSAGE);
 			}
 		});
 
@@ -167,28 +214,38 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 
 		setLayout(new BorderLayout());
 		add(builder.getPanel());
+
+		updateFeatureInfo(null);
 	}
 
 	protected void updateFeatureInfo(String highlightedCategory)
 	{
-		if (highlightedCategory == null)
-			moleculePropertyPanel.showInfoText("");
-		else
+		String info = "The available features are shown in the left panel. Select (a group of) feature/s and click '"
+				+ addFeaturesText
+				+ "'. The selected features - shown in the right panel - will be used for clustering and/or embedding.\n\n"
+				+ "The clustering/embedding result relies on the selected features. For example, select structural features (e.g. OpenBabel Fingerprint FP2) to cluster structural similar compounds together and to place structural similar compounds close together in 3D-space.\n\n"
+				+ "Consider carefully how much/which feature/s to select. "
+				+ "Select only a handfull of features to increase the influence of each single feature on the clustering and embedding. "
+				+ "Selecting a bunch of features will effect the clustering and embedding result to represent 'overall' similarity.";
+		if (highlightedCategory != null && !highlightedCategory.equals(ROOT))
 		{
-			String info = "";
 			if (highlightedCategory.equals(INTEGRATED_FEATURES))
-				info = "Features that are already included in your dataset.\n"
+				info = "Features that are already included in the provided dataset.\n"
 						+ "Not all features may be suitable for clustering and/or embedding (like for example SMILES strings, or info text).";
 			else if (highlightedCategory.equals(CDK_FEATURES))
 				info = Settings.CDK_STRING
 						+ "\nThis integrated library can be used to compute a range of numeric chemical descriptors (like LogP or Weight).";
 			else if (highlightedCategory.equals(OB_FINGERPRINT_FEATURES))
+			{
 				info = "OpenBabel provides several Fingerprints that can be computed for each comopund."
 						+ "\nEach bit of the fingerprint is converted to a binary nominal feature.";
+				if (Settings.CM_BABEL_PATH == null)
+					info = Settings.BABEL_NOT_FOUND_WARNING + "\n\n" + info;
+			}
 			else if (highlightedCategory.equals(STRUCTURAL_ALERTS))
 				info = "Structural alerts are smarts that define a molecular subgraph."
 						+ "\nEach alert is used as a binary nominal feature (1 -> subgraph occurs, 0 -> subgraph does not occur)."
-						+ "\n\nCopy your smarts.csv into the following folder to integrate your own structural alerts: "
+						+ "\n\nCopy a smarts.csv into the following folder to integrate any structural alerts: "
 						+ Settings.STRUCTURAL_ALERTS_DIR + File.separator
 						+ "\nEach line in the csv-file should look like this:"
 						+ "\n\"alert\",\"description\",\"smarts\",[optional: more smarts - only one has to match]"
@@ -198,9 +255,8 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 						+ "\n\"Carbonyl with Nitrogen or Oxygen\",,\"[OX1]=CN\",\"[CX3](=[OX1])O\"";
 			else
 				info = StructuralAlerts.instance.getDescriptionForName(highlightedCategory);
-
-			moleculePropertyPanel.showInfoText(info);
 		}
+		moleculePropertyPanel.showInfoText(info);
 	}
 
 	int selectedPropertyIndex = 0;
@@ -208,7 +264,9 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 
 	public void update()
 	{
-		numSelected = selector.getSelected().length;
+		numSelected = 0;
+		for (MoleculePropertySet set : selector.getSelected())
+			numSelected += set.getSize();
 		numFeaturesLabel.setText("Number of selected features: " + numSelected);
 	}
 
@@ -233,8 +291,7 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 
 		selector.addElementList(INTEGRATED_FEATURES, integrated);
 		selector.addElementList(CDK_FEATURES, CDKProperty.NUMERIC_DESCRIPTORS);
-		if (Settings.CM_BABEL_PATH != null)
-			selector.addElementList(OB_FINGERPRINT_FEATURES, OBFingerprintProperty.FINGERPRINTS);
+		selector.addElementList(OB_FINGERPRINT_FEATURES, OBFingerprintProperty.FINGERPRINTS);
 		selector.addElements(STRUCTURAL_ALERTS);
 		for (int i = 0; i < StructuralAlerts.instance.getNumSets(); i++)
 		{
@@ -311,7 +368,7 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 	@Override
 	public String getDescription()
 	{
-		return "Features may already be included in the dataset, or can be created with CDK. The features are used for the Clustering and/or 3D-Embeding.";
+		return "Features may already be included in the dataset, or can be created. The features are used for the Clustering and/or 3D-Embeding.";
 	}
 
 }

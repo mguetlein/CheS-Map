@@ -3,15 +3,17 @@ package gui;
 import gui.property.PropertyPanel;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 import main.Settings;
@@ -19,6 +21,8 @@ import util.ImageLoader;
 import alg.Algorithm;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.factories.DefaultComponentFactory;
+import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import data.DatasetFile;
@@ -30,7 +34,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 	IndexedRadioButton radioButtons[];
 	ButtonGroup group;
 	JPanel propertyPanel;
-	PropertyPanel clusterPropertyPanel;
+	//	PropertyPanel clusterPropertyPanel;
 
 	DescriptionPanel descriptionPanel;
 
@@ -59,7 +63,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 	{
 		group = new ButtonGroup();
 
-		propertyPanel = new JPanel(new BorderLayout());
+		propertyPanel = new JPanel(new CardLayout());
 		radioButtons = new IndexedRadioButton[getAlgorithms().length];
 
 		int bCount = 0;
@@ -84,7 +88,10 @@ public abstract class GenericWizardPanel extends WizardPanel
 			radioButtons[bCount++] = b;
 		}
 
-		DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout("fill:p:grow"));
+		//DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout("fill:p:grow"));
+		CellConstraints cc = new CellConstraints();
+		int row = 1;
+		setLayout(new FormLayout("fill:p:grow", "p,5dlu,p,15dlu,p,5dlu,p,10dlu,fill:p:grow"));
 
 		infoIcon = new JLabel();
 		infoTextArea = new JTextArea();
@@ -97,27 +104,45 @@ public abstract class GenericWizardPanel extends WizardPanel
 		JPanel p = new JPanel(new BorderLayout(5, 0));
 		p.add(infoIcon, BorderLayout.WEST);
 		p.add(infoTextArea);
-		builder.append(p);
-		infoTextArea.setVisible(false);
-		builder.nextLine();
+		add(p, cc.xy(1, row));
+		row += 2;
 
+		infoTextArea.setVisible(false);
+		//builder.nextLine();
+
+		DefaultFormBuilder rBuilder = new DefaultFormBuilder(new FormLayout("fill:p:grow"));
 		for (JRadioButton b : radioButtons)
 		{
-			builder.append(b);
-			builder.nextLine();
+			rBuilder.append(b);
+			rBuilder.nextLine();
 		}
+		add(rBuilder.getPanel(), cc.xy(1, row));
+		row += 2;
 
-		builder.appendParagraphGapRow();
-		builder.nextLine();
+		//		builder.appendParagraphGapRow();
+		//		builder.nextLine();
 
-		builder.appendSeparator(getTitle() + " Properties");
-		builder.nextLine();
+		//		builder.appendSeparator(getTitle() + " Properties");
+		//		builder.nextLine();
 
-		descriptionPanel = new DescriptionPanel();
-		builder.append(descriptionPanel);
+		//		JPanel sep = new JPanel(new BorderLayout(5, 5));
+		//		JLabel l = new JLabel(getTitle() + " Properties");
+		//		l.setFont(l.getFont().deriveFont(Font.BOLD));
+		//		sep.add(l, BorderLayout.WEST);
+		//		JSeparator s = new JSeparator();
+		//		sep.setAlignmentY(0.5f);
+		//		sep.add(s);
+		JComponent sep = DefaultComponentFactory.getInstance().createSeparator(getTitle() + " Properties");
+		add(sep, cc.xy(1, row));
+		row += 2;
 
-		builder.appendParagraphGapRow();
-		builder.nextLine();
+		descriptionPanel = new DescriptionPanel(400);
+		//		builder.append(descriptionPanel);
+		add(descriptionPanel, cc.xy(1, row));
+		row += 2;
+
+		//		builder.appendParagraphGapRow();
+		//		builder.nextLine();
 
 		//		JPanel pp = new JPanel(new BorderLayout());
 		//		pp.add(propertyDescriptionTextArea);
@@ -127,13 +152,19 @@ public abstract class GenericWizardPanel extends WizardPanel
 		//		JScrollPane scroll = new JScrollPane();
 		//		scroll.add(propertyPanel);
 		//		builder.append(scroll);
-		builder.append(propertyPanel);
 
-		setLayout(new BorderLayout());
-		JScrollPane scroll = new JScrollPane(builder.getPanel());
-		scroll.setBorder(null);
-		add(scroll);
-		//add(builder.getPanel());
+		//		builder.append(propertyPanel);
+		add(propertyPanel, cc.xy(1, row));
+		row += 2;
+		//propertyPanel.setBorder(new EtchedBorder());
+
+		//		setLayout(new BorderLayout());
+
+		//		JScrollPane scroll = new JScrollPane(builder.getPanel());
+		//		scroll.setBorder(null);
+		//		add(scroll);
+
+		//		add(builder.getPanel());
 
 		String method = (String) Settings.PROPS.get(getTitle() + "-method");
 		boolean selected = false;
@@ -164,10 +195,10 @@ public abstract class GenericWizardPanel extends WizardPanel
 		}
 	}
 
+	HashMap<String, PropertyPanel> cards = new HashMap<String, PropertyPanel>();
+
 	private void updateAlgorithmSelection(int index)
 	{
-		setIgnoreRepaint(true);
-		propertyPanel.removeAll();
 		selectedAlgorithm = getAlgorithms()[index];
 
 		descriptionPanel.setText(selectedAlgorithm.getName(), selectedAlgorithm.getDescription());
@@ -182,12 +213,17 @@ public abstract class GenericWizardPanel extends WizardPanel
 		else
 			setInfo("", MsgType.EMPTY);
 
-		clusterPropertyPanel = new PropertyPanel(selectedAlgorithm.getProperties(), Settings.PROPS,
-				Settings.PROPERTIES_FILE);
-		propertyPanel.add(clusterPropertyPanel);
-		setIgnoreRepaint(false);
-		validate();
-		repaint();
+		if (!cards.containsKey(selectedAlgorithm.toString()))
+		{
+			PropertyPanel clusterPropertyPanel = new PropertyPanel(selectedAlgorithm.getProperties(), Settings.PROPS,
+					Settings.PROPERTIES_FILE);
+			propertyPanel.add(clusterPropertyPanel, selectedAlgorithm.toString());
+			cards.put(selectedAlgorithm.toString(), clusterPropertyPanel);
+		}
+		((CardLayout) propertyPanel.getLayout()).show(propertyPanel, selectedAlgorithm.toString());
+
+		//		validate();
+		//		repaint();
 	}
 
 	public void update(DatasetFile dataset, int numNumericFeatures)
@@ -220,7 +256,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 	{
 		Settings.PROPS.put(getTitle() + "-method", selectedAlgorithm.getName());
 		Settings.storeProps();
-		clusterPropertyPanel.store();
+		cards.get(selectedAlgorithm.toString()).store();
 	}
 
 	@Override
@@ -242,7 +278,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 		//		}
 
 		Algorithm c = (Algorithm) selectedAlgorithm;
-		c.setProperties(clusterPropertyPanel.getProperties());
+		c.setProperties(cards.get(selectedAlgorithm.toString()).getProperties());
 		return c;
 	}
 

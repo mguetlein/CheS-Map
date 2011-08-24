@@ -76,6 +76,8 @@ public class Settings
 	public static String CM_OBFIT_PATH = null;
 	public static String CM_RSCRIPT_PATH = null;
 
+	public static final String BABEL_NOT_FOUND_WARNING = "OpenBabel command 'babel' could not be found.";
+
 	// TODO ------------ fix spaghetti code ------------------------------
 	static
 	{

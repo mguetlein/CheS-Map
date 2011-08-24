@@ -20,13 +20,15 @@ public class OpenBabel3DBuilder extends Abstract3DBuilder
 		if (Settings.CM_BABEL_PATH != null)
 			return null;
 		else
-			return "OpenBabel command 'babel' could not be found";
+			return Settings.BABEL_NOT_FOUND_WARNING;
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return "Uses the openbabel gen3d option to compute 3D coordinates. May take very long, up to a view minutes per compound. The result is stored in an sdf file that can be used next time.";
+		return "Uses the openbabel gen3d option to compute 3D coordinates. May take very long, up to a view minutes per compound. "
+				+ "The result is stored so you have to do the computation only once."
+				+ "\n\nMore info: http://openbabel.org/wiki/Tutorial:Basic_Usage";
 	}
 
 	@Override

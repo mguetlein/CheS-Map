@@ -542,14 +542,14 @@ public class FeatureService
 		return fileHas3D.get(dataset);
 	}
 
-	public static void generateCDK3D(DatasetFile dataset, String threeDFilename)
+	public static void generateCDK3D(DatasetFile dataset, String threeDFilename, String forcefield)
 	{
 		try
 		{
 			SDFWriter writer = new SDFWriter(new FileOutputStream(threeDFilename));
 
 			IMolecule mols[] = dataset.getMolecules();
-			ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), "mm2");
+			ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), forcefield);
 			for (IMolecule iMolecule : mols)
 			{
 				IMolecule molecule = iMolecule;

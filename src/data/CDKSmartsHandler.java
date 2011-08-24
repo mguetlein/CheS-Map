@@ -51,10 +51,19 @@ public class CDKSmartsHandler implements SmartsHandler
 
 		if (illegalSmarts.size() > 0)
 		{
-			String s = "Illegal Smarts in " + alert + " :\n";
+			final StringBuffer s = new StringBuffer("Illegal Smarts in " + alert + " :\n");
 			for (String ss : illegalSmarts)
-				s += ss + "\n";
-			JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, s, "Warning", JOptionPane.WARNING_MESSAGE);
+				s.append(ss + "\n");
+
+			Thread th = new Thread(new Runnable()
+			{
+				public void run()
+				{
+					JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, s.toString(), "Warning",
+							JOptionPane.WARNING_MESSAGE);
+				}
+			});
+			th.start();
 		}
 
 		int i = 0;
