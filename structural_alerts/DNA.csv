@@ -1,4 +1,6 @@
-# TODO: add reference
+# Enoch SJ, Cronin MT.
+# A review of the electrophilic reaction chemistry involved in covalent DNA binding.
+# Critical reviews in toxicology, 2010
 "Acyl halide","Mechanistic alert: Direct addition of an acyl halide","[CH,$(C(=O)[#6])](=O)[F,Cl,Br,I]"
 "Alkyl carbamyl halides","Mechanistic alert: Direct addition of an acyl halide","[NH2,$([NH](C=O)[#6]),$(N(C=O)([#6])[#6])]C(=O)[F,Cl,Br,I]"
 "Isocyanates","Mechanistic alert: Isocyanates and isothiocyanates","[NH,$(N(=C=O)[#6])]=C=O"

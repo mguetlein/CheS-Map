@@ -1,4 +1,7 @@
-# TODO: add reference
+# Przybylak, Katarzyna R., Cronin, Mark T. D.
+# In Silico Studies of the Relationship Between Chemical Structure and Drug Induced Phospholipidosis
+# 2011
+# Molecular Informatics
 "PrimaryAmine","","[NH2][CX4;!R][CX4]","[NH2][CX4](C)(C)(C)","NH2][C;R]([C;R][OH])[C;R][OH]","[NH2][C;R]([CH;R])[C;R]O","[NH2]CC1OCCCC1","[NH2][C;R]([C;R])[C;R](O)[O;R]","[NH2]c1c(Br)cc(Br)cc1","[NH]=C([NH2])c1ccccc1","[NH]=C([NH2])[NH]C[NH]"
 "SecondaryAmine","","c[CX4;!R][CX4;!R][NH][CH2][CH3]","[C;!R][NH][C;R]([C;R])c","[C;!R][C;!R][C;!R][NH][C;!R][C;!R]c","c1[cH1]c[cH1][cH1]c1[NH]c1[cH1][cH1][cH1][cH1]c1","c[NH][C;!R][C;R]","[CH3][NH][CH2;!R][CH2;!R]","[CH3][NH][C;R]([C;R][OH])[C;R][OH]","[CX4;!R][NH][CX4;!R][CX4;!R][CX4;!R]Oc1c2ccccc2ccc1 [CX4][NH][CX4;R]"
 "TertiaryAmine","","[CX4;!R][N;!+]([CX4;!R])[CX4;!R][CX4]","[CH3][N;!+]([CH3])[CH2][CH]=C(c)c"
