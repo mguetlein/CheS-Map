@@ -48,5 +48,4 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	{
 		this.domain = domain;
 	}
-
 }

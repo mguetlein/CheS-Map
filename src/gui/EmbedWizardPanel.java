@@ -16,11 +16,11 @@ import data.DatasetFile;
 
 public class EmbedWizardPanel extends GenericWizardPanel
 {
-	public static final ThreeDEmbedder EMBEDDERS[] = { new WekaPCA3DEmbedder(), new Random3DEmbedder(),
+	public static final ThreeDEmbedder EMBEDDERS[] = { new Random3DEmbedder(), new WekaPCA3DEmbedder(),
 			//new AbstractRDistanceTo3DEmbedder.PCADistance3DEmbedder(),
+			new AbstractRFeatureTo3DEmbedder.PCAFeature3DEmbedder(),
 			new AbstractRDistanceTo3DEmbedder.SMACOF3DEmbedder(),
 			//new AbstractRDistanceTo3DEmbedder.TSNEDistance3DEmbedder(),
-			new AbstractRFeatureTo3DEmbedder.PCAFeature3DEmbedder(),
 			new AbstractRFeatureTo3DEmbedder.TSNEFeature3DEmbedder(), };
 
 	JRadioButton embedButtons[];
@@ -37,17 +37,22 @@ public class EmbedWizardPanel extends GenericWizardPanel
 	}
 
 	@Override
-	public void update(DatasetFile dataset, int numNumericFeatures)
+	public void update(DatasetFile dataset, int numFeatures)
 	{
 		if (!preconditionsMet)
 			return;
-		canProceed = !get3DEmbedder().requiresNumericalFeatures() || numNumericFeatures > 0;
+		canProceed = !get3DEmbedder().requiresFeatures() || numFeatures > 0;
 		if (!canProceed)
 			setInfo(get3DEmbedder().getName()
-					+ " requires numerical features, you have no features selected.\nPlease select numerical features in step 3., or select another embedding method.",
+					+ " requires features, but no features are selected.\nPlease select features in step 3., or select another embedding method.",
 					MsgType.ERROR);
 		else
 			setInfo("", MsgType.EMPTY);
+	}
+
+	protected int defaultSelection()
+	{
+		return 1;
 	}
 
 	@Override

@@ -25,6 +25,7 @@ import javax.swing.border.EmptyBorder;
 import main.Settings;
 import util.ArrayUtil;
 import util.CountedSet;
+import util.DefaultComparator;
 import util.ImageLoader;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
@@ -236,7 +237,7 @@ public class MoleculePropertyPanel extends JPanel
 						{
 							nominalFeatureButton.setSelected(true);
 							CountedSet<String> set = CountedSet.fromArray(dataset.getStringValues(selectedProperty));
-							List<String> values = set.values();
+							List<String> values = set.values(new DefaultComparator<String>());
 							List<Double> counts = new ArrayList<Double>();
 							for (String o : values)
 								counts.add((double) set.getCount(o));

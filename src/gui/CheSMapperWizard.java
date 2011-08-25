@@ -1,5 +1,8 @@
 package gui;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
+
 import javax.swing.JFrame;
 
 import main.CheSMapping;
@@ -64,7 +67,11 @@ public class CheSMapperWizard extends WizardDialog
 
 		getRootPane().setDefaultButton(finish);
 
-		setSize(1024, 768);
+		Dimension d = new Dimension(1024, 768);
+		Dimension full = Toolkit.getDefaultToolkit().getScreenSize();
+		d.width = Math.min(full.width - 100, d.width);
+		d.height = Math.min(full.height - 100, d.height);
+		setSize(d);
 		setLocationRelativeTo(owner);
 
 		while (status < startPanel && panels.size() > startPanel)

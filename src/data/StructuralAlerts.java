@@ -105,7 +105,7 @@ public class StructuralAlerts
 				}
 
 				System.err.println(warnings);
-				names.add(FileUtil.getFilename(filename, false));
+				names.add("Smarts file: " + FileUtil.getFilename(filename, false));
 				alerts.add(a);
 				String desc = ListUtil.toString(csv.comments, "\n");
 				desc = desc.substring(2, desc.length() - 2);

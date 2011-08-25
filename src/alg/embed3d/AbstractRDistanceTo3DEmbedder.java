@@ -1,5 +1,6 @@
 package alg.embed3d;
 
+import gui.property.IntegerProperty;
 import gui.property.Property;
 import io.FileResultCacher;
 import io.RUtil;
@@ -29,7 +30,7 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 	Random3DEmbedder random = new Random3DEmbedder();
 
 	@Override
-	public boolean requiresNumericalFeatures()
+	public boolean requiresFeatures()
 	{
 		return true;
 	}
@@ -144,19 +145,42 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 		@Override
 		protected String getRScriptName()
 		{
-			return "smacof";
+			return "smacof_" + maxNumIterations;
 		}
 
 		@Override
 		public String getName()
 		{
-			return "SMACOF 3D-Embedder (using Distance)";
+			return "SMACOF 3D-Embedder (RScript)";
 		}
 
 		@Override
 		public String getDescription()
 		{
-			return null;
+			return "Uses " + Settings.R_STRING + ".\n\n"
+					+ "The Embedding is done via 'Multidimensional Scaling Using Majorization: SMACOF in R'."
+					+ "\n(The follwoing R-library is required: http://cran.r-project.org/web/packages/smacof)"
+					+ "\n\nThe features are converted to a distance matrix using euclidien distance beforehand.";
+		}
+
+		private int maxNumIterations = 150;
+
+		public static final String PROPERTY_MAX_NUM_ITERATIONS = "Maximum number of iterations (itmax)";
+
+		@Override
+		public Property[] getProperties()
+		{
+			return new Property[] { new IntegerProperty(PROPERTY_MAX_NUM_ITERATIONS, maxNumIterations) };
+		}
+
+		@Override
+		public void setProperties(Property[] properties)
+		{
+			for (Property property : properties)
+			{
+				if (property.getName().equals(PROPERTY_MAX_NUM_ITERATIONS))
+					maxNumIterations = ((IntegerProperty) property).getValue();
+			}
 		}
 
 		@Override
@@ -164,88 +188,86 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 		{
 			return "args <- commandArgs(TRUE)\n"
 					+ //
-					"\n"
-					+ "library(\"smacof\")\n"
-					+ "df = read.table(args[1])\n"
-					+ "res <- smacofSym(df, ndim = 3, metric = FALSE, ties = \"secondary\", verbose = TRUE, itmax = 150)\n"
-					+ "#res <- smacofSphere.dual(df, ndim = 3)\n" + "print(res$conf)\n" + "print(class(res$conf))\n"
-					+ "write.table(res$conf,args[2]) ";
+					"\n" + "library(\"smacof\")\n" + "df = read.table(args[1])\n"
+					+ "res <- smacofSym(df, ndim = 3, metric = FALSE, ties = \"secondary\", verbose = TRUE, itmax = "
+					+ maxNumIterations + ")\n" + "#res <- smacofSphere.dual(df, ndim = 3)\n" + "print(res$conf)\n"
+					+ "print(class(res$conf))\n" + "write.table(res$conf,args[2]) ";
 		}
 	}
 
-	public static class PCADistance3DEmbedder extends AbstractRDistanceTo3DEmbedder
-	{
-		public int getMinNumInstances()
-		{
-			return 3;
-		}
-
-		@Override
-		protected String getRScriptName()
-		{
-			return "pca";
-		}
-
-		@Override
-		public String getName()
-		{
-			return "PCA 3D-Embedder (using Distance)";
-		}
-
-		@Override
-		public String getDescription()
-		{
-			return null;
-		}
-
-		@Override
-		protected String getRScriptCode()
-		{
-			return "args <- commandArgs(TRUE)\n" //
-					+ "df = read.table(args[1])\n" + "res <- princomp(df)\n"
-					+ "print(res$scores[,1:3])\n"
-					+ "write.table(res$scores[,1:3],args[2]) ";
-		}
-	}
-
-	public static class TSNEDistance3DEmbedder extends AbstractRDistanceTo3DEmbedder
-	{
-
-		public int getMinNumInstances()
-		{
-			return 2;
-		}
-
-		@Override
-		protected String getRScriptName()
-		{
-			return "tsne";
-		}
-
-		@Override
-		public String getName()
-		{
-			return "TSNE 3D-Embedder (using Distances)";
-		}
-
-		@Override
-		public String getDescription()
-		{
-			return null;
-		}
-
-		@Override
-		protected String getRScriptCode()
-		{
-			return "args <- commandArgs(TRUE)\n" //
-					+ "\n" + "library(\"tsne\")\n"
-					+ "df = read.table(args[1])\n"
-					+ "res <- tsne(df, k = 3, perplexity=150)\n" + "print(res$ydata)\n"
-					+ "\n"
-					+ "##res <- smacofSphere.dual(df, ndim = 3)\n" + "#print(res$conf)\n"
-					+ "#print(class(res$conf))\n"
-					+ "\n" + "write.table(res$ydata,args[2]) \n" + "";
-		}
-	}
+	//	public static class PCADistance3DEmbedder extends AbstractRDistanceTo3DEmbedder
+	//	{
+	//		public int getMinNumInstances()
+	//		{
+	//			return 3;
+	//		}
+	//
+	//		@Override
+	//		protected String getRScriptName()
+	//		{
+	//			return "pca";
+	//		}
+	//
+	//		@Override
+	//		public String getName()
+	//		{
+	//			return "PCA 3D-Embedder (using Distance)";
+	//		}
+	//
+	//		@Override
+	//		public String getDescription()
+	//		{
+	//			return "Uses " + Settings.R_STRING + ".\n\n";
+	//		}
+	//
+	//		@Override
+	//		protected String getRScriptCode()
+	//		{
+	//			return "args <- commandArgs(TRUE)\n" //
+	//					+ "df = read.table(args[1])\n" + "res <- princomp(df)\n"
+	//					+ "print(res$scores[,1:3])\n"
+	//					+ "write.table(res$scores[,1:3],args[2]) ";
+	//		}
+	//	}
+	//
+	//	public static class TSNEDistance3DEmbedder extends AbstractRDistanceTo3DEmbedder
+	//	{
+	//
+	//		public int getMinNumInstances()
+	//		{
+	//			return 2;
+	//		}
+	//
+	//		@Override
+	//		protected String getRScriptName()
+	//		{
+	//			return "tsne";
+	//		}
+	//
+	//		@Override
+	//		public String getName()
+	//		{
+	//			return "TSNE 3D-Embedder (using Distances)";
+	//		}
+	//
+	//		@Override
+	//		public String getDescription()
+	//		{
+	//			return "Uses " + Settings.R_STRING + ".\n\n";
+	//		}
+	//
+	//		@Override
+	//		protected String getRScriptCode()
+	//		{
+	//			return "args <- commandArgs(TRUE)\n" //
+	//					+ "\n" + "library(\"tsne\")\n"
+	//					+ "df = read.table(args[1])\n"
+	//					+ "res <- tsne(df, k = 3, perplexity=150)\n" + "print(res$ydata)\n"
+	//					+ "\n"
+	//					+ "##res <- smacofSphere.dual(df, ndim = 3)\n" + "#print(res$conf)\n"
+	//					+ "#print(class(res$conf))\n"
+	//					+ "\n" + "write.table(res$ydata,args[2]) \n" + "";
+	//		}
+	//	}
 
 }

@@ -13,8 +13,8 @@ public class ClusterWizardPanel extends GenericWizardPanel
 	public static DatasetClusterer CLUSTERERS[];
 	static
 	{
-		CLUSTERERS = new DatasetClusterer[] { new NoClusterer(), new StructuralClustererService() }; //new KMeansClusterer(),
-		CLUSTERERS = ArrayUtil.concat(DatasetClusterer.class, CLUSTERERS, WekaClusterer.WEKA_CLUSTERER);
+		CLUSTERERS = ArrayUtil.concat(DatasetClusterer.class, new DatasetClusterer[] { new NoClusterer() },
+				WekaClusterer.WEKA_CLUSTERER, new DatasetClusterer[] { new StructuralClustererService() });
 	}
 
 	public ClusterWizardPanel(CheSMapperWizard w)
@@ -32,6 +32,9 @@ public class ClusterWizardPanel extends GenericWizardPanel
 			setInfo(getDatasetClusterer().getName()
 					+ " requires numerical features, you have no features selected.\nPlease select numerical features in previous step, or select another cluster method.",
 					MsgType.ERROR);
+		else if (getDatasetClusterer().getFixedNumClustersProperty() != null)
+			setInfo("This clusterer returns a fixed number of clusters (set property '"
+					+ getDatasetClusterer().getFixedNumClustersProperty() + "').", MsgType.INFO);
 		else
 			setInfo("", MsgType.EMPTY);
 	}

@@ -153,7 +153,7 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 				if (set.get(0) instanceof OBFingerprintProperty.OBFingerPrints)
 					warning = Settings.BABEL_NOT_FOUND_WARNING;
 				else
-					warning = "The feature(s) is/are most likely not suited for clustering and embedding.\\nYou have to asign the feature type manually (by clicking on 'Nominal') before adding the feature/s.";
+					warning = "The feature(s) is/are most likely not suited for clustering and embedding.\nYou have to asign the feature type manually (by clicking on 'Nominal') before adding the feature/s.";
 
 				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, "Could not add the following feature(s):\n"
 						+ ListUtil.toString((List<?>) evt.getNewValue(), "\n") + "\n\n" + warning,
@@ -224,7 +224,7 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 				+ addFeaturesText
 				+ "'. The selected features - shown in the right panel - will be used for clustering and/or embedding.\n\n"
 				+ "The clustering/embedding result relies on the selected features. For example, select structural features (e.g. OpenBabel Fingerprint FP2) to cluster structural similar compounds together and to place structural similar compounds close together in 3D-space.\n\n"
-				+ "Consider carefully how much/which feature/s to select. "
+				+ "Consider carefully how many/which feature/s to chose. "
 				+ "Select only a handfull of features to increase the influence of each single feature on the clustering and embedding. "
 				+ "Selecting a bunch of features will effect the clustering and embedding result to represent 'overall' similarity.";
 		if (highlightedCategory != null && !highlightedCategory.equals(ROOT))
@@ -233,18 +233,22 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 				info = "Features that are already included in the provided dataset.\n"
 						+ "Not all features may be suitable for clustering and/or embedding (like for example SMILES strings, or info text).";
 			else if (highlightedCategory.equals(CDK_FEATURES))
-				info = Settings.CDK_STRING
-						+ "\nThis integrated library can be used to compute a range of numeric chemical descriptors (like LogP or Weight).";
+				info = "Uses "
+						+ Settings.CDK_STRING
+						+ ".\n\n"
+						+ "This integrated library can compute a range of numeric chemical descriptors (like LogP or Weight).";
 			else if (highlightedCategory.equals(OB_FINGERPRINT_FEATURES))
 			{
-				info = "OpenBabel provides several Fingerprints that can be computed for each comopund."
-						+ "\nEach bit of the fingerprint is converted to a binary nominal feature.";
+				info = "Uses "
+						+ Settings.OPENBABEL_STRING
+						+ ".\n\n"
+						+ "OpenBabel provides several Fingerprints that can be computed for each comopund. Each bit of the fingerprint is converted to a binary nominal feature.";
 				if (Settings.CM_BABEL_PATH == null)
 					info = Settings.BABEL_NOT_FOUND_WARNING + "\n\n" + info;
 			}
 			else if (highlightedCategory.equals(STRUCTURAL_ALERTS))
 				info = "Structural alerts are smarts that define a molecular subgraph."
-						+ "\nEach alert is used as a binary nominal feature (1 -> subgraph occurs, 0 -> subgraph does not occur)."
+						+ "\nEach alert is used as a binary nominal feature (1 => subgraph occurs, 0 => subgraph does not occur)."
 						+ "\n\nCopy a smarts.csv into the following folder to integrate any structural alerts: "
 						+ Settings.STRUCTURAL_ALERTS_DIR + File.separator
 						+ "\nEach line in the csv-file should look like this:"
@@ -285,6 +289,7 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 
 		selfUpdate = true;
 
+		MoleculePropertySet[] selected = selector.getSelected();
 		selector.clearElements();
 
 		IntegratedProperty[] integrated = dataset.getIntegratedProperties(true);
@@ -303,7 +308,13 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 		Vector<String> selection = VectorUtil.fromCSVString(integratedFeatures);
 		for (String string : selection)
 		{
-			IntegratedProperty p = IntegratedProperty.fromString(string);
+			int index = string.lastIndexOf('#');
+			if (index == -1)
+				throw new Error("no type in serialized molecule prop");
+			Type t = Type.valueOf(string.substring(index + 1));
+			String feat = string.substring(0, index);
+
+			IntegratedProperty p = IntegratedProperty.fromString(feat, t);
 			selector.setSelected(p);
 		}
 
@@ -332,6 +343,8 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 				selector.setSelected(d);
 		}
 
+		selector.setSelected(selected);
+
 		update();
 		selfUpdate = false;
 	}
@@ -339,8 +352,12 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 	@Override
 	public void proceed()
 	{
-		Settings.PROPS.put("features-integrated",
-				ArrayUtil.toCSVString(selector.getSelected(INTEGRATED_FEATURES), true));
+		MoleculePropertySet[] integratedProps = selector.getSelected(INTEGRATED_FEATURES);
+		String[] serilizedProps = new String[integratedProps.length];
+		for (int i = 0; i < serilizedProps.length; i++)
+			serilizedProps[i] = integratedProps[i] + "#" + integratedProps[i].get(0).getType();
+		Settings.PROPS.put("features-integrated", ArrayUtil.toCSVString(serilizedProps, true));
+
 		Settings.PROPS.put("features-cdk", ArrayUtil.toCSVString(selector.getSelected(CDK_FEATURES), true));
 		Settings.PROPS.put("features-ob-fingerprints",
 				ArrayUtil.toCSVString(selector.getSelected(OB_FINGERPRINT_FEATURES), true));

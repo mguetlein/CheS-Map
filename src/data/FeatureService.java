@@ -191,6 +191,17 @@ public class FeatureService
 		}
 	}
 
+	public static boolean guessNominalFeatureType(int numDistinctFeatures, int datasetSize)
+	{
+		if (numDistinctFeatures <= 5)
+			return true;
+		if (datasetSize > 200 && numDistinctFeatures <= 10)
+			return true;
+		if (datasetSize > 1000 && numDistinctFeatures <= 20)
+			return true;
+		return false;
+	}
+
 	public synchronized void loadDataset(DatasetFile dataset, boolean loadHydrogen, final Progressable progress)
 			throws Exception
 	{
@@ -252,7 +263,7 @@ public class FeatureService
 					//						if (ArrayUtil.indexOf(allCDKDescriptors, key.toString()) != -1)
 					//							throw new IllegalStateException("sdf-property has equal name as cdk-descriptor: "
 					//									+ key.toString());
-					IntegratedProperty p = IntegratedProperty.fromString(key.toString());
+					IntegratedProperty p = IntegratedProperty.create(key.toString());
 					// add key to sdfProperties
 					integratedProperties.get(dataset).add(p);
 
@@ -315,7 +326,7 @@ public class FeatureService
 					//					numericSdfProperties.get(f).add(p);
 					p.setTypeAllowed(Type.NOMINAL, true);
 					p.setTypeAllowed(Type.NUMERIC, true);
-					if (numDistinct <= 5 || numDistinct <= o.length / 20)
+					if (guessNominalFeatureType(numDistinct, o.length))
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(Type.NUMERIC);
@@ -327,7 +338,7 @@ public class FeatureService
 				{
 					p.setTypeAllowed(Type.NOMINAL, true);
 					p.setTypeAllowed(Type.NUMERIC, false);
-					if (numDistinct <= 5 || numDistinct <= o.length / 20)
+					if (guessNominalFeatureType(numDistinct, o.length))
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(null);

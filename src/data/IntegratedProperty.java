@@ -18,18 +18,23 @@ public class IntegratedProperty extends AbstractMoleculeProperty implements Mole
 		this.property = property;
 	}
 
-	public static IntegratedProperty fromString(String property)
+	public static IntegratedProperty create(String property)
 	{
 		IntegratedProperty p = new IntegratedProperty(property);
 		if (instances.indexOf(p) == -1)
-		{
 			instances.add(p);
-			return p;
-		}
 		else
-		{
-			return instances.get(instances.indexOf(p));
-		}
+			p = instances.get(instances.indexOf(p));
+		return p;
+	}
+
+	public static IntegratedProperty fromString(String property, Type t)
+	{
+		IntegratedProperty p = create(property);
+		if (!p.isTypeAllowed(t))
+			throw new IllegalArgumentException();
+		p.setType(t);
+		return p;
 	}
 
 	@Override

@@ -98,10 +98,14 @@ public class CDKProperty extends AbstractMoleculeProperty
 		return new CDKDescriptor(desc).getSize();
 	}
 
-	public static CDKProperty fromString(String s)
+	public static CDKProperty fromString(String s, Type t)
 	{
 		String split[] = s.split("_");
-		return new CDKProperty(CDKDescriptorClass.valueOf(split[0]), Integer.parseInt(split[1]));
+		CDKProperty p = new CDKProperty(CDKDescriptorClass.valueOf(split[0]), Integer.parseInt(split[1]));
+		if (!p.isTypeAllowed(t))
+			throw new IllegalArgumentException();
+		p.setType(t);
+		return p;
 	}
 
 	@Override

@@ -12,7 +12,7 @@ import dataInterface.MoleculeProperty;
 
 public interface ThreeDEmbedder extends Algorithm
 {
-	public boolean requiresNumericalFeatures();
+	public boolean requiresFeatures();
 
 	public boolean requiresDistances();
 

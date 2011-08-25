@@ -1,5 +1,6 @@
 package alg.embed3d;
 
+import gui.property.IntegerProperty;
 import gui.property.Property;
 import io.ExternalTool;
 import io.RUtil;
@@ -30,7 +31,7 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 	Random3DEmbedder random = new Random3DEmbedder();
 
 	@Override
-	public boolean requiresNumericalFeatures()
+	public boolean requiresFeatures()
 	{
 		return true;
 	}
@@ -39,10 +40,10 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
 			final DistanceMatrix<MolecularPropertyOwner> distances)
 	{
-		if (features.size() < getMinNumFeatures())
+		if (features.size() < getMinNumFeatures() || instances.size() < getMinNumInstances())
 		{
 			System.out.println("WARNING: " + getRScriptName() + " needs at least " + getMinNumFeatures()
-					+ " features for embedding, returning 0-0-0 positions");
+					+ " features and " + getMinNumInstances() + " instances for embedding, returning 0-0-0 positions");
 			random.embed(dataset, instances, features, distances);
 			positions = random.positions;
 			return;
@@ -124,6 +125,8 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 
 	public abstract int getMinNumFeatures();
 
+	public abstract int getMinNumInstances();
+
 	public static class TSNEFeature3DEmbedder extends AbstractRFeatureTo3DEmbedder
 	{
 
@@ -135,19 +138,51 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 		@Override
 		public String getRScriptName()
 		{
-			return "tsne";
+			return "tsne_" + maxNumIterations + "_" + perplexity + "_" + initial_dims;
 		}
 
 		@Override
 		public String getName()
 		{
-			return "TSNE 3D-Embedder (using Features)";
+			return "TSNE 3D-Embedder (RScript)";
 		}
 
 		@Override
 		public String getDescription()
 		{
-			return null;
+			return "Uses " + Settings.R_STRING + ".\n\n" + "The Embedding is done with the t-SNE algorithm."
+					+ "\n(The following R-library is required: http://cran.r-project.org/web/packages/tsne)\n";
+
+		}
+
+		private int maxNumIterations = 1000;
+		private int initial_dims = 30;
+		private int perplexity = 30;
+
+		public static final String PROPERTY_MAX_NUM_ITERATIONS = "Maximum number of iterations (max_iter)";
+		public static final String PROPERTY_PERPLEXITY = "Optimal number of neighbors (perplexity)";
+		public static final String PROPERTY_INITIAL_DIMS = "The number of dimensions to use in reduction method (initial_dims)";
+
+		@Override
+		public Property[] getProperties()
+		{
+			return new Property[] { new IntegerProperty(PROPERTY_MAX_NUM_ITERATIONS, maxNumIterations),
+					new IntegerProperty(PROPERTY_PERPLEXITY, perplexity),
+					new IntegerProperty(PROPERTY_INITIAL_DIMS, initial_dims) };
+		}
+
+		@Override
+		public void setProperties(Property[] properties)
+		{
+			for (Property property : properties)
+			{
+				if (property.getName().equals(PROPERTY_MAX_NUM_ITERATIONS))
+					maxNumIterations = ((IntegerProperty) property).getValue();
+				if (property.getName().equals(PROPERTY_PERPLEXITY))
+					perplexity = ((IntegerProperty) property).getValue();
+				if (property.getName().equals(PROPERTY_INITIAL_DIMS))
+					initial_dims = ((IntegerProperty) property).getValue();
+			}
 		}
 
 		@Override
@@ -156,11 +191,19 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 			return "args <- commandArgs(TRUE)\n" //
 					+ "\n" + "library(\"tsne\")\n"
 					+ "df = read.table(args[1])\n"
-					+ "res <- tsne(df, k = 3, perplexity=150)\n" + "print(res$ydata)\n"
+					+ "res <- tsne(df, k = 3, perplexity=" + perplexity + ", max_iter="
+					+ maxNumIterations
+					+ ", initial_dims=" + initial_dims + ")\n" + "print(res$ydata)\n"
 					+ "\n"
 					+ "##res <- smacofSphere.dual(df, ndim = 3)\n" + "#print(res$conf)\n"
 					+ "#print(class(res$conf))\n"
 					+ "\n" + "write.table(res$ydata,args[2]) \n" + "";
+		}
+
+		@Override
+		public int getMinNumInstances()
+		{
+			return 2;
 		}
 	}
 
@@ -172,6 +215,12 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 		}
 
 		@Override
+		public int getMinNumInstances()
+		{
+			return 2;
+		}
+
+		@Override
 		public String getRScriptName()
 		{
 			return "pca";
@@ -180,13 +229,14 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 		@Override
 		public String getDescription()
 		{
-			return null;
+			return "Uses " + Settings.R_STRING + ".\n\n"
+					+ "The first 3 principal components are employed as 3D coordinates.";
 		}
 
 		@Override
 		public String getName()
 		{
-			return "PCA 3D-Embedder (using Features)";
+			return "PCA 3D-Embedder (RScript)";
 		}
 
 		@Override

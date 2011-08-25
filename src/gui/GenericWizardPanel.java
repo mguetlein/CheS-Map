@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.util.HashMap;
 
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -107,7 +108,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 		add(p, cc.xy(1, row));
 		row += 2;
 
-		infoTextArea.setVisible(false);
+		setInfo("", MsgType.EMPTY);
 		//builder.nextLine();
 
 		DefaultFormBuilder rBuilder = new DefaultFormBuilder(new FormLayout("fill:p:grow"));
@@ -136,7 +137,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 		add(sep, cc.xy(1, row));
 		row += 2;
 
-		descriptionPanel = new DescriptionPanel(400);
+		descriptionPanel = new DescriptionPanel();
 		//		builder.append(descriptionPanel);
 		add(descriptionPanel, cc.xy(1, row));
 		row += 2;
@@ -183,15 +184,19 @@ public abstract class GenericWizardPanel extends WizardPanel
 		}
 		if (!selected)
 		{
-			int firstWorking = 0;
-			for (int i = 0; i < getAlgorithms().length; i++)
-				if (getAlgorithms()[i].getPreconditionErrors() == null)
-				{
-					firstWorking = i;
-					break;
-				}
-			radioButtons[firstWorking].setSelected(true);
-			updateAlgorithmSelection(firstWorking);
+			int selection = defaultSelection();
+			if (selection == -1)
+			{
+				selection = 0;
+				for (int i = 0; i < getAlgorithms().length; i++)
+					if (getAlgorithms()[i].getPreconditionErrors() == null)
+					{
+						selection = i;
+						break;
+					}
+			}
+			radioButtons[selection].setSelected(true);
+			updateAlgorithmSelection(selection);
 		}
 	}
 
@@ -201,7 +206,15 @@ public abstract class GenericWizardPanel extends WizardPanel
 	{
 		selectedAlgorithm = getAlgorithms()[index];
 
-		descriptionPanel.setText(selectedAlgorithm.getName(), selectedAlgorithm.getDescription());
+		int numProps = 0;
+		if (selectedAlgorithm.getProperties() != null)
+			numProps = selectedAlgorithm.getProperties().length;
+		int maxLength;
+		if (numProps == 0)
+			maxLength = 1200;
+		else
+			maxLength = 400;
+		descriptionPanel.setText(selectedAlgorithm.getName(), selectedAlgorithm.getDescription(), maxLength);
 
 		preconditionsMet = true;
 		String errors = selectedAlgorithm.getPreconditionErrors();
@@ -230,9 +243,14 @@ public abstract class GenericWizardPanel extends WizardPanel
 	{
 	}
 
+	protected int defaultSelection()
+	{
+		return -1;
+	}
+
 	protected void setInfo(String string, MsgType type)
 	{
-		infoTextArea.setVisible(type != MsgType.EMPTY);
+		//infoTextArea.setVisible(type != MsgType.EMPTY);
 		infoTextArea.setText(string);
 		switch (type)
 		{
@@ -246,7 +264,18 @@ public abstract class GenericWizardPanel extends WizardPanel
 				infoIcon.setIcon(ImageLoader.ERROR);
 				break;
 			case EMPTY:
-				infoIcon.setIcon(null);
+				infoIcon.setIcon(new ImageIcon()
+				{
+					public int getIconHeight()
+					{
+						return 16;
+					}
+
+					public int getIconWidth()
+					{
+						return 16;
+					}
+				});
 				break;
 		}
 	}

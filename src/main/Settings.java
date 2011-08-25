@@ -25,6 +25,7 @@ import javax.swing.UIManager;
 import util.FileUtil;
 import util.ImageLoader;
 import util.OSUtil;
+import weka.core.Version;
 import data.CDKSmartsHandler;
 import dataInterface.SmartsHandler;
 
@@ -311,6 +312,11 @@ public class Settings
 	public static String CDK_VERSION = "1.4.0";
 	public static String CDK_STRING = "The Chemistry Development Kit (CDK) (Version " + CDK_VERSION
 			+ ", see http://cdk.sourceforge.net)";
+	public static String OPENBABEL_STRING = "Open Babel: The Open Source Chemistry Toolbox (http://openbabel.org)";
+	public static String WEKA_STRING = "WEKA : Data Mining Software in Java (Version " + Version.VERSION
+			+ ", see http://www.cs.waikato.ac.nz/ml/weka)";
+	public static String R_STRING = "The R Project for Statistical Computing (http://www.r-project.org)";
+	public static String SMSD_STRING = "The Small Molecule Subgraph Detector (SMSD) (see http://www.ebi.ac.uk/thornton-srv/software/SMSD, integrated into CDK)";
 
 	// ------------------ TMP/RESULT-FILE SUPPORT --------------------------------------------- 
 

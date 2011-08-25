@@ -91,13 +91,13 @@ public class Random3DEmbedder implements ThreeDEmbedder
 	@Override
 	public String getName()
 	{
-		return "Random 3D-Embedder";
+		return "No 3D-Embedding (Random positions)";
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return "Arranges randomly, equally distributed in a sphere.";
+		return "The compound features are ignored. This compounds are arranged randomly, equally distributed in a sphere.";
 	}
 
 	@Override
@@ -107,7 +107,7 @@ public class Random3DEmbedder implements ThreeDEmbedder
 	}
 
 	@Override
-	public boolean requiresNumericalFeatures()
+	public boolean requiresFeatures()
 	{
 		return false;
 	}

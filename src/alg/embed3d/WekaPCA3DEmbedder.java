@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.vecmath.Vector3f;
 
+import main.Settings;
 import util.DistanceMatrix;
 import weka.CompoundArffWriter;
 import weka.WekaPropertyUtil;
@@ -80,13 +81,14 @@ public class WekaPCA3DEmbedder implements ThreeDEmbedder
 	@Override
 	public String getName()
 	{
-		return getClass().getSimpleName();
+		return "PCA 3D-Embedder (WEKA)";
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return pca.globalInfo();
+		return "Uses " + Settings.WEKA_STRING + ".\n\n"
+				+ "The first 3 principal components are employed as 3D coordinates.\n\n" + pca.globalInfo();
 	}
 
 	@Override
@@ -96,7 +98,7 @@ public class WekaPCA3DEmbedder implements ThreeDEmbedder
 	}
 
 	@Override
-	public boolean requiresNumericalFeatures()
+	public boolean requiresFeatures()
 	{
 		return true;
 	}
