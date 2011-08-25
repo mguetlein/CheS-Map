@@ -23,7 +23,7 @@ public class UseOrigStructures implements ThreeDBuilder
 	@Override
 	public String getName()
 	{
-		return "Use Original Structures";
+		return "No 3D-Structure Generation (Use Original Structures)";
 	}
 
 	@Override

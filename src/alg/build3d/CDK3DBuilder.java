@@ -41,13 +41,13 @@ public class CDK3DBuilder extends Abstract3DBuilder
 	@Override
 	public String getName()
 	{
-		return "CDK 3D-Builder";
+		return "CDK 3D-Structure Generation";
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return "Uses " + Settings.CDK_STRING + ".\n" + "The Model Builder 3D (" + ModelBuilder3D.class.getName()
+		return "Uses " + Settings.CDK_STRING + ".\n\n" + "The Model Builder 3D (" + ModelBuilder3D.class.getName()
 				+ ") supports 2 different forcefields. Tends to be faster but less acurate then OpenBabel.";
 	}
 

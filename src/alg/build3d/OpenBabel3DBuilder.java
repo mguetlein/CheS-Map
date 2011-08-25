@@ -26,9 +26,12 @@ public class OpenBabel3DBuilder extends Abstract3DBuilder
 	@Override
 	public String getDescription()
 	{
-		return "Uses the openbabel gen3d option to compute 3D coordinates. May take very long, up to a view minutes per compound. "
-				+ "The result is stored so you have to do the computation only once."
-				+ "\n\nMore info: http://openbabel.org/wiki/Tutorial:Basic_Usage";
+		return "Uses "
+				+ Settings.OPENBABEL_STRING
+				+ ".\n\n"
+				+ "The 'gen3d' option is used to compute 3D coordinates. May take very long, up to a view minutes per compound. "
+				+ "The result is stored so you have to do the computation only once. "
+				+ "(More info: http://openbabel.org/wiki/Tutorial:Basic_Usage)";
 	}
 
 	@Override
@@ -48,7 +51,7 @@ public class OpenBabel3DBuilder extends Abstract3DBuilder
 	@Override
 	public String getName()
 	{
-		return "OpenBabel 3D-Builder";
+		return "OpenBabel 3D-Structure Generation";
 	}
 
 	@Override

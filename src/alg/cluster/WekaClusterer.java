@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import main.Settings;
 import util.ListUtil;
 import weka.CompoundArffWriter;
 import weka.WekaPropertyUtil;
@@ -23,7 +24,6 @@ import weka.clusterers.FarthestFirst;
 import weka.clusterers.HierarchicalClusterer;
 import weka.clusterers.SimpleKMeans;
 import weka.core.Instances;
-import weka.core.Version;
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import dataInterface.ClusterData;
@@ -64,6 +64,16 @@ public class WekaClusterer implements DatasetClusterer
 	private WekaClusterer(Clusterer wekaClusterer)
 	{
 		this.wekaClusterer = wekaClusterer;
+	}
+
+	@Override
+	public String getFixedNumClustersProperty()
+	{
+		if (wekaClusterer instanceof SimpleKMeans || wekaClusterer instanceof FarthestFirst
+				|| wekaClusterer instanceof HierarchicalClusterer)
+			return "numClusters";
+		else
+			return null;
 	}
 
 	@Override
@@ -141,8 +151,7 @@ public class WekaClusterer implements DatasetClusterer
 	@Override
 	public String getDescription()
 	{
-		String s = "A clustering algorithm integrated from the WEKA workbench (version " + Version.VERSION
-				+ ", see http://www.cs.waikato.ac.nz/ml/weka).\n\n";
+		String s = "Uses " + Settings.WEKA_STRING + ".\n\n";
 		// weka has no interface for globalInfo
 		try
 		{

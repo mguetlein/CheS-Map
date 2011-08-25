@@ -18,4 +18,6 @@ public interface DatasetClusterer extends Algorithm
 	public List<ClusterData> getClusters();
 
 	public boolean requiresNumericalFeatures();
+
+	public String getFixedNumClustersProperty();
 }

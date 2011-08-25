@@ -15,7 +15,7 @@ public class NoAligner implements ThreeDAligner
 	@Override
 	public String getDescription()
 	{
-		return "Does NOT align compounds, leaves the dataset as it is.";
+		return "Does NOT align compounds. Hence, the compounds are oriented in 3D-space as provided in the dataset.";
 	}
 
 	@Override

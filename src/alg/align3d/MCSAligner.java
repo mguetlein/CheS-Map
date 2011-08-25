@@ -35,13 +35,19 @@ public class MCSAligner implements ThreeDAligner
 	@Override
 	public String getName()
 	{
-		return "MCS Aligner";
+		return "Maximum Common Subgraph (MCS) Aligner";
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return "Uses the obfit command from OpenBabel to align compounds of a cluster according to their Most Common Subgraph.";
+		return "First the Maximum Common Subgraph (MCS) of each cluster is computed.\n"
+				+ "This is done with "
+				+ Settings.SMSD_STRING
+				+ ".\n\n"
+				+ "Second the compounds of each cluster are aligned according to their MCS. "
+				+ "Hence, their orientation in 3D space is adjusted such that the common substructure is superimposed.\n"
+				+ "This is done with " + Settings.OPENBABEL_STRING + ", using the obfit command.";
 	}
 
 	List<String> alignedFiles;

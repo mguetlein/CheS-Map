@@ -12,10 +12,10 @@ import java.util.List;
 import main.Settings;
 import opentox.DatasetUtil;
 import opentox.RESTUtil;
-import data.DefaultFeatureComputer;
 import data.CDKProperty;
 import data.ClusterDataImpl;
 import data.DatasetFile;
+import data.DefaultFeatureComputer;
 import data.IntegratedProperty;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
@@ -184,6 +184,12 @@ public class StructuralClustererService implements DatasetClusterer
 
 	@Override
 	public String getPreconditionErrors()
+	{
+		return null;
+	}
+
+	@Override
+	public String getFixedNumClustersProperty()
 	{
 		return null;
 	}

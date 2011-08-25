@@ -37,7 +37,8 @@ public class NoClusterer implements DatasetClusterer
 	@Override
 	public String getDescription()
 	{
-		return "Does not perform clustering, i.e. a single cluster is returned.";
+		return "No clustering is performed. This embedds all structures directly into 3D-space without separating them into clusters. "
+				+ "This is a valid option especially for smaller datasets (but can be used for any dataset size).";
 	}
 
 	@Override
@@ -72,6 +73,12 @@ public class NoClusterer implements DatasetClusterer
 	public boolean requiresNumericalFeatures()
 	{
 		return false;
+	}
+
+	@Override
+	public String getFixedNumClustersProperty()
+	{
+		return null;
 	}
 
 }
