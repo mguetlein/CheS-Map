@@ -1,5 +1,6 @@
 package alg.align3d;
 
+import gui.binloc.Binary;
 import gui.property.Property;
 
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class NoAligner implements ThreeDAligner
 	}
 
 	@Override
-	public String getPreconditionErrors()
+	public Binary getBinary()
 	{
 		return null;
 	}

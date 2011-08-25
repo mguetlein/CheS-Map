@@ -1,6 +1,7 @@
 package alg.cluster;
 
 import gui.Progressable;
+import gui.binloc.Binary;
 import gui.property.Property;
 
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class NoClusterer implements DatasetClusterer
 	}
 
 	@Override
-	public String getPreconditionErrors()
+	public Binary getBinary()
 	{
 		return null;
 	}

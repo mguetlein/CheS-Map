@@ -36,8 +36,8 @@ public class Build3DWizardPanel extends GenericWizardPanel
 
 	public void update(DatasetFile dataset)
 	{
-		if (!preconditionsMet)
-			return;
+		//		if (!preconditionsMet)
+		//			return;
 		if (dataset.has3D())
 			setInfo("3D already available in original dataset '" + dataset.getName()
 					+ "' (at least one Z-Coordinate is set)", (get3DBuilder().isReal3DBuilder() ? MsgType.WARNING

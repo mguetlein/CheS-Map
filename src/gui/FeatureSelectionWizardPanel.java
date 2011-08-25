@@ -1,5 +1,7 @@
 package gui;
 
+import gui.binloc.Binary;
+
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.beans.PropertyChangeEvent;
@@ -17,7 +19,6 @@ import javax.swing.JPanel;
 import main.Settings;
 import util.ArrayUtil;
 import util.ImageLoader;
-import util.ListUtil;
 import util.VectorUtil;
 import alg.FeatureComputer;
 
@@ -42,6 +43,8 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 	Selector<MoleculePropertySet> selector;
 
 	JLabel numFeaturesLabel;
+
+	JPanel binaryPanelContainer;
 
 	MoleculePropertyPanel moleculePropertyPanel;
 
@@ -69,11 +72,21 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 		builder.append(lPanel);
 		builder.nextLine();
 
+		Settings.BABEL_BINARY.addPropertyChangeListener(new PropertyChangeListener()
+		{
+			@Override
+			public void propertyChange(PropertyChangeEvent evt)
+			{
+				if (Settings.BABEL_BINARY.isFound())
+					selector.repaint();
+			}
+		});
+
 		selector = new Selector<MoleculePropertySet>(MoleculePropertySet.class, ROOT)
 		{
 			public ImageIcon getIcon(MoleculePropertySet elem)
 			{
-				if (elem instanceof OBFingerprintProperty.OBFingerPrints && Settings.CM_BABEL_PATH == null)
+				if (elem instanceof OBFingerprintProperty.OBFingerPrints && !Settings.BABEL_BINARY.isFound())
 					return ImageLoader.ERROR;
 
 				MoleculeProperty.Type type = MoleculePropertySetUtil.getType(elem);
@@ -93,7 +106,7 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 			@Override
 			public boolean isValid(MoleculePropertySet elem)
 			{
-				if (elem instanceof OBFingerprintProperty.OBFingerPrints && Settings.CM_BABEL_PATH == null)
+				if (elem instanceof OBFingerprintProperty.OBFingerPrints && !Settings.BABEL_BINARY.isFound())
 					return false;
 				return MoleculePropertySetUtil.getType(elem) != null;
 			}
@@ -101,7 +114,7 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 			@Override
 			public ImageIcon getCategoryIcon(String name)
 			{
-				if (OB_FINGERPRINT_FEATURES.equals(name) && Settings.CM_BABEL_PATH == null)
+				if (OB_FINGERPRINT_FEATURES.equals(name) && !Settings.BABEL_BINARY.isFound())
 					return ImageLoader.ERROR;
 				return null;
 			}
@@ -134,7 +147,12 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 			public void propertyChange(PropertyChangeEvent evt)
 			{
 				if (selector.getHighlightedElement() != null)
+				{
 					moleculePropertyPanel.setSelectedPropertySet(selector.getHighlightedElement());
+					binaryPanelContainer.removeAll();
+					binaryPanelContainer.revalidate();
+					binaryPanelContainer.repaint();
+				}
 				else
 				{
 					moleculePropertyPanel.setSelectedPropertySet(null);
@@ -148,15 +166,17 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
+				DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("fill:p:grow"));
+				b.append("Could not add the following feature(s)");
+				for (Object o : (List<?>) evt.getNewValue())
+					b.append("* " + o);
 				List<MoleculePropertySet> set = (List<MoleculePropertySet>) evt.getNewValue();
-				String warning;
 				if (set.get(0) instanceof OBFingerprintProperty.OBFingerPrints)
-					warning = Settings.BABEL_NOT_FOUND_WARNING;
+					b.append(Settings.getBinaryComponent(Settings.BABEL_BINARY));
 				else
-					warning = "The feature(s) is/are most likely not suited for clustering and embedding.\nYou have to asign the feature type manually (by clicking on 'Nominal') before adding the feature/s.";
+					b.append("The feature(s) is/are most likely not suited for clustering and embedding.\nYou have to asign the feature type manually (by clicking on 'Nominal') before adding the feature/s.");
 
-				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, "Could not add the following feature(s):\n"
-						+ ListUtil.toString((List<?>) evt.getNewValue(), "\n") + "\n\n" + warning,
+				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, b.getPanel(),
 						"Warning - Could not add feature", JOptionPane.WARNING_MESSAGE);
 			}
 		});
@@ -212,6 +232,10 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 		builder.append(moleculePropertyPanel);
 		builder.nextLine();
 
+		binaryPanelContainer = new JPanel(new BorderLayout());
+		builder.append(binaryPanelContainer);
+		builder.nextLine();
+
 		setLayout(new BorderLayout());
 		add(builder.getPanel());
 
@@ -220,6 +244,7 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 
 	protected void updateFeatureInfo(String highlightedCategory)
 	{
+		Binary bin = null;
 		String info = "The available features are shown in the left panel. Select (a group of) feature/s and click '"
 				+ addFeaturesText
 				+ "'. The selected features - shown in the right panel - will be used for clustering and/or embedding.\n\n"
@@ -243,8 +268,7 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 						+ Settings.OPENBABEL_STRING
 						+ ".\n\n"
 						+ "OpenBabel provides several Fingerprints that can be computed for each comopund. Each bit of the fingerprint is converted to a binary nominal feature.";
-				if (Settings.CM_BABEL_PATH == null)
-					info = Settings.BABEL_NOT_FOUND_WARNING + "\n\n" + info;
+				bin = Settings.BABEL_BINARY;
 			}
 			else if (highlightedCategory.equals(STRUCTURAL_ALERTS))
 				info = "Structural alerts are smarts that define a molecular subgraph."
@@ -261,6 +285,13 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 				info = StructuralAlerts.instance.getDescriptionForName(highlightedCategory);
 		}
 		moleculePropertyPanel.showInfoText(info);
+
+		if (bin == null)
+			binaryPanelContainer.removeAll();
+		else
+			binaryPanelContainer.add(Settings.getBinaryComponent(bin), BorderLayout.WEST);
+		binaryPanelContainer.revalidate();
+		binaryPanelContainer.repaint();
 	}
 
 	int selectedPropertyIndex = 0;

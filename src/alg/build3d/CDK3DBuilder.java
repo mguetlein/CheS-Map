@@ -1,5 +1,6 @@
 package alg.build3d;
 
+import gui.binloc.Binary;
 import gui.property.Property;
 import gui.property.StringSelectProperty;
 import main.Settings;
@@ -55,6 +56,12 @@ public class CDK3DBuilder extends Abstract3DBuilder
 	public String getInitials()
 	{
 		return "cdk_" + forcefield + "_";
+	}
+
+	@Override
+	public Binary getBinary()
+	{
+		return null;
 	}
 
 }

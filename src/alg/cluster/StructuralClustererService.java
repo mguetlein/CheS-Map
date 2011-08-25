@@ -1,6 +1,7 @@
 package alg.cluster;
 
 import gui.Progressable;
+import gui.binloc.Binary;
 import gui.property.DoubleProperty;
 import gui.property.Property;
 import gui.property.StringProperty;
@@ -183,7 +184,7 @@ public class StructuralClustererService implements DatasetClusterer
 	}
 
 	@Override
-	public String getPreconditionErrors()
+	public Binary getBinary()
 	{
 		return null;
 	}

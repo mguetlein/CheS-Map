@@ -1,6 +1,7 @@
 package alg.build3d;
 
 import gui.Progressable;
+import gui.binloc.Binary;
 import gui.property.Property;
 import data.DatasetFile;
 
@@ -50,7 +51,7 @@ public class UseOrigStructures implements ThreeDBuilder
 	}
 
 	@Override
-	public String getPreconditionErrors()
+	public Binary getBinary()
 	{
 		return null;
 	}

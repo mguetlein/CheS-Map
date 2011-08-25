@@ -13,6 +13,4 @@ public interface ThreeDBuilder extends Algorithm
 	public String getDescription();
 
 	public boolean isReal3DBuilder();
-
-	public String getPreconditionErrors();
 }

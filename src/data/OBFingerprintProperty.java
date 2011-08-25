@@ -147,7 +147,8 @@ public class OBFingerprintProperty extends AbstractMoleculeProperty
 		{
 			String filepath = Settings.destinationFile(dataset.getLocalPath(), dataset.getName() + ".fingerprint.hex");
 
-			String cmd = Settings.CM_BABEL_PATH + " " + dataset.getSDFPath(false) + " -ofpt -xf" + type + " -xho";
+			String cmd = Settings.BABEL_BINARY.getLocation() + " " + dataset.getSDFPath(false) + " -ofpt -xf" + type
+					+ " -xho";
 			ExternalToolUtil.run("ob-fingerprints", cmd, new File(filepath));
 
 			BufferedReader buffy = new BufferedReader(new FileReader(new File(filepath)));

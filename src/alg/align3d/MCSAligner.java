@@ -1,5 +1,6 @@
 package alg.align3d;
 
+import gui.binloc.Binary;
 import gui.property.Property;
 import io.ExternalTool;
 import io.SDFUtil;
@@ -90,9 +91,13 @@ public class MCSAligner implements ThreeDAligner
 				SDFUtil.filter(clusterFile, tmpRemainder.getAbsolutePath(), remainderIndices);
 				try
 				{
-					ExternalTool.run("obfit", tmpAligned, null,
-							Settings.CM_OBFIT_PATH + " " + cluster.getSubstructureSmarts(SubstructureSmartsType.MCS)
-									+ " " + tmpFirst.getAbsolutePath() + " " + tmpRemainder.getAbsolutePath()
+					ExternalTool.run(
+							"obfit",
+							tmpAligned,
+							null,
+							Settings.OBFIT_BINARY.getLocation() + " "
+									+ cluster.getSubstructureSmarts(SubstructureSmartsType.MCS) + " "
+									+ tmpFirst.getAbsolutePath() + " " + tmpRemainder.getAbsolutePath()
 					//						new String[] { "obfit", commonSubstructure[i], tmpFirst.getAbsolutePath(),
 					//								tmpRemainder.getAbsolutePath(), ">", alignedStructures }
 							);
@@ -139,12 +144,9 @@ public class MCSAligner implements ThreeDAligner
 	}
 
 	@Override
-	public String getPreconditionErrors()
+	public Binary getBinary()
 	{
-		if (Settings.CM_OBFIT_PATH != null)
-			return null;
-		else
-			return "OpenBabel command 'obfit' could not be found";
+		return Settings.OBFIT_BINARY;
 	}
 
 }

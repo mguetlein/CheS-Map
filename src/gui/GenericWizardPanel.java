@@ -1,5 +1,6 @@
 package gui;
 
+import gui.binloc.Binary;
 import gui.property.PropertyPanel;
 
 import java.awt.BorderLayout;
@@ -7,6 +8,8 @@ import java.awt.CardLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 
 import javax.swing.ButtonGroup;
@@ -25,6 +28,7 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.DefaultComponentFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.Sizes;
 
 import data.DatasetFile;
 
@@ -36,8 +40,6 @@ public abstract class GenericWizardPanel extends WizardPanel
 	ButtonGroup group;
 	JPanel propertyPanel;
 	//	PropertyPanel clusterPropertyPanel;
-
-	DescriptionPanel descriptionPanel;
 
 	protected Algorithm selectedAlgorithm;
 	protected boolean preconditionsMet = true;
@@ -70,18 +72,36 @@ public abstract class GenericWizardPanel extends WizardPanel
 		int bCount = 0;
 		for (Algorithm algorithm : getAlgorithms())
 		{
-			IndexedRadioButton b = new IndexedRadioButton(algorithm.getName(), bCount);
-			if (algorithm.getPreconditionErrors() != null)
+			final IndexedRadioButton b = new IndexedRadioButton(algorithm.getName(), bCount);
+			if (algorithm.getBinary() != null && !algorithm.getBinary().isFound())
 			{
 				b.setFont(b.getFont().deriveFont(Font.ITALIC));
 				b.setForeground(b.getForeground().brighter().brighter());
+				final Binary bin = algorithm.getBinary();
+				bin.addPropertyChangeListener(new PropertyChangeListener()
+				{
+					@Override
+					public void propertyChange(PropertyChangeEvent evt)
+					{
+						if (bin.isFound())
+						{
+							b.setFont(new JRadioButton().getFont());
+							b.setForeground(new JRadioButton().getForeground());
+							if (b.isSelected())
+							{
+								updateAlgorithmSelection(b.index);
+								w.update();
+							}
+						}
+					}
+				});
 			}
 			b.addActionListener(new ActionListener()
 			{
 				@Override
 				public void actionPerformed(ActionEvent e)
 				{
-					updateAlgorithmSelection(((IndexedRadioButton) e.getSource()).index);
+					updateAlgorithmSelection(b.index);
 					w.update();
 				}
 			});
@@ -92,7 +112,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 		//DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout("fill:p:grow"));
 		CellConstraints cc = new CellConstraints();
 		int row = 1;
-		setLayout(new FormLayout("fill:p:grow", "p,5dlu,p,15dlu,p,5dlu,p,10dlu,fill:p:grow"));
+		setLayout(new FormLayout("fill:p:grow", "p,5dlu,p,15dlu,p,5dlu,fill:p:grow"));
 
 		infoIcon = new JLabel();
 		infoTextArea = new JTextArea();
@@ -137,10 +157,10 @@ public abstract class GenericWizardPanel extends WizardPanel
 		add(sep, cc.xy(1, row));
 		row += 2;
 
-		descriptionPanel = new DescriptionPanel();
-		//		builder.append(descriptionPanel);
-		add(descriptionPanel, cc.xy(1, row));
-		row += 2;
+		//		descriptionPanel = new DescriptionPanel();
+		//		//		builder.append(descriptionPanel);
+		//		add(descriptionPanel, cc.xy(1, row));
+		//		row += 2;
 
 		//		builder.appendParagraphGapRow();
 		//		builder.nextLine();
@@ -189,7 +209,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 			{
 				selection = 0;
 				for (int i = 0; i < getAlgorithms().length; i++)
-					if (getAlgorithms()[i].getPreconditionErrors() == null)
+					if (getAlgorithms()[i].getBinary() == null || getAlgorithms()[i].getBinary().isFound())
 					{
 						selection = i;
 						break;
@@ -214,23 +234,27 @@ public abstract class GenericWizardPanel extends WizardPanel
 			maxLength = 1200;
 		else
 			maxLength = 400;
-		descriptionPanel.setText(selectedAlgorithm.getName(), selectedAlgorithm.getDescription(), maxLength);
 
-		preconditionsMet = true;
-		String errors = selectedAlgorithm.getPreconditionErrors();
-		if (errors != null)
-		{
-			setInfo(errors, MsgType.ERROR);
-			preconditionsMet = false;
-		}
-		else
-			setInfo("", MsgType.EMPTY);
+		preconditionsMet = selectedAlgorithm.getBinary() == null || selectedAlgorithm.getBinary().isFound();
+		setInfo("", MsgType.EMPTY);
 
 		if (!cards.containsKey(selectedAlgorithm.toString()))
 		{
+			DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("fill:p:grow"));
+			b.setLineGapSize(Sizes.DLUX8);
+
+			DescriptionPanel descriptionPanel = new DescriptionPanel();
+			descriptionPanel.setText(selectedAlgorithm.getName(), selectedAlgorithm.getDescription(), maxLength);
+			b.append(descriptionPanel);
+
+			if (selectedAlgorithm.getBinary() != null)
+				b.append(Settings.getBinaryComponent(selectedAlgorithm.getBinary()));
+
 			PropertyPanel clusterPropertyPanel = new PropertyPanel(selectedAlgorithm.getProperties(), Settings.PROPS,
 					Settings.PROPERTIES_FILE);
-			propertyPanel.add(clusterPropertyPanel, selectedAlgorithm.toString());
+			b.append(clusterPropertyPanel);
+			propertyPanel.add(b.getPanel(), selectedAlgorithm.toString());
+
 			cards.put(selectedAlgorithm.toString(), clusterPropertyPanel);
 		}
 		((CardLayout) propertyPanel.getLayout()).show(propertyPanel, selectedAlgorithm.toString());

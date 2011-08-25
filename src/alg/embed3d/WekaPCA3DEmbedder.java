@@ -1,5 +1,6 @@
 package alg.embed3d;
 
+import gui.binloc.Binary;
 import gui.property.Property;
 
 import java.io.BufferedReader;
@@ -92,7 +93,7 @@ public class WekaPCA3DEmbedder implements ThreeDEmbedder
 	}
 
 	@Override
-	public String getPreconditionErrors()
+	public Binary getBinary()
 	{
 		return null;
 	}

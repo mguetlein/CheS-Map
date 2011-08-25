@@ -23,12 +23,6 @@ public abstract class Abstract3DBuilder implements ThreeDBuilder
 		return threeDFilename;
 	}
 
-	@Override
-	public String getPreconditionErrors()
-	{
-		return null;
-	}
-
 	public abstract String getInitials();
 
 	@Override

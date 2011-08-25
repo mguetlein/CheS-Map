@@ -1,5 +1,6 @@
 package alg;
 
+import gui.binloc.Binary;
 import gui.property.Property;
 
 public interface Algorithm
@@ -12,5 +13,5 @@ public interface Algorithm
 
 	public String getDescription();
 
-	public String getPreconditionErrors();
+	public Binary getBinary();
 }

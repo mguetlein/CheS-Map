@@ -1,5 +1,6 @@
 package alg.embed3d;
 
+import gui.binloc.Binary;
 import gui.property.IntegerProperty;
 import gui.property.Property;
 import io.ExternalTool;
@@ -63,12 +64,8 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 
 		RUtil.toRTable(features, DistanceUtil.values(features, instances), f.getAbsolutePath());
 
-		ExternalTool.run(
-				getRScriptName(),
-				null,
-				null,
-				Settings.CM_RSCRIPT_PATH + " " + getScriptPath() + " " + f.getAbsolutePath() + " "
-						+ f2.getAbsolutePath());
+		ExternalTool.run(getRScriptName(), null, null, Settings.RSCRIPT_BINARY.getLocation() + " " + getScriptPath()
+				+ " " + f.getAbsolutePath() + " " + f2.getAbsolutePath());
 
 		List<Vector3D> v3d = RUtil.readRVectorMatrix(f2.getAbsolutePath());
 
@@ -91,12 +88,9 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 	}
 
 	@Override
-	public String getPreconditionErrors()
+	public Binary getBinary()
 	{
-		if (Settings.CM_RSCRIPT_PATH == null)
-			return "R command 'Rscript' could not be found";
-		else
-			return null;
+		return Settings.RSCRIPT_BINARY;
 	}
 
 	@Override

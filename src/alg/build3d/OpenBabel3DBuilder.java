@@ -1,5 +1,6 @@
 package alg.build3d;
 
+import gui.binloc.Binary;
 import gui.property.Property;
 import main.Settings;
 import util.ExternalToolUtil;
@@ -10,17 +11,15 @@ public class OpenBabel3DBuilder extends Abstract3DBuilder
 	@Override
 	public void build3D(DatasetFile datasetFile, String outfile)
 	{
-		ExternalToolUtil.run("obgen3d", Settings.CM_BABEL_PATH + " --gen3d -d -isdf " + datasetFile.getSDFPath(false)
-				+ " -osdf " + outfile);
+		ExternalToolUtil.run("obgen3d",
+				Settings.BABEL_BINARY.getLocation() + " --gen3d -d -isdf " + datasetFile.getSDFPath(false) + " -osdf "
+						+ outfile);
 	}
 
 	@Override
-	public String getPreconditionErrors()
+	public Binary getBinary()
 	{
-		if (Settings.CM_BABEL_PATH != null)
-			return null;
-		else
-			return Settings.BABEL_NOT_FOUND_WARNING;
+		return Settings.BABEL_BINARY;
 	}
 
 	@Override

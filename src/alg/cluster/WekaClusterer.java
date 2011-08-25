@@ -1,6 +1,7 @@
 package alg.cluster;
 
 import gui.Progressable;
+import gui.binloc.Binary;
 import gui.property.Property;
 
 import java.io.BufferedReader;
@@ -174,7 +175,7 @@ public class WekaClusterer implements DatasetClusterer
 	}
 
 	@Override
-	public String getPreconditionErrors()
+	public Binary getBinary()
 	{
 		return null;
 	}

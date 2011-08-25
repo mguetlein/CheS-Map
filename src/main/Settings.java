@@ -1,8 +1,18 @@
 package main;
 
+import gui.LinkButton;
+import gui.binloc.Binary;
+import gui.binloc.BinaryLocator;
+import gui.binloc.BinaryLocatorDialog;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,7 +23,8 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Vector;
@@ -71,184 +82,6 @@ public class Settings
 	public static final ImageIcon CHES_MAPPER_IMAGE_SMALL = ImageLoader.CHES_MAPPER_SMALL;
 	public static final ImageIcon OPENTOX_ICON = ImageLoader.OPENTOX;
 
-	// ------------------------ EXTERNAL PROGRAMMS -----------------------
-
-	public static String CM_BABEL_PATH = null;
-	public static String CM_OBFIT_PATH = null;
-	public static String CM_RSCRIPT_PATH = null;
-
-	public static final String BABEL_NOT_FOUND_WARNING = "OpenBabel command 'babel' could not be found.";
-
-	// TODO ------------ fix spaghetti code ------------------------------
-	static
-	{
-		System.err.println("\nfinding binaries - start");
-
-		System.err.println("* try env variables");
-		Map<String, String> env = System.getenv();
-		if (env.get("CM_BABEL_PATH") != null)
-		{
-			CM_BABEL_PATH = env.get("CM_BABEL_PATH");
-			System.err.println("babel-path set to: " + CM_BABEL_PATH);
-		}
-		if (env.get("CM_OBFIT_PATH") != null)
-		{
-			CM_OBFIT_PATH = env.get("CM_OBFIT_PATH");
-			System.err.println("obfit-path set to: " + CM_OBFIT_PATH);
-		}
-		if (env.get("CM_RSCRIPT_PATH") != null)
-		{
-			CM_RSCRIPT_PATH = env.get("CM_RSCRIPT_PATH");
-			System.err.println("Rscript-path set to: " + CM_RSCRIPT_PATH);
-		}
-
-		System.err.println("* try locally (binary has to be available in PATH)");
-		if (CM_BABEL_PATH == null && exitValue("babel -H") == 0)
-		{
-			CM_BABEL_PATH = "babel";
-			System.err.println("babel found locally or in PATH");
-		}
-		if (CM_OBFIT_PATH == null && exitValue("obfit") == 255)
-		{
-			CM_OBFIT_PATH = "obfit";
-			System.err.println("obfit found locally or in PATH");
-		}
-		if (CM_RSCRIPT_PATH == null && exitValue("Rscript --help") == 0)
-		{
-			CM_RSCRIPT_PATH = "Rscript";
-			System.err.println("Rscript found locally or in PATH");
-		}
-
-		if (OSUtil.isUnix() || OSUtil.isMac())
-		{
-			System.err.println("* try to find babel/obfit in /usr/local/bin");
-			if (CM_BABEL_PATH == null && exitValue("/usr/local/bin/babel -H") == 0)
-			{
-				CM_BABEL_PATH = "/usr/local/bin/babel";
-				System.err.println("babel found in /usr/local/bin/");
-			}
-			if (CM_OBFIT_PATH == null && exitValue("/usr/local/bin/obfit") == 255)
-			{
-				CM_OBFIT_PATH = "/usr/local/bin/obfit";
-				System.err.println("obfit found in /usr/local/bin/");
-			}
-
-			System.err.println("* try to find with 'which'");
-			if (CM_BABEL_PATH == null)
-			{
-				CM_BABEL_PATH = findExecutableLinux("babel");
-				if (CM_BABEL_PATH != null)
-					System.err.println("babel-path found at: " + CM_BABEL_PATH);
-			}
-			if (CM_OBFIT_PATH == null)
-			{
-				CM_OBFIT_PATH = findExecutableLinux("obfit");
-				if (CM_OBFIT_PATH != null)
-					System.err.println("obfit found at: " + CM_OBFIT_PATH);
-			}
-			if (CM_RSCRIPT_PATH == null)
-			{
-				CM_RSCRIPT_PATH = findExecutableLinux("Rscript");
-				if (CM_RSCRIPT_PATH != null)
-					System.err.println("Rscript found at: " + CM_RSCRIPT_PATH);
-			}
-		}
-		else if (OSUtil.isWindows())
-		{
-			String openbabelDir = findWinOpenBabelDir();
-			if (openbabelDir != null)
-			{
-				System.err.println("* try to find babel/obfit in " + openbabelDir);
-				if (CM_BABEL_PATH == null && new File(openbabelDir + "\\babel.exe").exists())
-				{
-					CM_BABEL_PATH = openbabelDir + "\\babel";
-					System.err.println("babel found in " + openbabelDir);
-				}
-				if (CM_OBFIT_PATH == null && new File(openbabelDir + "\\obfit.exe").exists())
-				{
-					CM_OBFIT_PATH = openbabelDir + "\\obfit";
-					System.err.println("obfit found in " + openbabelDir);
-				}
-			}
-		}
-
-		System.err.println("finding binaries - end\n");
-	}
-
-	private static String findExecutableLinux(String executable)
-	{
-		try
-		{
-			String command = "which " + executable;
-			Status.WARN.println("try to find " + executable + " with '" + command + "'");
-			Process child = Runtime.getRuntime().exec(command);
-			child.waitFor();
-			if (child.exitValue() == 1)
-				throw new Exception("failed: " + command);
-			String res = new BufferedReader(new InputStreamReader(child.getInputStream())).readLine().trim();
-			if (res.length() == 0)
-				throw new Exception("return value of command '" + command + "' empty");
-			else
-				return res;
-		}
-		catch (Exception e)
-		{
-			Status.WARN.println("Could not find executable '" + executable + "' :\n" + e.getMessage());
-			return null;
-		}
-	}
-
-	private static int exitValue(String command)
-	{
-		try
-		{
-			Status.WARN.println("trying to run '" + command + "'");
-			Process child = Runtime.getRuntime().exec(command);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(child.getInputStream()));
-			while (reader.readLine() != null)
-			{
-			}
-			BufferedReader reader2 = new BufferedReader(new InputStreamReader(child.getErrorStream()));
-			while (reader2.readLine() != null)
-			{
-			}
-			reader.close();
-			reader2.close();
-			child.waitFor();
-			return child.exitValue();
-		}
-		catch (Exception e)
-		{
-			return -1;
-		}
-	}
-
-	private static String findWinOpenBabelDir()
-	{
-		try
-		{
-			File d = new File("C:\\program files");
-			if (d.isDirectory())
-			{
-				String dirs[] = d.list(new FilenameFilter()
-				{
-					@Override
-					public boolean accept(File dir, String name)
-					{
-						return name.contains("OpenBabel");
-					}
-				});
-				if (dirs != null && dirs.length > 0)
-				{
-					return "C:\\program files\\" + dirs[0];
-				}
-			}
-		}
-		catch (Exception e)
-		{
-		}
-		return null;
-	}
 
 	// ------------------ TMP/RESULT-FILE SUPPORT ---------------------------------------------
 
@@ -451,6 +284,74 @@ public class Settings
 	public static boolean isAborted(Thread th)
 	{
 		return abortedThreads.contains(th);
+	}
+
+	// ------------------------ EXTERNAL PROGRAMMS -----------------------
+
+	public static Binary BABEL_BINARY = new Binary("babel", "CM_BABEL_PATH", OPENBABEL_STRING);
+	public static Binary OBFIT_BINARY = new Binary("obfit", "CM_OBFIT_PATH", OPENBABEL_STRING);
+	public static Binary RSCRIPT_BINARY = new Binary("Rscript", "CM_RSCRIPT_PATH", R_STRING);
+
+	private static List<Binary> bins = new ArrayList<Binary>();
+	static
+	{
+		bins.add(BABEL_BINARY);
+		bins.add(OBFIT_BINARY);
+		bins.add(RSCRIPT_BINARY);
+		for (Binary binary : bins)
+		{
+			String path = (String) Settings.PROPS.get("bin-path-" + binary.getCommand());
+			if (path != null)
+				binary.setLocation(path);
+		}
+		locateBinarys();
+	}
+
+	public static void locateBinarys()
+	{
+		BinaryLocator.locate(bins);
+	}
+
+	public static void showBinaryDialog(Binary select)
+	{
+		locateBinarys();
+		new BinaryLocatorDialog((Window) Settings.TOP_LEVEL_COMPONENT, "External Programs", TITLE, bins, select);
+		for (Binary binary : bins)
+			if (binary.getLocation() != null)
+				Settings.PROPS.put("bin-path-" + binary.getCommand(), binary.getLocation());
+			else
+				Settings.PROPS.remove("bin-path-" + binary.getCommand());
+		storeProps();
+	}
+
+	public static Component getBinaryComponent(final Binary bin)
+	{
+		final LinkButton l = new LinkButton("Uses externel program: " + bin.getDescription());
+		l.setForegroundFont(l.getFont().deriveFont(Font.PLAIN));
+		l.setSelectedForegroundFont(l.getFont().deriveFont(Font.PLAIN));
+		l.setSelectedForegroundColor(Color.BLUE);
+		bin.addPropertyChangeListener(new PropertyChangeListener()
+		{
+			@Override
+			public void propertyChange(PropertyChangeEvent evt)
+			{
+				if (bin.isFound())
+					l.setIcon(ImageLoader.TOOL);
+			}
+		});
+		if (!bin.isFound())
+			l.setIcon(ImageLoader.ERROR);
+		else
+			l.setIcon(ImageLoader.TOOL);
+		l.addActionListener(new ActionListener()
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				Settings.showBinaryDialog(bin);
+			}
+		});
+		return l;
 	}
 
 }
