@@ -108,108 +108,113 @@ public class MCSComputer
 		{
 			progress.update(100 / (double) clusters.size() * count, "Computing MCS for cluster " + (++count) + "/"
 					+ clusters.size());
-
 			IMolecule mcsMolecule = null;
-			List<IAtomContainer> targets = new ArrayList<IAtomContainer>();
-
-			for (CompoundData m : c.getCompounds())
+			try
 			{
-				IMolecule target = mols[m.getIndex()];
+				List<IAtomContainer> targets = new ArrayList<IAtomContainer>();
+				for (CompoundData m : c.getCompounds())
+				{
+					IMolecule target = mols[m.getIndex()];
 
-				boolean flag = ConnectivityChecker.isConnected(target);
-				if (!flag)
-				{
-					System.out.println("WARNING : Skipping target molecule " + target.getProperty(CDKConstants.TITLE)
-							+ " as it is not connected.");
-					continue;
-				}
-				else
-				{
-					if (target.getProperty(CDKConstants.TITLE) != null)
-					{
-						target.setID((String) target.getProperty(CDKConstants.TITLE));
-						//						argumentHandler.setTargetMolOutName(target.getID());
-					}
-				}
-				if (removeHydrogens)
-				{
-					target = new Molecule(AtomContainerManipulator.removeHydrogens(target));
-				}
-
-				if (mcsMolecule != null)
-				{
-					flag = ConnectivityChecker.isConnected(mcsMolecule);
+					boolean flag = ConnectivityChecker.isConnected(target);
 					if (!flag)
 					{
-						System.out.println("WARNING : Skipping file " + mcsMolecule.getProperty(CDKConstants.TITLE)
-								+ " not connected ");
-						return;
-
+						System.out.println("WARNING : Skipping target molecule "
+								+ target.getProperty(CDKConstants.TITLE) + " as it is not connected.");
+						continue;
 					}
-					else if (mcsMolecule.getProperty(CDKConstants.TITLE) != null)
+					else
 					{
-						mcsMolecule.setID((String) mcsMolecule.getProperty(CDKConstants.TITLE));
-						//						argumentHandler.setQueryMolOutName(mcsMolecule.getID());
+						if (target.getProperty(CDKConstants.TITLE) != null)
+						{
+							target.setID((String) target.getProperty(CDKConstants.TITLE));
+							//						argumentHandler.setTargetMolOutName(target.getID());
+						}
 					}
 					if (removeHydrogens)
 					{
-						mcsMolecule = new Molecule(AtomContainerManipulator.removeHydrogens(mcsMolecule));
-
+						target = new Molecule(AtomContainerManipulator.removeHydrogens(target));
 					}
-				}
 
-				//				inputHandler.configure(target, targetType);
+					if (mcsMolecule != null)
+					{
+						flag = ConnectivityChecker.isConnected(mcsMolecule);
+						if (!flag)
+						{
+							System.out.println("WARNING : Skipping file " + mcsMolecule.getProperty(CDKConstants.TITLE)
+									+ " not connected ");
+							return;
 
-				if (mcsMolecule == null)
-				{
-					mcsMolecule = target;
-					targets.add(target);
+						}
+						else if (mcsMolecule.getProperty(CDKConstants.TITLE) != null)
+						{
+							mcsMolecule.setID((String) mcsMolecule.getProperty(CDKConstants.TITLE));
+							//						argumentHandler.setQueryMolOutName(mcsMolecule.getID());
+						}
+						if (removeHydrogens)
+						{
+							mcsMolecule = new Molecule(AtomContainerManipulator.removeHydrogens(mcsMolecule));
+
+						}
+					}
+
+					//				inputHandler.configure(target, targetType);
+
+					if (mcsMolecule == null)
+					{
+						mcsMolecule = target;
+						targets.add(target);
+					}
+					else
+					{
+						Isomorphism smsd = run(mcsMolecule, target, filter, matchBonds);
+						target = target.getBuilder().newInstance(IMolecule.class,
+								smsd.getFirstAtomMapping().getTarget());
+						targets.add(target);
+						Map<Integer, Integer> mapping = getIndexMapping(smsd.getFirstAtomMapping());
+						IAtomContainer subgraph = getSubgraph(target, mapping);
+						mcsMolecule = new Molecule(subgraph);
+					}
+					if (Settings.isAborted(Thread.currentThread()))
+						break;
 				}
-				else
+				if (Settings.isAborted(Thread.currentThread()))
+					break;
+				//			inputHandler.configure(mcsMolecule, targetType);
+				//			if (argumentHandler.shouldOutputSubgraph())
+				//			{
+				//				String outpath = argumentHandler.getOutputFilepath();
+				//				String outtype = argumentHandler.getOutputFiletype();
+				//				outputHandler.writeMol(outtype, mcsMolecule, outpath);
+				//			}
+				if (mcsMolecule != null)// && argumentHandler.isImage())
 				{
-					Isomorphism smsd = run(mcsMolecule, target, filter, matchBonds);
-					target = target.getBuilder().newInstance(IMolecule.class, smsd.getFirstAtomMapping().getTarget());
-					targets.add(target);
-					Map<Integer, Integer> mapping = getIndexMapping(smsd.getFirstAtomMapping());
-					IAtomContainer subgraph = getSubgraph(target, mapping);
-					mcsMolecule = new Molecule(subgraph);
+					// now that we have the N-MCS, remap
+					List<Map<Integer, Integer>> mappings = new ArrayList<Map<Integer, Integer>>();
+					List<IAtomContainer> secondRoundTargets = new ArrayList<IAtomContainer>();
+					IChemObjectBuilder builder = NoNotificationChemObjectBuilder.getInstance();
+					for (IAtomContainer target : targets)
+					{
+						Isomorphism smsd = run(mcsMolecule, (IMolecule) target, filter, matchBonds);
+						mappings.add(getIndexMapping(smsd.getFirstAtomMapping()));
+						secondRoundTargets.add(builder.newInstance(IAtomContainer.class, smsd.getFirstAtomMapping()
+								.getTarget()));
+						if (Settings.isAborted(Thread.currentThread()))
+							break;
+					}
+
+					//				String name = inputHandler.getTargetName();
+					//				outputHandler.writeCircleImage(mcsMolecule, secondRoundTargets, name, mappings);
+
 				}
 				if (Settings.isAborted(Thread.currentThread()))
 					break;
 			}
-			if (Settings.isAborted(Thread.currentThread()))
-				break;
-			//			inputHandler.configure(mcsMolecule, targetType);
-
-			//			if (argumentHandler.shouldOutputSubgraph())
-			//			{
-			//				String outpath = argumentHandler.getOutputFilepath();
-			//				String outtype = argumentHandler.getOutputFiletype();
-			//				outputHandler.writeMol(outtype, mcsMolecule, outpath);
-			//			}
-			if (mcsMolecule != null)// && argumentHandler.isImage())
+			catch (Exception e)
 			{
-				// now that we have the N-MCS, remap
-				List<Map<Integer, Integer>> mappings = new ArrayList<Map<Integer, Integer>>();
-				List<IAtomContainer> secondRoundTargets = new ArrayList<IAtomContainer>();
-				IChemObjectBuilder builder = NoNotificationChemObjectBuilder.getInstance();
-				for (IAtomContainer target : targets)
-				{
-					Isomorphism smsd = run(mcsMolecule, (IMolecule) target, filter, matchBonds);
-					mappings.add(getIndexMapping(smsd.getFirstAtomMapping()));
-					secondRoundTargets.add(builder.newInstance(IAtomContainer.class, smsd.getFirstAtomMapping()
-							.getTarget()));
-					if (Settings.isAborted(Thread.currentThread()))
-						break;
-				}
-
-				//				String name = inputHandler.getTargetName();
-				//				outputHandler.writeCircleImage(mcsMolecule, secondRoundTargets, name, mappings);
-
+				System.err.println("Error in MCS computation: " + e.getMessage());
+				e.printStackTrace();
 			}
-
-			if (Settings.isAborted(Thread.currentThread()))
-				break;
 			if (mcsMolecule != null)
 			{
 				SmilesGenerator g = new SmilesGenerator();

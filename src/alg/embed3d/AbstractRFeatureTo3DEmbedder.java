@@ -149,9 +149,14 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 
 		}
 
-		private int maxNumIterations = 1000;
-		private int initial_dims = 30;
-		private int perplexity = 30;
+
+		private final int maxNumIterationsDefault = 1000;
+		private final int initial_dimsDefault = 30;
+		private final int perplexityDefault = 30;
+
+		private int maxNumIterations = maxNumIterationsDefault;
+		private int initial_dims = initial_dimsDefault;
+		private int perplexity = perplexityDefault;
 
 		public static final String PROPERTY_MAX_NUM_ITERATIONS = "Maximum number of iterations (max_iter)";
 		public static final String PROPERTY_PERPLEXITY = "Optimal number of neighbors (perplexity)";
@@ -160,9 +165,10 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 		@Override
 		public Property[] getProperties()
 		{
-			return new Property[] { new IntegerProperty(PROPERTY_MAX_NUM_ITERATIONS, maxNumIterations),
-					new IntegerProperty(PROPERTY_PERPLEXITY, perplexity),
-					new IntegerProperty(PROPERTY_INITIAL_DIMS, initial_dims) };
+			return new Property[] {
+					new IntegerProperty(PROPERTY_MAX_NUM_ITERATIONS, maxNumIterations, maxNumIterationsDefault),
+					new IntegerProperty(PROPERTY_PERPLEXITY, perplexity, perplexityDefault),
+					new IntegerProperty(PROPERTY_INITIAL_DIMS, initial_dims, initial_dimsDefault) };
 		}
 
 		@Override

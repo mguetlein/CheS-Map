@@ -102,6 +102,18 @@ public class WekaClusterer implements DatasetClusterer
 			}
 			for (int j = 0; j < eval.getClusterAssignments().length; j++)
 				((ClusterDataImpl) clusters.get((int) eval.getClusterAssignments()[j])).addCompound(compounds.get(j));
+
+			List<Integer> toDelete = new ArrayList<Integer>();
+			int i = 0;
+			for (ClusterData c : clusters)
+			{
+				if (c.getSize() == 0)
+					toDelete.add(i);
+				i++;
+			}
+			for (int j = toDelete.size() - 1; j >= 0; j--)
+				clusters.remove(toDelete.get(j).intValue());
+
 			DatasetClustererUtil.storeClusters(dataset.getSDFPath(true), wekaClusterer.getClass().getSimpleName(),
 					clusters);
 		}
@@ -165,12 +177,13 @@ public class WekaClusterer implements DatasetClusterer
 					break;
 				}
 			}
-
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
+		s += "\n\n(see http://weka.sourceforge.net/doc/weka/clusterers/" + wekaClusterer.getClass().getSimpleName()
+				+ ".html)";
 		return s;
 	}
 

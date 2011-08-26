@@ -25,8 +25,10 @@ import dataInterface.MoleculeProperty;
 public class StructuralClustererService implements DatasetClusterer
 {
 	String origURI;
-	private String clusterAlgorithm = "http://opentox-dev.informatik.tu-muenchen.de:8080/OpenTox-dev/algorithm/StructuralClustering";
-	private double threshold = 0.4;
+	private final String clusterAlgorithmDefault = "http://opentox-dev.informatik.tu-muenchen.de:8080/OpenTox-dev/algorithm/StructuralClustering";
+	private String clusterAlgorithm = clusterAlgorithmDefault;
+	private final double thresholdDefault = 0.4;
+	private double threshold = thresholdDefault;
 	List<ClusterData> clusters;
 
 	@Override
@@ -155,8 +157,8 @@ public class StructuralClustererService implements DatasetClusterer
 	@Override
 	public Property[] getProperties()
 	{
-		return new Property[] { new StringProperty(PROPERTY_SERVICE, clusterAlgorithm),
-				new DoubleProperty(PROPERTY_THETA, threshold) };
+		return new Property[] { new StringProperty(PROPERTY_SERVICE, clusterAlgorithm, clusterAlgorithmDefault),
+				new DoubleProperty(PROPERTY_THETA, threshold, thresholdDefault) };
 	}
 
 	@Override

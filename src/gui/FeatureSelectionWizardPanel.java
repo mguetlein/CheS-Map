@@ -50,6 +50,7 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 
 	DatasetFile dataset = null;
 	int numSelected;
+	Type selectedFeatureType;
 	boolean selfUpdate;
 
 	private String addFeaturesText = "Add feature";
@@ -303,11 +304,18 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 		for (MoleculePropertySet set : selector.getSelected())
 			numSelected += set.getSize();
 		numFeaturesLabel.setText("Number of selected features: " + numSelected);
+
+		selectedFeatureType = MoleculePropertySetUtil.getType(selector.getSelected());
 	}
 
 	public int getNumSelectedFeatures()
 	{
 		return numSelected;
+	}
+
+	public Type getSelectedFeatureType()
+	{
+		return selectedFeatureType;
 	}
 
 	public void updateIntegratedFeatures(DatasetFile dataset)

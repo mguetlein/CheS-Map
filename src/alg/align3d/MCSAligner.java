@@ -95,7 +95,7 @@ public class MCSAligner implements ThreeDAligner
 							"obfit",
 							tmpAligned,
 							null,
-							Settings.OBFIT_BINARY.getLocation() + " "
+							Settings.BABEL_BINARY.getSisterCommandLocation("obfit") + " "
 									+ cluster.getSubstructureSmarts(SubstructureSmartsType.MCS) + " "
 									+ tmpFirst.getAbsolutePath() + " " + tmpRemainder.getAbsolutePath()
 					//						new String[] { "obfit", commonSubstructure[i], tmpFirst.getAbsolutePath(),
@@ -146,7 +146,7 @@ public class MCSAligner implements ThreeDAligner
 	@Override
 	public Binary getBinary()
 	{
-		return Settings.OBFIT_BINARY;
+		return Settings.BABEL_BINARY;
 	}
 
 }

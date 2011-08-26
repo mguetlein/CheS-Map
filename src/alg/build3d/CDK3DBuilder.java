@@ -14,13 +14,15 @@ public class CDK3DBuilder extends Abstract3DBuilder
 {
 	public static final String[] FORCEFIELDS = { "mm2", "mmff94" };
 	private String forcefield = FORCEFIELDS[0];
+	private final String forcefieldDefault = FORCEFIELDS[0];
 
 	public static final String PROPERTY_FORCEFIELD = "forcefield";
 
 	@Override
 	public Property[] getProperties()
 	{
-		return new Property[] { new StringSelectProperty(PROPERTY_FORCEFIELD, FORCEFIELDS, forcefield) };
+		return new Property[] { new StringSelectProperty(PROPERTY_FORCEFIELD, FORCEFIELDS, forcefield,
+				forcefieldDefault) };
 	}
 
 	@Override

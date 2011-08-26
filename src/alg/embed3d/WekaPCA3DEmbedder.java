@@ -89,7 +89,9 @@ public class WekaPCA3DEmbedder implements ThreeDEmbedder
 	public String getDescription()
 	{
 		return "Uses " + Settings.WEKA_STRING + ".\n\n"
-				+ "The first 3 principal components are employed as 3D coordinates.\n\n" + pca.globalInfo();
+				+ "The first 3 principal components are employed as 3D coordinates.\n\n" + pca.globalInfo()
+				+ "\n\n(see http://weka.sourceforge.net/doc/" + pca.getClass().getName().replaceAll("\\.", "/")
+				+ ".html)";
 	}
 
 	@Override

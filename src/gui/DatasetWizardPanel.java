@@ -65,7 +65,8 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout(
 				"pref,5dlu,pref:grow(0.99),5dlu,right:p:grow(0.01)"));
 
-		builder.append("Select dataset file:");
+		builder.append(new JLabel(
+				"Select dataset file (Copy a http link into the textfield to load a dataset from the internet):"), 3);
 		builder.nextLine();
 
 		textField = new JTextField(45);

@@ -14,6 +14,9 @@ public final class DatasetClustererUtil
 		int count = 0;
 		for (ClusterData c : clusters)
 		{
+			if (c.getSize() == 0)
+				throw new Error("try to store empty cluster");
+
 			//String parent = origFile.substring(0, origFile.lastIndexOf("/"));
 			//String origName = origFile.substring(origFile.lastIndexOf("/") + 1);
 

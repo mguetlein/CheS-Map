@@ -28,11 +28,13 @@ public class EmbedClusters
 		if (progress != null)
 			progress.update(100 * 1 / (double) (clustering.getClusters().size() + 1), "Embedded clusters into 3D-space");
 
+		System.err.flush();
 		System.out.println("embed clusters compounds");
 		cCount = 0;
 		for (final ClusterData cluster : clustering.getClusters())
 		{
 			ClusterDataImpl c = (ClusterDataImpl) cluster;
+			System.err.flush();
 			System.out.println("embed " + c.getCompounds().size() + " compounds");
 
 			if (Settings.DBG)

@@ -4,29 +4,26 @@ import dataInterface.MoleculeProperty.Type;
 
 public class MoleculePropertySetUtil
 {
-	public static Type getType(MoleculePropertySet set)
+	public static Type getType(MoleculePropertySet[] set)
 	{
-		Type type;
-		if (set.getSize() == 1)
+		Type type = null;
+		for (MoleculePropertySet s : set)
 		{
-			type = set.get(0).getType();
-		}
-		else
-		{
-			type = null;
-			for (int i = 0; i < set.getSize(); i++)
+			for (int i = 0; i < s.getSize(); i++)
 			{
-				MoleculeProperty.Type t = set.get(i).getType();
+				MoleculeProperty.Type t = s.get(i).getType();
 				if (t == null || (type != null && type != t))
-				{
-					type = null;
-					break;
-				}
+					return null;
 				else
 					type = t;
 			}
 		}
 		return type;
+	}
+
+	public static Type getType(MoleculePropertySet set)
+	{
+		return getType(new MoleculePropertySet[] { set });
 	}
 
 }

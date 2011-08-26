@@ -3,8 +3,6 @@ package data;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.NotImplementedException;
-
 import util.ArrayUtil;
 import util.DistanceMatrix;
 import dataInterface.MolecularPropertyOwner;
@@ -13,19 +11,19 @@ import dataInterface.MoleculeProperty.Type;
 
 public class DistanceUtil
 {
-	public static List<double[]> values(List<MoleculeProperty> props, List<MolecularPropertyOwner> values)
+	public static List<String[]> values(List<MoleculeProperty> props, List<MolecularPropertyOwner> values)
 	{
-		List<double[]> v = new ArrayList<double[]>();
+		List<String[]> v = new ArrayList<String[]>();
 		for (MolecularPropertyOwner vv : values)
 		{
-			double d[] = new double[props.size()];
+			String d[] = new String[props.size()];
 			int count = 0;
 			for (MoleculeProperty p : props)
 			{
 				if (p.getType() == Type.NUMERIC)
-					d[count++] = vv.getNormalizedValue(p);
+					d[count++] = vv.getNormalizedValue(p) + "";
 				else
-					throw new NotImplementedException();
+					d[count++] = vv.getStringValue(p);
 			}
 			v.add(d);
 		}

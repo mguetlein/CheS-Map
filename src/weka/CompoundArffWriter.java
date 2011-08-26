@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.lang.NotImplementedException;
-
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculeProperty.Type;
@@ -63,7 +61,7 @@ public class CompoundArffWriter implements ArffWritable
 		{
 			String s = "{";
 			for (Object o : features.get(attribute).getNominalDomain())
-				s += o + ",";
+				s += "\"" + o + "\",";
 			s = s.substring(0, s.length() - 1);
 			s += "}";
 			return s;
@@ -83,7 +81,7 @@ public class CompoundArffWriter implements ArffWritable
 			return compounds.get(instance).getNormalizedValue(features.get(attribute)) + "";
 		else
 		{
-			return compounds.get(instance).getStringValue(features.get(attribute));
+			return "\"" + compounds.get(instance).getStringValue(features.get(attribute)) + "\"";
 		}
 	}
 
@@ -96,7 +94,7 @@ public class CompoundArffWriter implements ArffWritable
 	@Override
 	public String getMissingValue(int attribute)
 	{
-		throw new NotImplementedException();
+		return "?";
 	}
 
 	@Override

@@ -161,14 +161,17 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 					+ "\n\nThe features are converted to a distance matrix using euclidien distance beforehand.";
 		}
 
-		private int maxNumIterations = 150;
+
+		private final int maxNumIterationsDefault = 150;
+		private int maxNumIterations = maxNumIterationsDefault;
 
 		public static final String PROPERTY_MAX_NUM_ITERATIONS = "Maximum number of iterations (itmax)";
 
 		@Override
 		public Property[] getProperties()
 		{
-			return new Property[] { new IntegerProperty(PROPERTY_MAX_NUM_ITERATIONS, maxNumIterations) };
+			return new Property[] { new IntegerProperty(PROPERTY_MAX_NUM_ITERATIONS, maxNumIterations,
+					maxNumIterationsDefault) };
 		}
 
 		@Override

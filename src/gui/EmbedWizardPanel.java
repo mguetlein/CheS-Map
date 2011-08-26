@@ -13,6 +13,7 @@ import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
 import alg.embed3d.WekaPCA3DEmbedder;
 import data.DatasetFile;
+import dataInterface.MoleculeProperty.Type;
 
 public class EmbedWizardPanel extends GenericWizardPanel
 {
@@ -37,7 +38,7 @@ public class EmbedWizardPanel extends GenericWizardPanel
 	}
 
 	@Override
-	public void update(DatasetFile dataset, int numFeatures)
+	public void update(DatasetFile dataset, int numFeatures, Type featureType)
 	{
 		if (!preconditionsMet)
 			return;
@@ -47,7 +48,15 @@ public class EmbedWizardPanel extends GenericWizardPanel
 					+ " requires features, but no features are selected.\nPlease select features in step 3., or select another embedding method.",
 					MsgType.ERROR);
 		else
-			setInfo("", MsgType.EMPTY);
+		{
+			if (get3DEmbedder().requiresFeatures() && featureType == Type.NOMINAL)
+			{
+				setInfo("Only nominal features selected. Sometimes, this will result in a lot of compounds with equal feature values (especially inside clusters) that cannot be distinguished while embedding.",
+						MsgType.WARNING);
+			}
+			else
+				setInfo("", MsgType.EMPTY);
+		}
 	}
 
 	protected int defaultSelection()

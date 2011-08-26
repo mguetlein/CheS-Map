@@ -82,7 +82,6 @@ public class Settings
 	public static final ImageIcon CHES_MAPPER_IMAGE_SMALL = ImageLoader.CHES_MAPPER_SMALL;
 	public static final ImageIcon OPENTOX_ICON = ImageLoader.OPENTOX;
 
-
 	// ------------------ TMP/RESULT-FILE SUPPORT ---------------------------------------------
 
 	public static String BUILD_DATE = null;
@@ -289,14 +288,12 @@ public class Settings
 	// ------------------------ EXTERNAL PROGRAMMS -----------------------
 
 	public static Binary BABEL_BINARY = new Binary("babel", "CM_BABEL_PATH", OPENBABEL_STRING);
-	public static Binary OBFIT_BINARY = new Binary("obfit", "CM_OBFIT_PATH", OPENBABEL_STRING);
 	public static Binary RSCRIPT_BINARY = new Binary("Rscript", "CM_RSCRIPT_PATH", R_STRING);
 
 	private static List<Binary> bins = new ArrayList<Binary>();
 	static
 	{
 		bins.add(BABEL_BINARY);
-		bins.add(OBFIT_BINARY);
 		bins.add(RSCRIPT_BINARY);
 		for (Binary binary : bins)
 		{

@@ -10,6 +10,7 @@ import main.Settings;
 import util.SwingUtil;
 import weka.gui.GenericObjectEditor;
 import data.ClusteringData;
+import dataInterface.MoleculeProperty.Type;
 
 public class CheSMapperWizard extends WizardDialog
 {
@@ -103,8 +104,12 @@ public class CheSMapperWizard extends WizardDialog
 		//		}
 		//		if (status == 2)
 		//		{
-		cluster.update(dataset.getDatasetFile(), features.getNumSelectedFeatures());
-		embed.update(dataset.getDatasetFile(), features.getNumSelectedFeatures());
+
+		int n = features.getNumSelectedFeatures();
+		Type t = features.getSelectedFeatureType();
+
+		cluster.update(dataset.getDatasetFile(), n, t);
+		embed.update(dataset.getDatasetFile(), n, t);
 		align.update(cluster.getDatasetClusterer());
 		//		}
 		super.update(status);

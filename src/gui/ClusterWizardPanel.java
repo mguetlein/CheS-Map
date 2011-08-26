@@ -6,6 +6,7 @@ import alg.cluster.NoClusterer;
 import alg.cluster.StructuralClustererService;
 import alg.cluster.WekaClusterer;
 import data.DatasetFile;
+import dataInterface.MoleculeProperty.Type;
 
 public class ClusterWizardPanel extends GenericWizardPanel
 {
@@ -23,11 +24,11 @@ public class ClusterWizardPanel extends GenericWizardPanel
 	}
 
 	@Override
-	public void update(DatasetFile dataset, int numNumericFeatures)
+	public void update(DatasetFile dataset, int numFeatures, Type featureType)
 	{
 		if (!preconditionsMet)
 			return;
-		canProceed = !getDatasetClusterer().requiresNumericalFeatures() || numNumericFeatures > 0;
+		canProceed = !getDatasetClusterer().requiresNumericalFeatures() || numFeatures > 0;
 		if (!canProceed)
 			setInfo(getDatasetClusterer().getName()
 					+ " requires numerical features, you have no features selected.\nPlease select numerical features in previous step, or select another cluster method.",
