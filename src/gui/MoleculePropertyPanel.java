@@ -220,7 +220,7 @@ public class MoleculePropertyPanel extends JPanel
 						MoleculeProperty selectedProperty = selectedPropertySet.get(selectedPropertyIndex);
 
 						boolean loading = false;
-						if (!dataset.isComputed(selectedPropertySet))
+						if (!dataset.isComputed(selectedPropertySet) || !cardPanel.isVisible())
 						{
 							loading = true;
 							TaskProvider.create("compute-features");
