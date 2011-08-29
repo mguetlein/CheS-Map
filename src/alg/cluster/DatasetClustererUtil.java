@@ -2,6 +2,7 @@ package alg.cluster;
 
 import io.SDFUtil;
 import main.Settings;
+import main.TaskProvider;
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import dataInterface.ClusterData;
@@ -11,6 +12,8 @@ public final class DatasetClustererUtil
 
 	public static void storeClusters(String sdfFile, String clusterFilePrefix, Iterable<ClusterData> clusters)
 	{
+		TaskProvider.task().verbose("Storing cluster results in files");
+
 		int count = 0;
 		for (ClusterData c : clusters)
 		{

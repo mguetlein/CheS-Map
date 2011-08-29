@@ -23,6 +23,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import main.Settings;
+import main.TaskProvider;
 import util.ArrayUtil;
 import util.CountedSet;
 import util.DefaultComparator;
@@ -50,7 +51,7 @@ public class MoleculePropertyPanel extends JPanel
 
 	JButton loadButton = new JButton("Load feature values");
 
-	JLabel loadingLabel = new JLabel("Loading feature...");
+	//	JLabel loadingLabel = new JLabel("Loading feature...");
 
 	JPanel comboPanel = new JPanel();
 	JLabel comboLabel = new JLabel();
@@ -104,9 +105,9 @@ public class MoleculePropertyPanel extends JPanel
 
 		cardPanel.add(main, "main");
 
-		JPanel p = new JPanel(new BorderLayout());
-		p.add(loadingLabel);
-		cardPanel.add(p, "loading");
+		//		JPanel p = new JPanel(new BorderLayout());
+		//		p.add(loadingLabel);
+		//		cardPanel.add(p, "loading");
 
 		DefaultFormBuilder b2 = new DefaultFormBuilder(new FormLayout("p"));
 		b2.append(loadButton);
@@ -172,29 +173,34 @@ public class MoleculePropertyPanel extends JPanel
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				MoleculeProperty selectedProperty = selectedPropertySet.get(selectedPropertyIndex);
-				Object o[];
-				if (selectedProperty.getType() == Type.NUMERIC)
-					o = dataset.getDoubleValues(selectedProperty);
-				else
-					o = dataset.getStringValues(selectedProperty);
-				String[] c = new String[] { selectedPropertySet.toString() };
-				Object v[][] = new Object[o.length][1];
-				for (int i = 0; i < o.length; i++)
-					v[i][0] = o[i];
-				JTable t = new JTable(v, c);
-				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, new JScrollPane(t));
+				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, new JScrollPane(rawDataTable()));
 			}
 		});
 	}
 
+	private JTable rawDataTable()
+	{
+		MoleculeProperty selectedProperty = selectedPropertySet.get(selectedPropertyIndex);
+		Object o[];
+		if (selectedProperty.getType() == Type.NUMERIC)
+			o = dataset.getDoubleValues(selectedProperty);
+		else
+			o = dataset.getStringValues(selectedProperty);
+		String[] c = new String[] { selectedPropertySet.get(selectedPropertyIndex).toString() };
+		Object v[][] = new Object[o.length][1];
+		for (int i = 0; i < o.length; i++)
+			v[i][0] = o[i];
+		JTable t = new JTable(v, c);
+		return t;
+	}
+
 	private void load(boolean background)
 	{
-		if (background)
-		{
-			((CardLayout) cardPanel.getLayout()).show(cardPanel, "loading");
-			cardPanel.setVisible(true);
-		}
+		//		if (background)
+		//		{
+		//			((CardLayout) cardPanel.getLayout()).show(cardPanel, "loading");
+		//			cardPanel.setVisible(true);
+		//		}
 
 		Thread th = new Thread(new Runnable()
 		{
@@ -212,6 +218,17 @@ public class MoleculePropertyPanel extends JPanel
 					if (selectedPropertySet != null)
 					{
 						MoleculeProperty selectedProperty = selectedPropertySet.get(selectedPropertyIndex);
+
+						boolean loading = false;
+						if (!dataset.isComputed(selectedPropertySet))
+						{
+							loading = true;
+							TaskProvider.create("compute-features");
+							cardPanel.add(TaskProvider.task().getPanel(), "computing-features");
+							TaskProvider.task().update("Computing feature: " + selectedPropertySet + " ...");
+							((CardLayout) cardPanel.getLayout()).show(cardPanel, "computing-features");
+							cardPanel.setVisible(true);
+						}
 
 						for (int i = 0; i < selectedPropertySet.getSize(); i++)
 							comboBox.addItem(selectedPropertySet.get(i));
@@ -249,11 +266,20 @@ public class MoleculePropertyPanel extends JPanel
 						else if (type == Type.NUMERIC)
 						{
 							numericFeatureButton.setSelected(true);
-							p = new HistogramPanel(null, null, selectedProperty.toString(), "#compounds", "",
-									ArrayUtil.toPrimitiveDoubleArray(ArrayUtil.removeNullValues(dataset
-											.getDoubleValues(selectedProperty))), 20, null, true);
-							p.setOpaque(false);
-							p.setPreferredSize(new Dimension(300, 180));
+							List<Double> vals = ArrayUtil.removeNullValues(dataset.getDoubleValues(selectedProperty));
+							if (vals.size() == 0)
+							{
+								p = new JPanel(new BorderLayout());
+								p.add(new JLabel("Could not compute values for "
+										+ selectedPropertySet.get(selectedPropertyIndex).toString()));
+							}
+							else
+							{
+								p = new HistogramPanel(null, null, selectedProperty.toString(), "#compounds", "",
+										ArrayUtil.toPrimitiveDoubleArray(vals), 20, null, true);
+								p.setOpaque(false);
+								p.setPreferredSize(new Dimension(300, 180));
+							}
 						}
 						else
 						{
@@ -285,6 +311,14 @@ public class MoleculePropertyPanel extends JPanel
 						if (p != null)
 						{
 							featurePlotPanel.add(p);
+						}
+
+						if (loading)
+						{
+							if (TaskProvider.task().containsWarnings())
+								TaskProvider.task().showWarningDialog(Settings.TOP_LEVEL_COMPONENT, "Error",
+										"An error occured while this feature was computed:");
+							TaskProvider.clear();
 						}
 					}
 					selfUpdate = false;

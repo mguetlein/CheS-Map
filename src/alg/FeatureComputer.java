@@ -1,7 +1,5 @@
 package alg;
 
-import gui.Progressable;
-
 import java.util.List;
 
 import data.DatasetFile;
@@ -10,7 +8,7 @@ import dataInterface.MoleculeProperty;
 
 public interface FeatureComputer
 {
-	public void computeFeatures(DatasetFile dataset, Progressable progress);
+	public void computeFeatures(DatasetFile dataset);
 
 	public List<MoleculeProperty> getFeatures();
 

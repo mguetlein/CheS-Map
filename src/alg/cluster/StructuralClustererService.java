@@ -1,6 +1,5 @@
 package alg.cluster;
 
-import gui.Progressable;
 import gui.binloc.Binary;
 import gui.property.DoubleProperty;
 import gui.property.Property;
@@ -10,7 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import main.Settings;
+import main.TaskProvider;
 import opentox.DatasetUtil;
 import opentox.RESTUtil;
 import data.CDKProperty;
@@ -32,15 +31,14 @@ public class StructuralClustererService implements DatasetClusterer
 	List<ClusterData> clusters;
 
 	@Override
-	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features,
-			Progressable progress)
+	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
 	{
 		List<String> urisToDelete = new ArrayList<String>();
 		try
 		{
 			if (dataset.isLocal() || !DatasetUtil.isAmbitURI(dataset.getURI()))
 			{
-				progress.update(0, "Upload dataset to Ambit dataset web service");
+				TaskProvider.task().update("Upload dataset to Ambit dataset web service");
 				origURI = DatasetUtil.uploadDatasetToAmbit(dataset.getSDFPath(true));
 				urisToDelete.add(origURI);
 			}
@@ -51,23 +49,23 @@ public class StructuralClustererService implements DatasetClusterer
 			params.put("threshold", threshold + "");
 			params.put("dataset_uri", origURI);
 
-			if (Settings.isAborted(Thread.currentThread()))
+			if (TaskProvider.task().isCancelled())
 				return;
-			progress.update(10, "Building cluster model with TUM algorithm web service");
+			TaskProvider.task().update("Building cluster model with TUM algorithm web service");
 
 			String modelURI = RESTUtil.post(clusterAlgorithm, params);
 			//			urisToDelete.add(modelURI);
 
-			if (Settings.isAborted(Thread.currentThread()))
+			if (TaskProvider.task().isCancelled())
 				return;
-			progress.update(50, "Clustering dataset with TUM model web service");
+			TaskProvider.task().update("Clustering dataset with TUM model web service");
 
 			String resultDatasetURI = RESTUtil.post(modelURI, params);
 			urisToDelete.add(resultDatasetURI);
 
-			if (Settings.isAborted(Thread.currentThread()))
+			if (TaskProvider.task().isCancelled())
 				return;
-			progress.update(90, "Downloading clustered dataset");
+			TaskProvider.task().update("Downloading clustered dataset");
 
 			DatasetFile resultDataset = DatasetFile.getURLDataset(resultDatasetURI);
 			DatasetUtil.downloadDataset(resultDataset.getURI());
@@ -98,8 +96,8 @@ public class StructuralClustererService implements DatasetClusterer
 				clusters.add(c);
 			}
 			DefaultFeatureComputer featureComp = new DefaultFeatureComputer(clusterProps);
-			featureComp.computeFeatures(resultDataset, null);
 			List<CompoundData> newCompounds = featureComp.getCompounds();
+			featureComp.computeFeatures(resultDataset);
 
 			for (int i = 0; i < size; i++)
 			{
@@ -146,7 +144,7 @@ public class StructuralClustererService implements DatasetClusterer
 	}
 
 	@Override
-	public boolean requiresNumericalFeatures()
+	public boolean requiresFeatures()
 	{
 		return false;
 	}

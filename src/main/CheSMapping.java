@@ -1,12 +1,7 @@
 package main;
 
-import gui.Progressable;
-import gui.SubProgress;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
 import util.ListUtil;
+import util.SwingUtil;
 import alg.DatasetProvider;
 import alg.FeatureComputer;
 import alg.align3d.MCSAligner;
@@ -72,7 +67,7 @@ public class CheSMapping
 
 	ClusteringData clusteringData;
 
-	public ClusteringData doMapping(final Progressable progress)
+	public ClusteringData doMapping()
 	{
 		clusteringData = null;
 		final Thread loadDatasetThread = new Thread(new Runnable()
@@ -82,30 +77,26 @@ public class CheSMapping
 			{
 				try
 				{
-					double step = 100 / 8.0;
+					TaskProvider.registerThread("Ches-Mapper-Task");
 
 					DatasetFile dataset = datasetProvider.getDatasetFile();
 
 					if (dataset.getSDFPath(false) == null)
 					{
-						progress.update(0, "convert dataset to sdf file");
+						TaskProvider.task().update(0, "convert dataset to sdf file");
 						FeatureService.writeSDFFile(dataset);
 					}
 
-					if (progress != null)
-						progress.update(step, "compute 3d compound structures");
-					System.out.println("compute 3d compound structures");
-					threeDGenerator.build3D(dataset, SubProgress.create(progress, step, step * 2));
+					TaskProvider.task().update(10, "Compute 3d compound structures");
+					threeDGenerator.build3D(dataset);
 					dataset.setSDFPath(threeDGenerator.get3DSDFFile(), true);
 
 					ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getSDFPath(true));
 
-					if (Settings.isAborted(Thread.currentThread()))
+					if (TaskProvider.task().isCancelled())
 						return;
-					if (progress != null)
-						progress.update(step * 2, "compute features");
-					System.out.println("compute features");
-					featureComputer.computeFeatures(dataset, SubProgress.create(progress, step * 2, step * 3));
+					TaskProvider.task().update(20, "Compute features");
+					featureComputer.computeFeatures(dataset);
 					for (MoleculeProperty f : featureComputer.getFeatures())
 						clustering.addFeature(f);
 					for (MoleculeProperty p : featureComputer.getProperties())
@@ -113,52 +104,40 @@ public class CheSMapping
 					for (CompoundData c : featureComputer.getCompounds())
 						clustering.addCompound(c);
 
-					if (Settings.isAborted(Thread.currentThread()))
+					if (TaskProvider.task().isCancelled())
 						return;
-					if (progress != null)
-						progress.update(step * 3, "compute clusters");
-					System.out.println("compute clusters");
-					datasetClusterer.clusterDataset(dataset, clustering.getCompounds(), clustering.getFeatures(),
-							SubProgress.create(progress, step * 3, step * 4));
+					TaskProvider.task().update(30, "Compute clusters");
+					datasetClusterer.clusterDataset(dataset, clustering.getCompounds(), clustering.getFeatures());
 					for (ClusterData c : datasetClusterer.getClusters())
 						clustering.addCluster(c);
 
 					if (threeDEmbedder.requiresDistances())
 					{
-						if (progress != null)
-							progress.update(step * 4, "compute distances");
-						System.out.println("compute distances");
+						TaskProvider.task().update(40, "Compute distances");
 						clustering.getClusterDistances();
 						for (ClusterDataImpl c : ListUtil.cast(ClusterDataImpl.class, clustering.getClusters()))
 							c.getCompoundDistances(clustering.getFeatures());
 					}
 
-					if (Settings.isAborted(Thread.currentThread()))
+					if (TaskProvider.task().isCancelled())
 						return;
-					if (progress != null)
-						progress.update(step * 5, "3D embedding clusters");
-					System.out.println("3D embedding clusters (" + clustering.getClusters().size() + ")");
+					TaskProvider.task().update(50,
+							"Embedding clusters into 3D-space (num clusters: " + clustering.getClusters().size() + ")");
 					EmbedClusters embedder = new EmbedClusters();
-					embedder.embed(threeDEmbedder, dataset, clustering,
-							SubProgress.create(progress, step * 5, step * 6));
+					embedder.embed(threeDEmbedder, dataset, clustering);
 
 					if (threeDAligner instanceof MCSAligner)
 					{
-						if (Settings.isAborted(Thread.currentThread()))
+						if (TaskProvider.task().isCancelled())
 							return;
-						if (progress != null)
-							progress.update(step * 6, "Compute MCS of clusters");
-						System.out.println("Compute MCS of clusters");
-						MCSComputer.computeMCS(dataset, clustering.getClusters(),
-								SubProgress.create(progress, step * 6, step * 7));
+						TaskProvider.task().update(60, "Compute MCS of clusters");
+						MCSComputer.computeMCS(dataset, clustering.getClusters());
 						clustering.addSubstructureSmartsTypes(SubstructureSmartsType.MCS);
 					}
 
-					if (Settings.isAborted(Thread.currentThread()))
+					if (TaskProvider.task().isCancelled())
 						return;
-					if (progress != null)
-						progress.update(step * 7, "3D align compounds");
-					System.out.println("3D align compounds");
+					TaskProvider.task().update(70, "3D align compounds");
 					threeDAligner.algin(dataset, clustering.getClusters());
 					int cCount = 0;
 					for (String alignedFile : threeDAligner.getAlginedClusterFiles())
@@ -170,27 +149,15 @@ public class CheSMapping
 					//			if (SDFUtil.countCompounds(threeDAligner.getAlginedClusterFiles()[cCount++]) != indices.length)
 					//				throw new IllegalStateException();
 
-					if (progress != null)
-						progress.update(100, "Clustering complete");
+					TaskProvider.task().update(80, "Mapping complete - Loading 3D library");
 
 					clusteringData = clustering;
 				}
 				catch (Throwable e)
 				{
 					e.printStackTrace();
-					progress.error(e.getMessage(), e);
-					progress.waitForClose();
-				}
-			}
-		});
-		progress.addPropertyChangeListener(new PropertyChangeListener()
-		{
-			@Override
-			public void propertyChange(PropertyChangeEvent evt)
-			{
-				if (evt.getPropertyName().equals(Progressable.PROPERTY_ABORT))
-				{
-					Settings.abortThread(loadDatasetThread);
+					TaskProvider.task().error(e.getMessage(), e);
+					SwingUtil.waitWhileVisible(TaskProvider.task().getDialog());
 				}
 			}
 		});

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import main.Settings;
+import main.TaskProvider;
 import util.CharUtil;
 import util.ExternalToolUtil;
 import util.StringUtil;
@@ -138,66 +139,60 @@ public class OBFingerprintProperty extends AbstractMoleculeProperty
 		return new OBFingerPrints(type).getSize();
 	}
 
-	public List<String> compute(DatasetFile dataset)
+	public List<String> compute(DatasetFile dataset) throws IOException
 	{
 		if (dataset.getSDFPath(false) == null)
 			FeatureService.writeSDFFile(dataset);
 
-		try
+		String filepath = Settings.destinationFile(dataset.getLocalPath(), dataset.getName() + ".fingerprint.hex");
+
+		String cmd = Settings.BABEL_BINARY.getLocation() + " " + dataset.getSDFPath(false) + " -ofpt -xf" + type
+				+ " -xho";
+		TaskProvider.task().verbose("Running babel: " + cmd);
+		ExternalToolUtil.run("ob-fingerprints", cmd, new File(filepath));
+
+		TaskProvider.task().verbose("Parsing fingerprints");
+		BufferedReader buffy = new BufferedReader(new FileReader(new File(filepath)));
+		String s = null;
+		String hex = "";
+		List<String> hexFingerprints = new ArrayList<String>();
+		int hexSize = new OBFingerPrints(type).getSize() / 4;
+
+		while ((s = buffy.readLine()) != null)
 		{
-			String filepath = Settings.destinationFile(dataset.getLocalPath(), dataset.getName() + ".fingerprint.hex");
-
-			String cmd = Settings.BABEL_BINARY.getLocation() + " " + dataset.getSDFPath(false) + " -ofpt -xf" + type
-					+ " -xho";
-			ExternalToolUtil.run("ob-fingerprints", cmd, new File(filepath));
-
-			BufferedReader buffy = new BufferedReader(new FileReader(new File(filepath)));
-			String s = null;
-			String hex = "";
-			List<String> hexFingerprints = new ArrayList<String>();
-			int hexSize = new OBFingerPrints(type).getSize() / 4;
-
-			while ((s = buffy.readLine()) != null)
+			// babel 2.3.0
+			if (!CharUtil.isHexChar(s.charAt(0)))
+				continue;
+			StringTokenizer tok = new StringTokenizer(s, " ");
+			while (tok.hasMoreElements())
 			{
-				// babel 2.3.0
-				if (!CharUtil.isHexChar(s.charAt(0)))
-					continue;
-				StringTokenizer tok = new StringTokenizer(s, " ");
-				while (tok.hasMoreElements())
+				String ss = tok.nextToken();
+				//					System.out.println(ss);
+				hex += ss;
+				if (hex.length() == hexSize)
 				{
-					String ss = tok.nextToken();
-					//					System.out.println(ss);
-					hex += ss;
-					if (hex.length() == hexSize)
-					{
-						//						System.out.println(hexFingerprints.size() + " : " + hex);
-						hexFingerprints.add(hex);
-						hex = "";
-					}
-					else if (hex.length() > hexSize)
-						throw new Error("to long (" + hex.length() + " > " + hexSize + ") : " + hex);
+					//						System.out.println(hexFingerprints.size() + " : " + hex);
+					hexFingerprints.add(hex);
+					hex = "";
 				}
+				else if (hex.length() > hexSize)
+					throw new Error("to long (" + hex.length() + " > " + hexSize + ") : " + hex);
 			}
-			if (hex.length() != 0)
-				throw new Error("hex-leftover: " + hex);
-
-			List<String> binFingerprints = new ArrayList<String>();
-			for (String string : hexFingerprints)
-			{
-				String bin = "";
-				for (int i = 0; i < string.length(); i++)
-					bin += StringUtil.concatChar(Integer.toBinaryString(Character.digit(string.charAt(i), 16)), 4, '0',
-							false);
-				//				System.out.println(binFingerprints.size() + " : " + bin);
-				binFingerprints.add(bin);
-			}
-
-			return binFingerprints;
 		}
-		catch (IOException e)
+		if (hex.length() != 0)
+			throw new Error("hex-leftover: " + hex);
+
+		List<String> binFingerprints = new ArrayList<String>();
+		for (String string : hexFingerprints)
 		{
-			e.printStackTrace();
-			return null;
+			String bin = "";
+			for (int i = 0; i < string.length(); i++)
+				bin += StringUtil.concatChar(Integer.toBinaryString(Character.digit(string.charAt(i), 16)), 4, '0',
+						false);
+			//				System.out.println(binFingerprints.size() + " : " + bin);
+			binFingerprints.add(bin);
 		}
+
+		return binFingerprints;
 	}
 }

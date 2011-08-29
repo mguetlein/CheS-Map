@@ -1,12 +1,11 @@
 package alg.build3d;
 
-import gui.Progressable;
 import alg.Algorithm;
 import data.DatasetFile;
 
 public interface ThreeDBuilder extends Algorithm
 {
-	public void build3D(DatasetFile datasetFile, Progressable progress);
+	public void build3D(DatasetFile datasetFile);
 
 	public String get3DSDFFile();
 

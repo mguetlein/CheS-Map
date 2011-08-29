@@ -1,12 +1,12 @@
 package alg.build3d;
 
-import gui.Progressable;
 import io.SDFUtil;
 
 import java.io.File;
 import java.io.IOException;
 
 import main.Settings;
+import main.TaskProvider;
 import util.FileUtil;
 import data.DatasetFile;
 
@@ -26,7 +26,7 @@ public abstract class Abstract3DBuilder implements ThreeDBuilder
 	public abstract String getInitials();
 
 	@Override
-	public void build3D(final DatasetFile dataset, final Progressable progress)
+	public void build3D(final DatasetFile dataset)
 	{
 		if (dataset.getSDFPath(false).contains("." + getInitials() + "3d"))
 		{
@@ -62,6 +62,8 @@ public abstract class Abstract3DBuilder implements ThreeDBuilder
 					@Override
 					public void run()
 					{
+						if (!TaskProvider.exists())
+							TaskProvider.registerThread("Ches-Mapper-Task");
 						while (running)
 						{
 							try
@@ -75,7 +77,7 @@ public abstract class Abstract3DBuilder implements ThreeDBuilder
 							if (tmpFile.exists())
 							{
 								int i = SDFUtil.countCompounds(tmpFile.getAbsolutePath());
-								progress.update(i / (double) max * 100, i + "/" + max + " 3D structure generated");
+								TaskProvider.task().update("Building 3D structure for compound " + (i + 1) + "/" + max);
 							}
 						}
 					}
@@ -84,7 +86,7 @@ public abstract class Abstract3DBuilder implements ThreeDBuilder
 				build3D(dataset, tmpFile.getAbsolutePath());
 				running = false;
 
-				if (Settings.isAborted(Thread.currentThread()))
+				if (TaskProvider.task().isCancelled())
 					return;
 				boolean res = tmpFile.renameTo(new File(finalFile));
 				res |= tmpFile.delete();

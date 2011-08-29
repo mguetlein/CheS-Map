@@ -1,41 +1,45 @@
 package data;
 
-import gui.Progressable;
+import java.util.List;
 
 import javax.vecmath.Vector3f;
 
 import main.Settings;
+import main.TaskProvider;
+import util.DistanceMatrix;
 import util.ListUtil;
+import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
 import dataInterface.ClusterData;
 import dataInterface.MolecularPropertyOwner;
+import dataInterface.MoleculeProperty;
 
 public class EmbedClusters
 {
-	public void embed(ThreeDEmbedder clusterEmbedder, DatasetFile dataset, ClusteringData clustering,
-			Progressable progress)
-	{
-		System.out.println("embed " + clustering.getClusters().size() + " clusters");
-		clusterEmbedder.embed(
-				dataset,
-				ListUtil.cast(MolecularPropertyOwner.class, clustering.getClusters()),
-				clustering.getFeatures(),
-				clusterEmbedder.requiresDistances() ? clustering.getClusterDistances().cast(
-						MolecularPropertyOwner.class) : null);
-		int cCount = 0;
-		for (Vector3f v : clusterEmbedder.getPositions())
-			((ClusterDataImpl) clustering.getClusters().get(cCount++)).setPosition(v);
-		if (progress != null)
-			progress.update(100 * 1 / (double) (clustering.getClusters().size() + 1), "Embedded clusters into 3D-space");
+	Random3DEmbedder random = new Random3DEmbedder();
 
-		System.err.flush();
-		System.out.println("embed clusters compounds");
+	public void embed(ThreeDEmbedder clusterEmbedder, DatasetFile dataset, ClusteringData clustering)
+	{
+		ThreeDEmbedder emb;
+		if (clustering.getSize() == 1)
+			emb = random;
+		else
+			emb = clusterEmbedder;
+		emb = secureEmbed(emb, "cluster", clustering.getSize() + " clusters", dataset,
+				ListUtil.cast(MolecularPropertyOwner.class, clustering.getClusters()), clustering.getFeatures(),
+				emb.requiresDistances() ? clustering.getClusterDistances().cast(MolecularPropertyOwner.class) : null);
+
+		int cCount = 0;
+		for (Vector3f v : emb.getPositions())
+			((ClusterDataImpl) clustering.getClusters().get(cCount++)).setPosition(v);
+
 		cCount = 0;
 		for (final ClusterData cluster : clustering.getClusters())
 		{
 			ClusterDataImpl c = (ClusterDataImpl) cluster;
-			System.err.flush();
-			System.out.println("embed " + c.getCompounds().size() + " compounds");
+			TaskProvider.task().update(
+					"Embedding compounds of cluster " + (cCount + 1) + "/" + clustering.getClusters().size()
+							+ " into 3D-space (num compounds: " + c.getSize() + ")");
 
 			if (Settings.DBG)
 			{
@@ -54,21 +58,62 @@ public class EmbedClusters
 			//							+ ArrayUtil.toString(clusterCompoundDistances, true));
 			//			}
 
-			clusterEmbedder.embed(
+			if (c.getSize() == 1)
+				emb = random;
+			else
+				emb = clusterEmbedder;
+			emb = secureEmbed(
+					emb,
+					"compound",
+					"cluster " + (cCount + 1) + " (size: " + c.getSize() + ")",
 					dataset,
 					ListUtil.cast(MolecularPropertyOwner.class, c.getCompounds()),
 					clustering.getFeatures(),
-					clusterEmbedder.requiresDistances() ? c.getCompoundDistances(clustering.getFeatures()).cast(
+					emb.requiresDistances() ? c.getCompoundDistances(clustering.getFeatures()).cast(
 							MolecularPropertyOwner.class) : null);
-			int mCount = 0;
-			for (Vector3f v : clusterEmbedder.getPositions())
-				((CompoundDataImpl) c.getCompounds().get(mCount++)).setPosition(v);
 
-			if (progress != null)
-				progress.update(100 * (2 + cCount) / (double) (clustering.getClusters().size() + 1),
-						"Embedded compounds in " + (cCount + 1) + " of " + clustering.getClusters().size()
-								+ " clusters");
+			int mCount = 0;
+			for (Vector3f v : emb.getPositions())
+				((CompoundDataImpl) c.getCompounds().get(mCount++)).setPosition(v);
 			cCount++;
+		}
+	}
+
+	public ThreeDEmbedder secureEmbed(ThreeDEmbedder emb, String embedItem, String embedItems, DatasetFile dataset,
+			List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
+			DistanceMatrix<MolecularPropertyOwner> distances)
+	{
+		try
+		{
+			emb.embed(dataset, instances, features, distances);
+			return emb;
+		}
+		catch (Exception e)
+		{
+			if (emb == random)
+			{
+				e.printStackTrace();
+				throw new Error("random embedder should not fail!");
+			}
+
+			String msg;
+			if (e.getMessage().contains("No attributes!"))
+				msg = "Each " + embedItem + " has the exact same feature values.";
+			else
+				msg = e.getMessage();
+			TaskProvider.task().warning(
+					emb.getName() + " failed on embedding " + embedItems + ", using random positions instead.", msg);
+			e.printStackTrace();
+			try
+			{
+				random.embed(dataset, instances, features, distances);
+				return random;
+			}
+			catch (Exception e2)
+			{
+				e2.printStackTrace();
+				throw new Error("random embedder should not fail!");
+			}
 		}
 	}
 }

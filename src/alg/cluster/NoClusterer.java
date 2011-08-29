@@ -1,6 +1,5 @@
 package alg.cluster;
 
-import gui.Progressable;
 import gui.binloc.Binary;
 import gui.property.Property;
 
@@ -51,8 +50,7 @@ public class NoClusterer implements DatasetClusterer
 	ClusterDataImpl c;
 
 	@Override
-	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features,
-			Progressable progress)
+	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
 	{
 		c = new ClusterDataImpl();
 		c.setFilename(dataset.getSDFPath(true));
@@ -71,7 +69,7 @@ public class NoClusterer implements DatasetClusterer
 	}
 
 	@Override
-	public boolean requiresNumericalFeatures()
+	public boolean requiresFeatures()
 	{
 		return false;
 	}

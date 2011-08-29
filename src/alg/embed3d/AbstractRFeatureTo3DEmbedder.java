@@ -3,7 +3,6 @@ package alg.embed3d;
 import gui.binloc.Binary;
 import gui.property.IntegerProperty;
 import gui.property.Property;
-import io.ExternalTool;
 import io.RUtil;
 
 import java.io.File;
@@ -19,6 +18,7 @@ import org.apache.commons.math.geometry.Vector3D;
 
 import util.ArrayUtil;
 import util.DistanceMatrix;
+import util.ExternalToolUtil;
 import data.DatasetFile;
 import data.DistanceUtil;
 import data.RScriptUser;
@@ -28,8 +28,6 @@ import dataInterface.MoleculeProperty;
 public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implements ThreeDEmbedder
 {
 	List<Vector3f> positions;
-
-	Random3DEmbedder random = new Random3DEmbedder();
 
 	@Override
 	public boolean requiresFeatures()
@@ -42,13 +40,8 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 			final DistanceMatrix<MolecularPropertyOwner> distances)
 	{
 		if (features.size() < getMinNumFeatures() || instances.size() < getMinNumInstances())
-		{
-			System.out.println("WARNING: " + getRScriptName() + " needs at least " + getMinNumFeatures()
-					+ " features and " + getMinNumInstances() + " instances for embedding, returning 0-0-0 positions");
-			random.embed(dataset, instances, features, distances);
-			positions = random.positions;
-			return;
-		}
+			throw new Error(getRScriptName() + " needs at least " + getMinNumFeatures() + " features and "
+					+ getMinNumInstances() + " instances for embedding");
 
 		File f = null;
 		File f2 = null;
@@ -64,8 +57,10 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 
 		RUtil.toRTable(features, DistanceUtil.values(features, instances), f.getAbsolutePath());
 
-		ExternalTool.run(getRScriptName(), null, null, Settings.RSCRIPT_BINARY.getLocation() + " " + getScriptPath()
-				+ " " + f.getAbsolutePath() + " " + f2.getAbsolutePath());
+		ExternalToolUtil.run(
+				getRScriptName(),
+				Settings.RSCRIPT_BINARY.getLocation() + " " + getScriptPath() + " " + f.getAbsolutePath() + " "
+						+ f2.getAbsolutePath());
 
 		List<Vector3D> v3d = RUtil.readRVectorMatrix(f2.getAbsolutePath());
 
@@ -148,7 +143,6 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 					+ "\n(The following R-library is required: http://cran.r-project.org/web/packages/tsne)\n";
 
 		}
-
 
 		private final int maxNumIterationsDefault = 1000;
 		private final int initial_dimsDefault = 30;

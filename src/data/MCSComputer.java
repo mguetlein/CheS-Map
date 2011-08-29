@@ -1,14 +1,12 @@
 package data;
 
-import gui.Progressable;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import main.Settings;
+import main.TaskProvider;
 
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.Molecule;
@@ -95,7 +93,7 @@ public class MCSComputer
 		return smsd;
 	}
 
-	public static void computeMCS(DatasetFile dataset, List<ClusterData> clusters, Progressable progress)
+	public static void computeMCS(DatasetFile dataset, List<ClusterData> clusters)
 	{
 		int count = 0;
 		boolean matchBonds = true;
@@ -106,15 +104,18 @@ public class MCSComputer
 
 		for (ClusterData c : clusters)
 		{
-			progress.update(100 / (double) clusters.size() * count, "Computing MCS for cluster " + (++count) + "/"
-					+ clusters.size());
+			TaskProvider.task().update("Computing MCS for cluster " + (++count) + "/" + clusters.size());
 			IMolecule mcsMolecule = null;
 			try
 			{
 				List<IAtomContainer> targets = new ArrayList<IAtomContainer>();
+				int i = 0;
 				for (CompoundData m : c.getCompounds())
 				{
 					IMolecule target = mols[m.getIndex()];
+					TaskProvider.task().verbose(
+							"Visiting cluster compound " + (i + 1) + "/" + c.getSize() + ", this may take a while ...");
+					i++;
 
 					boolean flag = ConnectivityChecker.isConnected(target);
 					if (!flag)
@@ -175,10 +176,10 @@ public class MCSComputer
 						IAtomContainer subgraph = getSubgraph(target, mapping);
 						mcsMolecule = new Molecule(subgraph);
 					}
-					if (Settings.isAborted(Thread.currentThread()))
+					if (TaskProvider.task().isCancelled())
 						break;
 				}
-				if (Settings.isAborted(Thread.currentThread()))
+				if (TaskProvider.task().isCancelled())
 					break;
 				//			inputHandler.configure(mcsMolecule, targetType);
 				//			if (argumentHandler.shouldOutputSubgraph())
@@ -199,7 +200,7 @@ public class MCSComputer
 						mappings.add(getIndexMapping(smsd.getFirstAtomMapping()));
 						secondRoundTargets.add(builder.newInstance(IAtomContainer.class, smsd.getFirstAtomMapping()
 								.getTarget()));
-						if (Settings.isAborted(Thread.currentThread()))
+						if (TaskProvider.task().isCancelled())
 							break;
 					}
 
@@ -207,7 +208,7 @@ public class MCSComputer
 					//				outputHandler.writeCircleImage(mcsMolecule, secondRoundTargets, name, mappings);
 
 				}
-				if (Settings.isAborted(Thread.currentThread()))
+				if (TaskProvider.task().isCancelled())
 					break;
 			}
 			catch (Exception e)
@@ -225,5 +226,4 @@ public class MCSComputer
 		}
 
 	}
-
 }

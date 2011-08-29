@@ -3,9 +3,7 @@ package data;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
-import main.Settings;
+import main.TaskProvider;
 
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.smiles.smarts.SMARTSQueryTool;
@@ -45,25 +43,16 @@ public class CDKSmartsHandler implements SmartsHandler
 			}
 			catch (Throwable e)
 			{
-				illegalSmarts.add("Smarts: '" + smarts + "', Error: '" + e.getMessage() + "'");
+				illegalSmarts.add("Smarts: '" + smarts + "', Error: '" + e.getMessage().replaceAll("\n", ", ") + "'");
 			}
 		}
 
 		if (illegalSmarts.size() > 0)
 		{
-			final StringBuffer s = new StringBuffer("Illegal Smarts in " + alert + " :\n");
+			String details = "";
 			for (String ss : illegalSmarts)
-				s.append(ss + "\n");
-
-			Thread th = new Thread(new Runnable()
-			{
-				public void run()
-				{
-					JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, s.toString(), "Warning",
-							JOptionPane.WARNING_MESSAGE);
-				}
-			});
-			th.start();
+				details += ss + "\n";
+			TaskProvider.task().warning("Illegal Smarts in " + alert, details);
 		}
 
 		int i = 0;
@@ -71,6 +60,8 @@ public class CDKSmartsHandler implements SmartsHandler
 		{
 			try
 			{
+				TaskProvider.task().verbose("Matching alert on " + (i + 1) + "/" + mols.length + " compunds");
+
 				boolean match = false;
 				for (SMARTSQueryTool queryTool : queryTools)
 				{
@@ -84,7 +75,7 @@ public class CDKSmartsHandler implements SmartsHandler
 			}
 			catch (Exception e)
 			{
-				e.printStackTrace();
+				TaskProvider.task().warning("Could not match molecule", e);
 				m[i++] = "0";
 			}
 		}

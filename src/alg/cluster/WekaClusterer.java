@@ -1,6 +1,5 @@
 package alg.cluster;
 
-import gui.Progressable;
 import gui.binloc.Binary;
 import gui.property.Property;
 
@@ -14,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import main.Settings;
+import main.TaskProvider;
 import util.ListUtil;
 import weka.CompoundArffWriter;
 import weka.WekaPropertyUtil;
@@ -78,9 +78,9 @@ public class WekaClusterer implements DatasetClusterer
 	}
 
 	@Override
-	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features,
-			Progressable progresss)
+	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
 	{
+		TaskProvider.task().verbose("Converting data to arff-format");
 		File f = CompoundArffWriter.writeArffFile(ListUtil.cast(MolecularPropertyOwner.class, compounds), features);
 		try
 		{
@@ -88,8 +88,10 @@ public class WekaClusterer implements DatasetClusterer
 			Instances data = new Instances(reader);
 
 			eval = new ClusterEvaluation();
+			TaskProvider.task().verbose("Building clusterer");
 			wekaClusterer.buildClusterer(data);
 			eval.setClusterer(wekaClusterer);
+			TaskProvider.task().verbose("Clustering dataset");
 			eval.evaluateClusterer(data);
 			System.out.println("# of clusters: " + eval.getNumClusters());
 
@@ -138,7 +140,7 @@ public class WekaClusterer implements DatasetClusterer
 	}
 
 	@Override
-	public boolean requiresNumericalFeatures()
+	public boolean requiresFeatures()
 	{
 		return true;
 	}

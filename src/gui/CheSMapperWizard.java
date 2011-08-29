@@ -127,16 +127,16 @@ public class CheSMapperWizard extends WizardDialog
 		return chesMapping != null;
 	}
 
-	public ClusteringData loadDataset(Progressable progressable)
+	public ClusteringData loadDataset()
 	{
-		return chesMapping.doMapping(progressable);
+		return chesMapping.doMapping();
 	}
 
 	public static void main(String args[])
 	{
 		CheSMapperWizard wwd = new CheSMapperWizard(null);
 		SwingUtil.waitWhileVisible(wwd);
-		wwd.loadDataset(null);
+		wwd.loadDataset();
 		System.exit(0);
 	}
 }

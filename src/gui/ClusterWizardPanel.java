@@ -28,10 +28,10 @@ public class ClusterWizardPanel extends GenericWizardPanel
 	{
 		if (!preconditionsMet)
 			return;
-		canProceed = !getDatasetClusterer().requiresNumericalFeatures() || numFeatures > 0;
+		canProceed = !getDatasetClusterer().requiresFeatures() || numFeatures > 0;
 		if (!canProceed)
 			setInfo(getDatasetClusterer().getName()
-					+ " requires numerical features, you have no features selected.\nPlease select numerical features in previous step, or select another cluster method.",
+					+ " requires features for clustering, you have no features selected.\nPlease select features in previous step, or select another cluster method.",
 					MsgType.ERROR);
 		else if (getDatasetClusterer().getFixedNumClustersProperty() != null)
 			setInfo("This clusterer returns a fixed number of clusters (set property '"

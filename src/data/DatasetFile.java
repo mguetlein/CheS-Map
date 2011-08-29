@@ -1,7 +1,5 @@
 package data;
 
-import gui.Progressable;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -158,17 +156,12 @@ public class DatasetFile
 
 	public void loadDataset() throws Exception
 	{
-		loadDataset(true, null);
+		loadDataset(true);
 	}
 
-	public void loadDataset(final boolean loadHydrogen) throws Exception
+	public void loadDataset(boolean loadHydrogen) throws Exception
 	{
-		loadDataset(loadHydrogen, null);
-	}
-
-	public void loadDataset(boolean loadHydrogen, final Progressable progress) throws Exception
-	{
-		featureService.loadDataset(this, loadHydrogen, progress);
+		featureService.loadDataset(this, loadHydrogen);
 	}
 
 	public int numCompounds()

@@ -1,11 +1,9 @@
 package data;
 
-import gui.Progressable;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import main.Settings;
+import main.TaskProvider;
 import alg.FeatureComputer;
 import dataInterface.CompoundData;
 import dataInterface.MoleculeProperty;
@@ -31,7 +29,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 	}
 
 	@Override
-	public void computeFeatures(DatasetFile dataset, Progressable progress)
+	public void computeFeatures(DatasetFile dataset)
 	{
 		features = new ArrayList<MoleculeProperty>();
 		properties = new ArrayList<MoleculeProperty>();
@@ -57,16 +55,12 @@ public class DefaultFeatureComputer implements FeatureComputer
 				properties.add(p);
 			}
 
-		System.out.print("computing features ");
 		String[] smiles = dataset.getSmiles();
 
 		int count = 0;
 		for (MoleculeProperty p : props)
 		{
-			System.out.print(".");
-			if (progress != null)
-				progress.update((100 / (double) props.size()) * count,
-						"computing feature " + (count + 1) + "/" + props.size() + " : " + p.toString());
+			TaskProvider.task().update("Computing feature " + (count + 1) + "/" + props.size() + " : " + p.toString());
 			count++;
 
 			Double d[] = null;
@@ -77,7 +71,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 				s = dataset.getStringValues(p);
 			Double n[] = dataset.getNormalizedValues(p);
 
-			if (Settings.isAborted(Thread.currentThread()))
+			if (TaskProvider.task().isCancelled())
 				break;
 
 			for (int i = 0; i < numCompounds; i++)
@@ -99,7 +93,6 @@ public class DefaultFeatureComputer implements FeatureComputer
 				c.setNormalizedValue(p, n[i]);
 			}
 		}
-		System.out.println(" done");
 	}
 
 	@Override

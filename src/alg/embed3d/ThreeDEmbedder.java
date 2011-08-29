@@ -17,7 +17,7 @@ public interface ThreeDEmbedder extends Algorithm
 	public boolean requiresDistances();
 
 	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
-			DistanceMatrix<MolecularPropertyOwner> distances);
+			DistanceMatrix<MolecularPropertyOwner> distances) throws Exception;
 
 	public List<Vector3f> getPositions();
 

@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
-import java.util.Vector;
 
 import javax.swing.ImageIcon;
 import javax.swing.UIDefaults;
@@ -269,20 +268,6 @@ public class Settings
 		{
 			e.printStackTrace();
 		}
-	}
-
-	// ------------- ABORT MAPPING FUNCTIONS ----------------------------------
-
-	private static Vector<Thread> abortedThreads = new Vector<Thread>();
-
-	public static void abortThread(Thread th)
-	{
-		abortedThreads.add(th);
-	}
-
-	public static boolean isAborted(Thread th)
-	{
-		return abortedThreads.contains(th);
 	}
 
 	// ------------------------ EXTERNAL PROGRAMMS -----------------------

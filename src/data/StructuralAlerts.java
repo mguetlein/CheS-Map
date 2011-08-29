@@ -62,7 +62,8 @@ public class StructuralAlerts
 
 		public String getDescription()
 		{
-			return toString() + "\n" + ArrayUtil.toString(smarts);
+			String s = ArrayUtil.toString(smarts, " -");
+			return toString() + "\n" + s.substring(2, s.length() - 2);
 		}
 	}
 

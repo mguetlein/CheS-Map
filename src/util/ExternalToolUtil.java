@@ -4,7 +4,7 @@ import io.ExternalTool;
 
 import java.io.File;
 
-import main.Settings;
+import main.TaskProvider;
 
 public class ExternalToolUtil
 {
@@ -15,7 +15,25 @@ public class ExternalToolUtil
 
 	public static void run(String processName, String cmd, File stdOutFile)
 	{
-		Process p = ExternalTool.run(processName, cmd, stdOutFile, stdOutFile != null);
+		ExternalTool ext = new ExternalTool()
+		{
+			protected void stdout(String s)
+			{
+				if (!TaskProvider.exists())
+					TaskProvider.registerThread("Ches-Mapper-Task");
+				TaskProvider.task().verbose(s);
+				System.out.println(s);
+			}
+
+			protected void stderr(String s)
+			{
+				if (!TaskProvider.exists())
+					TaskProvider.registerThread("Ches-Mapper-Task");
+				TaskProvider.task().verbose(s);
+				System.err.println(s);
+			}
+		};
+		Process p = ext.run(processName, cmd, stdOutFile, stdOutFile != null);
 		while (true)
 		{
 			try
@@ -27,7 +45,7 @@ public class ExternalToolUtil
 				e.printStackTrace();
 			}
 			// check if this process should be aborted (via abort dialog)
-			if (Settings.isAborted(Thread.currentThread()))
+			if (TaskProvider.task().isCancelled())
 			{
 				p.destroy();
 				break;

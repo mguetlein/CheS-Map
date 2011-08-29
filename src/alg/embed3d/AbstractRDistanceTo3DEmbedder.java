@@ -28,8 +28,6 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 {
 	List<Vector3f> positions;
 
-	Random3DEmbedder random = new Random3DEmbedder();
-
 	@Override
 	public boolean requiresFeatures()
 	{
@@ -38,20 +36,15 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 
 	@Override
 	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
-			final DistanceMatrix<MolecularPropertyOwner> distances)
+			final DistanceMatrix<MolecularPropertyOwner> distances) throws Exception
 	{
 		//		String clusterNames[] = new String[clusterFiles.length];
 		//		for (int i = 0; i < clusterNames.length; i++)
 		//			clusterNames[i] = clusterFiles[i].substring(clusterFiles[i].lastIndexOf(File.separator) + 1);
 
 		if (instances.size() < getMinNumInstances())
-		{
-			System.out.println("WARNING: " + getRScriptName() + " needs at least " + getMinNumInstances()
-					+ " instances for embedding, returning 0-0-0 positions");
-			random.embed(dataset, instances, features, distances);
-			positions = random.positions;
-			return;
-		}
+			throw new Exception(getRScriptName() + " needs at least " + getMinNumInstances()
+					+ " instances for embedding");
 
 		String tableFile = Settings.destinationFile(dataset.getSDFPath(true),
 				FileUtil.getFilename(dataset.getSDFPath(true), false) + "." + getRScriptName() + ".distances.table");
@@ -160,7 +153,6 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 					+ "\n(The follwoing R-library is required: http://cran.r-project.org/web/packages/smacof)"
 					+ "\n\nThe features are converted to a distance matrix using euclidien distance beforehand.";
 		}
-
 
 		private final int maxNumIterationsDefault = 150;
 		private int maxNumIterations = maxNumIterationsDefault;

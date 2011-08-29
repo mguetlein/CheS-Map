@@ -2,7 +2,6 @@ package alg.align3d;
 
 import gui.binloc.Binary;
 import gui.property.Property;
-import io.ExternalTool;
 import io.SDFUtil;
 
 import java.io.File;
@@ -11,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import main.Settings;
+import main.TaskProvider;
+import util.ExternalToolUtil;
 import util.FileUtil;
 import data.ClusterDataImpl;
 import data.DatasetFile;
@@ -58,13 +59,18 @@ public class MCSAligner implements ThreeDAligner
 	{
 		alignedFiles = new ArrayList<String>();
 
+		int count = 0;
 		for (ClusterData cluster : clusters)
 		{
-			if (cluster.getCompounds().size() < 2
+			if (cluster.getCompounds().size() < 2 || cluster.getSubstructureSmarts(SubstructureSmartsType.MCS) == null
 					|| cluster.getSubstructureSmarts(SubstructureSmartsType.MCS).trim().length() == 0)
 				alignedFiles.add(cluster.getFilename());
 			else
 			{
+				TaskProvider.task().update(
+						"Aligning cluster " + (count + 1) + "/" + clusters.size() + " according to "
+								+ cluster.getSubstructureSmarts(SubstructureSmartsType.MCS));
+
 				String clusterFile = cluster.getFilename();
 				File tmpFirst = null;
 				File tmpRemainder = null;
@@ -91,16 +97,11 @@ public class MCSAligner implements ThreeDAligner
 				SDFUtil.filter(clusterFile, tmpRemainder.getAbsolutePath(), remainderIndices);
 				try
 				{
-					ExternalTool.run(
+					ExternalToolUtil.run(
 							"obfit",
-							tmpAligned,
-							null,
 							Settings.BABEL_BINARY.getSisterCommandLocation("obfit") + " "
 									+ cluster.getSubstructureSmarts(SubstructureSmartsType.MCS) + " "
-									+ tmpFirst.getAbsolutePath() + " " + tmpRemainder.getAbsolutePath()
-					//						new String[] { "obfit", commonSubstructure[i], tmpFirst.getAbsolutePath(),
-					//								tmpRemainder.getAbsolutePath(), ">", alignedStructures }
-							);
+									+ tmpFirst.getAbsolutePath() + " " + tmpRemainder.getAbsolutePath(), tmpAligned);
 
 					DatasetFile.clearFilesWith3DSDF(alignedStructures);
 
@@ -114,10 +115,16 @@ public class MCSAligner implements ThreeDAligner
 				}
 				catch (Error e)
 				{
-					System.err.println("ERROR in algin: " + e.getMessage());
+					//System.err.println("ERROR in algin: " + e.getMessage());
+					TaskProvider.task().warning(
+							"Cannot align cluster " + (count + 1) + " (size: " + cluster.getSize() + ") according to "
+									+ cluster.getSubstructureSmarts(SubstructureSmartsType.MCS), e);
+
 					alignedFiles.add(cluster.getFilename());
 				}
 			}
+
+			count++;
 		}
 	}
 
@@ -136,10 +143,8 @@ public class MCSAligner implements ThreeDAligner
 
 	public static void main(String args[])
 	{
-		ExternalTool
+		ExternalToolUtil
 				.run("obfit",
-						null,
-						null,
 						"obfit Oc1ccc(cc1)-c1cocc(:c:c)c1=O /tmp/first4154035072070520801sdf /tmp/remainder4312806650036993699sdf > /tmp/structural_cluster_3.aligned.sdf");
 	}
 

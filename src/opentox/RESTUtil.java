@@ -16,6 +16,7 @@ import java.util.Random;
 import javax.swing.JOptionPane;
 
 import main.Settings;
+import main.TaskProvider;
 import util.StringUtil;
 
 public class RESTUtil
@@ -70,7 +71,7 @@ public class RESTUtil
 			{
 				e.printStackTrace();
 			}
-			if (Settings.isAborted(Thread.currentThread()))
+			if (TaskProvider.task().isCancelled())
 				return null;
 
 			HashMap<String, String> params = new HashMap<String, String>();

@@ -1,7 +1,5 @@
 package data;
 
-import gui.Progressable;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -18,10 +16,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.swing.SwingUtilities;
 import javax.vecmath.Point3d;
 
 import main.Settings;
+import main.TaskProvider;
 
 import org.openscience.cdk.AtomContainer;
 import org.openscience.cdk.ChemFile;
@@ -202,8 +200,7 @@ public class FeatureService
 		return false;
 	}
 
-	public synchronized void loadDataset(DatasetFile dataset, boolean loadHydrogen, final Progressable progress)
-			throws Exception
+	public synchronized void loadDataset(DatasetFile dataset, boolean loadHydrogen) throws Exception
 	{
 		if (fileToMolecules.get(dataset) == null)
 		{
@@ -243,19 +240,10 @@ public class FeatureService
 
 			for (IAtomContainer iAtomContainer : list)
 			{
-				System.out.print(".");
 				IMolecule mol = (IMolecule) iAtomContainer;//reader.next();
-				if (progress != null)
-				{
-					final int finalMCount = mCount;
-					SwingUtilities.invokeLater(new Runnable()
-					{
-						public void run()
-						{
-							progress.update(finalMCount + 1, "Loaded " + (finalMCount + 1) + " molecules");
-						}
-					});
-				}
+
+				if (TaskProvider.exists())
+					TaskProvider.task().verbose("Loaded " + (mCount + 1) + " molecules");
 
 				Map<Object, Object> props = mol.getProperties();
 				for (Object key : props.keySet())
@@ -371,7 +359,7 @@ public class FeatureService
 	{
 		try
 		{
-			loadDataset(dataset, loadHydrogen, null);
+			loadDataset(dataset, loadHydrogen);
 			return fileToMolecules.get(dataset);
 		}
 		catch (Exception e)
@@ -406,28 +394,41 @@ public class FeatureService
 			if (p instanceof OBFingerprintProperty)
 			{
 				OBFingerprintProperty obProp = (OBFingerprintProperty) p;
-
-				List<String> fingerprintsForMolecules = obProp.compute(dataset);
-				if (fingerprintsForMolecules.size() != fileToMolecules.get(dataset).length)
-					throw new IllegalStateException("num molecules not correct");
-				if (fingerprintsForMolecules.get(0).length() != obProp.numSetValues())
-					throw new IllegalStateException("fingerprint length not correct");
-
-				List<String[]> featureValues = new ArrayList<String[]>();
-				for (int j = 0; j < fingerprintsForMolecules.get(0).length(); j++)
+				try
 				{
-					String[] featureValue = new String[fingerprintsForMolecules.size()];
-					for (int i = 0; i < featureValue.length; i++)
-						featureValue[i] = fingerprintsForMolecules.get(i).charAt(j) + "";
-					featureValues.add(featureValue);
+					List<String> fingerprintsForMolecules = obProp.compute(dataset);
+					if (fingerprintsForMolecules.size() != fileToMolecules.get(dataset).length)
+						throw new IllegalStateException("num molecules not correct");
+					if (fingerprintsForMolecules.get(0).length() != obProp.numSetValues())
+						throw new IllegalStateException("fingerprint length not correct");
+
+					List<String[]> featureValues = new ArrayList<String[]>();
+					for (int j = 0; j < fingerprintsForMolecules.get(0).length(); j++)
+					{
+						String[] featureValue = new String[fingerprintsForMolecules.size()];
+						for (int i = 0; i < featureValue.length; i++)
+							featureValue[i] = fingerprintsForMolecules.get(i).charAt(j) + "";
+						featureValues.add(featureValue);
+					}
+
+					for (int j = 0; j < obProp.numSetValues(); j++)
+					{
+						values.put(valuesKey(dataset, OBFingerprintProperty.create(obProp.type, j), false),
+								featureValues.get(j));
+						values.put(valuesKey(dataset, OBFingerprintProperty.create(obProp.type, j), true),
+								ArrayUtil.normalize(featureValues.get(j)));
+					}
 				}
-
-				for (int j = 0; j < obProp.numSetValues(); j++)
+				catch (Throwable e)
 				{
-					values.put(valuesKey(dataset, OBFingerprintProperty.create(obProp.type, j), false),
-							featureValues.get(j));
-					values.put(valuesKey(dataset, OBFingerprintProperty.create(obProp.type, j), true),
-							ArrayUtil.normalize(featureValues.get(j)));
+					TaskProvider.task().warning("Could not compute OpenBabel fingerprint " + p, e);
+					for (int j = 0; j < obProp.numSetValues(); j++)
+					{
+						values.put(valuesKey(dataset, OBFingerprintProperty.create(obProp.type, j), false),
+								new String[fileToMolecules.get(dataset).length]);
+						values.put(valuesKey(dataset, OBFingerprintProperty.create(obProp.type, j), true),
+								new Double[fileToMolecules.get(dataset).length]);
+					}
 				}
 			}
 			else if (p instanceof CDKProperty)
@@ -454,6 +455,9 @@ public class FeatureService
 
 					for (int i = 0; i < mols.length; i++)
 					{
+						TaskProvider.task().verbose(
+								"Compute " + cdkProp.desc + " for " + (i + 1) + "/" + mols.length + " compounds");
+
 						try
 						{
 							IDescriptorResult res = descriptor.calculate(mols[i]).getValue();
@@ -480,20 +484,22 @@ public class FeatureService
 							else
 								throw new IllegalStateException("Unknown idescriptor result value for '" + cdkProp
 										+ "' : " + res.getClass());
+
 						}
 						catch (Exception e)
 						{
-							System.err.println("could not compute cdk feature " + e.getMessage());
-							e.printStackTrace();
-
+							TaskProvider.task().warning("Could not compute cdk feature " + cdkProp.desc, e);
 							for (int j = 0; j < cdkProp.numSetValues(); j++)
-								vv.get(j)[i] = 0.0;
+								vv.get(j)[i] = null;
 						}
 
-						if (Settings.isAborted(Thread.currentThread()))
+						for (int j = 0; j < cdkProp.numSetValues(); j++)
+							if (vv.get(j)[i].isNaN() || vv.get(j)[i].isInfinite())
+								vv.get(j)[i] = null;
+
+						if (TaskProvider.task().isCancelled())
 							return null;
 					}
-
 					for (int j = 0; j < cdkProp.numSetValues(); j++)
 					{
 						values.put(valuesKey(dataset, CDKProperty.create(cdkProp.desc, j), false), vv.get(j));
@@ -570,12 +576,12 @@ public class FeatureService
 				}
 				catch (Exception e)
 				{
-					e.printStackTrace();
+					TaskProvider.task().warning("Could not build 3D for molecule", e);
 				}
 				molecule = (IMolecule) AtomContainerManipulator.removeHydrogens(molecule);
 				writer.write(molecule);
 
-				if (Settings.isAborted(Thread.currentThread()))
+				if (TaskProvider.task().isCancelled())
 					return;
 			}
 			writer.close();
@@ -624,12 +630,12 @@ public class FeatureService
 							e.printStackTrace();
 							newSet.add(AtomContainerManipulator.removeHydrogens(oldSet.getMolecule(i)));
 						}
-						if (Settings.isAborted(Thread.currentThread()))
+						if (TaskProvider.task().isCancelled())
 							return;
 					}
 
 					writer.write(newSet);
-					if (Settings.isAborted(Thread.currentThread()))
+					if (TaskProvider.task().isCancelled())
 						return;
 				}
 				writer.close();
