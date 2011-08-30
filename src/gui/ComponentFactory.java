@@ -4,7 +4,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Insets;
 
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -14,6 +16,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -159,6 +163,23 @@ public class ComponentFactory
 		p.setOpaque(false);
 		p.getViewport().setOpaque(false);
 		return p;
+	}
+
+	public static JButton createButton(String string)
+	{
+		return createButton(string, new Insets(5, 5, 5, 5));
+	}
+
+	public static JButton createButton(String string, Insets insets)
+	{
+		JButton c = new JButton(string);
+		c.setForeground(Settings.FOREGROUND);
+		c.setBackground(Settings.BACKGROUND);
+		c.setBorder(new CompoundBorder(new LineBorder(Settings.FOREGROUND, 1), new EmptyBorder(insets)));
+		c.setOpaque(false);
+		c.setFocusable(false);
+		c.setFont(new JLabel().getFont());
+		return c;
 	}
 
 }

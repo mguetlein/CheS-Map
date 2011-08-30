@@ -2,6 +2,7 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -92,6 +93,9 @@ public class MoleculePropertyPanel extends JPanel
 		radioBuilder.append("Feature type:");
 		radioBuilder.append(nominalFeatureButton);
 		radioBuilder.append(numericFeatureButton);
+		rawDataLink.setForegroundFont(rawDataLink.getFont().deriveFont(Font.PLAIN));
+		rawDataLink.setSelectedForegroundFont(rawDataLink.getFont().deriveFont(Font.PLAIN));
+		rawDataLink.setSelectedForegroundColor(Color.BLUE);
 		radioBuilder.append(rawDataLink);
 
 		DefaultFormBuilder comboBuilder = new DefaultFormBuilder(new FormLayout("p,3dlu,p"));
@@ -311,6 +315,8 @@ public class MoleculePropertyPanel extends JPanel
 						if (p != null)
 						{
 							featurePlotPanel.add(p);
+							featurePlotPanel.revalidate();
+							featurePlotPanel.repaint();
 						}
 
 						if (loading)

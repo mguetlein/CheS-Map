@@ -46,6 +46,15 @@ public class Vector3fUtil
 		return dist;
 	}
 
+	public static float minDist(Vector3f[] vectors)
+	{
+		float min = Float.MAX_VALUE;
+		for (int i = 0; i < vectors.length - 1; i++)
+			for (int j = i + 1; j < vectors.length; j++)
+				min = Math.min(min, dist(vectors[i], vectors[j]));
+		return min;
+	}
+
 	public static float maxDist(Vector3f[] vectors)
 	{
 		float max = 0;
