@@ -2,7 +2,9 @@ package main;
 
 import gui.Task;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class TaskProvider
 {
@@ -25,27 +27,17 @@ public class TaskProvider
 	}
 
 	/**
-	 * registers a new Thread for exiting task with key 'key'
+	 * registers a 'key' and 'current thread' for task
+	 * 'key' may already exist, 'thread' may NOT yet exist
+	 * task is created (if not yet exists for key)  
 	 */
 	public static void registerThread(String key)
 	{
-		if (!keys.containsValue(key))
-			throw new Error("key does not exist");
-		keys.put(Thread.currentThread(), key);
-	}
-
-	/**
-	 * creates a new task with key 'key'
-	 * task can be accessed with task('key') or from within the same thread just with task()
-	 */
-	public static void create(String key)
-	{
 		if (keys.containsKey(Thread.currentThread()))
-			throw new Error("key already exists");
+			throw new Error("thread already registered");
 		keys.put(Thread.currentThread(), key);
-		if (tasks.containsKey(key))
-			throw new Error("task already exists");
-		tasks.put(key, new Task(100.0));
+		if (!tasks.containsKey(key))
+			tasks.put(key, new Task(100.0));
 	}
 
 	private static Task task(String key)
@@ -59,6 +51,12 @@ public class TaskProvider
 	{
 		if (!tasks.containsKey(key))
 			throw new Error("task missing");
+		List<Thread> toDel = new ArrayList<Thread>();
+		for (Thread thread : keys.keySet())
+			if (keys.get(thread).equals(key))
+				toDel.add(thread);
+		for (Thread thread : toDel)
+			keys.remove(thread);
 		tasks.remove(key);
 	}
 

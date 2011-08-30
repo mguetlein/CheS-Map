@@ -227,7 +227,7 @@ public class MoleculePropertyPanel extends JPanel
 						if (!dataset.isComputed(selectedPropertySet) || !cardPanel.isVisible())
 						{
 							loading = true;
-							TaskProvider.create("compute-features");
+							TaskProvider.registerThread("compute-features");
 							cardPanel.add(TaskProvider.task().getPanel(), "computing-features");
 							TaskProvider.task().update("Computing feature: " + selectedPropertySet + " ...");
 							((CardLayout) cardPanel.getLayout()).show(cardPanel, "computing-features");

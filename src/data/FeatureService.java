@@ -52,7 +52,6 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 
 import util.ArrayUtil;
-import util.CollectionUtil;
 import util.FileUtil;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculeProperty.Type;
@@ -340,8 +339,8 @@ public class FeatureService
 			mols.toArray(res);
 			fileToMolecules.put(dataset, res);
 
-			System.out.println("integrated properties in file: "
-					+ CollectionUtil.toString(integratedProperties.get(dataset)));
+			//			System.out.println("integrated properties in file: "
+			//					+ CollectionUtil.toString(integratedProperties.get(dataset)));
 		}
 	}
 
