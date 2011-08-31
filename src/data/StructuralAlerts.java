@@ -71,15 +71,13 @@ public class StructuralAlerts
 	List<List<Alert>> alerts = new ArrayList<List<Alert>>();
 	List<String> description = new ArrayList<String>();
 
+	private static final String[] included = new String[] { "DNA.csv", "Phospholipidosis.csv", "Protein.csv" };
 	public static StructuralAlerts instance = new StructuralAlerts();
 
 	private StructuralAlerts()
 	{
-		JarUtil.extractFromJAR("structural_alerts/DNA-SMARTS.csv", Settings.getAlertFileDestination("DNA-SMARTS.csv"),
-				false);
-		JarUtil.extractFromJAR("structural_alerts/Phospholipidosis.csv",
-				Settings.getAlertFileDestination("Phospholipidosis.csv"), false);
-
+		for (String f : included)
+			JarUtil.extractFromJAR("structural_alerts/" + f, Settings.getAlertFileDestination(f), false);
 		reset();
 	}
 

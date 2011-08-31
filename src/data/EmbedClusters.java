@@ -96,13 +96,18 @@ public class EmbedClusters
 				throw new Error("random embedder should not fail!");
 			}
 
-			String msg;
 			if (e.getMessage().contains("No attributes!"))
-				msg = "Each " + embedItem + " has the exact same feature values.";
+				TaskProvider.task().warning(
+						"Could not embedd " + embedItems + ", as every " + embedItem
+								+ " has equal feature values, using random positions",
+						"3D-Embedding uses feature values to embedd compounds in 3D-space, with similar " + embedItem
+								+ "s close to each other. In " + embedItems + " all " + embedItem
+								+ "s have equal feature values, and cannot be distinguished by the embedder.");
 			else
-				msg = e.getMessage();
-			TaskProvider.task().warning(
-					emb.getName() + " failed on embedding " + embedItems + ", using random positions instead.", msg);
+				TaskProvider.task().warning(
+						emb.getName() + " failed on embedding " + embedItems + ", using random positions",
+						e.getMessage());
+
 			e.printStackTrace();
 			try
 			{

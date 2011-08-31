@@ -199,6 +199,16 @@ public class FeatureService
 		return false;
 	}
 
+	public static class IllegalCompoundsException extends Exception
+	{
+		public List<Integer> illegalCompounds;
+
+		public IllegalCompoundsException(List<Integer> illegalCompounds)
+		{
+			this.illegalCompounds = illegalCompounds;
+		}
+	}
+
 	public synchronized void loadDataset(DatasetFile dataset, boolean loadHydrogen) throws Exception
 	{
 		if (fileToMolecules.get(dataset) == null)
@@ -209,16 +219,16 @@ public class FeatureService
 			integratedProperties.put(dataset, new HashSet<IntegratedProperty>());
 
 			int mCount = 0;
-			File ff = new File(dataset.getLocalPath());
-			if (!ff.exists())
+			File file = new File(dataset.getLocalPath());
+			if (!file.exists())
 				throw new IllegalArgumentException("file not found: " + dataset.getLocalPath());
 
 			CDKHydrogenAdder ha = CDKHydrogenAdder.getInstance(DefaultChemObjectBuilder.getInstance());
 
 			List<IAtomContainer> list;
 			if (dataset.getLocalPath().endsWith(".csv"))
-				list = readFromCSV(ff, true);
-			else if ((list = readFromCSV(ff, false)) != null)
+				list = readFromCSV(file, true);
+			else if ((list = readFromCSV(file, false)) != null)
 			{
 				// read from csv was successfull
 			}
@@ -226,8 +236,8 @@ public class FeatureService
 			{
 				ISimpleChemObjectReader reader;
 				if (dataset.getLocalPath().endsWith(".smi"))
-					reader = new SMILESReader(new FileInputStream(ff));
-				reader = new ReaderFactory().createReader(new InputStreamReader(new FileInputStream(ff)));
+					reader = new SMILESReader(new FileInputStream(file));
+				reader = new ReaderFactory().createReader(new InputStreamReader(new FileInputStream(file)));
 				if (reader == null)
 					throw new IllegalArgumentException("Could not determine input file type");
 				else if (reader instanceof MDLReader || reader instanceof MDLV2000Reader)
@@ -237,10 +247,10 @@ public class FeatureService
 				reader.close();
 			}
 
+			List<Integer> illegalMolecules = new ArrayList<Integer>();
 			for (IAtomContainer iAtomContainer : list)
 			{
-				IMolecule mol = (IMolecule) iAtomContainer;//reader.next();
-
+				IMolecule mol = (IMolecule) iAtomContainer;
 				if (TaskProvider.exists())
 					TaskProvider.task().verbose("Loaded " + (mCount + 1) + " molecules");
 
@@ -286,12 +296,19 @@ public class FeatureService
 					System.err.println("Could not add hydrogens:  " + e.getMessage());
 				}
 
+				if (mol.getAtomCount() == 0)
+					illegalMolecules.add(mCount);
+				//TaskProvider.task().warning("Could not load molecule (" + mCount + ")", "<not details available>");
 				mols.add(mol);
 				mCount++;
-
 			}
+			if (illegalMolecules.size() > 0)
+				if (mols.size() > illegalMolecules.size())
+					throw new IllegalCompoundsException(illegalMolecules);
+				else
+					throw new IllegalStateException("Could not read any compounds");
 
-			System.out.println(" done (" + mols.size() + " molecules found)");
+			System.out.println(" done (" + mols.size() + " compounds found)");
 
 			// convert string to double
 			for (IntegratedProperty p : integratedProperties.get(dataset))
@@ -397,7 +414,9 @@ public class FeatureService
 				{
 					List<String> fingerprintsForMolecules = obProp.compute(dataset);
 					if (fingerprintsForMolecules.size() != fileToMolecules.get(dataset).length)
-						throw new IllegalStateException("num molecules not correct");
+						throw new IllegalStateException("babel returned fingerprints for "
+								+ fingerprintsForMolecules.size() + " compounds, but dataset contains "
+								+ fileToMolecules.get(dataset).length + " compounds.");
 					if (fingerprintsForMolecules.get(0).length() != obProp.numSetValues())
 						throw new IllegalStateException("fingerprint length not correct");
 
@@ -457,43 +476,53 @@ public class FeatureService
 						TaskProvider.task().verbose(
 								"Compute " + cdkProp.desc + " for " + (i + 1) + "/" + mols.length + " compounds");
 
-						try
+						if (mols[i].getAtomCount() == 0)
 						{
-							IDescriptorResult res = descriptor.calculate(mols[i]).getValue();
-							if (res instanceof IntegerResult)
-								vv.get(0)[i] = (double) ((IntegerResult) res).intValue();
-							else if (res instanceof DoubleResult)
-								vv.get(0)[i] = ((DoubleResult) res).doubleValue();
-							else if (res instanceof DoubleArrayResult)
-							{
-								if (cdkProp.numSetValues() != ((DoubleArrayResult) res).length())
-									throw new IllegalStateException("num feature values wrong for '" + cdkProp + "' : "
-											+ cdkProp.numSetValues() + " != " + ((DoubleArrayResult) res).length());
-								for (int j = 0; j < cdkProp.numSetValues(); j++)
-									vv.get(j)[i] = ((DoubleArrayResult) res).get(j);
-							}
-							else if (res instanceof IntegerArrayResult)
-							{
-								if (cdkProp.numSetValues() != ((IntegerArrayResult) res).length())
-									throw new IllegalStateException("num feature values wrong for '" + cdkProp + "' : "
-											+ cdkProp.numSetValues() + " != " + ((IntegerArrayResult) res).length());
-								for (int j = 0; j < cdkProp.numSetValues(); j++)
-									vv.get(j)[i] = (double) ((IntegerArrayResult) res).get(j);
-							}
-							else
-								throw new IllegalStateException("Unknown idescriptor result value for '" + cdkProp
-										+ "' : " + res.getClass());
-
-						}
-						catch (Exception e)
-						{
-							TaskProvider.task().warning("Could not compute cdk feature " + cdkProp.desc, e);
 							for (int j = 0; j < cdkProp.numSetValues(); j++)
 								vv.get(j)[i] = null;
 						}
+						else
+						{
+							try
+							{
+								IDescriptorResult res = descriptor.calculate(mols[i]).getValue();
+								if (res instanceof IntegerResult)
+									vv.get(0)[i] = (double) ((IntegerResult) res).intValue();
+								else if (res instanceof DoubleResult)
+									vv.get(0)[i] = ((DoubleResult) res).doubleValue();
+								else if (res instanceof DoubleArrayResult)
+								{
+									if (cdkProp.numSetValues() != ((DoubleArrayResult) res).length())
+										throw new IllegalStateException("num feature values wrong for '" + cdkProp
+												+ "' : " + cdkProp.numSetValues() + " != "
+												+ ((DoubleArrayResult) res).length());
+									for (int j = 0; j < cdkProp.numSetValues(); j++)
+										vv.get(j)[i] = ((DoubleArrayResult) res).get(j);
+								}
+								else if (res instanceof IntegerArrayResult)
+								{
+									if (cdkProp.numSetValues() != ((IntegerArrayResult) res).length())
+										throw new IllegalStateException("num feature values wrong for '" + cdkProp
+												+ "' : " + cdkProp.numSetValues() + " != "
+												+ ((IntegerArrayResult) res).length());
+									for (int j = 0; j < cdkProp.numSetValues(); j++)
+										vv.get(j)[i] = (double) ((IntegerArrayResult) res).get(j);
+								}
+								else
+									throw new IllegalStateException("Unknown idescriptor result value for '" + cdkProp
+											+ "' : " + res.getClass());
+
+							}
+							catch (Throwable e)
+							{
+								TaskProvider.task().warning("Could not compute cdk feature " + cdkProp.desc, e);
+								for (int j = 0; j < cdkProp.numSetValues(); j++)
+									vv.get(j)[i] = null;
+							}
+						}
 
 						for (int j = 0; j < cdkProp.numSetValues(); j++)
-							if (vv.get(j)[i].isNaN() || vv.get(j)[i].isInfinite())
+							if (vv.get(j)[i] != null && (vv.get(j)[i].isNaN() || vv.get(j)[i].isInfinite()))
 								vv.get(j)[i] = null;
 
 						if (TaskProvider.task().isCancelled())

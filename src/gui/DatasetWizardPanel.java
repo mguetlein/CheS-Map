@@ -1,5 +1,7 @@
 package gui;
 
+import io.SDFUtil;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
@@ -27,6 +29,7 @@ import javax.swing.event.ListSelectionListener;
 
 import main.Settings;
 import opentox.DatasetUtil;
+import util.ListUtil;
 import util.SwingUtil;
 import util.VectorUtil;
 import alg.DatasetProvider;
@@ -36,6 +39,7 @@ import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.FormLayout;
 
 import data.DatasetFile;
+import data.FeatureService.IllegalCompoundsException;
 
 public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 {
@@ -326,6 +330,25 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 								dataset = d;
 							}
 						}
+						catch (IllegalCompoundsException e)
+						{
+							String cleanedSdf = Settings.destinationFile(d.getLocalPath(), d.getName() + ".cleaned");
+							int res = JOptionPane.showConfirmDialog(
+									Settings.TOP_LEVEL_COMPONENT,
+									"Could not read " + e.illegalCompounds.size() + " compound/s in dataset: "
+											+ d.getPath() + "\nIndices of compounds that could not be loaded: "
+											+ ListUtil.toString(e.illegalCompounds)
+											+ "\n\nDo you want to remove the faulty compounds and reload the dataset?"
+											+ "\n(New dataset would be stored at: " + cleanedSdf + ")",
+									"Dataset faulty", JOptionPane.YES_NO_OPTION);
+							if (res == JOptionPane.YES_OPTION)
+							{
+								SDFUtil.filter_exclude(d.getSDFPath(false), cleanedSdf, e.illegalCompounds);
+								loading = false;
+								load(cleanedSdf);
+								return;
+							}
+						}
 						catch (Exception e)
 						{
 							e.printStackTrace();
@@ -336,7 +359,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 											+ "\nError: '"
 											+ e.getMessage()
 											+ "'\n\n(Make sure to start the dataset URL with 'http' if you want to load an external dataset.)",
-									"Dataset not found", JOptionPane.ERROR_MESSAGE);
+									"Dataset could not be loaded", JOptionPane.ERROR_MESSAGE);
 						}
 					}
 					if (dataset == null)
