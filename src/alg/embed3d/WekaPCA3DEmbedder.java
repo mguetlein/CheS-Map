@@ -70,7 +70,7 @@ public class WekaPCA3DEmbedder implements ThreeDEmbedder
 	@Override
 	public String getName()
 	{
-		return "PCA 3D-Embedder (WEKA)";
+		return "PCA 3D Embedder (WEKA)";
 	}
 
 	@Override
@@ -104,6 +104,12 @@ public class WekaPCA3DEmbedder implements ThreeDEmbedder
 	public List<Vector3f> getPositions()
 	{
 		return positions;
+	}
+
+	@Override
+	public String getWarning()
+	{
+		return null;
 	}
 
 }

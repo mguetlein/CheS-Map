@@ -29,7 +29,7 @@ public class CheSMapperWizard extends WizardDialog
 
 	DatasetWizardPanel dataset;
 	Build3DWizardPanel create3D;
-	FeatureSelectionWizardPanel features;
+	FeatureWizardPanel features;
 	ClusterWizardPanel cluster;
 	EmbedWizardPanel embed;
 	AlignWizardPanel align;
@@ -54,7 +54,7 @@ public class CheSMapperWizard extends WizardDialog
 
 		dataset = new DatasetWizardPanel(this);
 		create3D = new Build3DWizardPanel(this);
-		features = new FeatureSelectionWizardPanel(this);
+		features = new FeatureWizardPanel(this);
 		cluster = new ClusterWizardPanel(this);
 		embed = new EmbedWizardPanel(this);
 		align = new AlignWizardPanel(this);

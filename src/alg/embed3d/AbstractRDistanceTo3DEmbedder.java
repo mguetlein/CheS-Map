@@ -35,6 +35,12 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 	}
 
 	@Override
+	public String getWarning()
+	{
+		return null;
+	}
+
+	@Override
 	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
 			final DistanceMatrix<MolecularPropertyOwner> distances) throws Exception
 	{
@@ -142,7 +148,7 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 		@Override
 		public String getName()
 		{
-			return "SMACOF 3D-Embedder (RScript)";
+			return "SMACOF 3D Embedder (RScript)";
 		}
 
 		@Override

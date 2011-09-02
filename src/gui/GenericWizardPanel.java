@@ -266,6 +266,8 @@ public abstract class GenericWizardPanel extends WizardPanel
 
 	public void update(DatasetFile dataset, int numFeatures, Type featureType)
 	{
+		if (canProceed() && getSelectedAlgorithm().getWarning() != null)
+			setInfo(getSelectedAlgorithm().getWarning(), MsgType.WARNING);
 	}
 
 	protected int defaultSelection()

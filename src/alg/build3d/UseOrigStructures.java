@@ -23,7 +23,7 @@ public class UseOrigStructures implements ThreeDBuilder
 	@Override
 	public String getName()
 	{
-		return "No 3D-Structure Generation (Use Original Structures)";
+		return "No 3D Structure Generation (Use Original Structures)";
 	}
 
 	@Override
@@ -51,6 +51,12 @@ public class UseOrigStructures implements ThreeDBuilder
 
 	@Override
 	public Binary getBinary()
+	{
+		return null;
+	}
+
+	@Override
+	public String getWarning()
 	{
 		return null;
 	}

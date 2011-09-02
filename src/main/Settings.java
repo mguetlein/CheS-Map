@@ -308,7 +308,7 @@ public class Settings
 
 	public static Component getBinaryComponent(final Binary bin)
 	{
-		final LinkButton l = new LinkButton("Uses externel program: " + bin.getDescription());
+		final LinkButton l = new LinkButton("Uses external program: " + bin.getDescription());
 		l.setForegroundFont(l.getFont().deriveFont(Font.PLAIN));
 		l.setSelectedForegroundFont(l.getFont().deriveFont(Font.PLAIN));
 		l.setSelectedForegroundColor(Color.BLUE);

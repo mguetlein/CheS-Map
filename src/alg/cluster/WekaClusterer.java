@@ -194,4 +194,10 @@ public class WekaClusterer implements DatasetClusterer
 	{
 		return null;
 	}
+
+	@Override
+	public String getWarning()
+	{
+		return null;
+	}
 }

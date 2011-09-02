@@ -25,7 +25,7 @@ public class Build3DWizardPanel extends GenericWizardPanel
 	@Override
 	public String getTitle()
 	{
-		return "Create 3D Structure";
+		return "Create 3D Structures";
 	}
 
 	@Override

@@ -154,4 +154,10 @@ public class MCSAligner implements ThreeDAligner
 		return Settings.BABEL_BINARY;
 	}
 
+	@Override
+	public String getWarning()
+	{
+		return null;
+	}
+
 }

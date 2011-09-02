@@ -53,6 +53,7 @@ import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 
 import util.ArrayUtil;
 import util.FileUtil;
+import util.StringUtil;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculeProperty.Type;
 import dataInterface.MoleculePropertySet;
@@ -140,10 +141,12 @@ public class FeatureService
 					int i = 0;
 					for (String sss : ss.split(","))
 					{
+						sss = StringUtil.trimQuotes(sss);
 						if (i == 0)
 						{
 							if (!sss.matches("(?i)smiles"))
-								throw new IllegalArgumentException("first argument in csv must be smiles");
+								throw new IllegalArgumentException("first argument in csv must be smiles (is: " + sss
+										+ ")");
 						}
 						propNames.add(sss);
 						props.put(sss, new ArrayList<String>());
@@ -156,6 +159,7 @@ public class FeatureService
 					int i = 0;
 					for (String sss : ss.split(","))
 					{
+						sss = StringUtil.trimQuotes(sss);
 						if (i == 0)
 							s.append(sss + " ");
 						props.get(propNames.get(i)).add(sss);

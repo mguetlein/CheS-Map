@@ -44,7 +44,7 @@ public class CDK3DBuilder extends Abstract3DBuilder
 	@Override
 	public String getName()
 	{
-		return "CDK 3D-Structure Generation";
+		return "CDK 3D Structure Generation";
 	}
 
 	@Override
@@ -62,6 +62,12 @@ public class CDK3DBuilder extends Abstract3DBuilder
 
 	@Override
 	public Binary getBinary()
+	{
+		return null;
+	}
+
+	@Override
+	public String getWarning()
 	{
 		return null;
 	}

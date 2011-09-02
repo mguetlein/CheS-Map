@@ -50,12 +50,18 @@ public class OpenBabel3DBuilder extends Abstract3DBuilder
 	@Override
 	public String getName()
 	{
-		return "OpenBabel 3D-Structure Generation";
+		return "OpenBabel 3D Structure Generation";
 	}
 
 	@Override
 	public String getInitials()
 	{
 		return "ob";
+	}
+
+	@Override
+	public String getWarning()
+	{
+		return null;
 	}
 }

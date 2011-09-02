@@ -14,4 +14,6 @@ public interface Algorithm
 	public String getDescription();
 
 	public Binary getBinary();
+
+	public String getWarning();
 }

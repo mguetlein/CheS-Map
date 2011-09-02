@@ -39,7 +39,7 @@ public class EmbedClusters
 			ClusterDataImpl c = (ClusterDataImpl) cluster;
 			TaskProvider.task().update(
 					"Embedding compounds of cluster " + (cCount + 1) + "/" + clustering.getClusters().size()
-							+ " into 3D-space (num compounds: " + c.getSize() + ")");
+							+ " into 3D space (num compounds: " + c.getSize() + ")");
 
 			if (Settings.DBG)
 			{
@@ -100,7 +100,7 @@ public class EmbedClusters
 				TaskProvider.task().warning(
 						"Could not embedd " + embedItems + ", as every " + embedItem
 								+ " has equal feature values, using random positions",
-						"3D-Embedding uses feature values to embedd compounds in 3D-space, with similar " + embedItem
+						"3D Embedding uses feature values to embedd compounds in 3D space, with similar " + embedItem
 								+ "s close to each other. In " + embedItems + " all " + embedItem
 								+ "s have equal feature values, and cannot be distinguished by the embedder.");
 			else

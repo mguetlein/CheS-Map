@@ -38,7 +38,7 @@ import dataInterface.MoleculeProperty.Type;
 import dataInterface.MoleculePropertySet;
 import dataInterface.MoleculePropertySetUtil;
 
-public class FeatureSelectionWizardPanel extends WizardPanel
+public class FeatureWizardPanel extends WizardPanel
 {
 	Selector<MoleculePropertySet> selector;
 
@@ -58,11 +58,11 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 
 	public static final String ROOT = "Features";
 	public static final String INTEGRATED_FEATURES = "Included in Dataset";
-	public static final String CDK_FEATURES = "CDK descriptors";
+	public static final String CDK_FEATURES = "CDK Descriptors";
 	public static final String OB_FINGERPRINT_FEATURES = "OpenBabel Fingerprints";
 	public static final String STRUCTURAL_ALERTS = "Structural Alerts";
 
-	public FeatureSelectionWizardPanel(final CheSMapperWizard wizard)
+	public FeatureWizardPanel(final CheSMapperWizard wizard)
 	{
 		DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout("min:grow"));
 		numFeaturesLabel = new JLabel();
@@ -249,7 +249,7 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 		String info = "The available features are shown in the left panel. Select (a group of) feature/s and click '"
 				+ addFeaturesText
 				+ "'. The selected features - shown in the right panel - will be used for clustering and/or embedding.\n\n"
-				+ "The clustering/embedding result relies on the selected features. For example, select structural features (e.g. OpenBabel Fingerprint FP2) to cluster structural similar compounds together and to place structural similar compounds close together in 3D-space.\n\n"
+				+ "The clustering/embedding result relies on the selected features. For example, select structural features (e.g. OpenBabel Fingerprint FP2) to cluster structural similar compounds together and to place structural similar compounds close together in 3D space.\n\n"
 				+ "Consider carefully how many/which feature/s to chose. "
 				+ "Select only a handfull of features to increase the influence of each single feature on the clustering and embedding. "
 				+ "Selecting a bunch of features will effect the clustering and embedding result to represent 'overall' similarity.";
@@ -413,7 +413,7 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 	@Override
 	public String getTitle()
 	{
-		return "Select features";
+		return "Extract Features";
 	}
 
 	public FeatureComputer getFeatureComputer()
@@ -424,7 +424,7 @@ public class FeatureSelectionWizardPanel extends WizardPanel
 	@Override
 	public String getDescription()
 	{
-		return "Features may already be included in the dataset, or can be created. The features are used for the Clustering and/or 3D-Embeding.";
+		return "Features may already be included in the dataset, or can be created. The features are used for the Clustering and/or 3D Embeding.";
 	}
 
 }

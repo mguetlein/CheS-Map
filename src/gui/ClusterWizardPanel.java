@@ -33,6 +33,8 @@ public class ClusterWizardPanel extends GenericWizardPanel
 			setInfo(getDatasetClusterer().getName()
 					+ " requires features for clustering, you have no features selected.\nPlease select features in previous step, or select another cluster method.",
 					MsgType.ERROR);
+		else if (getSelectedAlgorithm().getWarning() != null)
+			setInfo(getSelectedAlgorithm().getWarning(), MsgType.WARNING);
 		else if (getDatasetClusterer().getFixedNumClustersProperty() != null)
 			setInfo("This clusterer returns a fixed number of clusters (set property '"
 					+ getDatasetClusterer().getFixedNumClustersProperty() + "').", MsgType.INFO);

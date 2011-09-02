@@ -49,11 +49,11 @@ public class EmbedWizardPanel extends GenericWizardPanel
 					MsgType.ERROR);
 		else
 		{
-			if (get3DEmbedder().requiresFeatures() && featureType == Type.NOMINAL)
-			{
+			if (getSelectedAlgorithm().getWarning() != null)
+				setInfo(getSelectedAlgorithm().getWarning(), MsgType.WARNING);
+			else if (get3DEmbedder().requiresFeatures() && featureType == Type.NOMINAL)
 				setInfo("Only nominal features selected. Sometimes, this will result in a lot of compounds with equal feature values (especially inside clusters) that cannot be distinguished while embedding.",
-						MsgType.WARNING);
-			}
+						MsgType.INFO);
 			else
 				setInfo("", MsgType.EMPTY);
 		}
@@ -75,7 +75,7 @@ public class EmbedWizardPanel extends GenericWizardPanel
 	@Override
 	public String getTitle()
 	{
-		return "3D Embedding"; // clusters and compounds";
+		return "Embed into 3D Space"; // clusters and compounds";
 	}
 
 	public ThreeDEmbedder get3DEmbedder()

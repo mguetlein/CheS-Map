@@ -92,7 +92,7 @@ public class Random3DEmbedder implements ThreeDEmbedder
 	@Override
 	public String getName()
 	{
-		return "No 3D-Embedding (Random positions)";
+		return "No 3D Embedding (Random positions)";
 	}
 
 	@Override
@@ -113,4 +113,9 @@ public class Random3DEmbedder implements ThreeDEmbedder
 		return false;
 	}
 
+	@Override
+	public String getWarning()
+	{
+		return null;
+	}
 }

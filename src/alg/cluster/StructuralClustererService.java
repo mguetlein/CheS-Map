@@ -174,13 +174,18 @@ public class StructuralClustererService implements DatasetClusterer
 	@Override
 	public String getName()
 	{
-		return "Structural Clusterer Webservice";
+		return "Structural Clustering Webservice";
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return "Structural Clusterer Webservice, located at the TU-München\nWARNING: The data is clustered with an external web service, please use small datsets (< 50 compounds) only.";
+		return "This is an OpenTox Webservice, provided by the Technical University Munich (TUM).\n\n"
+				+ "Integrated substructure mining using gSpan. Compounds are assigned to clusters when there exists a common subgraph of sufficient size.\n\n"
+				+ "M. Seeland, T. Girschick, F. Buchwald, and S. Kramer\n"
+				+ "Online structural graph clustering using frequent subgraph mining.\n"
+				+ "In: Proceedings of the 2010 European Conference on Machine Learning and Knowledge "
+				+ "Discovery in Databases, vol. 3, pages 213–228, 2010.";
 	}
 
 	@Override
@@ -193,5 +198,13 @@ public class StructuralClustererService implements DatasetClusterer
 	public String getFixedNumClustersProperty()
 	{
 		return null;
+	}
+
+	@Override
+	public String getWarning()
+	{
+		return "Your data will be send over the internet to an external webserice.\n"
+				+ "The service ignores the features selected in the previous step (see description below).\n"
+				+ "At present the service can handle only small datsets (< 50 compounds).";
 	}
 }

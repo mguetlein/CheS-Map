@@ -1,8 +1,8 @@
 package gui;
 
 import alg.Algorithm;
-import alg.align3d.NoAligner;
 import alg.align3d.MCSAligner;
+import alg.align3d.NoAligner;
 import alg.align3d.ThreeDAligner;
 import alg.cluster.DatasetClusterer;
 
@@ -25,7 +25,7 @@ public class AlignWizardPanel extends GenericWizardPanel
 	@Override
 	public String getTitle()
 	{
-		return "3D Alignement";
+		return "Align Compounds";
 	}
 
 	@Override

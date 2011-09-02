@@ -122,7 +122,7 @@ public class CheSMapping
 					if (TaskProvider.task().isCancelled())
 						return;
 					TaskProvider.task().update(50,
-							"Embedding clusters into 3D-space (num clusters: " + clustering.getClusters().size() + ")");
+							"Embedding clusters into 3D space (num clusters: " + clustering.getClusters().size() + ")");
 					EmbedClusters embedder = new EmbedClusters();
 					embedder.embed(threeDEmbedder, dataset, clustering);
 

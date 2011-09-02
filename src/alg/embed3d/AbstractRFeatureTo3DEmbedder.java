@@ -36,6 +36,12 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 	}
 
 	@Override
+	public String getWarning()
+	{
+		return null;
+	}
+
+	@Override
 	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
 			final DistanceMatrix<MolecularPropertyOwner> distances)
 	{
@@ -133,7 +139,7 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 		@Override
 		public String getName()
 		{
-			return "TSNE 3D-Embedder (RScript)";
+			return "TSNE 3D Embedder (RScript)";
 		}
 
 		@Override
@@ -230,7 +236,7 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 		@Override
 		public String getName()
 		{
-			return "PCA 3D-Embedder (RScript)";
+			return "PCA 3D Embedder (RScript)";
 		}
 
 		@Override

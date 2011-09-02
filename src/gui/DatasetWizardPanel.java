@@ -191,7 +191,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		builder.append(hide, 5);
 		builder.nextLine();
 
-		buttonLoad = new JButton("Load dataset");
+		buttonLoad = new JButton("Load Dataset");
 		buttonLoad.addActionListener(new ActionListener()
 		{
 			@Override
