@@ -158,6 +158,7 @@ public class CheSMapping
 					e.printStackTrace();
 					TaskProvider.task().error(e.getMessage(), e);
 					SwingUtil.waitWhileVisible(TaskProvider.task().getDialog());
+					TaskProvider.clear();
 				}
 			}
 		});

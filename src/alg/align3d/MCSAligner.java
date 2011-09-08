@@ -43,9 +43,9 @@ public class MCSAligner implements ThreeDAligner
 	@Override
 	public String getDescription()
 	{
-		return "First the Maximum Common Subgraph (MCS) of each cluster is computed.\n"
+		return "First, the Maximum Common Subgraph (MCS) of each cluster is computed. This is hard to do and will take long for large clusters (runtime is O(n²)).\n"
 				+ "This is done with "
-				+ Settings.SMSD_STRING
+				+ Settings.CDK_STRING
 				+ ".\n\n"
 				+ "Second the compounds of each cluster are aligned according to their MCS. "
 				+ "Hence, their orientation in 3D space is adjusted such that the common substructure is superimposed.\n"
@@ -115,11 +115,10 @@ public class MCSAligner implements ThreeDAligner
 				}
 				catch (Error e)
 				{
-					//System.err.println("ERROR in algin: " + e.getMessage());
+					System.err.println("ERROR in algin: " + e.getMessage());
 					TaskProvider.task().warning(
 							"Cannot align cluster " + (count + 1) + " (size: " + cluster.getSize() + ") according to "
 									+ cluster.getSubstructureSmarts(SubstructureSmartsType.MCS), e);
-
 					alignedFiles.add(cluster.getFilename());
 				}
 			}

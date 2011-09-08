@@ -1,219 +1,53 @@
 package data;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import main.TaskProvider;
 
-import org.openscience.cdk.CDKConstants;
+import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.Molecule;
-import org.openscience.cdk.graph.ConnectivityChecker;
-import org.openscience.cdk.interfaces.IAtom;
+import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.interfaces.IMolecule;
-import org.openscience.cdk.nonotify.NoNotificationChemObjectBuilder;
+import org.openscience.cdk.isomorphism.UniversalIsomorphismTester;
 import org.openscience.cdk.smiles.SmilesGenerator;
+import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
-import org.openscience.smsd.AtomAtomMapping;
-import org.openscience.smsd.Isomorphism;
-import org.openscience.smsd.interfaces.Algorithm;
 
 import dataInterface.ClusterData;
-import dataInterface.CompoundData;
 import dataInterface.SubstructureSmartsType;
 
 public class MCSComputer
 {
-	private static Map<Integer, Integer> getIndexMapping(AtomAtomMapping aam)
-	{
-		Map<IAtom, IAtom> mappings = aam.getMappings();
-		Map<Integer, Integer> mapping = new TreeMap<Integer, Integer>();
-		for (IAtom keys : mappings.keySet())
-		{
-			mapping.put(aam.getQueryIndex(keys), aam.getTargetIndex(mappings.get(keys)));
-		}
-		return mapping;
-	}
-
-	private static IAtomContainer getSubgraph(IMolecule container, Map<Integer, Integer> mapping)
-	{
-		Collection<Integer> values = mapping.values();
-		List<IAtom> subgraphAtoms = new ArrayList<IAtom>();
-		IAtomContainer subgraph = null;
-		try
-		{
-			subgraph = (IAtomContainer) container.clone();
-		}
-		catch (CloneNotSupportedException e)
-		{
-			e.printStackTrace();
-		}
-		for (Integer index : values)
-		{
-			subgraphAtoms.add(subgraph.getAtom(index));
-		}
-		List<IAtom> atoms = new ArrayList<IAtom>();
-		for (IAtom atom : subgraph.atoms())
-		{
-			atoms.add(atom);
-		}
-		for (IAtom atom : atoms)
-		{
-			if (!subgraphAtoms.contains(atom))
-			{
-				subgraph.removeAtomAndConnectedElectronContainers(atom);
-			}
-		}
-		return subgraph;
-	}
-
-	private static Isomorphism run(IMolecule mcsMolecule, IMolecule target, int filter, boolean matchBonds)
-	{
-		Isomorphism smsd = new Isomorphism(mcsMolecule, target, Algorithm.DEFAULT, matchBonds);
-		if (filter == 0)
-		{
-			smsd.setChemFilters(false, false, false);
-		}
-		if (filter == 1)
-		{
-			smsd.setChemFilters(true, false, false);
-		}
-		if (filter == 2)
-		{
-			smsd.setChemFilters(true, true, false);
-		}
-		if (filter == 3)
-		{
-			smsd.setChemFilters(true, true, true);
-		}
-		return smsd;
-	}
+	private static boolean DEBUG = true;
 
 	public static void computeMCS(DatasetFile dataset, List<ClusterData> clusters)
 	{
 		int count = 0;
-		boolean matchBonds = true;
-		boolean removeHydrogens = true;
-		int filter = 0;
 
-		IMolecule mols[] = dataset.getMolecules(false);
+		IMolecule allMols[] = dataset.getMolecules(false);
 
 		for (ClusterData c : clusters)
 		{
+			if (DEBUG)
+				System.out.println("\n\n");
+
 			TaskProvider.task().update("Computing MCS for cluster " + (++count) + "/" + clusters.size());
-			IMolecule mcsMolecule = null;
+
+			IMolecule mols[] = new IMolecule[c.getSize()];
+			for (int i = 0; i < mols.length; i++)
+				mols[i] = allMols[c.getCompounds().get(i).getIndex()];
+			IAtomContainer mcsMolecule = null;
 			try
 			{
-				List<IAtomContainer> targets = new ArrayList<IAtomContainer>();
-				int i = 0;
-				for (CompoundData m : c.getCompounds())
-				{
-					IMolecule target = mols[m.getIndex()];
-					TaskProvider.task().verbose(
-							"Visiting cluster compound " + (i + 1) + "/" + c.getSize() + ", this may take a while ...");
-					i++;
-
-					boolean flag = ConnectivityChecker.isConnected(target);
-					if (!flag)
-					{
-						System.out.println("WARNING : Skipping target molecule "
-								+ target.getProperty(CDKConstants.TITLE) + " as it is not connected.");
-						continue;
-					}
-					else
-					{
-						if (target.getProperty(CDKConstants.TITLE) != null)
-						{
-							target.setID((String) target.getProperty(CDKConstants.TITLE));
-							//						argumentHandler.setTargetMolOutName(target.getID());
-						}
-					}
-					if (removeHydrogens)
-					{
-						target = new Molecule(AtomContainerManipulator.removeHydrogens(target));
-					}
-
-					if (mcsMolecule != null)
-					{
-						flag = ConnectivityChecker.isConnected(mcsMolecule);
-						if (!flag)
-						{
-							System.out.println("WARNING : Skipping file " + mcsMolecule.getProperty(CDKConstants.TITLE)
-									+ " not connected ");
-							return;
-
-						}
-						else if (mcsMolecule.getProperty(CDKConstants.TITLE) != null)
-						{
-							mcsMolecule.setID((String) mcsMolecule.getProperty(CDKConstants.TITLE));
-							//						argumentHandler.setQueryMolOutName(mcsMolecule.getID());
-						}
-						if (removeHydrogens)
-						{
-							mcsMolecule = new Molecule(AtomContainerManipulator.removeHydrogens(mcsMolecule));
-
-						}
-					}
-
-					//				inputHandler.configure(target, targetType);
-
-					if (mcsMolecule == null)
-					{
-						mcsMolecule = target;
-						targets.add(target);
-					}
-					else
-					{
-						Isomorphism smsd = run(mcsMolecule, target, filter, matchBonds);
-						target = target.getBuilder().newInstance(IMolecule.class,
-								smsd.getFirstAtomMapping().getTarget());
-						targets.add(target);
-						Map<Integer, Integer> mapping = getIndexMapping(smsd.getFirstAtomMapping());
-						IAtomContainer subgraph = getSubgraph(target, mapping);
-						mcsMolecule = new Molecule(subgraph);
-					}
-					if (TaskProvider.task().isCancelled())
-						break;
-				}
-				if (TaskProvider.task().isCancelled())
-					break;
-				//			inputHandler.configure(mcsMolecule, targetType);
-				//			if (argumentHandler.shouldOutputSubgraph())
-				//			{
-				//				String outpath = argumentHandler.getOutputFilepath();
-				//				String outtype = argumentHandler.getOutputFiletype();
-				//				outputHandler.writeMol(outtype, mcsMolecule, outpath);
-				//			}
-				if (mcsMolecule != null)// && argumentHandler.isImage())
-				{
-					// now that we have the N-MCS, remap
-					List<Map<Integer, Integer>> mappings = new ArrayList<Map<Integer, Integer>>();
-					List<IAtomContainer> secondRoundTargets = new ArrayList<IAtomContainer>();
-					IChemObjectBuilder builder = NoNotificationChemObjectBuilder.getInstance();
-					for (IAtomContainer target : targets)
-					{
-						Isomorphism smsd = run(mcsMolecule, (IMolecule) target, filter, matchBonds);
-						mappings.add(getIndexMapping(smsd.getFirstAtomMapping()));
-						secondRoundTargets.add(builder.newInstance(IAtomContainer.class, smsd.getFirstAtomMapping()
-								.getTarget()));
-						if (TaskProvider.task().isCancelled())
-							break;
-					}
-
-					//				String name = inputHandler.getTargetName();
-					//				outputHandler.writeCircleImage(mcsMolecule, secondRoundTargets, name, mappings);
-
-				}
-				if (TaskProvider.task().isCancelled())
-					break;
+				mcsMolecule = computeMCS(mols);
 			}
 			catch (Exception e)
 			{
-				System.err.println("Error in MCS computation: " + e.getMessage());
 				e.printStackTrace();
 			}
 			if (mcsMolecule != null)
@@ -222,8 +56,210 @@ public class MCSComputer
 				g.setUseAromaticityFlag(true);
 				((ClusterDataImpl) c).setSubstructureSmarts(SubstructureSmartsType.MCS, g.createSMILES(mcsMolecule));
 				System.out.println("MCSMolecule: " + c.getSubstructureSmarts(SubstructureSmartsType.MCS));
+
+				//				System.out.println("non aromatic");
+				//				g = new SmilesGenerator();
+				//				System.out.println(g.createSMILES(mcsMolecule));
 			}
+			if (DEBUG)
+				System.out.println("\n\n");
 		}
 
 	}
+
+	public static void main(String[] args) throws CDKException, CloneNotSupportedException, IOException
+	{
+		SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+		//		IMolecule mol1 = sp.parseSmiles("c1ccccc1NO");
+		//		IMolecule mol2 = sp.parseSmiles("c1cccnc1");
+		//		IMolecule mol3 = sp.parseSmiles("c1cccoc1");
+		IMolecule mol1 = sp.parseSmiles("CCCCOOOO");
+		IMolecule mol2 = sp.parseSmiles("CCCCNOO");
+		IMolecule mol3 = sp.parseSmiles("CC");
+		IMolecule list[] = new IMolecule[] { mol1, mol2, mol3 };
+		computeMCS(list);
+	}
+
+	public static List<IAtomContainer> computeMCS(IAtomContainer mol1, IAtomContainer mol2) throws CDKException
+	{
+		return UniversalIsomorphismTester.getOverlaps(mol1, mol2);
+
+		//		List<List<RMap>> maps = UniversalIsomorphismTester.search(mol1, mol2, new BitSet(), new BitSet(), true, false);
+		//
+		//		////				org.openscience.cdk.smsd.Isomorphism mcs = new org.openscience.cdk.smsd.Isomorphism(
+		//		////						org.openscience.cdk.smsd.interfaces.Algorithm.DEFAULT, true);
+		//		////				mcs.init(mol1, mol2, true, true);
+		//		////				mcs.setChemFilters(true, true, true);
+		//		////				List<Map<Integer, Integer>> maps = mcs.getAllMapping();
+		//
+		//		//		List<List<RMap>> maps = UniversalIsomorphismTester.getSubgraphMaps(mol1, mol2);
+		//		//
+		//		List<IAtomContainer> mols = new ArrayList<IAtomContainer>();
+		//		//for (Map<Integer, Integer> map : maps)
+		//		for (List<RMap> map : maps)
+		//		{
+		//			System.err.println("map size: " + map.size());
+		//			if (map.size() == 0)
+		//				throw new Error();
+		//
+		//			IMolecule mcsMolecule = DefaultChemObjectBuilder.getInstance().newInstance(IMolecule.class, mol1);
+		//			List<IAtom> atomsToBeRemoved = new ArrayList<IAtom>();
+		//			for (IAtom atom : mcsMolecule.atoms())
+		//			{
+		//				int index = mcsMolecule.getAtomNumber(atom);
+		//				//				if (!map.containsKey(index))
+		//				//atomsToBeRemoved.add(atom);
+		//
+		//				boolean match = false;
+		//				for (RMap rMap : map)
+		//					if (rMap.getId1() == index)
+		//					{
+		//						match = true;
+		//						break;
+		//					}
+		//				if (!match)
+		//					atomsToBeRemoved.add(atom);
+		//			}
+		//			for (IAtom atom : atomsToBeRemoved)
+		//				mcsMolecule.removeAtomAndConnectedElectronContainers(atom);
+		//			if (mcsMolecule.getAtomCount() == 0)
+		//				throw new Error();
+		//			boolean isomorph = false;
+		//			for (IAtomContainer mol : mols)
+		//				if (UniversalIsomorphismTester.isIsomorph(mol, mcsMolecule))
+		//				{
+		//					isomorph = true;
+		//					break;
+		//				}
+		//			if (!isomorph)
+		//				mols.add(mcsMolecule);
+		//		}
+		//		return mols;
+	}
+
+	private static void printCandidates(String s, Iterable<IAtomContainer> l)
+	{
+		SmilesGenerator g = new SmilesGenerator();
+		System.out.print(s + " candidates: ");
+		for (IAtomContainer can : l)
+			System.out.print("'" + g.createSMILES(can) + "' ");
+		System.out.println();
+	}
+
+	public static IAtomContainer computeMCS(IAtomContainer mols[]) throws CDKException
+	{
+		Arrays.sort(mols, new Comparator<IAtomContainer>()
+		{
+			@Override
+			public int compare(IAtomContainer o1, IAtomContainer o2)
+			{
+				return new Integer(o1.getAtomCount()).compareTo(new Integer(o2.getAtomCount()));
+			}
+		});
+
+		SmilesGenerator g = new SmilesGenerator();
+		g.setUseAromaticityFlag(true);
+		List<IAtomContainer> candidates = new ArrayList<IAtomContainer>();
+		int count = 0;
+		for (IAtomContainer mol : mols)
+		{
+			mol = new Molecule(AtomContainerManipulator.removeHydrogens(mol));
+			TaskProvider.task()
+					.verbose(
+							"Iterate over compound " + count + "/" + mols.length + ", num MCS-candidates: "
+									+ candidates.size());
+			if (DEBUG)
+				System.out.println("[" + count + "]\nmol: " + g.createSMILES(mol));
+			if (candidates.size() == 0)
+			{
+				candidates.add(mol);
+			}
+			else
+			{
+				List<IAtomContainer> newCandiates = new ArrayList<IAtomContainer>();
+				for (IAtomContainer can : candidates)
+				{
+					if (TaskProvider.task().isCancelled())
+						return null;
+
+					if (DEBUG)
+						System.out.println("mcs: " + g.createSMILES(can) + " - " + g.createSMILES(mol));
+					List<IAtomContainer> canMCS = computeMCS(can, mol);
+					if (DEBUG)
+						printCandidates("tmp", canMCS);
+					for (IAtomContainer m : canMCS)
+						if (m.getAtomCount() > 0)
+							newCandiates.add(m);
+				}
+				candidates = newCandiates;
+				if (DEBUG)
+					printCandidates("new", candidates);
+				if (candidates.size() == 0)
+				{
+					if (DEBUG)
+						System.out.println("nothing found");
+					break;
+				}
+			}
+			count++;
+		}
+		if (DEBUG)
+			printCandidates("final", candidates);
+		IAtomContainer max = null;
+		for (IAtomContainer mol : candidates)
+			if (max == null || mol.getAtomCount() > max.getAtomCount())
+				max = mol;
+		return max;
+	}
+
+	//	public static void fail_snippet() throws InvalidSmilesException, CDKException
+	//	{
+	//		SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+	//		IMolecule mol1 = sp.parseSmiles("c1ccccc1NO");
+	//		IMolecule mol2 = sp.parseSmiles("c1ccccc1");
+	//		IMolecule mol3 = sp.parseSmiles("c1cccnc1");
+	//		IMolecule mol4 = sp.parseSmiles("c1cccoc1");
+	//		IMolecule mols[] = new IMolecule[] { mol1, mol2, mol3, mol4 };
+	//		SmilesGenerator g = new SmilesGenerator();
+	//		g.setUseAromaticityFlag(true);
+	//
+	//		List<IAtomContainer> candidates = new ArrayList<IAtomContainer>();
+	//		int count = 0;
+	//		for (IAtomContainer mol : mols)
+	//		{
+	//			mol = new Molecule(AtomContainerManipulator.removeHydrogens(mol));
+	//			System.out.println("[" + count + "]\nmol: " + g.createSMILES(mol));
+	//			if (candidates.size() == 0)
+	//			{
+	//				candidates.add(mol);
+	//			}
+	//			else
+	//			{
+	//				List<IAtomContainer> newCandiates = new ArrayList<IAtomContainer>();
+	//				for (IAtomContainer can : candidates)
+	//				{
+	//					System.out.println("mcs: " + g.createSMILES(can) + " - " + g.createSMILES(mol));
+	//					List<IAtomContainer> canMCS = computeMCS(can, mol);
+	//					for (IAtomContainer m : canMCS)
+	//						if (m.getAtomCount() > 0)
+	//						{
+	//							System.out.println("new candidate: '" + g.createSMILES(m) + "'");
+	//							newCandiates.add(m);
+	//						}
+	//				}
+	//				candidates = newCandiates;
+	//
+	//				if (candidates.size() == 0)
+	//				{
+	//					System.out.println("nothing found");
+	//					break;
+	//				}
+	//			}
+	//			System.out.print("candidates: ");
+	//			for (IAtomContainer can : candidates)
+	//				System.out.print("'" + g.createSMILES(can) + "' ");
+	//			System.out.println();
+	//			count++;
+	//		}
+	//	}
 }
