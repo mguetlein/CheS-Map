@@ -17,7 +17,7 @@ import data.DatasetFile;
 import data.DefaultFeatureComputer;
 import data.EmbedClusters;
 import data.FeatureService;
-import data.MCSComputer;
+import data.ComputeMCS;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MoleculeProperty;
@@ -131,7 +131,7 @@ public class CheSMapping
 						if (TaskProvider.task().isCancelled())
 							return;
 						TaskProvider.task().update(60, "Compute MCS of clusters");
-						MCSComputer.computeMCS(dataset, clustering.getClusters());
+						ComputeMCS.computeMCS(dataset, clustering.getClusters());
 						clustering.addSubstructureSmartsTypes(SubstructureSmartsType.MCS);
 					}
 
