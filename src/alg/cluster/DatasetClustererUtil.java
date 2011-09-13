@@ -34,5 +34,8 @@ public final class DatasetClustererUtil
 			((ClusterDataImpl) c).setName(name);
 			((ClusterDataImpl) c).setFilename(clusterFile);
 		}
+		if (count == 0)
+			throw new Error("clusterer returned no cluster");
+
 	}
 }

@@ -71,8 +71,7 @@ public class Settings
 
 	public static Color TRANSPARENT_BACKGROUND = new Color(BACKGROUND.getRed(), BACKGROUND.getGreen(),
 			BACKGROUND.getBlue(), 200);
-	public static Color LIST_WATCH_BACKGROUND = new Color(LIST_ACTIVE_BACKGROUND.getRed(),
-			LIST_ACTIVE_BACKGROUND.getGreen(), LIST_ACTIVE_BACKGROUND.getBlue(), 100);
+	public static Color LIST_WATCH_BACKGROUND = LIST_ACTIVE_BACKGROUND.darker().darker();
 
 	public static Component TOP_LEVEL_COMPONENT = null;
 	public static Random RANDOM = new Random();

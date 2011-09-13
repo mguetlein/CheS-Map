@@ -15,6 +15,7 @@ import javax.swing.JList;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -180,6 +181,21 @@ public class ComponentFactory
 		c.setFocusable(false);
 		c.setFont(new JLabel().getFont());
 		return c;
+	}
+
+	public static JTextArea createTextArea(String text, boolean editable, boolean wrap)
+	{
+		JTextArea infoTextArea = new JTextArea(text);
+		//infoTextArea.setFont(infoTextArea.getFont().deriveFont(Font.BOLD));
+		if (!editable)
+		{
+			infoTextArea.setBorder(null);
+			infoTextArea.setEditable(false);
+			infoTextArea.setOpaque(false);
+		}
+		infoTextArea.setWrapStyleWord(wrap);
+		infoTextArea.setLineWrap(wrap);
+		return infoTextArea;
 	}
 
 }

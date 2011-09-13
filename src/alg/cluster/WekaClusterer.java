@@ -5,9 +5,7 @@ import gui.property.Property;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -119,17 +117,10 @@ public class WekaClusterer implements DatasetClusterer
 			DatasetClustererUtil.storeClusters(dataset.getSDFPath(true), wekaClusterer.getClass().getSimpleName(),
 					clusters);
 		}
-		catch (FileNotFoundException e)
-		{
-			e.printStackTrace();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			// error is caught in mapping process, message displayed in dialog and stack trace (with error cause) is printed
+			throw new Error("Error occured while clustering with WEKA: " + e.getMessage(), e);
 		}
 	}
 
