@@ -22,6 +22,7 @@ import javax.swing.JTextArea;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 
 import main.Settings;
 import main.TaskProvider;
@@ -194,8 +195,14 @@ public class MoleculePropertyPanel extends JPanel
 		Object v[][] = new Object[o.length][1];
 		for (int i = 0; i < o.length; i++)
 			v[i][0] = o[i];
-		JTable t = new JTable(v, c);
-		return t;
+		DefaultTableModel model = new DefaultTableModel(v, c)
+		{
+			public boolean isCellEditable(int row, int column)
+			{
+				return false;
+			}
+		};
+		return new JTable(model);
 	}
 
 	private void load(boolean background)
