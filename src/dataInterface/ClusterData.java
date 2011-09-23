@@ -21,4 +21,10 @@ public interface ClusterData extends MolecularPropertyOwner
 	public boolean isAligned();
 
 	public String getSummaryStringValue(MoleculeProperty p);
+
+	public String getClusterAlgorithm();
+
+	public String getEmbedAlgorithm();
+
+	public String getAlignAlgorithm();
 }

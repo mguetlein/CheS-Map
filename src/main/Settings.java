@@ -36,8 +36,6 @@ import util.FileUtil;
 import util.ImageLoader;
 import util.OSUtil;
 import weka.core.Version;
-import data.CDKSmartsHandler;
-import dataInterface.SmartsHandler;
 
 public class Settings
 {
@@ -151,13 +149,11 @@ public class Settings
 	// ------------------ TMP/RESULT-FILE SUPPORT --------------------------------------------- 
 
 	public static String BASE_DIR = System.getProperty("user.home") + File.separator + ".ches-mapper";
-	public static String STRUCTURAL_ALERTS_DIR = BASE_DIR + File.separator + "structural_alerts";
-
-	public static SmartsHandler SMARTS_HANDLER = new CDKSmartsHandler();
+	public static String STRUCTURAL_FRAGMENT_DIR = BASE_DIR + File.separator + "structural_fragments";
 
 	static
 	{
-		for (String d : new String[] { BASE_DIR, STRUCTURAL_ALERTS_DIR })
+		for (String d : new String[] { BASE_DIR, STRUCTURAL_FRAGMENT_DIR })
 		{
 			File dir = new File(d);
 			if (!dir.exists())
@@ -165,12 +161,11 @@ public class Settings
 			if (!dir.exists())
 				throw new Error("Could not create '" + d + "'");
 		}
-		// extract alerts
 	}
 
-	public static String[] getAlertFiles()
+	public static String[] getFragmentFiles()
 	{
-		String alerts[] = new File(STRUCTURAL_ALERTS_DIR).list(new FilenameFilter()
+		String fragments[] = new File(STRUCTURAL_FRAGMENT_DIR).list(new FilenameFilter()
 		{
 
 			@Override
@@ -179,9 +174,9 @@ public class Settings
 				return name.endsWith(".csv");
 			}
 		});
-		for (int i = 0; i < alerts.length; i++)
-			alerts[i] = STRUCTURAL_ALERTS_DIR + File.separator + alerts[i];
-		return alerts;
+		for (int i = 0; i < fragments.length; i++)
+			fragments[i] = STRUCTURAL_FRAGMENT_DIR + File.separator + fragments[i];
+		return fragments;
 	}
 
 	public static String destinationFileForURL(String url)
@@ -197,9 +192,9 @@ public class Settings
 		}
 	}
 
-	public static String getAlertFileDestination(String string)
+	public static String getFragmentFileDestination(String string)
 	{
-		return STRUCTURAL_ALERTS_DIR + File.separator + string;
+		return STRUCTURAL_FRAGMENT_DIR + File.separator + string;
 	}
 
 	public static String destinationFile(String sourceFilePath, String destinationFilename)

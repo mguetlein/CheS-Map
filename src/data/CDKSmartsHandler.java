@@ -12,73 +12,47 @@ import dataInterface.SmartsHandler;
 
 public class CDKSmartsHandler implements SmartsHandler
 {
-	//	@Override
-	//	public boolean isValidSmarts(String smarts)
-	//	{
-	//		try
-	//		{
-	//			SMARTSParser.parse(smarts);
-	//			return true;
-	//		}
-	//		catch (Throwable e)
-	//		{
-	//			return false;
-	//		}
-	//	}
-
 	@Override
-	public String[] match(StructuralAlerts.Alert alert, DatasetFile dataset)
+	public List<boolean[]> match(List<String> smarts, DatasetFile dataset)
 	{
-		alert.setNominalDomain(new String[] { "0", "1" });
-		IMolecule mols[] = dataset.getMolecules();
-		String m[] = new String[mols.length];
-
-		List<String> illegalSmarts = new ArrayList<String>();
-		List<SMARTSQueryTool> queryTools = new ArrayList<SMARTSQueryTool>();
-		for (String smarts : alert.smarts)
+		List<boolean[]> l = new ArrayList<boolean[]>();
+		int count = 0;
+		for (String smart : smarts)
 		{
+			TaskProvider.task().update("Matching " + (count + 1) + "/" + smarts.size() + " smarts: " + smart);
+
+			IMolecule mols[] = dataset.getMolecules();
+			boolean m[] = new boolean[mols.length];
+
+			SMARTSQueryTool queryTool = null;
 			try
 			{
-				queryTools.add(new SMARTSQueryTool(smarts));
+				queryTool = new SMARTSQueryTool(smart);
 			}
 			catch (Throwable e)
 			{
-				illegalSmarts.add("Smarts: '" + smarts + "', Error: '" + e.getMessage().replaceAll("\n", ", ") + "'");
+				e.printStackTrace();
+				TaskProvider.task().warning("Illegal Smarts: " + smart, e.getMessage().replaceAll("\n", ", "));
 			}
-		}
 
-		if (illegalSmarts.size() > 0)
-		{
-			String details = "";
-			for (String ss : illegalSmarts)
-				details += ss + "\n";
-			TaskProvider.task().warning("Illegal Smarts in " + alert, details);
-		}
-
-		int i = 0;
-		for (IMolecule iMolecule : mols)
-		{
-			try
+			int i = 0;
+			for (IMolecule iMolecule : mols)
 			{
-				TaskProvider.task().verbose("Matching alert on " + (i + 1) + "/" + mols.length + " compunds");
-
-				boolean match = false;
-				for (SMARTSQueryTool queryTool : queryTools)
+				try
 				{
-					if (queryTool.matches(iMolecule))
-					{
-						match = true;
-						break;
-					}
+					TaskProvider.task().verbose("Matching smarts on " + (i + 1) + "/" + mols.length + " compunds");
+					boolean match = queryTool != null && queryTool.matches(iMolecule);
+					m[i++] = match;
 				}
-				m[i++] = match ? "1" : "0";
+				catch (Exception e)
+				{
+					TaskProvider.task().warning("Could not match molecule", e);
+					m[i++] = false;
+				}
 			}
-			catch (Exception e)
-			{
-				TaskProvider.task().warning("Could not match molecule", e);
-				m[i++] = "0";
-			}
+			l.add(m);
+			count++;
 		}
-		return m;
+		return l;
 	}
 }

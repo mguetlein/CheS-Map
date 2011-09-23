@@ -27,6 +27,7 @@ public class WekaPCA3DEmbedder implements ThreeDEmbedder
 	PrincipalComponents pca = new PrincipalComponents();
 	Instances resultData;
 	List<Vector3f> positions;
+	Property[] properties = WekaPropertyUtil.getProperties(pca);
 
 	@Override
 	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
@@ -58,7 +59,7 @@ public class WekaPCA3DEmbedder implements ThreeDEmbedder
 	@Override
 	public Property[] getProperties()
 	{
-		return WekaPropertyUtil.getProperties(pca);
+		return properties;
 	}
 
 	@Override

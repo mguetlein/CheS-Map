@@ -1,12 +1,11 @@
 package dataInterface;
 
+import java.util.List;
+
 import data.DatasetFile;
-import data.StructuralAlerts;
 
 public interface SmartsHandler
 {
-	//	public boolean isValidSmarts(String smarts);
-
-	public String[] match(StructuralAlerts.Alert alert, DatasetFile dataset);
+	public List<boolean[]> match(List<String> smarts, DatasetFile dataset);
 
 }

@@ -1,5 +1,7 @@
 package data;
 
+import gui.binloc.Binary;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,11 +12,13 @@ import dataInterface.MoleculePropertySet;
 public class IntegratedProperty extends AbstractMoleculeProperty implements MoleculePropertySet
 {
 	String property;
+	private boolean usedForMapping;
 
 	private static List<IntegratedProperty> instances = new ArrayList<IntegratedProperty>();
 
 	private IntegratedProperty(String property)
 	{
+		super(property, "Included in Dataset");
 		this.property = property;
 	}
 
@@ -50,19 +54,13 @@ public class IntegratedProperty extends AbstractMoleculeProperty implements Mole
 	}
 
 	@Override
-	public int hashCode()
-	{
-		return property.hashCode();
-	}
-
-	@Override
-	public int getSize()
+	public int getSize(DatasetFile dataset)
 	{
 		return 1;
 	}
 
 	@Override
-	public MoleculeProperty get(int index)
+	public MoleculeProperty get(DatasetFile dataset, int index)
 	{
 		if (index != 0)
 			throw new Error("only one prop available");
@@ -70,8 +68,43 @@ public class IntegratedProperty extends AbstractMoleculeProperty implements Mole
 	}
 
 	@Override
-	public String getDescription()
+	public MoleculePropertySet getMoleculePropertySet()
 	{
-		return toString();
+		return this;
+	}
+
+	@Override
+	public boolean isSizeDynamic()
+	{
+		return false;
+	}
+
+	@Override
+	public boolean isComputed(DatasetFile dataset)
+	{
+		return true;
+	}
+
+	@Override
+	public void compute(DatasetFile dataset)
+	{
+		//do noting
+	}
+
+	@Override
+	public Binary getBinary()
+	{
+		return null;
+	}
+
+	public void setUsedForMapping(boolean usedForMapping)
+	{
+		this.usedForMapping = usedForMapping;
+	}
+
+	@Override
+	public boolean isUsedForMapping()
+	{
+		return usedForMapping;
 	}
 }

@@ -1,10 +1,21 @@
 package data;
 
+import gui.binloc.Binary;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import main.TaskProvider;
+
+import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.qsar.DescriptorSpecification;
 import org.openscience.cdk.qsar.IMolecularDescriptor;
+import org.openscience.cdk.qsar.result.DoubleArrayResult;
+import org.openscience.cdk.qsar.result.DoubleResult;
+import org.openscience.cdk.qsar.result.IDescriptorResult;
+import org.openscience.cdk.qsar.result.IntegerArrayResult;
+import org.openscience.cdk.qsar.result.IntegerResult;
+import org.openscience.cdk.smiles.SmilesGenerator;
 
 import util.ArrayUtil;
 import dataInterface.AbstractMoleculeProperty;
@@ -14,8 +25,8 @@ import dataInterface.MoleculePropertySet;
 public class CDKProperty extends AbstractMoleculeProperty
 {
 
-	CDKDescriptorClass desc;
-	int index;
+	private CDKDescriptorClass desc;
+	private int index;
 	private static List<CDKProperty> instances = new ArrayList<CDKProperty>();
 
 	private static enum CDKDescriptorClass
@@ -59,6 +70,8 @@ public class CDKProperty extends AbstractMoleculeProperty
 
 	private CDKProperty(CDKDescriptorClass desc, int index)
 	{
+		super(desc + "_" + index, "CDK Descriptor");
+
 		this.desc = desc;
 		this.index = index;
 
@@ -88,14 +101,10 @@ public class CDKProperty extends AbstractMoleculeProperty
 		}
 	}
 
-	public String toString()
+	@Override
+	public CDKDescriptor getMoleculePropertySet()
 	{
-		return desc + "_" + index;
-	}
-
-	public int numSetValues()
-	{
-		return new CDKDescriptor(desc).getSize();
+		return new CDKDescriptor(desc);
 	}
 
 	public static CDKProperty fromString(String s, Type t)
@@ -114,33 +123,6 @@ public class CDKProperty extends AbstractMoleculeProperty
 		return (o instanceof CDKProperty) && ((CDKProperty) o).desc.equals(desc) && ((CDKProperty) o).index == index;
 	}
 
-	public IMolecularDescriptor newMolecularDescriptor()
-	{
-		return newMolecularDescriptor(desc);
-	}
-
-	private static IMolecularDescriptor newMolecularDescriptor(CDKDescriptorClass desc)
-	{
-		try
-		{
-			Class<?> c = null;
-			try
-			{
-				c = Class.forName("org.openscience.cdk.qsar.descriptors.molecular." + desc + "Descriptor");
-			}
-			catch (ClassNotFoundException e)
-			{
-				c = Class.forName("org.openscience.cdk.qsar.descriptors.molecular." + desc);
-			}
-			return (IMolecularDescriptor) c.newInstance();
-		}
-		catch (Exception e2)
-		{
-			e2.printStackTrace();
-			return null;
-		}
-	}
-
 	public static final CDKDescriptor[] DESCRIPTORS = new CDKDescriptor[CDKDescriptorClass.values().length];
 	public static final CDKDescriptor[] NUMERIC_DESCRIPTORS = new CDKDescriptor[CDK_NUMERIC_DESCRIPTORS.length];
 	static
@@ -155,7 +137,7 @@ public class CDKProperty extends AbstractMoleculeProperty
 
 	public static class CDKDescriptor implements MoleculePropertySet
 	{
-		CDKDescriptorClass desc;
+		private CDKDescriptorClass desc;
 
 		public CDKDescriptor(CDKDescriptorClass desc)
 		{
@@ -163,6 +145,11 @@ public class CDKProperty extends AbstractMoleculeProperty
 		}
 
 		@Override
+		public int getSize(DatasetFile dataset)
+		{
+			return getSize();
+		}
+
 		public int getSize()
 		{
 			switch (desc)
@@ -216,7 +203,7 @@ public class CDKProperty extends AbstractMoleculeProperty
 		}
 
 		@Override
-		public MoleculeProperty get(int index)
+		public MoleculeProperty get(DatasetFile dataset, int index)
 		{
 			return CDKProperty.create(desc, index);
 		}
@@ -248,6 +235,152 @@ public class CDKProperty extends AbstractMoleculeProperty
 			//			s += "Identifier: " + spec.getImplementationIdentifier() + "\n";
 			//			s += "Vendor: " + spec.getImplementationVendor() + "\n";
 			return s;
+		}
+
+		@Override
+		public Type getType()
+		{
+			if (ArrayUtil.indexOf(CDK_NUMERIC_DESCRIPTORS, desc) != -1)
+				return Type.NUMERIC;
+			else
+				return Type.NOMINAL;
+		}
+
+		@Override
+		public Binary getBinary()
+		{
+			return null;
+		}
+
+		public IMolecularDescriptor newMolecularDescriptor()
+		{
+			return newMolecularDescriptor(desc);
+		}
+
+		private static IMolecularDescriptor newMolecularDescriptor(CDKDescriptorClass desc)
+		{
+			try
+			{
+				Class<?> c = null;
+				try
+				{
+					c = Class.forName("org.openscience.cdk.qsar.descriptors.molecular." + desc + "Descriptor");
+				}
+				catch (ClassNotFoundException e)
+				{
+					c = Class.forName("org.openscience.cdk.qsar.descriptors.molecular." + desc);
+				}
+				return (IMolecularDescriptor) c.newInstance();
+			}
+			catch (Exception e2)
+			{
+				e2.printStackTrace();
+				return null;
+			}
+		}
+
+		@Override
+		public boolean isSizeDynamic()
+		{
+			return false;
+		}
+
+		@Override
+		public boolean isComputed(DatasetFile dataset)
+		{
+			return CDKProperty.create(desc, 0).isValuesSet(dataset);
+		}
+
+		@Override
+		public void compute(DatasetFile dataset)
+		{
+			if (isComputed(dataset))
+				throw new IllegalStateException();
+
+			IMolecule mols[] = dataset.getMolecules();
+
+			if (desc == CDKDescriptorClass.SMILES)
+			{
+				SmilesGenerator sg = new SmilesGenerator();
+				String smiles[] = new String[mols.length];
+				for (int i = 0; i < mols.length; i++)
+					smiles[i] = sg.createSMILES(mols[i]);
+				CDKProperty.SMILES.setValues(dataset, smiles);
+			}
+			else
+			{
+				IMolecularDescriptor descriptor = newMolecularDescriptor();
+				if (descriptor == null)
+					throw new IllegalStateException("Not a CDK molecular descriptor: " + this);
+
+				List<Double[]> vv = new ArrayList<Double[]>();
+				for (int j = 0; j < getSize(); j++)
+					vv.add(new Double[mols.length]);
+
+				for (int i = 0; i < mols.length; i++)
+				{
+					TaskProvider.task().verbose(
+							"Compute " + this + " for " + (i + 1) + "/" + mols.length + " compounds");
+
+					if (mols[i].getAtomCount() == 0)
+					{
+						for (int j = 0; j < getSize(); j++)
+							vv.get(j)[i] = null;
+					}
+					else
+					{
+						try
+						{
+							IDescriptorResult res = descriptor.calculate(mols[i]).getValue();
+							if (res instanceof IntegerResult)
+								vv.get(0)[i] = (double) ((IntegerResult) res).intValue();
+							else if (res instanceof DoubleResult)
+								vv.get(0)[i] = ((DoubleResult) res).doubleValue();
+							else if (res instanceof DoubleArrayResult)
+							{
+								if (getSize() != ((DoubleArrayResult) res).length())
+									throw new IllegalStateException("num feature values wrong for '" + this + "' : "
+											+ getSize() + " != " + ((DoubleArrayResult) res).length());
+								for (int j = 0; j < getSize(); j++)
+									vv.get(j)[i] = ((DoubleArrayResult) res).get(j);
+							}
+							else if (res instanceof IntegerArrayResult)
+							{
+								if (getSize() != ((IntegerArrayResult) res).length())
+									throw new IllegalStateException("num feature values wrong for '" + this + "' : "
+											+ getSize() + " != " + ((IntegerArrayResult) res).length());
+								for (int j = 0; j < getSize(); j++)
+									vv.get(j)[i] = (double) ((IntegerArrayResult) res).get(j);
+							}
+							else
+								throw new IllegalStateException("Unknown idescriptor result value for '" + this
+										+ "' : " + res.getClass());
+
+						}
+						catch (Throwable e)
+						{
+							TaskProvider.task().warning("Could not compute cdk feature " + this, e);
+							for (int j = 0; j < getSize(); j++)
+								vv.get(j)[i] = null;
+						}
+					}
+
+					for (int j = 0; j < getSize(); j++)
+						if (vv.get(j)[i] != null && (vv.get(j)[i].isNaN() || vv.get(j)[i].isInfinite()))
+							vv.get(j)[i] = null;
+
+					if (TaskProvider.task().isCancelled())
+						return;
+				}
+				for (int j = 0; j < getSize(); j++)
+					CDKProperty.create(desc, j).setValues(dataset, vv.get(j));
+			}
+		}
+
+		@Override
+		public boolean isUsedForMapping()
+		{
+			return true;
 		}
 	}
 }

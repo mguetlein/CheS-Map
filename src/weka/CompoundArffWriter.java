@@ -27,11 +27,21 @@ public class CompoundArffWriter implements ArffWritable
 
 	List<MolecularPropertyOwner> compounds;
 	List<MoleculeProperty> features;
+	boolean sparse = true;
 
 	private CompoundArffWriter(List<MolecularPropertyOwner> compounds, List<MoleculeProperty> features)
 	{
 		this.compounds = compounds;
 		this.features = features;
+
+		for (MoleculeProperty p : features)
+			if (p.getType() == Type.NUMERIC)
+			{
+				sparse = false;
+				break;
+			}
+		if (features.size() < 100)
+			sparse = false;
 	}
 
 	@Override
@@ -61,7 +71,12 @@ public class CompoundArffWriter implements ArffWritable
 		{
 			String s = "{";
 			for (Object o : features.get(attribute).getNominalDomain())
-				s += "\"" + o + "\",";
+			{
+				if (o.toString().length() > 1)
+					s += "\"" + o + "\",";
+				else
+					s += o + ",";
+			}
 			s = s.substring(0, s.length() - 1);
 			s += "}";
 			return s;
@@ -81,14 +96,18 @@ public class CompoundArffWriter implements ArffWritable
 			return compounds.get(instance).getNormalizedValue(features.get(attribute)) + "";
 		else
 		{
-			return "\"" + compounds.get(instance).getStringValue(features.get(attribute)) + "\"";
+			String s = compounds.get(instance).getStringValue(features.get(attribute));
+			if (s.length() > 1)
+				return "\"" + s + "\"";
+			else
+				return s;
 		}
 	}
 
 	@Override
 	public boolean isSparse()
 	{
-		return false;
+		return sparse;
 	}
 
 	@Override

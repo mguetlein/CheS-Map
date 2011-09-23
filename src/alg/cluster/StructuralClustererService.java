@@ -12,7 +12,6 @@ import java.util.List;
 import main.TaskProvider;
 import opentox.DatasetUtil;
 import opentox.RESTUtil;
-import data.CDKProperty;
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import data.DefaultFeatureComputer;
@@ -101,8 +100,8 @@ public class StructuralClustererService implements DatasetClusterer
 
 			for (int i = 0; i < size; i++)
 			{
-				String smiles1 = resultDataset.getStringValues(CDKProperty.SMILES)[i];
-				String smiles2 = dataset.getStringValues(CDKProperty.SMILES)[i];
+				String smiles1 = dataset.getSmiles()[i];
+				String smiles2 = dataset.getSmiles()[i];
 
 				System.err.println(i);
 				System.err.println(smiles1 + " " + smiles2);
@@ -125,9 +124,9 @@ public class StructuralClustererService implements DatasetClusterer
 					}
 				}
 				if (!assigned)
-					System.err.println("not assigned: " + dataset.getStringValues(CDKProperty.SMILES)[i]);
+					System.err.println("not assigned: " + dataset.getSmiles()[i]);
 			}
-			DatasetClustererUtil.storeClusters(dataset.getSDFPath(true), "structural", clusters);
+			DatasetClustererUtil.storeClusters(dataset.getSDFPath(true), "structural", getName(), clusters);
 		}
 		finally
 		{
@@ -152,11 +151,14 @@ public class StructuralClustererService implements DatasetClusterer
 	public static final String PROPERTY_THETA = "theta (size of common substructure)";
 	public static final String PROPERTY_SERVICE = "structural clustering webservice";
 
+	private Property[] properties = new Property[] {
+			new StringProperty(PROPERTY_SERVICE, clusterAlgorithm, clusterAlgorithmDefault),
+			new DoubleProperty(PROPERTY_THETA, threshold, thresholdDefault) };
+
 	@Override
 	public Property[] getProperties()
 	{
-		return new Property[] { new StringProperty(PROPERTY_SERVICE, clusterAlgorithm, clusterAlgorithmDefault),
-				new DoubleProperty(PROPERTY_THETA, threshold, thresholdDefault) };
+		return properties;
 	}
 
 	@Override

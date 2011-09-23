@@ -3,6 +3,7 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -11,9 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -35,6 +38,7 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import data.DatasetFile;
+import dataInterface.FragmentPropertySet;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculeProperty.Type;
 import dataInterface.MoleculePropertySet;
@@ -44,11 +48,12 @@ import freechart.HistogramPanel;
 public class MoleculePropertyPanel extends JPanel
 {
 	public static final String PROPERTY_TYPE_CHANGED = "PROPERTY_TYPE_CHANGED";
+	public static final String PROPERTY_COMPUTED = "PROPERTY_COMPUTED";
 
 	private int selectedPropertyIndex = 0;
 	private MoleculePropertySet selectedPropertySet;
 
-	JTextArea infoTextArea = new JTextArea();
+	DescriptionPanel descPanel = new DescriptionPanel();
 	JPanel cardPanel = new JPanel(new CardLayout());
 
 	JButton loadButton = new JButton("Load feature values");
@@ -68,8 +73,11 @@ public class MoleculePropertyPanel extends JPanel
 
 	DatasetFile dataset;
 
-	public MoleculePropertyPanel()
+	JPanel fragmentProps;
+
+	public MoleculePropertyPanel(FeatureWizardPanel featurePanel)
 	{
+		fragmentProps = featurePanel.getFragmentPropPanel().getSummaryPanel();
 		buildLayout();
 		addListeners();
 	}
@@ -77,13 +85,13 @@ public class MoleculePropertyPanel extends JPanel
 	private void buildLayout()
 	{
 		setLayout(new BorderLayout(10, 10));
-		infoTextArea.setFont(infoTextArea.getFont().deriveFont(Font.PLAIN));
-		infoTextArea.setBorder(null);
-		infoTextArea.setEditable(false);
-		infoTextArea.setOpaque(false);
-		infoTextArea.setWrapStyleWord(true);
-		infoTextArea.setLineWrap(true);
-		add(infoTextArea, BorderLayout.NORTH);
+
+		JPanel p = new JPanel(new BorderLayout(5, 5));
+		p.add(descPanel, BorderLayout.NORTH);
+		p.add(fragmentProps, BorderLayout.SOUTH);
+		fragmentProps.setVisible(false);
+
+		add(p, BorderLayout.NORTH);
 		add(cardPanel);
 
 		JPanel main = new JPanel(new BorderLayout(10, 10));
@@ -117,6 +125,10 @@ public class MoleculePropertyPanel extends JPanel
 		DefaultFormBuilder b2 = new DefaultFormBuilder(new FormLayout("p"));
 		b2.append(loadButton);
 		cardPanel.add(b2.getPanel(), "loadButton");
+
+		DefaultFormBuilder b3 = new DefaultFormBuilder(new FormLayout("p"));
+		b3.append(Settings.getBinaryComponent(Settings.BABEL_BINARY));
+		cardPanel.add(b3.getPanel(), "babel-binary");
 	}
 
 	private void addListeners()
@@ -134,10 +146,11 @@ public class MoleculePropertyPanel extends JPanel
 				else if (e.getSource() == numericFeatureButton)
 					type = Type.NUMERIC;
 
-				if (selectedPropertySet != null && selectedPropertySet.get(selectedPropertyIndex).getType() != type
-						&& selectedPropertySet.get(selectedPropertyIndex).isTypeAllowed(type))
+				if (selectedPropertySet != null
+						&& selectedPropertySet.get(dataset, selectedPropertyIndex).getType() != type
+						&& selectedPropertySet.get(dataset, selectedPropertyIndex).isTypeAllowed(type))
 				{
-					selectedPropertySet.get(selectedPropertyIndex).setType(type);
+					selectedPropertySet.get(dataset, selectedPropertyIndex).setType(type);
 					firePropertyChange(PROPERTY_TYPE_CHANGED, false, true);
 					load(false);
 				}
@@ -160,6 +173,17 @@ public class MoleculePropertyPanel extends JPanel
 					selectedPropertyIndex = comboBox.getSelectedIndex();
 					load(false);
 				}
+			}
+		});
+		comboBox.setRenderer(new DefaultListCellRenderer()
+		{
+			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+					boolean cellHasFocus)
+			{
+				String s = value + "";
+				if (s.length() > 60)
+					s = s.substring(0, 57) + "...";
+				return super.getListCellRendererComponent(list, s, index, isSelected, cellHasFocus);
 			}
 		});
 
@@ -185,13 +209,13 @@ public class MoleculePropertyPanel extends JPanel
 
 	private JTable rawDataTable()
 	{
-		MoleculeProperty selectedProperty = selectedPropertySet.get(selectedPropertyIndex);
+		MoleculeProperty selectedProperty = selectedPropertySet.get(dataset, selectedPropertyIndex);
 		Object o[];
 		if (selectedProperty.getType() == Type.NUMERIC)
-			o = dataset.getDoubleValues(selectedProperty);
+			o = selectedProperty.getDoubleValues(dataset);
 		else
-			o = dataset.getStringValues(selectedProperty);
-		String[] c = new String[] { selectedPropertySet.get(selectedPropertyIndex).toString() };
+			o = selectedProperty.getStringValues(dataset);
+		String[] c = new String[] { selectedPropertySet.get(dataset, selectedPropertyIndex).toString() };
 		Object v[][] = new Object[o.length][1];
 		for (int i = 0; i < o.length; i++)
 			v[i][0] = o[i];
@@ -223,15 +247,13 @@ public class MoleculePropertyPanel extends JPanel
 					selfUpdate = true;
 					comboBox.removeAllItems();
 
-					MoleculePropertySet currentSet = selectedPropertySet;
-					int currentIndex = selectedPropertyIndex;
+					MoleculePropertySet selectedPropertySet = MoleculePropertyPanel.this.selectedPropertySet;
+					int selectedPropertyIndex = MoleculePropertyPanel.this.selectedPropertyIndex;
 
 					if (selectedPropertySet != null)
 					{
-						MoleculeProperty selectedProperty = selectedPropertySet.get(selectedPropertyIndex);
-
 						boolean loading = false;
-						if (!dataset.isComputed(selectedPropertySet) || !cardPanel.isVisible())
+						if (!selectedPropertySet.isComputed(dataset) || !cardPanel.isVisible())
 						{
 							loading = true;
 							TaskProvider.registerThread("compute-features");
@@ -241,13 +263,24 @@ public class MoleculePropertyPanel extends JPanel
 							cardPanel.setVisible(true);
 						}
 
-						for (int i = 0; i < selectedPropertySet.getSize(); i++)
-							comboBox.addItem(selectedPropertySet.get(i));
-						comboBox.setSelectedIndex(selectedPropertyIndex);
+						// compute values first to know the number of values
+						if (!selectedPropertySet.isComputed(dataset))
+							selectedPropertySet.compute(dataset);
+						firePropertyChange(PROPERTY_COMPUTED, false, true);
 
-						if (selectedPropertySet.getSize() > 1)
+						for (int i = 0; i < selectedPropertySet.getSize(dataset); i++)
+							comboBox.addItem(selectedPropertySet.get(dataset, i));
+						if (selectedPropertySet.getSize(dataset) > 0)
 						{
-							comboLabel.setText(selectedPropertySet + " has " + selectedPropertySet.getSize()
+							comboBox.setSelectedIndex(selectedPropertyIndex);
+							comboBox.setEnabled(true);
+						}
+						else
+							comboBox.setEnabled(false);
+
+						if (selectedPropertySet.isSizeDynamic() || selectedPropertySet.getSize(dataset) > 1)
+						{
+							comboLabel.setText(selectedPropertySet + " has " + selectedPropertySet.getSize(dataset)
 									+ " features: ");
 							comboPanel.setVisible(true);
 						}
@@ -256,55 +289,85 @@ public class MoleculePropertyPanel extends JPanel
 
 						featurePlotPanel.removeAll();
 						radioGroup.clearSelection();
-						nominalFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NOMINAL));
-						numericFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NUMERIC));
 
 						JPanel p = null;
-						MoleculeProperty.Type type = selectedProperty.getType();
-						if (type == Type.NOMINAL)
+						if (selectedPropertySet.getSize(dataset) > 0)
 						{
-							nominalFeatureButton.setSelected(true);
-							CountedSet<String> set = CountedSet.fromArray(dataset.getStringValues(selectedProperty));
-							List<String> values = set.values(new DefaultComparator<String>());
-							List<Double> counts = new ArrayList<Double>();
-							for (String o : values)
-								counts.add((double) set.getCount(o));
-							p = new BarPlotPanel(null, "#compounds", counts, values);
-							p.setOpaque(false);
-							p.setPreferredSize(new Dimension(300, 180));
+							MoleculeProperty selectedProperty = selectedPropertySet.get(dataset, selectedPropertyIndex);
+							nominalFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NOMINAL));
+							numericFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NUMERIC));
+							rawDataLink.setEnabled(true);
 
-						}
-						else if (type == Type.NUMERIC)
-						{
-							numericFeatureButton.setSelected(true);
-							List<Double> vals = ArrayUtil.removeNullValues(dataset.getDoubleValues(selectedProperty));
-							if (vals.size() == 0)
+							MoleculeProperty.Type type = selectedProperty.getType();
+							if (type == Type.NOMINAL)
 							{
-								p = new JPanel(new BorderLayout());
-								p.add(new JLabel("Could not compute values for "
-										+ selectedPropertySet.get(selectedPropertyIndex).toString()));
+								nominalFeatureButton.setSelected(true);
+								CountedSet<String> set = CountedSet
+										.fromArray(selectedProperty.getStringValues(dataset));
+								List<String> values = set.values(new DefaultComparator<String>());
+								List<Double> counts = new ArrayList<Double>();
+								for (String o : values)
+									counts.add((double) set.getCount(o));
+								p = new BarPlotPanel(null, "#compounds", counts, values);
+								p.setOpaque(false);
+								p.setPreferredSize(new Dimension(300, 180));
+
+							}
+							else if (type == Type.NUMERIC)
+							{
+								numericFeatureButton.setSelected(true);
+								List<Double> vals = ArrayUtil.removeNullValues(selectedProperty
+										.getDoubleValues(dataset));
+								if (vals.size() == 0)
+								{
+									p = new JPanel(new BorderLayout());
+									p.add(new JLabel("Could not compute values for "
+											+ selectedPropertySet.get(dataset, selectedPropertyIndex).toString()));
+								}
+								else
+								{
+									p = new HistogramPanel(null, null, selectedProperty.toString(), "#compounds", "",
+											ArrayUtil.toPrimitiveDoubleArray(vals), 20, null, true);
+									p.setOpaque(false);
+									p.setPreferredSize(new Dimension(300, 180));
+								}
 							}
 							else
 							{
-								p = new HistogramPanel(null, null, selectedProperty.toString(), "#compounds", "",
-										ArrayUtil.toPrimitiveDoubleArray(vals), 20, null, true);
-								p.setOpaque(false);
-								p.setPreferredSize(new Dimension(300, 180));
+								CountedSet<String> set = CountedSet
+										.fromArray(selectedProperty.getStringValues(dataset));
+								//				List<String> values = set.values();
+								//				List<Double> counts = new ArrayList<Double>();
+								//				for (String o : values)
+								//					counts.add((double) set.getCount(o));
+								String text = "This feature ('" + selectedProperty.toString()
+										+ "') is most likely not suited for clustering and embedding.\n"
+										+ "It is not numeric, and it has '" + set.size() + "' distinct values.";
+								//				for (int i = 0; i < values.size(); i++)
+								//					text += "(" + counts.get(i).intValue() + ") " + values.get(i) + "\n";
+
+								JTextArea infoTextArea2 = new JTextArea(text);
+								JLabel infoIcon = new JLabel(ImageLoader.WARNING);
+								infoIcon.setVerticalAlignment(SwingConstants.TOP);
+								infoTextArea2.setFont(infoTextArea2.getFont().deriveFont(Font.BOLD));
+								infoTextArea2.setBorder(null);
+								infoTextArea2.setEditable(false);
+								infoTextArea2.setOpaque(false);
+								infoTextArea2.setWrapStyleWord(true);
+								infoTextArea2.setLineWrap(true);
+								p = new JPanel(new BorderLayout(5, 0));
+								p.add(infoIcon, BorderLayout.WEST);
+								p.add(infoTextArea2);
+								p.setBorder(new EmptyBorder(0, 10, 0, 0));
 							}
 						}
 						else
 						{
-							CountedSet<String> set = CountedSet.fromArray(dataset.getStringValues(selectedProperty));
-							//				List<String> values = set.values();
-							//				List<Double> counts = new ArrayList<Double>();
-							//				for (String o : values)
-							//					counts.add((double) set.getCount(o));
-							String text = "This feature ('" + selectedProperty.toString()
-									+ "') is most likely not suited for clustering and embedding.\n"
-									+ "It is not numeric, and it has '" + set.size() + "' distinct values.";
-							//				for (int i = 0; i < values.size(); i++)
-							//					text += "(" + counts.get(i).intValue() + ") " + values.get(i) + "\n";
+							nominalFeatureButton.setEnabled(false);
+							numericFeatureButton.setEnabled(false);
+							rawDataLink.setEnabled(false);
 
+							String text = "This feature has no values.";
 							JTextArea infoTextArea2 = new JTextArea(text);
 							JLabel infoIcon = new JLabel(ImageLoader.WARNING);
 							infoIcon.setVerticalAlignment(SwingConstants.TOP);
@@ -336,7 +399,8 @@ public class MoleculePropertyPanel extends JPanel
 					}
 					selfUpdate = false;
 
-					if (currentSet == selectedPropertySet && currentIndex == selectedPropertyIndex)
+					if (selectedPropertySet == MoleculePropertyPanel.this.selectedPropertySet
+							&& selectedPropertyIndex == MoleculePropertyPanel.this.selectedPropertyIndex)
 						((CardLayout) cardPanel.getLayout()).show(cardPanel, "main");
 				}
 			}
@@ -358,9 +422,14 @@ public class MoleculePropertyPanel extends JPanel
 	private void update(boolean load)
 	{
 		if (selectedPropertySet == null)
+		{
 			cardPanel.setVisible(false);
+			fragmentProps.setVisible(false);
+		}
 		else
 		{
+			fragmentProps.setVisible(selectedPropertySet instanceof FragmentPropertySet);
+
 			if (load)
 				load(true);
 			else
@@ -387,15 +456,25 @@ public class MoleculePropertyPanel extends JPanel
 	{
 		selectedPropertySet = prop;
 		selectedPropertyIndex = 0;
-		infoTextArea.setText((prop != null) ? prop.getDescription() : "");
-		update(prop != null && dataset.isComputed(prop));
+		descPanel.setText(null, (prop != null) ? prop.getDescription() : "");
+
+		if (prop != null && prop.getBinary() != null && !prop.getBinary().isFound())
+		{
+			if (prop.getBinary() != Settings.BABEL_BINARY)
+				throw new Error("implement properly");
+			((CardLayout) cardPanel.getLayout()).show(cardPanel, "babel-binary");
+			cardPanel.setVisible(true);
+			fragmentProps.setVisible(false);
+		}
+		else
+			update(prop != null && prop.isComputed(dataset));
 	}
 
 	public void showInfoText(String text)
 	{
 		selectedPropertySet = null;
 		selectedPropertyIndex = -1;
-		infoTextArea.setText(text);
+		descPanel.setText(null, text);
 		cardPanel.setVisible(false);
 	}
 }

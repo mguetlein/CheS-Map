@@ -45,24 +45,47 @@ public class WekaClusterer implements DatasetClusterer
 		}
 	}
 
-	private static final Clusterer[] CLUSTERER = new Clusterer[] { kMeans, new Cobweb(), new EM(), new FarthestFirst(),
-			new HierarchicalClusterer() };
+	private static String SKIP_PROPERTIES[] = new String[] { "saveInstanceData", "displayStdDevs", "debug",
+			"displayModelInOldFormat", "printNewick" };
+	private static final Clusterer[] CLUSTERER = new Clusterer[] { new EM(), new Cobweb(), new HierarchicalClusterer(),
+			kMeans, new FarthestFirst(), };
+
 	public static WekaClusterer[] WEKA_CLUSTERER;
 	static
 	{
 		WEKA_CLUSTERER = new WekaClusterer[CLUSTERER.length];
 		int i = 0;
 		for (Clusterer c : CLUSTERER)
-			WEKA_CLUSTERER[i++] = new WekaClusterer(c);
+		{
+			WekaClusterer wc = new WekaClusterer(c);
+			if (c instanceof Cobweb)
+			{
+				wc.additionalDescription = "Performs hierarchical conceptual clustering. "
+						+ "It computes CU (category utility) of nodes in the hierachical tree, in order to merge/split/insert nodes. "
+						+ "\nParameters: "
+						+ "\n* acuity: CU is computed with feature standard deviation. Acuity defines a minimum value for standard deviation. "
+						+ "The lower acuity is, the more clusters will be created. (Only relevant for numeric features.)"
+						+ "\n* cutoff: The minimum-threshold for CU to merge/split/insert nodes. The lower cutoff is, the more clusters will be created.";
+			}
+			else if (c instanceof EM)
+			{
+				wc.additionalDescription = "EM (Expectation Maximization) Clustering models the data as mixture of gaussians. "
+						+ "Each cluster is represented by one gaussion distribution.";
+			}
+			WEKA_CLUSTERER[i++] = wc;
+		}
 	}
 
 	Clusterer wekaClusterer;
 	ClusterEvaluation eval;
 	List<ClusterData> clusters;
+	String additionalDescription;
+	Property[] properties;
 
 	private WekaClusterer(Clusterer wekaClusterer)
 	{
 		this.wekaClusterer = wekaClusterer;
+		properties = WekaPropertyUtil.getProperties(wekaClusterer, SKIP_PROPERTIES);
 	}
 
 	@Override
@@ -115,7 +138,7 @@ public class WekaClusterer implements DatasetClusterer
 				clusters.remove(toDelete.get(j).intValue());
 
 			DatasetClustererUtil.storeClusters(dataset.getSDFPath(true), wekaClusterer.getClass().getSimpleName(),
-					clusters);
+					getName(), clusters);
 		}
 		catch (Exception e)
 		{
@@ -139,7 +162,7 @@ public class WekaClusterer implements DatasetClusterer
 	@Override
 	public Property[] getProperties()
 	{
-		return WekaPropertyUtil.getProperties(wekaClusterer);
+		return properties;
 	}
 
 	@Override
@@ -158,6 +181,10 @@ public class WekaClusterer implements DatasetClusterer
 	public String getDescription()
 	{
 		String s = "Uses " + Settings.WEKA_STRING + ".\n\n";
+
+		if (additionalDescription != null)
+			s += additionalDescription + "\n\n";
+
 		// weka has no interface for globalInfo
 		try
 		{
@@ -166,6 +193,7 @@ public class WekaClusterer implements DatasetClusterer
 			{
 				if (method.getName().equals("globalInfo"))
 				{
+					s += "Internal WEKA description:\n";
 					s += method.invoke(wekaClusterer, (Object[]) null).toString();
 					break;
 				}

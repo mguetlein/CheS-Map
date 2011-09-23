@@ -6,6 +6,7 @@ import gui.property.Property;
 import java.util.ArrayList;
 import java.util.List;
 
+import data.ClusterDataImpl;
 import data.DatasetFile;
 import dataInterface.ClusterData;
 
@@ -35,7 +36,10 @@ public class NoAligner implements ThreeDAligner
 	{
 		clusterFiles = new ArrayList<String>();
 		for (ClusterData c : clusters)
+		{
 			clusterFiles.add(c.getFilename());
+			((ClusterDataImpl) c).setAlignAlgorithm(getName());
+		}
 	}
 
 	@Override

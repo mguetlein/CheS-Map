@@ -39,37 +39,49 @@ public class DefaultFeatureComputer implements FeatureComputer
 
 		List<MoleculeProperty> props = new ArrayList<MoleculeProperty>();
 
+		int count = 0;
 		for (MoleculePropertySet propSet : moleculePropertySets)
 		{
-			for (int i = 0; i < propSet.getSize(); i++)
+			TaskProvider.task()
+					.update("Computing feature " + (count + 1) + "/" + moleculePropertySets.length + " : "
+							+ propSet.toString());
+
+			if (propSet instanceof IntegratedProperty)
+				((IntegratedProperty) propSet).setUsedForMapping(true);
+
+			if (!propSet.isComputed(dataset))
+				propSet.compute(dataset);
+
+			for (int i = 0; i < propSet.getSize(dataset); i++)
 			{
-				props.add(propSet.get(i));
-				features.add(propSet.get(i));
+				props.add(propSet.get(dataset, i));
+				features.add(propSet.get(dataset, i));
 			}
+			count++;
 		}
 
 		for (IntegratedProperty p : dataset.getIntegratedProperties(false))
 			if (!props.contains(p))
 			{
+				p.setUsedForMapping(false);
 				props.add(p);
 				properties.add(p);
 			}
 
 		String[] smiles = dataset.getSmiles();
 
-		int count = 0;
 		for (MoleculeProperty p : props)
 		{
-			TaskProvider.task().update("Computing feature " + (count + 1) + "/" + props.size() + " : " + p.toString());
-			count++;
-
 			Double d[] = null;
 			String s[] = null;
 			if (p.getType() == Type.NUMERIC)
-				d = dataset.getDoubleValues(p);
+				d = p.getDoubleValues(dataset);
 			else
-				s = dataset.getStringValues(p);
-			Double n[] = dataset.getNormalizedValues(p);
+				s = p.getStringValues(dataset);
+			Double n[] = p.getNormalizedValues(dataset);
+
+			if ((d != null && d.length != numCompounds) || (s != null && s.length != numCompounds))
+				throw new Error("illegal num features " + p);
 
 			if (TaskProvider.task().isCancelled())
 				break;

@@ -7,11 +7,7 @@ import main.Settings;
 
 import org.openscience.cdk.interfaces.IMolecule;
 
-import util.ArrayUtil;
 import util.FileUtil;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculeProperty.Type;
-import dataInterface.MoleculePropertySet;
 
 public class DatasetFile
 {
@@ -181,32 +177,6 @@ public class DatasetFile
 
 	// -------------------------------
 
-	public String[] getStringValues(MoleculeProperty p)
-	{
-		if (p.getType() == Type.NUMERIC)
-			throw new IllegalStateException();
-		return ArrayUtil.cast(String.class, getValues(p, false));
-	}
-
-	public Double[] getDoubleValues(MoleculeProperty p)
-	{
-		if (p.getType() != Type.NUMERIC)
-			throw new IllegalStateException();
-		return ArrayUtil.parse(getValues(p, false));
-	}
-
-	public Double[] getNormalizedValues(MoleculeProperty p)
-	{
-		return ArrayUtil.cast(Double.class, getValues(p, true));
-	}
-
-	// -------------------------------
-
-	private Object[] getValues(MoleculeProperty p, boolean normalize)
-	{
-		return featureService.getValues(this, p, normalize);
-	}
-
 	public String[] getSmiles()
 	{
 		return featureService.getSmiles(this);
@@ -216,13 +186,4 @@ public class DatasetFile
 	{
 		return featureService.has3D(this);
 	}
-
-	public boolean isComputed(MoleculePropertySet prop)
-	{
-		if (prop instanceof IntegratedProperty)
-			return true;
-		else
-			return featureService.isComputed(this, prop);
-	}
-
 }

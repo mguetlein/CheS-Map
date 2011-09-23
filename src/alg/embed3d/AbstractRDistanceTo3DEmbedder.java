@@ -115,7 +115,7 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 	@Override
 	public Property[] getProperties()
 	{
-		return new Property[0];
+		return null;
 	}
 
 	@Override
@@ -164,12 +164,13 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 		private int maxNumIterations = maxNumIterationsDefault;
 
 		public static final String PROPERTY_MAX_NUM_ITERATIONS = "Maximum number of iterations (itmax)";
+		private Property[] properties = new Property[] { new IntegerProperty(PROPERTY_MAX_NUM_ITERATIONS,
+				maxNumIterations, maxNumIterationsDefault) };
 
 		@Override
 		public Property[] getProperties()
 		{
-			return new Property[] { new IntegerProperty(PROPERTY_MAX_NUM_ITERATIONS, maxNumIterations,
-					maxNumIterationsDefault) };
+			return properties;
 		}
 
 		@Override

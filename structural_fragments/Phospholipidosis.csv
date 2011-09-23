@@ -1,0 +1,10 @@
+# Przybylak, Katarzyna R., Cronin, Mark T. D.
+# In Silico Studies of the Relationship Between Chemical Structure and Drug Induced Phospholipidosis
+# Molecular Informatics, 2011
+"PrimaryAmine","[$([NH2][CX4;!R][CX4]),$([NH2][CX4](C)(C)(C)),$([NH2][C;R]([C;R][OH])[C;R][OH]),$([NH2][C;R]([CH;R])[C;R]O),$([NH2]CC1OCCCC1),$([NH2][C;R]([C;R])[C;R](O)[O;R]),$([NH2]c1c(Br)cc(Br)cc1),$([NH]=C([NH2])c1ccccc1),$([NH]=C([NH2])[NH]C[NH])]"
+"SecondaryAmine","[$(c[CX4;!R][CX4;!R][NH][CH2][CH3]),$([C;!R][NH][C;R]([C;R])c),$([C;!R][C;!R][C;!R][NH][C;!R][C;!R]c),$(c1[cH1]c[cH1][cH1]c1[NH]c1[cH1][cH1][cH1][cH1]c1),$(c[NH][C;!R][C;R]),$([CH3][NH][CH2;!R][CH2;!R]),$([CH3][NH][C;R]([C;R][OH])[C;R][OH]),$([CX4;!R][NH][CX4;!R][CX4;!R][CX4;!R]Oc1c2ccccc2ccc1),$([CX4][NH][CX4;R])]"
+"TertiaryAmine","[$([CX4;!R][N;!+]([CX4;!R])[CX4;!R][CX4]),$([CH3][N;!+]([CH3])[CH2][CH]=C(c)c)]"
+"CyclicAmine","[$([nH]1n=ccc1),$(cO[CH2][CH2][N;!+]1CCCC1),$([CH3][N;!+]1CC[N;!+]([C;!R])CC1),$([NH;R][C;R](C)[C;R]cc[C;R]),$([NH]1C(C)CCCC1),$([N;!+]1[CH2][CH2][CH]([NH])[CH2][CH2]1),$([N;!+]1[CH2][CH2]C(c2ccc(Cl)cc2)[CH2][CH2]1)]"
+"AromaticSystem","[$(cN([CX4][CX4][CX4][NX3;!R])c),$(cN([CX4][CX4][NX3])c),$(cN([CX4][CX4][CX4;R][N;R])c),$(c1ccccc1[CH2]c1ccccc1),$(c[CH]([N;R])c)]"
+"RingSystem","[$([R;a]),$([R;!a])]"
+"AcidicGroups","[$([#6,#1]C(=O)[OH]),$([CH](=O)[OH]),$([#6]N(=O)=O),$([#6][N+](=O)[O-])]"

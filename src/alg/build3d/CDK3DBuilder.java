@@ -2,7 +2,7 @@ package alg.build3d;
 
 import gui.binloc.Binary;
 import gui.property.Property;
-import gui.property.StringSelectProperty;
+import gui.property.SelectProperty;
 import main.Settings;
 
 import org.openscience.cdk.modeling.builder3d.ModelBuilder3D;
@@ -17,12 +17,13 @@ public class CDK3DBuilder extends Abstract3DBuilder
 	private final String forcefieldDefault = FORCEFIELDS[0];
 
 	public static final String PROPERTY_FORCEFIELD = "forcefield";
+	private Property[] properties = new Property[] { new SelectProperty(PROPERTY_FORCEFIELD, FORCEFIELDS, forcefield,
+			forcefieldDefault) };
 
 	@Override
 	public Property[] getProperties()
 	{
-		return new Property[] { new StringSelectProperty(PROPERTY_FORCEFIELD, FORCEFIELDS, forcefield,
-				forcefieldDefault) };
+		return properties;
 	}
 
 	@Override
@@ -31,7 +32,7 @@ public class CDK3DBuilder extends Abstract3DBuilder
 		for (Property property : properties)
 		{
 			if (property.getName().equals(PROPERTY_FORCEFIELD))
-				forcefield = ((StringSelectProperty) property).getValue();
+				forcefield = property.getValue().toString();
 		}
 	}
 

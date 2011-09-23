@@ -103,7 +103,7 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 	@Override
 	public Property[] getProperties()
 	{
-		return new Property[0];
+		return null;
 	}
 
 	@Override
@@ -162,13 +162,15 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 		public static final String PROPERTY_PERPLEXITY = "Optimal number of neighbors (perplexity)";
 		public static final String PROPERTY_INITIAL_DIMS = "The number of dimensions to use in reduction method (initial_dims)";
 
+		private Property[] properties = new Property[] {
+				new IntegerProperty(PROPERTY_MAX_NUM_ITERATIONS, maxNumIterations, maxNumIterationsDefault),
+				new IntegerProperty(PROPERTY_PERPLEXITY, perplexity, perplexityDefault),
+				new IntegerProperty(PROPERTY_INITIAL_DIMS, initial_dims, initial_dimsDefault) };
+
 		@Override
 		public Property[] getProperties()
 		{
-			return new Property[] {
-					new IntegerProperty(PROPERTY_MAX_NUM_ITERATIONS, maxNumIterations, maxNumIterationsDefault),
-					new IntegerProperty(PROPERTY_PERPLEXITY, perplexity, perplexityDefault),
-					new IntegerProperty(PROPERTY_INITIAL_DIMS, initial_dims, initial_dimsDefault) };
+			return properties;
 		}
 
 		@Override

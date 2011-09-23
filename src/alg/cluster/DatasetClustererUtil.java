@@ -10,7 +10,8 @@ import dataInterface.ClusterData;
 public final class DatasetClustererUtil
 {
 
-	public static void storeClusters(String sdfFile, String clusterFilePrefix, Iterable<ClusterData> clusters)
+	public static void storeClusters(String sdfFile, String clusterFilePrefix, String clusterAlgName,
+			Iterable<ClusterData> clusters)
 	{
 		TaskProvider.task().verbose("Storing cluster results in files");
 
@@ -25,13 +26,13 @@ public final class DatasetClustererUtil
 
 			String name = clusterFilePrefix + "_cluster_" + count++ + ".sdf";
 			String clusterFile = Settings.destinationFile(sdfFile, name);
-			name = clusterFilePrefix + " Cluster " + count;
 
 			// already loaded file may be overwritten, clear
 			DatasetFile.clearFilesWith3DSDF(clusterFile);
 
 			SDFUtil.filter(sdfFile, clusterFile, ((ClusterDataImpl) c).calculateCompoundIndices());
-			((ClusterDataImpl) c).setName(name);
+			((ClusterDataImpl) c).setName("Cluster " + count);
+			((ClusterDataImpl) c).setClusterAlgorithm(clusterAlgName);
 			((ClusterDataImpl) c).setFilename(clusterFile);
 		}
 		if (count == 0)

@@ -23,7 +23,6 @@ import main.TaskProvider;
 
 import org.openscience.cdk.AtomContainer;
 import org.openscience.cdk.ChemFile;
-import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -40,30 +39,20 @@ import org.openscience.cdk.io.SMILESReader;
 import org.openscience.cdk.layout.StructureDiagramGenerator;
 import org.openscience.cdk.modeling.builder3d.ModelBuilder3D;
 import org.openscience.cdk.modeling.builder3d.TemplateHandler3D;
-import org.openscience.cdk.qsar.IMolecularDescriptor;
-import org.openscience.cdk.qsar.result.DoubleArrayResult;
-import org.openscience.cdk.qsar.result.DoubleResult;
-import org.openscience.cdk.qsar.result.IDescriptorResult;
-import org.openscience.cdk.qsar.result.IntegerArrayResult;
-import org.openscience.cdk.qsar.result.IntegerResult;
-import org.openscience.cdk.smiles.SmilesGenerator;
-import org.openscience.cdk.tools.CDKHydrogenAdder;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 
 import util.ArrayUtil;
 import util.FileUtil;
 import util.StringUtil;
-import dataInterface.MoleculeProperty;
+import util.ToStringComparator;
 import dataInterface.MoleculeProperty.Type;
-import dataInterface.MoleculePropertySet;
 
 public class FeatureService
 {
 	private HashMap<DatasetFile, IMolecule[]> fileToMolecules = new HashMap<DatasetFile, IMolecule[]>();
 	private HashMap<DatasetFile, Boolean> fileHas3D = new HashMap<DatasetFile, Boolean>();
 	private HashMap<DatasetFile, Set<IntegratedProperty>> integratedProperties = new HashMap<DatasetFile, Set<IntegratedProperty>>();
-	private HashMap<String, Object[]> values = new HashMap<String, Object[]>();
 	private HashMap<DatasetFile, IntegratedProperty> integratedSmiles = new HashMap<DatasetFile, IntegratedProperty>();
 
 	public FeatureService()
@@ -78,6 +67,7 @@ public class FeatureService
 		for (IntegratedProperty pp : integratedProperties.get(dataset))
 			if (includingSmiles || !pp.equals(integratedSmiles.get(dataset)))
 				p[i++] = pp;
+		Arrays.sort(p, new ToStringComparator());
 		return p;
 	}
 
@@ -89,18 +79,8 @@ public class FeatureService
 				props.add(integratedProperty);
 		IntegratedProperty p[] = new IntegratedProperty[props.size()];
 		props.toArray(p);
+		Arrays.sort(p, new ToStringComparator());
 		return p;
-	}
-
-	private String valuesKey(DatasetFile dataset, MoleculeProperty property)
-	{
-		return valuesKey(dataset, property, false);
-	}
-
-	private String valuesKey(DatasetFile dataset, MoleculeProperty property, boolean normalized)
-	{
-		return dataset.toString() + "_" + property.toString() + "_" + normalized + "_"
-				+ property.getClass().getSimpleName();
 	}
 
 	public boolean isLoaded(DatasetFile dataset)
@@ -115,12 +95,6 @@ public class FeatureService
 			fileToMolecules.remove(dataset);
 			fileHas3D.remove(dataset);
 			integratedProperties.remove(dataset);
-			List<String> toDel = new ArrayList<String>();
-			for (String k : values.keySet())
-				if (k.startsWith(dataset.toString()))
-					toDel.add(k);
-			for (String k : toDel)
-				values.remove(k);
 		}
 	}
 
@@ -227,8 +201,6 @@ public class FeatureService
 			if (!file.exists())
 				throw new IllegalArgumentException("file not found: " + dataset.getLocalPath());
 
-			CDKHydrogenAdder ha = CDKHydrogenAdder.getInstance(DefaultChemObjectBuilder.getInstance());
-
 			List<IAtomContainer> list;
 			if (dataset.getLocalPath().endsWith(".csv"))
 				list = readFromCSV(file, true);
@@ -252,6 +224,8 @@ public class FeatureService
 			}
 
 			List<Integer> illegalMolecules = new ArrayList<Integer>();
+			HashMap<IntegratedProperty, List<Object>> propVals = new HashMap<IntegratedProperty, List<Object>>();
+
 			for (IAtomContainer iAtomContainer : list)
 			{
 				IMolecule mol = (IMolecule) iAtomContainer;
@@ -274,31 +248,28 @@ public class FeatureService
 						integratedSmiles.put(dataset, p);
 
 					// add value to values
-					String valuesKey = valuesKey(dataset, p);
-					if (!values.containsKey(valuesKey))
-						values.put(valuesKey, new Object[] { props.get(key) });
-					else
-					{
-						Object o[] = Arrays.copyOf(values.get(valuesKey), mCount + 1);
-						o[mCount] = props.get(key);
-						values.put(valuesKey, o);
-					}
+					if (!propVals.containsKey(p))
+						propVals.put(p, new ArrayList<Object>());
+					propVals.get(p).add(props.get(key));
 				}
 
-				try
-				{
-					if (loadHydrogen)
-					{
-						AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
-						ha.addImplicitHydrogens(mol);
-						AtomContainerManipulator.convertImplicitToExplicitHydrogens(mol);
-					}
+				mol = (IMolecule) AtomContainerManipulator.removeHydrogens(mol);
 
-				}
-				catch (CDKException e)
-				{
-					System.err.println("Could not add hydrogens:  " + e.getMessage());
-				}
+				//			CDKHydrogenAdder ha = CDKHydrogenAdder.getInstance(DefaultChemObjectBuilder.getInstance());
+				//				try
+				//				{
+				//					if (loadHydrogen)
+				//					{
+				//						AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
+				//						ha.addImplicitHydrogens(mol);
+				//						AtomContainerManipulator.convertImplicitToExplicitHydrogens(mol);
+				//					}
+				//
+				//				}
+				//				catch (CDKException e)
+				//				{
+				//					System.err.println("Could not add hydrogens:  " + e.getMessage());
+				//				}
 
 				if (mol.getAtomCount() == 0)
 					illegalMolecules.add(mCount);
@@ -317,13 +288,16 @@ public class FeatureService
 			// convert string to double
 			for (IntegratedProperty p : integratedProperties.get(dataset))
 			{
-				Object o[] = values.get(valuesKey(dataset, p));
-				if (o.length < mCount)
+				List<Object> l = propVals.get(p);
+				while (l.size() < mCount)
 				{
 					// add trailing nulls for missing props
-					o = Arrays.copyOf(o, mCount);
-					values.put(valuesKey(dataset, p), o);
+					l.add(null);
 				}
+				Object o[] = new Object[l.size()];
+				l.toArray(o);
+				p.setValues(dataset, o);
+
 				Set<Object> distinctValues = ArrayUtil.getDistinctValues(o);
 				int numDistinct = distinctValues.size();
 				p.setNominalDomain(distinctValues.toArray());
@@ -338,9 +312,6 @@ public class FeatureService
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(Type.NUMERIC);
-
-					values.put(valuesKey(dataset, p), o);
-					values.put(valuesKey(dataset, p, true), ArrayUtil.normalize(d));
 				}
 				else
 				{
@@ -350,9 +321,6 @@ public class FeatureService
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(null);
-
-					// normalization of string elements
-					values.put(valuesKey(dataset, p, true), ArrayUtil.normalize(o));
 				}
 			}
 
@@ -389,178 +357,16 @@ public class FeatureService
 		}
 	}
 
-	public boolean isComputed(DatasetFile dataset, MoleculePropertySet prop)
-	{
-		return (values.get(valuesKey(dataset, prop.get(0), false)) != null);
-	}
-
-	public Object[] getValues(DatasetFile dataset, MoleculeProperty p, boolean normalize)
-	{
-		if (values.get(valuesKey(dataset, p, normalize)) == null)
-		{
-			if (p instanceof IntegratedProperty)
-			{
-				// this can happen if a cluster has only null values for a integrated property-> return nulls
-				return new Object[fileToMolecules.get(dataset).length];
-			}
-			if (p instanceof StructuralAlerts.Alert)
-			{
-				StructuralAlerts.Alert alert = (StructuralAlerts.Alert) p;
-
-				String match[] = Settings.SMARTS_HANDLER.match(alert, dataset);
-				values.put(valuesKey(dataset, alert, false), match);
-				values.put(valuesKey(dataset, alert, true), ArrayUtil.normalize(match));
-			}
-			if (p instanceof OBFingerprintProperty)
-			{
-				OBFingerprintProperty obProp = (OBFingerprintProperty) p;
-				try
-				{
-					List<String> fingerprintsForMolecules = obProp.compute(dataset);
-					if (fingerprintsForMolecules.size() != fileToMolecules.get(dataset).length)
-						throw new IllegalStateException("babel returned fingerprints for "
-								+ fingerprintsForMolecules.size() + " compounds, but dataset contains "
-								+ fileToMolecules.get(dataset).length + " compounds.");
-					if (fingerprintsForMolecules.get(0).length() != obProp.numSetValues())
-						throw new IllegalStateException("fingerprint length not correct");
-
-					List<String[]> featureValues = new ArrayList<String[]>();
-					for (int j = 0; j < fingerprintsForMolecules.get(0).length(); j++)
-					{
-						String[] featureValue = new String[fingerprintsForMolecules.size()];
-						for (int i = 0; i < featureValue.length; i++)
-							featureValue[i] = fingerprintsForMolecules.get(i).charAt(j) + "";
-						featureValues.add(featureValue);
-					}
-
-					for (int j = 0; j < obProp.numSetValues(); j++)
-					{
-						values.put(valuesKey(dataset, OBFingerprintProperty.create(obProp.type, j), false),
-								featureValues.get(j));
-						values.put(valuesKey(dataset, OBFingerprintProperty.create(obProp.type, j), true),
-								ArrayUtil.normalize(featureValues.get(j)));
-					}
-				}
-				catch (Throwable e)
-				{
-					TaskProvider.task().warning("Could not compute OpenBabel fingerprint " + p, e);
-					for (int j = 0; j < obProp.numSetValues(); j++)
-					{
-						values.put(valuesKey(dataset, OBFingerprintProperty.create(obProp.type, j), false),
-								new String[fileToMolecules.get(dataset).length]);
-						values.put(valuesKey(dataset, OBFingerprintProperty.create(obProp.type, j), true),
-								new Double[fileToMolecules.get(dataset).length]);
-					}
-				}
-			}
-			else if (p instanceof CDKProperty)
-			{
-				CDKProperty cdkProp = (CDKProperty) p;
-				IMolecule mols[] = fileToMolecules.get(dataset);
-				if (cdkProp == CDKProperty.SMILES)
-				{
-					SmilesGenerator sg = new SmilesGenerator();
-					String smiles[] = new String[mols.length];
-					for (int i = 0; i < mols.length; i++)
-						smiles[i] = sg.createSMILES(mols[i]);
-					values.put(valuesKey(dataset, cdkProp), smiles);
-				}
-				else
-				{
-					IMolecularDescriptor descriptor = cdkProp.newMolecularDescriptor();
-					if (descriptor == null)
-						throw new IllegalStateException("Not a CDK molecular descriptor: " + cdkProp.desc);
-
-					List<Double[]> vv = new ArrayList<Double[]>();
-					for (int j = 0; j < cdkProp.numSetValues(); j++)
-						vv.add(new Double[mols.length]);
-
-					for (int i = 0; i < mols.length; i++)
-					{
-						TaskProvider.task().verbose(
-								"Compute " + cdkProp.desc + " for " + (i + 1) + "/" + mols.length + " compounds");
-
-						if (mols[i].getAtomCount() == 0)
-						{
-							for (int j = 0; j < cdkProp.numSetValues(); j++)
-								vv.get(j)[i] = null;
-						}
-						else
-						{
-							try
-							{
-								IDescriptorResult res = descriptor.calculate(mols[i]).getValue();
-								if (res instanceof IntegerResult)
-									vv.get(0)[i] = (double) ((IntegerResult) res).intValue();
-								else if (res instanceof DoubleResult)
-									vv.get(0)[i] = ((DoubleResult) res).doubleValue();
-								else if (res instanceof DoubleArrayResult)
-								{
-									if (cdkProp.numSetValues() != ((DoubleArrayResult) res).length())
-										throw new IllegalStateException("num feature values wrong for '" + cdkProp
-												+ "' : " + cdkProp.numSetValues() + " != "
-												+ ((DoubleArrayResult) res).length());
-									for (int j = 0; j < cdkProp.numSetValues(); j++)
-										vv.get(j)[i] = ((DoubleArrayResult) res).get(j);
-								}
-								else if (res instanceof IntegerArrayResult)
-								{
-									if (cdkProp.numSetValues() != ((IntegerArrayResult) res).length())
-										throw new IllegalStateException("num feature values wrong for '" + cdkProp
-												+ "' : " + cdkProp.numSetValues() + " != "
-												+ ((IntegerArrayResult) res).length());
-									for (int j = 0; j < cdkProp.numSetValues(); j++)
-										vv.get(j)[i] = (double) ((IntegerArrayResult) res).get(j);
-								}
-								else
-									throw new IllegalStateException("Unknown idescriptor result value for '" + cdkProp
-											+ "' : " + res.getClass());
-
-							}
-							catch (Throwable e)
-							{
-								TaskProvider.task().warning("Could not compute cdk feature " + cdkProp.desc, e);
-								for (int j = 0; j < cdkProp.numSetValues(); j++)
-									vv.get(j)[i] = null;
-							}
-						}
-
-						for (int j = 0; j < cdkProp.numSetValues(); j++)
-							if (vv.get(j)[i] != null && (vv.get(j)[i].isNaN() || vv.get(j)[i].isInfinite()))
-								vv.get(j)[i] = null;
-
-						if (TaskProvider.task().isCancelled())
-							return null;
-					}
-					for (int j = 0; j < cdkProp.numSetValues(); j++)
-					{
-						values.put(valuesKey(dataset, CDKProperty.create(cdkProp.desc, j), false), vv.get(j));
-						values.put(valuesKey(dataset, CDKProperty.create(cdkProp.desc, j), true),
-								ArrayUtil.normalize(vv.get(j)));
-					}
-				}
-			}
-		}
-
-		//		System.out.println(ArrayUtil.toString(values.keySet().toArray()));
-		//		for (Object[] o : values.values())
-		//		{
-		//			System.out.println(ArrayUtil.toString(o));
-		//		}
-
-		//		System.out.println("get");
-		//		System.out.println(valuesKey(f, p, normalize, index));
-		//		//System.out.println(values.get()));
-		//		System.out.println(ArrayUtil.toString(values.get(new ValuesKey(f, p, normalize, index).toString())));
-		return values.get(valuesKey(dataset, p, normalize));
-	}
-
 	public String[] getSmiles(DatasetFile dataset)
 	{
 		if (integratedSmiles.containsKey(dataset))
-			return ArrayUtil.cast(String.class, getValues(dataset, integratedSmiles.get(dataset), false));
+			return integratedSmiles.get(dataset).getStringValues(dataset);
 		else
-			return ArrayUtil.cast(String.class, getValues(dataset, CDKProperty.SMILES, false));
+		{
+			if (!CDKProperty.SMILES.isValuesSet(dataset))
+				CDKProperty.SMILES.getMoleculePropertySet().compute(dataset);
+			return CDKProperty.SMILES.getStringValues(dataset);
+		}
 	}
 
 	public boolean has3D(DatasetFile dataset)

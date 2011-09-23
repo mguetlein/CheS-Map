@@ -23,6 +23,9 @@ import dataInterface.SubstructureSmartsType;
 public class ClusterDataImpl implements ClusterData
 {
 	private String name;
+	private String clusterAlgorithm;
+	private String embedAlgorithm;
+	private String alignAlgorithm;
 	private String filename;
 	private Vector3f position;
 	private List<CompoundData> compounds = new ArrayList<CompoundData>();
@@ -179,6 +182,39 @@ public class ClusterDataImpl implements ClusterData
 	public boolean isAligned()
 	{
 		return aligned;
+	}
+
+	public void setClusterAlgorithm(String clusterAlgorithm)
+	{
+		this.clusterAlgorithm = clusterAlgorithm;
+	}
+
+	@Override
+	public String getClusterAlgorithm()
+	{
+		return clusterAlgorithm;
+	}
+
+	public void setEmbedAlgorithm(String embedAlgorithm)
+	{
+		this.embedAlgorithm = embedAlgorithm;
+	}
+
+	@Override
+	public String getEmbedAlgorithm()
+	{
+		return embedAlgorithm;
+	}
+
+	public void setAlignAlgorithm(String alignAlgorithm)
+	{
+		this.alignAlgorithm = alignAlgorithm;
+	}
+
+	@Override
+	public String getAlignAlgorithm()
+	{
+		return alignAlgorithm;
 	}
 
 }

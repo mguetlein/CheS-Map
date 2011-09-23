@@ -24,14 +24,12 @@ public class MCSAligner implements ThreeDAligner
 	@Override
 	public Property[] getProperties()
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public void setProperties(Property[] properties)
 	{
-		// TODO Auto-generated method stub
 	}
 
 	@Override
@@ -112,6 +110,7 @@ public class MCSAligner implements ThreeDAligner
 					//								+ SDFUtil.countCompounds(alignedStructures) + " != " + clusterFile + " "
 					//								+ SDFUtil.countCompounds(clusterFile));
 					((ClusterDataImpl) cluster).setAligned(true);
+					((ClusterDataImpl) cluster).setAlignAlgorithm(getName());
 				}
 				catch (Error e)
 				{
@@ -120,6 +119,7 @@ public class MCSAligner implements ThreeDAligner
 							"Cannot align cluster " + (count + 1) + " (size: " + cluster.getSize() + ") according to "
 									+ cluster.getSubstructureSmarts(SubstructureSmartsType.MCS), e);
 					alignedFiles.add(cluster.getFilename());
+					((ClusterDataImpl) cluster).setAlignAlgorithm("Failed: " + getName());
 				}
 			}
 

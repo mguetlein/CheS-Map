@@ -9,14 +9,19 @@ public class MoleculePropertySetUtil
 		Type type = null;
 		for (MoleculePropertySet s : set)
 		{
-			for (int i = 0; i < s.getSize(); i++)
-			{
-				MoleculeProperty.Type t = s.get(i).getType();
-				if (t == null || (type != null && type != t))
-					return null;
-				else
-					type = t;
-			}
+			//			for (int i = 0; i < s.getSize(); i++)
+			//			{
+			//				MoleculeProperty.Type t = s.get(i).getType();
+			//				if (t == null || (type != null && type != t))
+			//					return null;
+			//				else
+			//					type = t;
+			//			}
+			MoleculeProperty.Type t = s.getType();
+			if (t == null || (type != null && type != t))
+				return null;
+			else
+				type = t;
 		}
 		return type;
 	}

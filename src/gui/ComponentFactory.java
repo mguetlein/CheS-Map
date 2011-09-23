@@ -186,6 +186,7 @@ public class ComponentFactory
 	public static JTextArea createTextArea(String text, boolean editable, boolean wrap)
 	{
 		JTextArea infoTextArea = new JTextArea(text);
+		infoTextArea.setForeground(Settings.FOREGROUND);
 		//infoTextArea.setFont(infoTextArea.getFont().deriveFont(Font.BOLD));
 		if (!editable)
 		{

@@ -27,7 +27,8 @@ public class EmbedClusters
 			emb = clusterEmbedder;
 		emb = secureEmbed(emb, "cluster", clustering.getSize() + " clusters", dataset,
 				ListUtil.cast(MolecularPropertyOwner.class, clustering.getClusters()), clustering.getFeatures(),
-				emb.requiresDistances() ? clustering.getClusterDistances().cast(MolecularPropertyOwner.class) : null);
+				emb.requiresDistances() ? clustering.getClusterDistances().cast(MolecularPropertyOwner.class) : null,
+				null);
 
 		int cCount = 0;
 		for (Vector3f v : emb.getPositions())
@@ -70,7 +71,7 @@ public class EmbedClusters
 					ListUtil.cast(MolecularPropertyOwner.class, c.getCompounds()),
 					clustering.getFeatures(),
 					emb.requiresDistances() ? c.getCompoundDistances(clustering.getFeatures()).cast(
-							MolecularPropertyOwner.class) : null);
+							MolecularPropertyOwner.class) : null, c);
 
 			int mCount = 0;
 			for (Vector3f v : emb.getPositions())
@@ -79,13 +80,15 @@ public class EmbedClusters
 		}
 	}
 
-	public ThreeDEmbedder secureEmbed(ThreeDEmbedder emb, String embedItem, String embedItems, DatasetFile dataset,
+	private ThreeDEmbedder secureEmbed(ThreeDEmbedder emb, String embedItem, String embedItems, DatasetFile dataset,
 			List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
-			DistanceMatrix<MolecularPropertyOwner> distances)
+			DistanceMatrix<MolecularPropertyOwner> distances, ClusterDataImpl c)
 	{
 		try
 		{
 			emb.embed(dataset, instances, features, distances);
+			if (c != null)
+				c.setEmbedAlgorithm(emb.getName());
 			return emb;
 		}
 		catch (Exception e)
@@ -112,6 +115,8 @@ public class EmbedClusters
 			try
 			{
 				random.embed(dataset, instances, features, distances);
+				if (c != null)
+					c.setEmbedAlgorithm(random.getName());
 				return random;
 			}
 			catch (Exception e2)
