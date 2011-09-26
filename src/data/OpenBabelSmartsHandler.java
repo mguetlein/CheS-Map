@@ -18,23 +18,44 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 {
 
 	public static String FP = "FPCHES";
+	private boolean registered = false;
 
 	@Override
 	public List<boolean[]> match(List<String> smarts, DatasetFile dataset)
 	{
-		registerFP();
+		if (!registered)
+			registerFP();
 		createFPFile(smarts);
 		return matchSmarts(smarts, dataset);
 	}
 
+	private String getFPFile()
+	{
+		return Settings.destinationFile(FP + ".txt");
+	}
+
 	private void registerFP()
 	{
-		String file = "/home/martin/software/openbabel-2.3.0/install/share/openbabel/2.3.0/plugindefines.txt";
+		String file = Settings.getOBFile("plugindefines.txt");
 		try
 		{
-			BufferedWriter out = new BufferedWriter(new FileWriter(file, true));
-			out.write("\n\nPatternFP\n" + FP + "\n" + FP + ".txt\n\n");
-			out.close();
+			BufferedReader buffy = new BufferedReader(new FileReader(file));
+			String line = null;
+			boolean found = false;
+			while ((line = buffy.readLine()) != null)
+				if (line.contains(getFPFile()))
+				{
+					found = true;
+					break;
+				}
+			buffy.close();
+			if (!found)
+			{
+				BufferedWriter out = new BufferedWriter(new FileWriter(file, true));
+				out.write("\n\nPatternFP\n" + FP + "\n" + getFPFile() + "\n\n");
+				out.close();
+			}
+			registered = true;
 		}
 		catch (IOException e)
 		{
@@ -44,10 +65,9 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 
 	private void createFPFile(List<String> smarts)
 	{
-		String file = "/home/martin/software/openbabel-2.3.0/install/share/openbabel/2.3.0/" + FP + ".txt";
 		try
 		{
-			BufferedWriter out = new BufferedWriter(new FileWriter(file));
+			BufferedWriter out = new BufferedWriter(new FileWriter(getFPFile()));
 			out.write("#Comments after SMARTS\n");
 			int i = 0;
 			for (String smart : smarts)

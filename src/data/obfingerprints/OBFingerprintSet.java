@@ -252,8 +252,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 		{
 			if (fp3Fragments.size() == 0)
 			{
-				BufferedReader buffy = new BufferedReader(new FileReader(new File(
-						"/home/martin/software/openbabel-2.3.0/install/share/openbabel/2.3.0/patterns.txt")));
+				BufferedReader buffy = new BufferedReader(new FileReader(new File(Settings.getOBFile("patterns.txt"))));
 				String s = "";
 				while ((s = buffy.readLine()) != null)
 				{
@@ -290,8 +289,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 		{
 			if (fp4Fragments.size() == 0)
 			{
-				BufferedReader buffy = new BufferedReader(new FileReader(new File(
-						"/home/martin/software/openbabel-2.3.0/install/share/openbabel/2.3.0/SMARTS_InteLigand.txt")));
+				BufferedReader buffy = new BufferedReader(new FileReader(Settings.getOBFile("SMARTS_InteLigand.txt")));
 				String s = "";
 				while ((s = buffy.readLine()) != null)
 				{
@@ -328,8 +326,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 			if (maccsFragments.size() == 0)
 			{
 				//155:('*!@[CH2]!@*',0), # A!CH2!A
-				BufferedReader buffy = new BufferedReader(new FileReader(new File(
-						"/home/martin/software/openbabel-2.3.0/install/share/openbabel/2.3.0/MACCS.txt")));
+				BufferedReader buffy = new BufferedReader(new FileReader(new File(Settings.getOBFile("MACCS.txt"))));
 				String s = "";
 				while ((s = buffy.readLine()) != null)
 				{

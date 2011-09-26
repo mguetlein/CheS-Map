@@ -4,6 +4,7 @@ import gui.LinkButton;
 import gui.binloc.Binary;
 import gui.binloc.BinaryLocator;
 import gui.binloc.BinaryLocatorDialog;
+import io.ExternalTool;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -27,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.ImageIcon;
 import javax.swing.UIDefaults;
@@ -227,6 +230,11 @@ public class Settings
 		}
 	}
 
+	public static String destinationFile(String destinationFilename)
+	{
+		return BASE_DIR + File.separator + destinationFilename;
+	}
+
 	// ------------- LOAD AND STORE PROPS ----------------------------------	
 
 	public static Properties PROPS;
@@ -268,6 +276,73 @@ public class Settings
 
 	public static Binary BABEL_BINARY = new Binary("babel", "CM_BABEL_PATH", OPENBABEL_STRING);
 	public static Binary RSCRIPT_BINARY = new Binary("Rscript", "CM_RSCRIPT_PATH", R_STRING);
+
+	private static String babelVersion = null;
+
+	public static String getOpenBabelVersion()
+	{
+		if (!BABEL_BINARY.isFound())
+			throw new IllegalStateException();
+		if (babelVersion == null)
+		{
+			try
+			{
+				File bVersion = File.createTempFile("babel", "version");
+				ExternalTool ext = new ExternalTool();
+				ext.run("babel", BABEL_BINARY.getLocation() + " -V", bVersion, true);
+				BufferedReader b = new BufferedReader(new FileReader(bVersion));
+				String s;
+				Pattern pattern = Pattern.compile("^.*([0-9]+\\.[0-9]+\\.[0-9]+).*$");
+				while ((s = b.readLine()) != null)
+				{
+					Matcher matcher = pattern.matcher(s);
+					if (matcher.matches())
+					{
+						babelVersion = matcher.group(1);
+						break;
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return babelVersion;
+	}
+
+	public static String getOBFile(String s)
+	{
+		if (!BABEL_BINARY.isFound())
+			throw new IllegalStateException();
+		String p = FileUtil.getParent(BABEL_BINARY.getLocation());
+		if (OSUtil.isWindows())
+		{
+			String f = p + "\\data\\" + s;
+			if (new File(f).exists())
+				return f;
+			throw new Error("not found: " + f);
+		}
+		else
+		{
+			//default dir
+			String f = "/usr/local/share/openbabel/" + getOpenBabelVersion() + "/" + s;
+			if (new File(f).exists())
+				return f;
+			//hack
+			while (p.length() > 1)
+			{
+				f = p + "/share/openbabel/" + getOpenBabelVersion() + "/" + s;
+				if (new File(f).exists())
+					return f;
+				f = p + "/install/share/openbabel/" + getOpenBabelVersion() + "/" + s;
+				if (new File(f).exists())
+					return f;
+				p = FileUtil.getParent(p);
+			}
+			throw new Error("not found: " + s);
+		}
+	}
 
 	private static List<Binary> bins = new ArrayList<Binary>();
 	static
@@ -329,5 +404,4 @@ public class Settings
 		});
 		return l;
 	}
-
 }
