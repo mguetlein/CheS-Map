@@ -305,7 +305,7 @@ public class CDKProperty extends AbstractMoleculeProperty
 				String smiles[] = new String[mols.length];
 				for (int i = 0; i < mols.length; i++)
 					smiles[i] = sg.createSMILES(mols[i]);
-				CDKProperty.SMILES.setValues(dataset, smiles);
+				CDKProperty.SMILES.setValues(dataset, smiles, false);
 			}
 			else
 			{
@@ -373,7 +373,7 @@ public class CDKProperty extends AbstractMoleculeProperty
 						return;
 				}
 				for (int j = 0; j < getSize(); j++)
-					CDKProperty.create(desc, j).setValues(dataset, vv.get(j));
+					CDKProperty.create(desc, j).setValues(dataset, vv.get(j), true);
 			}
 		}
 

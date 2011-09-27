@@ -111,12 +111,22 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 		return values.containsKey(dataset);
 	}
 
-	public void setValues(DatasetFile dataset, Object vals[])
+	public void setValues(DatasetFile dataset, Object vals[], boolean numeric)
 	{
 		if (values.containsKey(dataset))
 			throw new IllegalStateException();
+
+		//		System.err.println(toString());
+		//		System.err.println(ArrayUtil.toString(vals));
+		Double normalized[];
+		if (numeric)
+			normalized = ArrayUtil.normalize(ArrayUtil.cast(Double.class, vals));
+		else
+			normalized = ArrayUtil.normalizeObjectArray(vals);
+		//		System.err.println(ArrayUtil.toString(normalized));
+
 		values.put(dataset, vals);
-		normalizedValues.put(dataset, ArrayUtil.normalize(vals));
+		normalizedValues.put(dataset, normalized);
 	}
 
 	@Override

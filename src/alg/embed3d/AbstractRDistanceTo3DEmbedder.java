@@ -81,6 +81,10 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 
 		List<Vector3D> v3d = RUtil.readRVectorMatrix(embeddingFile);
 
+		if (v3d.size() != instances.size())
+			throw new IllegalStateException("error using '" + getRScriptName() + "' num results is '" + v3d.size()
+					+ "' instead of '" + instances.size() + "'");
+
 		double d[][] = new double[v3d.size()][3];
 		for (int i = 0; i < v3d.size(); i++)
 		{

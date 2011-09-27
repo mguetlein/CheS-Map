@@ -153,10 +153,11 @@ public class Settings
 
 	public static String BASE_DIR = System.getProperty("user.home") + File.separator + ".ches-mapper";
 	public static String STRUCTURAL_FRAGMENT_DIR = BASE_DIR + File.separator + "structural_fragments";
+	public static String MODIFIED_BABEL_DATA_DIR = BASE_DIR + File.separator + "babel_data";
 
 	static
 	{
-		for (String d : new String[] { BASE_DIR, STRUCTURAL_FRAGMENT_DIR })
+		for (String d : new String[] { BASE_DIR, STRUCTURAL_FRAGMENT_DIR, MODIFIED_BABEL_DATA_DIR })
 		{
 			File dir = new File(d);
 			if (!dir.exists())
@@ -311,7 +312,12 @@ public class Settings
 		return babelVersion;
 	}
 
-	public static String getOBFile(String s)
+	public static String getOBFileModified(String destinationFilename)
+	{
+		return MODIFIED_BABEL_DATA_DIR + File.separator + destinationFilename;
+	}
+
+	public static String getOBFileOrig(String s)
 	{
 		if (!BABEL_BINARY.isFound())
 			throw new IllegalStateException();

@@ -13,11 +13,11 @@ import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
 import data.ClusterDataImpl;
 import data.ClusteringData;
+import data.ComputeMCS;
 import data.DatasetFile;
 import data.DefaultFeatureComputer;
 import data.EmbedClusters;
 import data.FeatureService;
-import data.ComputeMCS;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MoleculeProperty;
@@ -150,6 +150,15 @@ public class CheSMapping
 					//				throw new IllegalStateException();
 
 					TaskProvider.task().update(80, "Mapping complete - Loading 3D library");
+
+					for (ClusterData c : clustering.getClusters())
+					{
+						if (c.getPosition() == null)
+							throw new Error("internal error: cluster position is null!");
+						for (CompoundData co : c.getCompounds())
+							if (co.getPosition() == null)
+								throw new Error("internal error: cluster position is null!");
+					}
 
 					clusteringData = clustering;
 				}

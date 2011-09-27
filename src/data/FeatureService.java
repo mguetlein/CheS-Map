@@ -296,7 +296,6 @@ public class FeatureService
 				}
 				Object o[] = new Object[l.size()];
 				l.toArray(o);
-				p.setValues(dataset, o);
 
 				Set<Object> distinctValues = ArrayUtil.getDistinctValues(o);
 				int numDistinct = distinctValues.size();
@@ -312,6 +311,8 @@ public class FeatureService
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(Type.NUMERIC);
+
+					p.setValues(dataset, d, p.getType() == Type.NUMERIC);
 				}
 				else
 				{
@@ -321,7 +322,10 @@ public class FeatureService
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(null);
+
+					p.setValues(dataset, o, p.getType() == Type.NUMERIC);
 				}
+
 			}
 
 			IMolecule res[] = new IMolecule[mols.size()];

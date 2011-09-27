@@ -155,7 +155,7 @@ public class StructuralFragments
 				Fragment fragment = fragments.get(matchEngine).get(count);
 				fragment.setNominalDomain(new String[] { "0", "1" });
 				fragment.setFrequency(dataset, f);
-				fragment.setValues(dataset, m);
+				fragment.setValues(dataset, m, false);
 				if (!computedFragments.get(matchEngine).containsKey(dataset))
 					computedFragments.get(matchEngine).put(dataset, new ArrayList<StructuralFragments.Fragment>());
 				addFragment(fragment, dataset, matchEngine);

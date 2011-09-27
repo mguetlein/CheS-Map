@@ -69,6 +69,9 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 						+ f2.getAbsolutePath());
 
 		List<Vector3D> v3d = RUtil.readRVectorMatrix(f2.getAbsolutePath());
+		if (v3d.size() != instances.size())
+			throw new IllegalStateException("error using '" + getRScriptName() + "' num results is '" + v3d.size()
+					+ "' instead of '" + instances.size() + "'");
 
 		double d[][] = new double[v3d.size()][3];
 		for (int i = 0; i < v3d.size(); i++)
@@ -83,7 +86,7 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 		//		System.out.println("after: " + ArrayUtil.toString(d));
 
 		positions = new ArrayList<Vector3f>();
-		for (int i = 0; i < v3d.size(); i++)
+		for (int i = 0; i < instances.size(); i++)
 			positions.add(new Vector3f((float) d[i][0], (float) d[i][1], (float) d[i][2]));
 		//v3f[i] = new Vector3f((float) v3d.get(i).getX(), (float) v3d.get(i).getY(), (float) v3d.get(i).getZ());
 	}

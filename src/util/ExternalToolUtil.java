@@ -15,6 +15,11 @@ public class ExternalToolUtil
 
 	public static void run(String processName, String cmd, File stdOutFile)
 	{
+		run(processName, cmd, stdOutFile, null);
+	}
+
+	public static void run(String processName, String cmd, File stdOutFile, String env[])
+	{
 		ExternalTool ext = new ExternalTool()
 		{
 			protected void stdout(String s)
@@ -33,7 +38,7 @@ public class ExternalToolUtil
 				System.err.println(s);
 			}
 		};
-		Process p = ext.run(processName, cmd, stdOutFile, stdOutFile != null);
+		Process p = ext.run(processName, cmd, stdOutFile, stdOutFile != null, env);
 		while (true)
 		{
 			try

@@ -14,35 +14,32 @@ public abstract class RScriptUser
 
 	protected abstract String getRScriptCode();
 
-	private String scriptPath;
-
 	protected String getScriptPath()
 	{
-		if (scriptPath == null)
+
+		String scriptPath = null;
+		try
 		{
-			try
-			{
-				String path = Settings.BASE_DIR + File.separator + getRScriptName() + ".R";
-				File f = new File(path);
-				BufferedReader br = new BufferedReader(new StringReader(getRScriptCode()));
-				BufferedWriter wr = new BufferedWriter(new FileWriter(f));
-				String s = "";
-				while ((s = br.readLine()) != null)
-					wr.write(s + "\n");
-				wr.flush();
-				wr.close();
-				br.close();
-				scriptPath = path;
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-			}
-			if (!new File(scriptPath).exists())
-				System.err.println("Rscript could not be created: " + scriptPath);
-			else
-				System.out.println("Rscript created: " + scriptPath);
+			String path = Settings.BASE_DIR + File.separator + getRScriptName() + ".R";
+			File f = new File(path);
+			BufferedReader br = new BufferedReader(new StringReader(getRScriptCode()));
+			BufferedWriter wr = new BufferedWriter(new FileWriter(f));
+			String s = "";
+			while ((s = br.readLine()) != null)
+				wr.write(s + "\n");
+			wr.flush();
+			wr.close();
+			br.close();
+			scriptPath = path;
 		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		if (!new File(scriptPath).exists())
+			System.err.println("Rscript could not be created: " + scriptPath);
+		else
+			System.out.println("Rscript created: " + scriptPath);
 		return scriptPath;
 	}
 

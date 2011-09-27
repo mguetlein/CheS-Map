@@ -31,24 +31,27 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 
 	private String getFPFile()
 	{
-		return Settings.destinationFile(FP + ".txt");
+		return Settings.getOBFileModified(FP + ".txt");
 	}
 
 	private void registerFP()
 	{
-		String file = Settings.getOBFile("plugindefines.txt");
+		String file = Settings.getOBFileModified("plugindefines.txt");
 		try
 		{
-			BufferedReader buffy = new BufferedReader(new FileReader(file));
-			String line = null;
 			boolean found = false;
-			while ((line = buffy.readLine()) != null)
-				if (line.contains(getFPFile()))
-				{
-					found = true;
-					break;
-				}
-			buffy.close();
+			if (new File(file).exists())
+			{
+				BufferedReader buffy = new BufferedReader(new FileReader(file));
+				String line = null;
+				while ((line = buffy.readLine()) != null)
+					if (line.contains(getFPFile()))
+					{
+						found = true;
+						break;
+					}
+				buffy.close();
+			}
 			if (!found)
 			{
 				BufferedWriter out = new BufferedWriter(new FileWriter(file, true));
@@ -95,7 +98,8 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 			String cmd = Settings.BABEL_BINARY.getLocation() + " " + dataset.getSDFPath(false) + " -ofpt -xf" + FP
 					+ " -xs";
 			TaskProvider.task().verbose("Running babel: " + cmd);
-			ExternalToolUtil.run("ob-fingerprints", cmd, f);
+			ExternalToolUtil
+					.run("ob-fingerprints", cmd, f, new String[] { "BABEL_DATADIR=" + Settings.MODIFIED_BABEL_DATA_DIR });
 			TaskProvider.task().verbose("Parsing smarts");
 			BufferedReader buffy = new BufferedReader(new FileReader(f));
 			String line = null;

@@ -25,7 +25,10 @@ import javax.swing.JTextArea;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 import main.Settings;
 import main.TaskProvider;
@@ -33,6 +36,7 @@ import util.ArrayUtil;
 import util.CountedSet;
 import util.DefaultComparator;
 import util.ImageLoader;
+import util.StringUtil;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
@@ -215,10 +219,16 @@ public class MoleculePropertyPanel extends JPanel
 			o = selectedProperty.getDoubleValues(dataset);
 		else
 			o = selectedProperty.getStringValues(dataset);
-		String[] c = new String[] { selectedPropertySet.get(dataset, selectedPropertyIndex).toString() };
-		Object v[][] = new Object[o.length][1];
+		Double n[] = selectedProperty.getNormalizedValues(dataset);
+		String[] c = new String[] { "Index", selectedPropertySet.get(dataset, selectedPropertyIndex).toString(),
+				selectedPropertySet.get(dataset, selectedPropertyIndex).toString() + " normalized" };
+		Object v[][] = new Object[o.length][3];
 		for (int i = 0; i < o.length; i++)
-			v[i][0] = o[i];
+		{
+			v[i][0] = new Integer(i);
+			v[i][1] = o[i];
+			v[i][2] = n[i];
+		}
 		DefaultTableModel model = new DefaultTableModel(v, c)
 		{
 			public boolean isCellEditable(int row, int column)
@@ -226,7 +236,26 @@ public class MoleculePropertyPanel extends JPanel
 				return false;
 			}
 		};
-		return new JTable(model);
+		JTable table = new JTable(model);
+		table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer()
+		{
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+					boolean hasFocus, int row, int column)
+			{
+				if (value instanceof Double)
+					value = StringUtil.formatDouble((Double) value, 3);
+				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			}
+		});
+		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel());
+		sorter.setComparator(0, new DefaultComparator<Integer>());
+		if (selectedProperty.getType() == Type.NUMERIC)
+			sorter.setComparator(1, new DefaultComparator<Double>());
+		else
+			sorter.setComparator(1, new DefaultComparator<String>());
+		sorter.setComparator(2, new DefaultComparator<Double>());
+		table.setRowSorter(sorter);
+		return table;
 	}
 
 	private void load(boolean background)
@@ -318,6 +347,8 @@ public class MoleculePropertyPanel extends JPanel
 								numericFeatureButton.setSelected(true);
 								List<Double> vals = ArrayUtil.removeNullValues(selectedProperty
 										.getDoubleValues(dataset));
+								//List<Double> vals = ArrayUtil.toList(selectedProperty.getNormalizedValues(dataset));
+
 								if (vals.size() == 0)
 								{
 									p = new JPanel(new BorderLayout());
