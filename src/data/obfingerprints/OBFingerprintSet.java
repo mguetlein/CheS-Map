@@ -252,7 +252,8 @@ public class OBFingerprintSet extends FragmentPropertySet
 		{
 			if (fp3Fragments.size() == 0)
 			{
-				BufferedReader buffy = new BufferedReader(new FileReader(new File(Settings.getOBFileOrig("patterns.txt"))));
+				BufferedReader buffy = new BufferedReader(new FileReader(new File(
+						Settings.getOBFileOrig("patterns.txt"))));
 				String s = "";
 				while ((s = buffy.readLine()) != null)
 				{
@@ -289,7 +290,8 @@ public class OBFingerprintSet extends FragmentPropertySet
 		{
 			if (fp4Fragments.size() == 0)
 			{
-				BufferedReader buffy = new BufferedReader(new FileReader(Settings.getOBFileOrig("SMARTS_InteLigand.txt")));
+				BufferedReader buffy = new BufferedReader(new FileReader(
+						Settings.getOBFileOrig("SMARTS_InteLigand.txt")));
 				String s = "";
 				while ((s = buffy.readLine()) != null)
 				{
@@ -514,7 +516,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 				for (int i = 0; i < dataset.numCompounds(); i++)
 					featureValue[i] = occurences.get(p).contains(new Integer(i)) ? "1" : "0";
 				featureValues.add(featureValue);
-				p.setValues(dataset, featureValue, false);
+				p.setStringValues(dataset, featureValue);
 			}
 
 			List<OBFingerprintProperty> ps = new ArrayList<OBFingerprintProperty>();
@@ -529,7 +531,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 			e.printStackTrace();
 			TaskProvider.task().warning("Could not compute OpenBabel fingerprint " + this, e);
 			for (int j = 0; j < getSize(dataset); j++)
-				get(dataset, j).setValues(dataset, new String[dataset.numCompounds()], false);
+				get(dataset, j).setStringValues(dataset, new String[dataset.numCompounds()]);
 		}
 
 	}

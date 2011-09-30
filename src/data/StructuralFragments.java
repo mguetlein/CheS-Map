@@ -155,7 +155,7 @@ public class StructuralFragments
 				Fragment fragment = fragments.get(matchEngine).get(count);
 				fragment.setNominalDomain(new String[] { "0", "1" });
 				fragment.setFrequency(dataset, f);
-				fragment.setValues(dataset, m, false);
+				fragment.setStringValues(dataset, m);
 				if (!computedFragments.get(matchEngine).containsKey(dataset))
 					computedFragments.get(matchEngine).put(dataset, new ArrayList<StructuralFragments.Fragment>());
 				addFragment(fragment, dataset, matchEngine);
@@ -176,7 +176,7 @@ public class StructuralFragments
 
 		public Fragment(String name, MatchEngine matchEngine, String smarts)
 		{
-			super(name, "Structural Fragment, matched with " + matchEngine, smarts);
+			super(name, name + "_" + matchEngine, "Structural Fragment, matched with " + matchEngine, smarts);
 		}
 
 		@Override

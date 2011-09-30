@@ -10,7 +10,7 @@ public class OBFingerprintProperty extends AbstractFragmentProperty
 
 	private OBFingerprintProperty(FingerprintType obType, String name, String smarts)
 	{
-		super(name, "Structural Fragment", smarts);
+		super(name, obType + "_" + name + "_" + smarts, "Structural Fragment", smarts);
 		this.type = obType;
 	}
 
@@ -18,7 +18,7 @@ public class OBFingerprintProperty extends AbstractFragmentProperty
 
 	static OBFingerprintProperty create(FingerprintType type, String name, String smarts)
 	{
-		String key = type + " " + name + " " + smarts;
+		String key = type + "_" + name + "_" + smarts;
 		if (!instances.containsKey(key))
 			instances.put(key, new OBFingerprintProperty(type, name, smarts));
 		return instances.get(key);

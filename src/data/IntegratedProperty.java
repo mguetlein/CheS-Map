@@ -2,8 +2,7 @@ package data;
 
 import gui.binloc.Binary;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 import dataInterface.AbstractMoleculeProperty;
 import dataInterface.MoleculeProperty;
@@ -14,7 +13,7 @@ public class IntegratedProperty extends AbstractMoleculeProperty implements Mole
 	String property;
 	private boolean usedForMapping;
 
-	private static List<IntegratedProperty> instances = new ArrayList<IntegratedProperty>();
+	private static HashMap<String, IntegratedProperty> instances = new HashMap<String, IntegratedProperty>();
 
 	private IntegratedProperty(String property)
 	{
@@ -24,12 +23,9 @@ public class IntegratedProperty extends AbstractMoleculeProperty implements Mole
 
 	public static IntegratedProperty create(String property)
 	{
-		IntegratedProperty p = new IntegratedProperty(property);
-		if (instances.indexOf(p) == -1)
-			instances.add(p);
-		else
-			p = instances.get(instances.indexOf(p));
-		return p;
+		if (!instances.containsKey(property))
+			instances.put(property, new IntegratedProperty(property));
+		return instances.get(property);
 	}
 
 	public static IntegratedProperty fromString(String property, Type t)

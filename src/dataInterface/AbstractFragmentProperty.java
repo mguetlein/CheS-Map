@@ -8,7 +8,12 @@ public abstract class AbstractFragmentProperty extends AbstractMoleculeProperty
 {
 	public AbstractFragmentProperty(String name, String description, String smarts)
 	{
-		super(name, description);
+		this(name, name, description, smarts);
+	}
+
+	public AbstractFragmentProperty(String name, String uniqueName, String description, String smarts)
+	{
+		super(name, uniqueName, description);
 		setSmarts(smarts);
 		setTypeAllowed(Type.NUMERIC, false);
 		setType(Type.NOMINAL);

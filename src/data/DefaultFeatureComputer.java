@@ -56,6 +56,9 @@ public class DefaultFeatureComputer implements FeatureComputer
 			{
 				props.add(propSet.get(dataset, i));
 				features.add(propSet.get(dataset, i));
+
+				if (TaskProvider.task().isCancelled())
+					return;
 			}
 			count++;
 		}
@@ -84,7 +87,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 				throw new Error("illegal num features " + p);
 
 			if (TaskProvider.task().isCancelled())
-				break;
+				return;
 
 			for (int i = 0; i < numCompounds; i++)
 			{

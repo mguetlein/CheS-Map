@@ -29,6 +29,8 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 {
 	List<Vector3f> positions;
 
+	protected int numInstances = -1;
+
 	@Override
 	public boolean requiresFeatures()
 	{
@@ -45,6 +47,8 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
 			final DistanceMatrix<MolecularPropertyOwner> distances)
 	{
+		this.numInstances = instances.size();
+
 		if (features.size() < getMinNumFeatures() || instances.size() < getMinNumInstances())
 			throw new Error(getRScriptName() + " needs at least " + getMinNumFeatures() + " features and "
 					+ getMinNumInstances() + " instances for embedding");
@@ -134,9 +138,15 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 		}
 
 		@Override
+		public int getMinNumInstances()
+		{
+			return 2;
+		}
+
+		@Override
 		public String getRScriptName()
 		{
-			return "tsne_" + maxNumIterations + "_" + perplexity + "_" + initial_dims;
+			return "tsne_" + maxNumIterations + "_" + getPerplexity() + "_" + initial_dims;
 		}
 
 		@Override
@@ -150,7 +160,14 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 		{
 			return "Uses " + Settings.R_STRING + ".\n\n" + "The Embedding is done with the t-SNE algorithm."
 					+ "\n(The following R-library is required: http://cran.r-project.org/web/packages/tsne)\n";
+		}
 
+		private int getPerplexity()
+		{
+			if (numInstances == -1)
+				throw new IllegalStateException("num instances not set before");
+			return 3;
+			//return Math.max(2, Math.min(perplexity, (int) (numInstances * 2 / 3.0)));
 		}
 
 		private final int maxNumIterationsDefault = 1000;
@@ -196,7 +213,7 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 			return "args <- commandArgs(TRUE)\n" //
 					+ "\n" + "library(\"tsne\")\n"
 					+ "df = read.table(args[1])\n"
-					+ "res <- tsne(df, k = 3, perplexity=" + perplexity + ", max_iter="
+					+ "res <- tsne(df, k = 3, perplexity=" + getPerplexity() + ", max_iter="
 					+ maxNumIterations
 					+ ", initial_dims=" + initial_dims + ")\n" + "print(res$ydata)\n"
 					+ "\n"
@@ -205,11 +222,6 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 					+ "\n" + "write.table(res$ydata,args[2]) \n" + "";
 		}
 
-		@Override
-		public int getMinNumInstances()
-		{
-			return 2;
-		}
 	}
 
 	public static class PCAFeature3DEmbedder extends AbstractRFeatureTo3DEmbedder

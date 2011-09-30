@@ -9,6 +9,7 @@ import data.DatasetFile;
 public abstract class AbstractMoleculeProperty implements MoleculeProperty
 {
 	String name;
+	private String uniqueName;
 	String description;
 
 	Type type;
@@ -16,9 +17,21 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	Object[] domain;
 	protected String smarts;
 
+	private static HashSet<String> uniqueNames = new HashSet<String>();
+
 	public AbstractMoleculeProperty(String name, String description)
 	{
+		this(name, name, description);
+	}
+
+	public AbstractMoleculeProperty(String name, String uniqueName, String description)
+	{
+		if (uniqueNames.contains(uniqueName))
+			throw new IllegalArgumentException("Not unique: " + uniqueName);
+		uniqueNames.add(uniqueName);
+
 		this.name = name;
+		this.uniqueName = uniqueName;
 		if (this.name.length() > 40)
 		{
 			if (this.name.endsWith(")") && this.name.indexOf('(') != -1)
@@ -39,6 +52,12 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	public String getName()
 	{
 		return name;
+	}
+
+	@Override
+	public String getUniqueName()
+	{
+		return uniqueName;
 	}
 
 	@Override
@@ -111,20 +130,24 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 		return values.containsKey(dataset);
 	}
 
-	public void setValues(DatasetFile dataset, Object vals[], boolean numeric)
+	public void setStringValues(DatasetFile dataset, String vals[])
 	{
+		if (getType() == Type.NUMERIC)
+			throw new IllegalStateException();
 		if (values.containsKey(dataset))
 			throw new IllegalStateException();
+		Double normalized[] = ArrayUtil.normalizeObjectArray(vals);
+		values.put(dataset, vals);
+		normalizedValues.put(dataset, normalized);
+	}
 
-		//		System.err.println(toString());
-		//		System.err.println(ArrayUtil.toString(vals));
-		Double normalized[];
-		if (numeric)
-			normalized = ArrayUtil.normalize(ArrayUtil.cast(Double.class, vals));
-		else
-			normalized = ArrayUtil.normalizeObjectArray(vals);
-		//		System.err.println(ArrayUtil.toString(normalized));
-
+	public void setDoubleValues(DatasetFile dataset, Double vals[])
+	{
+		if (getType() != Type.NUMERIC)
+			throw new IllegalStateException();
+		if (values.containsKey(dataset))
+			throw new IllegalStateException();
+		Double normalized[] = ArrayUtil.normalize(vals);
 		values.put(dataset, vals);
 		normalizedValues.put(dataset, normalized);
 	}

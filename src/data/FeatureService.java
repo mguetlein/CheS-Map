@@ -294,7 +294,7 @@ public class FeatureService
 					// add trailing nulls for missing props
 					l.add(null);
 				}
-				Object o[] = new Object[l.size()];
+				String o[] = new String[l.size()];
 				l.toArray(o);
 
 				Set<Object> distinctValues = ArrayUtil.getDistinctValues(o);
@@ -311,8 +311,6 @@ public class FeatureService
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(Type.NUMERIC);
-
-					p.setValues(dataset, d, p.getType() == Type.NUMERIC);
 				}
 				else
 				{
@@ -322,10 +320,11 @@ public class FeatureService
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(null);
-
-					p.setValues(dataset, o, p.getType() == Type.NUMERIC);
 				}
-
+				if (p.getType() == Type.NUMERIC)
+					p.setDoubleValues(dataset, d);
+				else
+					p.setStringValues(dataset, o);
 			}
 
 			IMolecule res[] = new IMolecule[mols.size()];

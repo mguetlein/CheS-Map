@@ -59,7 +59,7 @@ public class CompoundArffWriter implements ArffWritable
 	@Override
 	public String getAttributeName(int attribute)
 	{
-		return features.get(attribute).toString();
+		return features.get(attribute).getUniqueName();
 	}
 
 	@Override

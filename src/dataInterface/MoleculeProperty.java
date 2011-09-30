@@ -36,4 +36,6 @@ public interface MoleculeProperty
 	public Double[] getDoubleValues(DatasetFile dataset);
 
 	public Double[] getNormalizedValues(DatasetFile dataset);
+
+	public String getUniqueName();
 }

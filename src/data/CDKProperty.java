@@ -3,6 +3,7 @@ package data;
 import gui.binloc.Binary;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import main.TaskProvider;
@@ -27,7 +28,6 @@ public class CDKProperty extends AbstractMoleculeProperty
 
 	private CDKDescriptorClass desc;
 	private int index;
-	private static List<CDKProperty> instances = new ArrayList<CDKProperty>();
 
 	private static enum CDKDescriptorClass
 	{
@@ -66,6 +66,7 @@ public class CDKProperty extends AbstractMoleculeProperty
 			CDKDescriptorClass.WHIM, CDKDescriptorClass.WienerNumbers, CDKDescriptorClass.XLogP,
 			CDKDescriptorClass.ZagrebIndex };
 
+	private static HashMap<String, CDKProperty> instances = new HashMap<String, CDKProperty>();
 	public static CDKProperty SMILES = CDKProperty.create(CDKDescriptorClass.SMILES, 0);
 
 	private CDKProperty(CDKDescriptorClass desc, int index)
@@ -89,16 +90,9 @@ public class CDKProperty extends AbstractMoleculeProperty
 
 	public static CDKProperty create(CDKDescriptorClass desc, int index)
 	{
-		CDKProperty p = new CDKProperty(desc, index);
-		if (instances.indexOf(p) == -1)
-		{
-			instances.add(p);
-			return p;
-		}
-		else
-		{
-			return instances.get(instances.indexOf(p));
-		}
+		if (!instances.containsKey(desc + "_" + index))
+			instances.put(desc + "_" + index, new CDKProperty(desc, index));
+		return instances.get(desc + "_" + index);
 	}
 
 	@Override
@@ -305,7 +299,7 @@ public class CDKProperty extends AbstractMoleculeProperty
 				String smiles[] = new String[mols.length];
 				for (int i = 0; i < mols.length; i++)
 					smiles[i] = sg.createSMILES(mols[i]);
-				CDKProperty.SMILES.setValues(dataset, smiles, false);
+				CDKProperty.SMILES.setStringValues(dataset, smiles);
 			}
 			else
 			{
@@ -373,7 +367,7 @@ public class CDKProperty extends AbstractMoleculeProperty
 						return;
 				}
 				for (int j = 0; j < getSize(); j++)
-					CDKProperty.create(desc, j).setValues(dataset, vv.get(j), true);
+					CDKProperty.create(desc, j).setDoubleValues(dataset, vv.get(j));
 			}
 		}
 
