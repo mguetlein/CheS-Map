@@ -299,7 +299,9 @@ public class FeatureService
 
 				Set<Object> distinctValues = ArrayUtil.getDistinctValues(o);
 				int numDistinct = distinctValues.size();
-				p.setNominalDomain(distinctValues.toArray());
+				Object dom[] = distinctValues.toArray();
+				Arrays.sort(dom, new ToStringComparator());
+				p.setNominalDomain(dom);
 
 				Double d[] = ArrayUtil.parse(o);
 				if (d != null)
