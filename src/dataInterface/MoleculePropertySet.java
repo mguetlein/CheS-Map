@@ -7,7 +7,7 @@ public interface MoleculePropertySet
 {
 	public boolean isComputed(DatasetFile dataset);
 
-	public void compute(DatasetFile dataset);
+	public boolean compute(DatasetFile dataset);
 
 	public boolean isSizeDynamic();
 

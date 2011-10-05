@@ -78,6 +78,8 @@ public abstract class Abstract3DBuilder implements ThreeDBuilder
 							{
 								int i = SDFUtil.countCompounds(tmpFile.getAbsolutePath());
 								TaskProvider.task().update("Building 3D structure for compound " + (i + 1) + "/" + max);
+								TaskProvider.task().verbose(
+										"This may take some time. The result is cached, you have to do it only once.");
 							}
 						}
 					}

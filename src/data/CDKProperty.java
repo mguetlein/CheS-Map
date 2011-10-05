@@ -286,7 +286,7 @@ public class CDKProperty extends AbstractMoleculeProperty
 		}
 
 		@Override
-		public void compute(DatasetFile dataset)
+		public boolean compute(DatasetFile dataset)
 		{
 			if (isComputed(dataset))
 				throw new IllegalStateException();
@@ -364,11 +364,12 @@ public class CDKProperty extends AbstractMoleculeProperty
 							vv.get(j)[i] = null;
 
 					if (TaskProvider.task().isCancelled())
-						return;
+						return false;
 				}
 				for (int j = 0; j < getSize(); j++)
 					CDKProperty.create(desc, j).setDoubleValues(dataset, vv.get(j));
 			}
+			return true;
 		}
 
 		@Override

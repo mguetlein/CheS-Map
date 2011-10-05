@@ -120,7 +120,7 @@ public class StructuralFragments
 		}
 
 		@Override
-		public void compute(DatasetFile dataset)
+		public boolean compute(DatasetFile dataset)
 		{
 			MatchEngine matchEngine = this.matchEngine;
 
@@ -161,6 +161,7 @@ public class StructuralFragments
 				addFragment(fragment, dataset, matchEngine);
 				count++;
 			}
+			return true;
 		}
 
 		@Override

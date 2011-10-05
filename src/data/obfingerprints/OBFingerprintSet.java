@@ -440,7 +440,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 	}
 
 	@Override
-	public void compute(DatasetFile dataset)
+	public boolean compute(DatasetFile dataset)
 	{
 		try
 		{
@@ -472,8 +472,8 @@ public class OBFingerprintSet extends FragmentPropertySet
 			LinkedHashMap<OBFingerprintProperty, List<Integer>> occurences = new LinkedHashMap<OBFingerprintProperty, List<Integer>>();
 
 			File f = File.createTempFile("asdfasdf", "asdfasfd");
-			String cmd = Settings.BABEL_BINARY.getLocation() + " " + dataset.getSDFPath(false) + " -ofpt -xf" + type
-					+ " -xs";
+			String cmd = Settings.BABEL_BINARY.getLocation() + " -isdf " + dataset.getSDFPath(false) + " -ofpt -xf"
+					+ type + " -xs";
 			TaskProvider.task().verbose("Running babel: " + cmd);
 			ExternalToolUtil.run("ob-fingerprints", cmd, f);
 
@@ -525,13 +525,15 @@ public class OBFingerprintSet extends FragmentPropertySet
 
 			props.put(dataset, ps);
 			updateFragments();
+			return true;
 		}
 		catch (Throwable e)
 		{
 			e.printStackTrace();
 			TaskProvider.task().warning("Could not compute OpenBabel fingerprint " + this, e);
-			for (int j = 0; j < getSize(dataset); j++)
-				get(dataset, j).setStringValues(dataset, new String[dataset.numCompounds()]);
+			//			for (int j = 0; j < getSize(dataset); j++)
+			//				get(dataset, j).setStringValues(dataset, new String[dataset.numCompounds()]);
+			return false;
 		}
 
 	}

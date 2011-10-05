@@ -95,11 +95,11 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 		try
 		{
 			File f = File.createTempFile("asdfasdf", "asdfasfd");
-			String cmd = Settings.BABEL_BINARY.getLocation() + " " + dataset.getSDFPath(false) + " -ofpt -xf" + FP
-					+ " -xs";
+			String cmd = Settings.BABEL_BINARY.getLocation() + " -isdf " + dataset.getSDFPath(false) + " -ofpt -xf"
+					+ FP + " -xs";
 			TaskProvider.task().verbose("Running babel: " + cmd);
-			ExternalToolUtil
-					.run("ob-fingerprints", cmd, f, new String[] { "BABEL_DATADIR=" + Settings.MODIFIED_BABEL_DATA_DIR });
+			ExternalToolUtil.run("ob-fingerprints", cmd, f, new String[] { "BABEL_DATADIR="
+					+ Settings.MODIFIED_BABEL_DATA_DIR });
 			TaskProvider.task().verbose("Parsing smarts");
 			BufferedReader buffy = new BufferedReader(new FileReader(f));
 			String line = null;

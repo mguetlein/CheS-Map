@@ -82,9 +82,10 @@ public class IntegratedProperty extends AbstractMoleculeProperty implements Mole
 	}
 
 	@Override
-	public void compute(DatasetFile dataset)
+	public boolean compute(DatasetFile dataset)
 	{
 		//do noting
+		return true;
 	}
 
 	@Override
