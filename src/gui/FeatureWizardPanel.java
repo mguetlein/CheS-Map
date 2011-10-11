@@ -4,6 +4,8 @@ import gui.binloc.Binary;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -12,6 +14,8 @@ import java.util.List;
 import java.util.Vector;
 
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -20,6 +24,7 @@ import javax.swing.border.EmptyBorder;
 
 import main.Settings;
 import util.ArrayUtil;
+import util.FileUtil;
 import util.ImageLoader;
 import util.VectorUtil;
 import alg.FeatureComputer;
@@ -61,6 +66,7 @@ public class FeatureWizardPanel extends WizardPanel
 	public static final String STRUCTURAL_FRAGMENTS = "Structural Fragments";
 
 	JPanel propsPanelContainer;
+	private JPanel propsPanel;
 	private StructuralFragmentPropertiesPanel fragmentProperties;
 
 	public FeatureWizardPanel(final CheSMapperWizard wizard)
@@ -230,6 +236,69 @@ public class FeatureWizardPanel extends WizardPanel
 		builder.appendSeparator("Feature properties");
 
 		fragmentProperties = new StructuralFragmentPropertiesPanel();
+		StructuralFragments.instance.setMinFrequency(fragmentProperties.getMinFrequency());
+		StructuralFragments.instance.setSkipOmniFragments(fragmentProperties.isSkipOmniFragments());
+		StructuralFragments.instance.setMatchEngine(fragmentProperties.getMatchEngine());
+		fragmentProperties.addPropertyChangeListenerToProperties(new PropertyChangeListener()
+		{
+			@Override
+			public void propertyChange(PropertyChangeEvent evt)
+			{
+				StructuralFragments.instance.setMinFrequency(fragmentProperties.getMinFrequency());
+				StructuralFragments.instance.setSkipOmniFragments(fragmentProperties.isSkipOmniFragments());
+				StructuralFragments.instance.setMatchEngine(fragmentProperties.getMatchEngine());
+				selector.repaintSelector();
+				update();
+
+				// // to show/hide open babel binary link:
+				// updateFeatureInfo(selector.getHighlightedCategory());
+
+				// update chart
+				if (selector.getHighlightedElement() != null)
+					moleculePropertyPanel.setSelectedPropertySet(selector.getHighlightedElement());
+			}
+		});
+		fragmentProperties.setBorder(new CompoundBorder(new EmptyBorder(0, 0, 10, 0), fragmentProperties.getBorder()));
+		DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("p,fill:p:grow"));
+		JButton addSmarts = new JButton("Add SMARTS file");
+		addSmarts.addActionListener(new ActionListener()
+		{
+			JFileChooser fc;
+
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				if (fc == null)
+					fc = new JFileChooser();
+				int res = fc.showOpenDialog(Settings.TOP_LEVEL_COMPONENT);
+				if (res == JFileChooser.APPROVE_OPTION)
+				{
+					File f = fc.getSelectedFile();
+					String name = FileUtil.getFilename(f.getAbsolutePath());
+					String dest = Settings.getFragmentFileDestination(name);
+					if (new File(dest).exists())
+					{
+						int res2 = JOptionPane.showConfirmDialog(Settings.TOP_LEVEL_COMPONENT, "Smarts file '" + name
+								+ "' already exists. Replace?", "File already exists", JOptionPane.YES_OPTION);
+						if (res2 != JOptionPane.YES_OPTION)
+							return;
+					}
+					FileUtil.copy(f, new File(dest));
+					StructuralFragments.instance.reset(name);
+					StructuralFragments.instance.setMinFrequency(fragmentProperties.getMinFrequency());
+					StructuralFragments.instance.setSkipOmniFragments(fragmentProperties.isSkipOmniFragments());
+					StructuralFragments.instance.setMatchEngine(fragmentProperties.getMatchEngine());
+					updateIntegratedFeatures(dataset, true);
+				}
+			}
+		});
+		b.append(addSmarts);
+		b.nextLine();
+		b.appendParagraphGapRow();
+		b.nextLine();
+		b.append(fragmentProperties.getSummaryPanel(), 2);
+		propsPanel = b.getPanel();
+
 		moleculePropertyPanel = new MoleculePropertyPanel(this);
 		moleculePropertyPanel.addPropertyChangeListener(new PropertyChangeListener()
 		{
@@ -253,27 +322,6 @@ public class FeatureWizardPanel extends WizardPanel
 		propsPanelContainer = new JPanel(new BorderLayout());
 		builder.append(propsPanelContainer);
 		builder.nextLine();
-
-		StructuralFragments.instance.setMinFrequency(fragmentProperties.getMinFrequency());
-		StructuralFragments.instance.setSkipOmniFragments(fragmentProperties.isSkipOmniFragments());
-		StructuralFragments.instance.setMatchEngine(fragmentProperties.getMatchEngine());
-		fragmentProperties.addPropertyChangeListenerToProperties(new PropertyChangeListener()
-		{
-			@Override
-			public void propertyChange(PropertyChangeEvent evt)
-			{
-				StructuralFragments.instance.setMinFrequency(fragmentProperties.getMinFrequency());
-				StructuralFragments.instance.setSkipOmniFragments(fragmentProperties.isSkipOmniFragments());
-				StructuralFragments.instance.setMatchEngine(fragmentProperties.getMatchEngine());
-				selector.repaintSelector();
-				update();
-				// to show/hide open babel binary link:
-				updateFeatureInfo(selector.getHighlightedCategory());
-				// update chart
-				moleculePropertyPanel.setSelectedPropertySet(selector.getHighlightedElement());
-			}
-		});
-		fragmentProperties.setBorder(new CompoundBorder(new EmptyBorder(0, 0, 10, 0), fragmentProperties.getBorder()));
 
 		binaryPanelContainer = new JPanel(new BorderLayout());
 		builder.append(binaryPanelContainer);
@@ -317,9 +365,9 @@ public class FeatureWizardPanel extends WizardPanel
 						+ "\nEach line in the csv-file should have 2 values, name of the smarts string and smarts string. "
 						+ "Comments (starting with '#') will be printed as description. Example csv file:"
 						+ "\n\"Benzene\",\"c1ccccc1\"" + "\n\"Carbonyl with Carbon\",\"[CX3](=[OX1])C\"";
-				props = fragmentProperties;
-				if (fragmentProperties.getMatchEngine() == MatchEngine.OpenBabel)
-					bin = Settings.BABEL_BINARY;
+				props = propsPanel;
+				//				if (fragmentProperties.getMatchEngine() == MatchEngine.OpenBabel)
+				//					bin = Settings.BABEL_BINARY;
 			}
 		}
 		moleculePropertyPanel.showInfoText(info);
@@ -371,7 +419,12 @@ public class FeatureWizardPanel extends WizardPanel
 
 	public void updateIntegratedFeatures(DatasetFile dataset)
 	{
-		if (dataset.equals(this.dataset))
+		updateIntegratedFeatures(dataset, false);
+	}
+
+	private void updateIntegratedFeatures(DatasetFile dataset, boolean forceUpdate)
+	{
+		if (dataset.equals(this.dataset) && !forceUpdate)
 			return;
 
 		this.dataset = dataset;

@@ -12,6 +12,19 @@ import dataInterface.SmartsHandler;
 
 public class CDKSmartsHandler implements SmartsHandler
 {
+	public static boolean isSMARTS(String smarts)
+	{
+		try
+		{
+			new SMARTSQueryTool(smarts);
+			return true;
+		}
+		catch (Throwable e)
+		{
+			return false;
+		}
+	}
+
 	@Override
 	public List<boolean[]> match(List<String> smarts, DatasetFile dataset)
 	{

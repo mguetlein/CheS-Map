@@ -32,6 +32,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 
@@ -175,7 +176,8 @@ public class Settings
 			@Override
 			public boolean accept(File dir, String name)
 			{
-				return name.endsWith(".csv");
+				//return name.endsWith(".csv");
+				return true;
 			}
 		});
 		for (int i = 0; i < fragments.length; i++)
@@ -381,7 +383,7 @@ public class Settings
 		storeProps();
 	}
 
-	public static Component getBinaryComponent(final Binary bin)
+	public static JComponent getBinaryComponent(final Binary bin)
 	{
 		final LinkButton l = new LinkButton("Uses external program: " + bin.getDescription());
 		l.setForegroundFont(l.getFont().deriveFont(Font.PLAIN));

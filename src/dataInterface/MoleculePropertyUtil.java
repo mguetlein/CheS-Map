@@ -14,6 +14,12 @@ public class MoleculePropertyUtil
 	private static HashMap<MoleculeProperty, Color[]> mapping = new HashMap<MoleculeProperty, Color[]>();
 
 	public static Color[] AVAILABLE_COLORS = ColorUtil.darker(FreeChartUtil.COLORS);
+	static
+	{
+		Color col = AVAILABLE_COLORS[0];
+		AVAILABLE_COLORS[0] = AVAILABLE_COLORS[1];
+		AVAILABLE_COLORS[1] = col;
+	}
 
 	public static Color[] getNominalColors(MoleculeProperty p)
 	{

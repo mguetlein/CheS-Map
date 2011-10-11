@@ -25,6 +25,23 @@ public abstract class Abstract3DBuilder implements ThreeDBuilder
 
 	public abstract String getInitials();
 
+	private String destinationFile(DatasetFile dataset)
+	{
+		String sdfFile = dataset.getSDFPath(false);
+		int index = sdfFile.lastIndexOf('.');
+		if (index == -1)
+			throw new IllegalStateException("filename has no '.'");
+		return Settings.destinationFile(sdfFile, FileUtil.getFilename(sdfFile, false) + "." + getInitials() + "3d"
+				+ sdfFile.substring(index));
+	}
+
+	@Override
+	public boolean threeDFileAlreadyExists(DatasetFile dataset)
+	{
+		File threeD = new File(destinationFile(dataset));
+		return threeD.exists();
+	}
+
 	@Override
 	public void build3D(final DatasetFile dataset)
 	{
@@ -40,15 +57,11 @@ public abstract class Abstract3DBuilder implements ThreeDBuilder
 		File orig = new File(sdfFile);
 		if (!orig.exists())
 			throw new IllegalStateException("sdf file not found");
-		int index = sdfFile.lastIndexOf('.');
-		if (index == -1)
-			throw new IllegalStateException("filename has no '.'");
 
 		try
 		{
 			final File tmpFile = File.createTempFile("3dbuild", "tmp");
-			String finalFile = Settings.destinationFile(sdfFile, FileUtil.getFilename(sdfFile, false) + "."
-					+ getInitials() + "3d" + sdfFile.substring(index));
+			String finalFile = destinationFile(dataset);
 
 			//			System.out.println(threeDFilename);
 			File threeD = new File(finalFile);

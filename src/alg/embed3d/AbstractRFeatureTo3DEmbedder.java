@@ -16,6 +16,7 @@ import main.Settings;
 
 import org.apache.commons.math.geometry.Vector3D;
 
+import rscript.RScriptUtil;
 import util.ArrayUtil;
 import util.DistanceMatrix;
 import util.ExternalToolUtil;
@@ -77,13 +78,17 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 			throw new IllegalStateException("error using '" + getRScriptName() + "' num results is '" + v3d.size()
 					+ "' instead of '" + instances.size() + "'");
 
+		boolean nonZero = false;
 		double d[][] = new double[v3d.size()][3];
 		for (int i = 0; i < v3d.size(); i++)
 		{
 			d[i][0] = (float) v3d.get(i).getX();
 			d[i][1] = (float) v3d.get(i).getY();
 			d[i][2] = (float) v3d.get(i).getZ();
+			nonZero |= d[i][0] != 0 || d[i][1] != 0 || d[i][2] != 0;
 		}
+		if (!nonZero && instances.size() > 1)
+			throw new IllegalStateException("No attributes!"); // this is what weka fires as well
 
 		//		System.out.println("before: " + ArrayUtil.toString(d));
 		ArrayUtil.normalize(d, -1, 1);
@@ -211,7 +216,7 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 		protected String getRScriptCode()
 		{
 			return "args <- commandArgs(TRUE)\n" //
-					+ "\n" + "library(\"tsne\")\n"
+					+ "\n" + RScriptUtil.installAndLoadPackage("tsne") + "\n"
 					+ "df = read.table(args[1])\n"
 					+ "res <- tsne(df, k = 3, perplexity=" + getPerplexity() + ", max_iter="
 					+ maxNumIterations
@@ -228,7 +233,7 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 	{
 		public int getMinNumFeatures()
 		{
-			return 3;
+			return 1;
 		}
 
 		@Override
@@ -260,9 +265,14 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 		protected String getRScriptCode()
 		{
 			return "args <- commandArgs(TRUE)\n" //
-					+ "df = read.table(args[1])\n" + "res <- princomp(df)\n"
-					+ "print(res$scores[,1:3])\n"
-					+ "write.table(res$scores[,1:3],args[2]) ";
+					+ "df = read.table(args[1])\n" //
+					//					+ "res <- princomp(df)\n" //
+					//					+ "print(res$scores[,1:3])\n" //
+					// + "write.table(res$scores[,1:3],args[2]) ";
+					+ "res <- prcomp(df)\n" //
+					+ "rows <-min(nrow(res$x),3)\n" //
+					+ "print(res$x[,1:rows])\n" //
+					+ "write.table(res$x[,1:rows],args[2]) ";
 		}
 	}
 

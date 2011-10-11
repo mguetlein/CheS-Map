@@ -3,6 +3,7 @@ package gui;
 import util.ArrayUtil;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
+import alg.cluster.RClustererSet;
 import alg.cluster.StructuralClustererService;
 import alg.cluster.WekaClusterer;
 import data.DatasetFile;
@@ -15,7 +16,8 @@ public class ClusterWizardPanel extends GenericWizardPanel
 	static
 	{
 		CLUSTERERS = ArrayUtil.concat(DatasetClusterer.class, new DatasetClusterer[] { new NoClusterer() },
-				WekaClusterer.WEKA_CLUSTERER, new DatasetClusterer[] { new StructuralClustererService() });
+				WekaClusterer.WEKA_CLUSTERER, new DatasetClusterer[] { new StructuralClustererService() },
+				RClustererSet.R_CLUSTERER);
 	}
 
 	public ClusterWizardPanel(CheSMapperWizard w)

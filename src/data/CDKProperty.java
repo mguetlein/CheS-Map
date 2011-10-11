@@ -36,8 +36,8 @@ public class CDKProperty extends AbstractMoleculeProperty
 		BondCount, BPol, CarbonTypes, ChiChain, ChiCluster, ChiPathCluster, ChiPath, CPSA, EccentricConnectivityIndex,
 		FragmentComplexity, GravitationalIndex, HBondAcceptorCount, HBondDonorCount, IPMolecularLearning,
 		KappaShapeIndices, KierHallSmarts, LargestChain, LargestPiSystem, LengthOverBreadth, LongestAliphaticChain,
-		MDE, MomentOfInertia, PetitjeanNumber, PetitjeanShapeIndex, RotatableBondsCount, RuleOfFive, TPSA, VAdjMa,
-		Weight, WeightedPath, WHIM, WienerNumbers, XLogP, ZagrebIndex
+		MDE, MomentOfInertia, PetitjeanNumber, PetitjeanShapeIndex, RotatableBondsCount, RuleOfFive, TPSA, VABC,
+		VAdjMa, Weight, WeightedPath, WHIM, WienerNumbers, XLogP, ZagrebIndex
 	};
 
 	private static CDKDescriptorClass[] CDK_NUMERIC_DESCRIPTORS = { CDKDescriptorClass.ALOGP, CDKDescriptorClass.APol,
@@ -62,9 +62,9 @@ public class CDKProperty extends AbstractMoleculeProperty
 			CDKDescriptorClass.LongestAliphaticChain, CDKDescriptorClass.MDE, CDKDescriptorClass.MomentOfInertia,
 			CDKDescriptorClass.PetitjeanNumber, CDKDescriptorClass.PetitjeanShapeIndex,
 			CDKDescriptorClass.RotatableBondsCount, CDKDescriptorClass.RuleOfFive, CDKDescriptorClass.TPSA,
-			CDKDescriptorClass.VAdjMa, CDKDescriptorClass.Weight, CDKDescriptorClass.WeightedPath,
-			CDKDescriptorClass.WHIM, CDKDescriptorClass.WienerNumbers, CDKDescriptorClass.XLogP,
-			CDKDescriptorClass.ZagrebIndex };
+			CDKDescriptorClass.VABC, CDKDescriptorClass.VAdjMa, CDKDescriptorClass.Weight,
+			CDKDescriptorClass.WeightedPath, CDKDescriptorClass.WHIM, CDKDescriptorClass.WienerNumbers,
+			CDKDescriptorClass.XLogP, CDKDescriptorClass.ZagrebIndex };
 
 	private static HashMap<String, CDKProperty> instances = new HashMap<String, CDKProperty>();
 	public static CDKProperty SMILES = CDKProperty.create(CDKDescriptorClass.SMILES, 0);

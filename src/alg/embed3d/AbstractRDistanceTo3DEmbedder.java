@@ -15,6 +15,7 @@ import main.Settings;
 
 import org.apache.commons.math.geometry.Vector3D;
 
+import rscript.RScriptUtil;
 import util.ArrayUtil;
 import util.DistanceMatrix;
 import util.ExternalToolUtil;
@@ -190,9 +191,8 @@ public abstract class AbstractRDistanceTo3DEmbedder extends RScriptUser implemen
 		@Override
 		protected String getRScriptCode()
 		{
-			return "args <- commandArgs(TRUE)\n"
-					+ //
-					"\n" + "library(\"smacof\")\n" + "df = read.table(args[1])\n"
+			return "args <- commandArgs(TRUE)\n" + "\n" + RScriptUtil.installAndLoadPackage("smacof") + "\n"
+					+ "df = read.table(args[1])\n"
 					+ "res <- smacofSym(df, ndim = 3, metric = FALSE, ties = \"secondary\", verbose = TRUE, itmax = "
 					+ maxNumIterations + ")\n" + "#res <- smacofSphere.dual(df, ndim = 3)\n" + "print(res$conf)\n"
 					+ "print(class(res$conf))\n" + "write.table(res$conf,args[2]) ";

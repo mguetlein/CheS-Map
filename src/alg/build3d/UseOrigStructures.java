@@ -61,4 +61,10 @@ public class UseOrigStructures implements ThreeDBuilder
 		return null;
 	}
 
+	@Override
+	public boolean threeDFileAlreadyExists(DatasetFile datasetFile)
+	{
+		return true;
+	}
+
 }

@@ -38,13 +38,16 @@ public class Build3DWizardPanel extends GenericWizardPanel
 	{
 		//		if (!preconditionsMet)
 		//			return;
-		if (dataset.has3D())
+		ThreeDBuilder alg = get3DBuilder();
+		if (alg.isReal3DBuilder() && alg.threeDFileAlreadyExists(dataset))
+			setInfo("3D structures already built with '" + alg.getName()
+					+ "' (result was cached, no time consuming recomputation needed)", MsgType.INFO);
+		else if (dataset.has3D() && alg.isReal3DBuilder())
 			setInfo("3D already available in original dataset '" + dataset.getName()
-					+ "' (at least one Z-Coordinate is set)", (get3DBuilder().isReal3DBuilder() ? MsgType.WARNING
-					: MsgType.INFO));
-		else
+					+ "' (at least one Z-Coordinate is set), this will override the orig 3D structure", MsgType.WARNING);
+		else if (!dataset.has3D() && !alg.isReal3DBuilder())
 			setInfo("3D is NOT available in original dataset '" + dataset.getName() + "' (all Z-Coordinates are 0)",
-					(get3DBuilder().isReal3DBuilder() ? MsgType.INFO : MsgType.WARNING));
+					MsgType.WARNING);
 	}
 
 	public ThreeDBuilder get3DBuilder()

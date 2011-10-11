@@ -8,17 +8,17 @@ import main.TaskProvider;
 
 public class ExternalToolUtil
 {
-	public static void run(String processName, String cmd)
+	public static String run(String processName, String cmd)
 	{
-		run(processName, cmd, null);
+		return run(processName, cmd, null);
 	}
 
-	public static void run(String processName, String cmd, File stdOutFile)
+	public static String run(String processName, String cmd, File stdOutFile)
 	{
-		run(processName, cmd, stdOutFile, null);
+		return run(processName, cmd, stdOutFile, null);
 	}
 
-	public static void run(String processName, String cmd, File stdOutFile, String env[])
+	public static String run(String processName, String cmd, File stdOutFile, String env[])
 	{
 		ExternalTool ext = new ExternalTool()
 		{
@@ -66,5 +66,6 @@ public class ExternalToolUtil
 				// this exception is thrown if the process has not finished
 			}
 		}
+		return ext.getErrorOut();
 	}
 }

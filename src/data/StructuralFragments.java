@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import main.Settings;
 import util.ArrayUtil;
 import util.FileUtil;
@@ -14,6 +16,7 @@ import util.FileUtil.CSVFile;
 import util.ListUtil;
 import data.obfingerprints.OBFingerprintSet;
 import dataInterface.AbstractFragmentProperty;
+import dataInterface.AbstractMoleculeProperty;
 import dataInterface.FragmentPropertySet;
 import dataInterface.MoleculeProperty.Type;
 import dataInterface.MoleculePropertySet;
@@ -201,7 +204,7 @@ public class StructuralFragments
 	{
 		for (String f : included)
 			JarUtil.extractFromJAR("structural_fragments/" + f, Settings.getFragmentFileDestination(f), false);
-		reset();
+		reset(null);
 	}
 
 	public void setMinFrequency(int minFrequency)
@@ -222,9 +225,11 @@ public class StructuralFragments
 			a.setMatchEngine(matchEngine);
 	}
 
-	public void reset()
+	public void reset(String showWarningForFile)
 	{
 		fragmentList.clear();
+		AbstractMoleculeProperty.clearFragments();
+
 		String files[] = Settings.getFragmentFiles();
 		for (String filename : files)
 		{
@@ -239,12 +244,21 @@ public class StructuralFragments
 				for (String[] line : csv.content)
 				{
 					if (line.length != 2)
-						throw new IllegalStateException("no smarts csv: " + ArrayUtil.toString(line));
+						throw new IllegalStateException("Illegal format in line '" + a.get(MatchEngine.CDK).size()
+								+ "' (should be <name>,\"<smarts>\"), line:\n" + ArrayUtil.toString(line));
 					else
 						for (MatchEngine m : MatchEngine.values())
 							a.get(m).add(new Fragment(line[0], m, line[1]));
+
+					if (FileUtil.getFilename(filename).equals(showWarningForFile))
+						if (!CDKSmartsHandler.isSMARTS(line[1]))
+							warnings += "Not a valid SMARTS string: '" + line[1] + "'\n";
 				}
-				System.err.println(warnings);
+
+				if (warnings.length() > 0)
+					JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, "Warnings while parsing SMARTS file '"
+							+ showWarningForFile + "':\n" + warnings, "Warnings while parsing SMARTS file",
+							JOptionPane.WARNING_MESSAGE);
 
 				String name = "Smarts file: " + FileUtil.getFilename(filename, false);
 				String desc = "Num smarts strings: " + a.get(MatchEngine.CDK).size();
@@ -257,6 +271,11 @@ public class StructuralFragments
 			catch (Exception e)
 			{
 				e.printStackTrace();
+
+				if (FileUtil.getFilename(filename).equals(showWarningForFile))
+					JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, "Could not parse SMARTS file '"
+							+ showWarningForFile + "':\n" + e.getMessage(), "Could not parse SMARTS file",
+							JOptionPane.ERROR_MESSAGE);
 			}
 		}
 

@@ -1,10 +1,13 @@
 package dataInterface;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import util.ArrayUtil;
 import data.DatasetFile;
+import data.StructuralFragments.Fragment;
 
 public abstract class AbstractMoleculeProperty implements MoleculeProperty
 {
@@ -17,7 +20,17 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	Object[] domain;
 	protected String smarts;
 
-	private static HashSet<String> uniqueNames = new HashSet<String>();
+	private static HashMap<String, AbstractMoleculeProperty> uniqueNames = new HashMap<String, AbstractMoleculeProperty>();
+
+	public static void clearFragments()
+	{
+		List<String> toDel = new ArrayList<String>();
+		for (String k : uniqueNames.keySet())
+			if (uniqueNames.get(k) instanceof Fragment)
+				toDel.add(k);
+		for (String k : toDel)
+			uniqueNames.remove(k);
+	}
 
 	public AbstractMoleculeProperty(String name, String description)
 	{
@@ -26,9 +39,9 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 
 	public AbstractMoleculeProperty(String name, String uniqueName, String description)
 	{
-		if (uniqueNames.contains(uniqueName))
+		if (uniqueNames.containsKey(uniqueName))
 			throw new IllegalArgumentException("Not unique: " + uniqueName);
-		uniqueNames.add(uniqueName);
+		uniqueNames.put(uniqueName, this);
 
 		this.name = name;
 		this.uniqueName = uniqueName;

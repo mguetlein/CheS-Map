@@ -14,14 +14,19 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import main.Settings;
 import util.ImageLoader;
 import util.SwingUtil;
+
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.FormLayout;
+
 import data.StructuralFragments.MatchEngine;
 
-public class StructuralFragmentPropertiesPanel extends PropertyPanel
+public class StructuralFragmentPropertiesPanel extends JPanel
 {
 	static IntegerProperty minFreqProp = new IntegerProperty("Minimum frequency", "Minimum frequency", 1, 1, 1,
 			Integer.MAX_VALUE);
@@ -32,12 +37,44 @@ public class StructuralFragmentPropertiesPanel extends PropertyPanel
 
 	private static Property[] properties = new Property[] { minFreqProp, skipOmniProp, matchEngine };
 
+	private PropertyPanel propPanel;
+	private JComponent babelPanel;
+
 	public StructuralFragmentPropertiesPanel()
 	{
-		super(properties, Settings.PROPS, Settings.PROPERTIES_FILE);
+		propPanel = new PropertyPanel(properties, Settings.PROPS, Settings.PROPERTIES_FILE);
+		babelPanel = Settings.getBinaryComponent(Settings.BABEL_BINARY);
+
+		DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("p,fill:p:grow"));
+		b.append(propPanel);
+		b.append(babelPanel, 2);
+
+		setLayout(new BorderLayout());
+		add(b.getPanel(), BorderLayout.WEST);
 
 		if (!Settings.BABEL_BINARY.isFound())
 			matchEngine.setValue(MatchEngine.CDK);
+
+		matchEngine.addPropertyChangeListener(new PropertyChangeListener()
+		{
+			@Override
+			public void propertyChange(PropertyChangeEvent evt)
+			{
+				babelPanel.setVisible(getMatchEngine() == MatchEngine.OpenBabel);
+				StructuralFragmentPropertiesPanel.this.revalidate();
+				StructuralFragmentPropertiesPanel.this.repaint();
+			}
+		});
+	}
+
+	public void addPropertyChangeListenerToProperties(PropertyChangeListener l)
+	{
+		propPanel.addPropertyChangeListenerToProperties(l);
+	}
+
+	public void store()
+	{
+		propPanel.store();
 	}
 
 	public int getMinFrequency()
@@ -76,7 +113,16 @@ public class StructuralFragmentPropertiesPanel extends PropertyPanel
 				@Override
 				public void actionPerformed(ActionEvent e)
 				{
-					SwingUtil.showInDialog(StructuralFragmentPropertiesPanel.this, "Settings for structural fragments");
+					babelPanel.setVisible(true);
+					SwingUtil.showInDialog(StructuralFragmentPropertiesPanel.this, "Settings for structural fragments",
+							null, new Runnable()
+							{
+								@Override
+								public void run()
+								{
+									babelPanel.setVisible(getMatchEngine() == MatchEngine.OpenBabel);
+								}
+							});
 				}
 			});
 
@@ -84,7 +130,7 @@ public class StructuralFragmentPropertiesPanel extends PropertyPanel
 			add(l, BorderLayout.WEST);
 			update();
 
-			addPropertyChangeListenerToProperties(new PropertyChangeListener()
+			propPanel.addPropertyChangeListenerToProperties(new PropertyChangeListener()
 			{
 				@Override
 				public void propertyChange(PropertyChangeEvent evt)
