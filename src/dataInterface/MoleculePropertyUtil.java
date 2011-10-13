@@ -21,6 +21,14 @@ public class MoleculePropertyUtil
 		AVAILABLE_COLORS[1] = col;
 	}
 
+	public static Color getColor(int index)
+	{
+		if (index + 1 > AVAILABLE_COLORS.length)
+			return Color.GRAY;
+		else
+			return AVAILABLE_COLORS[index];
+	}
+
 	public static Color[] getNominalColors(MoleculeProperty p)
 	{
 		if (p.getType() != Type.NOMINAL)

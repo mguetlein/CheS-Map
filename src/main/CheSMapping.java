@@ -110,6 +110,7 @@ public class CheSMapping
 					datasetClusterer.clusterDataset(dataset, clustering.getCompounds(), clustering.getFeatures());
 					for (ClusterData c : datasetClusterer.getClusters())
 						clustering.addCluster(c);
+					clustering.setClusterAlgorithm(datasetClusterer.getName());
 
 					if (threeDEmbedder.requiresDistances())
 					{
@@ -125,6 +126,7 @@ public class CheSMapping
 							"Embedding clusters into 3D space (num clusters: " + clustering.getClusters().size() + ")");
 					EmbedClusters embedder = new EmbedClusters();
 					embedder.embed(threeDEmbedder, dataset, clustering);
+					clustering.setEmbedAlgorithm(threeDEmbedder.getName());
 
 					if (threeDAligner instanceof MCSAligner)
 					{

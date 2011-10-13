@@ -7,7 +7,6 @@ import java.util.List;
 
 import util.ArrayUtil;
 import data.DatasetFile;
-import data.StructuralFragments.Fragment;
 
 public abstract class AbstractMoleculeProperty implements MoleculeProperty
 {
@@ -22,11 +21,11 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 
 	private static HashMap<String, AbstractMoleculeProperty> uniqueNames = new HashMap<String, AbstractMoleculeProperty>();
 
-	public static void clearFragments()
+	public static void clearPropertyOfType(Class<?> type)
 	{
 		List<String> toDel = new ArrayList<String>();
 		for (String k : uniqueNames.keySet())
-			if (uniqueNames.get(k) instanceof Fragment)
+			if (uniqueNames.get(k).getClass().equals(type))
 				toDel.add(k);
 		for (String k : toDel)
 			uniqueNames.remove(k);

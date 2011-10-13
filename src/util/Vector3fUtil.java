@@ -11,6 +11,12 @@ public class Vector3fUtil
 		return "{" + v.x + " " + v.y + " " + v.z + "}";
 	}
 
+	public static String toNiceString(Vector3f v)
+	{
+		return "(" + StringUtil.formatDouble(v.x) + ", " + StringUtil.formatDouble(v.y) + ", "
+				+ StringUtil.formatDouble(v.z) + ")";
+	}
+
 	public static float dist(Vector3f v1, Vector3f v2)
 	{
 		Vector3f v = new Vector3f(v1);

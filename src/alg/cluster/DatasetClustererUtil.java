@@ -32,7 +32,6 @@ public final class DatasetClustererUtil
 
 			SDFUtil.filter(sdfFile, clusterFile, ((ClusterDataImpl) c).calculateCompoundIndices());
 			((ClusterDataImpl) c).setName("Cluster " + count);
-			((ClusterDataImpl) c).setClusterAlgorithm(clusterAlgName);
 			((ClusterDataImpl) c).setFilename(clusterFile);
 		}
 		if (count == 0)

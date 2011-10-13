@@ -25,6 +25,9 @@ public class ClusteringData
 	private List<CompoundData> compounds = new ArrayList<CompoundData>();
 	private DistanceMatrix<CompoundData> compoundDistances;
 
+	private String clusterAlgorithm;
+	private String embedAlgorithm;
+
 	// --------------------------------------------
 
 	public int getSize()
@@ -119,6 +122,26 @@ public class ClusteringData
 	public void addSubstructureSmartsTypes(SubstructureSmartsType type)
 	{
 		substructureSmartsTypes.add(type);
+	}
+
+	public void setClusterAlgorithm(String clusterAlgorithm)
+	{
+		this.clusterAlgorithm = clusterAlgorithm;
+	}
+
+	public String getClusterAlgorithm()
+	{
+		return clusterAlgorithm;
+	}
+
+	public void setEmbedAlgorithm(String embedAlgorithm)
+	{
+		this.embedAlgorithm = embedAlgorithm;
+	}
+
+	public String getEmbedAlgorithm()
+	{
+		return embedAlgorithm;
 	}
 
 }

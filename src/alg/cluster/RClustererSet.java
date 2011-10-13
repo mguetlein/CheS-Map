@@ -63,7 +63,7 @@ public class RClustererSet
 		private int maxK = maxKDefault;
 		public static final String PROPERTY_MAX_K = "maximum number of clusters (sup.gr)";
 
-		private final int restartDefault = 100;
+		private final int restartDefault = 30;
 		private int restart = restartDefault;
 		public static final String PROPERTY_RESTART = "number of restarts (iter)";
 

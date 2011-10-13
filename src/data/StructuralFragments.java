@@ -228,7 +228,7 @@ public class StructuralFragments
 	public void reset(String showWarningForFile)
 	{
 		fragmentList.clear();
-		AbstractMoleculeProperty.clearFragments();
+		AbstractMoleculeProperty.clearPropertyOfType(Fragment.class);
 
 		String files[] = Settings.getFragmentFiles();
 		for (String filename : files)
