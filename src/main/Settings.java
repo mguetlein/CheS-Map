@@ -118,6 +118,7 @@ public class Settings
 	}
 
 	public static String VERSION = "v?.?.?";
+	public static String MAJOR_MINOR_VERSION = "v?.?";
 	static
 	{
 		try
@@ -129,6 +130,7 @@ public class Settings
 			else
 				r = new BufferedReader(new InputStreamReader(u.openStream()));
 			VERSION = r.readLine();
+			MAJOR_MINOR_VERSION = VERSION.substring(0, VERSION.lastIndexOf('.'));
 			r.close();
 		}
 		catch (Exception e)
@@ -241,7 +243,8 @@ public class Settings
 	// ------------- LOAD AND STORE PROPS ----------------------------------	
 
 	public static Properties PROPS;
-	public static final String PROPERTIES_FILE = BASE_DIR + File.separator + "ches.mapper." + VERSION + ".props";
+	public static final String PROPERTIES_FILE = BASE_DIR + File.separator + "ches.mapper." + MAJOR_MINOR_VERSION
+			+ ".props";
 
 	static
 	{

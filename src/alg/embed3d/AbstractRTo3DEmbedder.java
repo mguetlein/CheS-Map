@@ -17,6 +17,7 @@ import main.Settings;
 import org.apache.commons.math.geometry.Vector3D;
 
 import rscript.RScriptUtil;
+import rscript.ExportRUtil;
 import util.ArrayUtil;
 import util.ExternalToolUtil;
 import data.DatasetFile;
@@ -64,7 +65,7 @@ public abstract class AbstractRTo3DEmbedder extends RScriptUser implements Three
 			e.printStackTrace();
 		}
 
-		RUtil.toRTable(features, DistanceUtil.values(features, instances), f.getAbsolutePath());
+		ExportRUtil.toRTable(features, DistanceUtil.values(features, instances), f.getAbsolutePath());
 
 		ExternalToolUtil.run(
 				getRScriptName(),

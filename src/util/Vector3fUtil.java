@@ -1,5 +1,7 @@
 package util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import javax.vecmath.Vector3f;
@@ -65,7 +67,7 @@ public class Vector3fUtil
 	 * @param vectors
 	 * @return
 	 */
-	public static Vector3f centerBoundboxConvexHull(Vector3f[] vectors)
+	public static Vector3f centerConvexHull(Vector3f[] vectors)
 	{
 		float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, minZ = Float.MAX_VALUE;
 		float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE, maxZ = -Float.MAX_VALUE;
@@ -78,18 +80,31 @@ public class Vector3fUtil
 			maxY = Math.max(maxY, v.y);
 			maxZ = Math.max(maxZ, v.z);
 		}
-		int vCount = 0;
-		Vector3f v = new Vector3f(0, 0, 0);
+		List<Vector3f> convexHull = new ArrayList<Vector3f>();
 		for (Vector3f vv : vectors)
-		{
-			if (vv.x == minX || vv.x == maxX || vv.y == minY || vv.y == maxY || vv.z == minZ || vv.z == maxZ)
-			{
-				v.add(vv);
-				vCount++;
-			}
-		}
-		v.scale(1 / (float) vCount);
+			if (!contains(convexHull, vv)
+					&& (vv.x == minX || vv.x == maxX || vv.y == minY || vv.y == maxY || vv.z == minZ || vv.z == maxZ))
+				convexHull.add(vv);
+		Vector3f v = new Vector3f(0, 0, 0);
+		for (Vector3f vector3f : convexHull)
+			v.add(vector3f);
+		v.scale(1 / (float) convexHull.size());
 		return v;
+	}
+
+	/**
+	 * Vector3f.equals does something else
+	 * 
+	 * @param vectors
+	 * @param v
+	 * @return
+	 */
+	public static boolean contains(List<Vector3f> vectors, Vector3f v)
+	{
+		for (Vector3f v1 : vectors)
+			if (v1.x == v.x && v1.y == v.y && v1.z == v.z)
+				return true;
+		return false;
 	}
 
 	public static float avgMinDist(Vector3f[] vectors)

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import main.Settings;
+import rscript.ExportRUtil;
 import util.ExternalToolUtil;
 import util.ListUtil;
 import alg.cluster.DatasetClusterer;
@@ -60,7 +61,8 @@ public abstract class AbstractRClusterer extends RScriptUser implements DatasetC
 			e.printStackTrace();
 		}
 
-		RUtil.toRTable(features, DistanceUtil.values(features, ListUtil.cast(MolecularPropertyOwner.class, compounds)),
+		ExportRUtil.toRTable(features,
+				DistanceUtil.values(features, ListUtil.cast(MolecularPropertyOwner.class, compounds)),
 				f.getAbsolutePath());
 
 		String errorOut = ExternalToolUtil.run(getRScriptName(), Settings.RSCRIPT_BINARY.getLocation() + " "
