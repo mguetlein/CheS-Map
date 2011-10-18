@@ -23,6 +23,7 @@ import weka.clusterers.FarthestFirst;
 import weka.clusterers.HierarchicalClusterer;
 import weka.clusterers.SimpleKMeans;
 import weka.core.Instances;
+import alg.cluster.r.KMeansRClusterer;
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import dataInterface.ClusterData;
@@ -61,16 +62,40 @@ public class WekaClusterer implements DatasetClusterer
 			if (c instanceof Cobweb)
 			{
 				wc.additionalDescription = "Performs hierarchical conceptual clustering. "
-						+ "It computes CU (category utility) of nodes in the hierachical tree, in order to merge/split/insert nodes. "
-						+ "\nParameters: "
-						+ "\n* acuity: CU is computed with feature standard deviation. Acuity defines a minimum value for standard deviation. "
+						+ "It computes CU (category utility) of nodes in the hierachical tree, in order to merge/split/insert nodes. Parameters: "
+						+ "\n<b>acuity</b>: CU is computed based on feature standard deviation. Acuity defines a minimum value for the standard deviation. "
 						+ "The lower acuity is, the more clusters will be created. (Only relevant for numeric features.)"
-						+ "\n* cutoff: The minimum-threshold for CU to merge/split/insert nodes. The lower cutoff is, the more clusters will be created.";
+						+ "\n<b>cutoff</b>: The minimum-threshold for CU to merge/split/insert nodes. The lower cutoff is, the more clusters will be created.";
 			}
 			else if (c instanceof EM)
 			{
+				wc.name = "Expectation Maximization";
 				wc.additionalDescription = "EM (Expectation Maximization) Clustering models the data as mixture of gaussians. "
 						+ "Each cluster is represented by one gaussion distribution.";
+				for (Property p : wc.getProperties())
+					if (p.getName().equals("numClusters"))
+						p.setDisplayName("numClusters (-1 to automatically detect number of clusters)");
+			}
+			else if (c instanceof HierarchicalClusterer)
+			{
+				wc.name = "Hierachical";
+				wc.additionalDescription = "Starts with each compound as a single cluster. Subsequently merges the two most similar clusters.\n"
+						+ "Similartiy is compouted accroding to the parameter  <b>linkType</b>.";
+			}
+			else if (c instanceof SimpleKMeans)
+			{
+				wc.additionalDescription = "Assignes compounds to k randomly initialized centroids. " //
+						+ "Iteratively updates centroid positions and re-assignes compounds until the algorithm converges.\n"
+						+ "<b>Limitation:</b> This method performs only one random initialisation. The cluster algorithm <i>"
+						+ KMeansRClusterer.getNameStatic() + "</i> should be preferred.";
+			}
+			else if (c instanceof FarthestFirst)
+			{
+				wc.additionalDescription = "k-Means method with particular centroid initialisation: It "
+						+ "starts with a random data point, and chooses the point furthest from it. Subsequently, the point that "
+						+ "is furthest away from the already chosen points is selected unitl k points are obtained.\n"
+						+ "<b>Limitation:</b> This method performs only one random initialisation. The cluster algorithm <i>"
+						+ KMeansRClusterer.getNameStatic() + "</i> should be preferred.";
 			}
 			WEKA_CLUSTERER[i++] = wc;
 		}
@@ -81,6 +106,7 @@ public class WekaClusterer implements DatasetClusterer
 	List<ClusterData> clusters;
 	String additionalDescription;
 	Property[] properties;
+	String name;
 
 	private WekaClusterer(Clusterer wekaClusterer)
 	{
@@ -101,6 +127,8 @@ public class WekaClusterer implements DatasetClusterer
 	@Override
 	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
 	{
+		WekaPropertyUtil.setProperties(wekaClusterer, properties);
+
 		TaskProvider.task().verbose("Converting data to arff-format");
 		File f = CompoundArffWriter.writeArffFile(ListUtil.cast(MolecularPropertyOwner.class, compounds), features);
 		try
@@ -166,24 +194,23 @@ public class WekaClusterer implements DatasetClusterer
 	}
 
 	@Override
-	public void setProperties(Property[] properties)
-	{
-		WekaPropertyUtil.setProperties(wekaClusterer, properties);
-	}
-
-	@Override
 	public String getName()
 	{
-		return wekaClusterer.getClass().getSimpleName() + " (WEKA)";
+		if (name == null)
+			return wekaClusterer.getClass().getSimpleName() + " (WEKA)";
+		else
+			return name + " (WEKA)";
 	}
 
 	@Override
 	public String getDescription()
 	{
-		String s = "Uses " + Settings.WEKA_STRING + ".\n\n";
-
+		String s = "Uses " + Settings.WEKA_STRING + ".\n";
 		if (additionalDescription != null)
-			s += additionalDescription + "\n\n";
+			s += additionalDescription + "\n";
+		s += "\n";
+		s += "<i>WEKA API documentation:</i> http://weka.sourceforge.net/doc/weka/clusterers/"
+				+ wekaClusterer.getClass().getSimpleName() + ".html\n\n";
 
 		// weka has no interface for globalInfo
 		try
@@ -193,8 +220,8 @@ public class WekaClusterer implements DatasetClusterer
 			{
 				if (method.getName().equals("globalInfo"))
 				{
-					s += "Internal WEKA description:\n";
-					s += method.invoke(wekaClusterer, (Object[]) null).toString();
+					s += "<i>Internal WEKA description:</i>\n";
+					s += method.invoke(wekaClusterer, (Object[]) null).toString().replaceAll("\n\n", "\n");
 					break;
 				}
 			}
@@ -203,8 +230,7 @@ public class WekaClusterer implements DatasetClusterer
 		{
 			e.printStackTrace();
 		}
-		s += "\n\n(see http://weka.sourceforge.net/doc/weka/clusterers/" + wekaClusterer.getClass().getSimpleName()
-				+ ".html)";
+
 		return s;
 	}
 

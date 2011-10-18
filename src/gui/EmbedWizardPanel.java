@@ -7,8 +7,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
 import alg.Algorithm;
-import alg.embed3d.AbstractRDistanceTo3DEmbedder;
-import alg.embed3d.AbstractRFeatureTo3DEmbedder;
+import alg.embed3d.AbstractRTo3DEmbedder;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
 import alg.embed3d.WekaPCA3DEmbedder;
@@ -18,11 +17,8 @@ import dataInterface.MoleculeProperty.Type;
 public class EmbedWizardPanel extends GenericWizardPanel
 {
 	public static final ThreeDEmbedder EMBEDDERS[] = { new Random3DEmbedder(), new WekaPCA3DEmbedder(),
-			//new AbstractRDistanceTo3DEmbedder.PCADistance3DEmbedder(),
-			new AbstractRFeatureTo3DEmbedder.PCAFeature3DEmbedder(),
-			new AbstractRDistanceTo3DEmbedder.SMACOF3DEmbedder(),
-			//new AbstractRDistanceTo3DEmbedder.TSNEDistance3DEmbedder(),
-			new AbstractRFeatureTo3DEmbedder.TSNEFeature3DEmbedder(), };
+			new AbstractRTo3DEmbedder.PCAFeature3DEmbedder(),
+			new AbstractRTo3DEmbedder.TSNEFeature3DEmbedder(), new AbstractRTo3DEmbedder.SMACOF3DEmbedder() };
 
 	JRadioButton embedButtons[];
 	ButtonGroup group;
@@ -76,6 +72,12 @@ public class EmbedWizardPanel extends GenericWizardPanel
 	public String getTitle()
 	{
 		return "Embed into 3D Space"; // clusters and compounds";
+	}
+
+	@Override
+	public String getAlgorithmType()
+	{
+		return "Embed Algorithms";
 	}
 
 	public ThreeDEmbedder get3DEmbedder()

@@ -28,11 +28,6 @@ public class MCSAligner implements ThreeDAligner
 	}
 
 	@Override
-	public void setProperties(Property[] properties)
-	{
-	}
-
-	@Override
 	public String getName()
 	{
 		return "Maximum Common Subgraph (MCS) Aligner";

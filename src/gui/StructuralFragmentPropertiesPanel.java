@@ -28,12 +28,11 @@ import data.StructuralFragments.MatchEngine;
 
 public class StructuralFragmentPropertiesPanel extends JPanel
 {
-	static IntegerProperty minFreqProp = new IntegerProperty("Minimum frequency", "Minimum frequency", 1, 1, 1,
+	static IntegerProperty minFreqProp = new IntegerProperty("Minimum frequency", "Minimum frequency", 1, 1,
 			Integer.MAX_VALUE);
-	static BooleanProperty skipOmniProp = new BooleanProperty("Skip fragments that match all compounds", true, true);
-
+	static BooleanProperty skipOmniProp = new BooleanProperty("Skip fragments that match all compounds", true);
 	static SelectProperty matchEngine = new SelectProperty("Smarts matching software for smarts files",
-			MatchEngine.values(), MatchEngine.OpenBabel, MatchEngine.OpenBabel);
+			MatchEngine.values(), MatchEngine.OpenBabel);
 
 	private static Property[] properties = new Property[] { minFreqProp, skipOmniProp, matchEngine };
 

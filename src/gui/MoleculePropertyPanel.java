@@ -57,7 +57,7 @@ public class MoleculePropertyPanel extends JPanel
 	private int selectedPropertyIndex = 0;
 	private MoleculePropertySet selectedPropertySet;
 
-	DescriptionPanel descPanel = new DescriptionPanel();
+	MoreTextPanel descPanel = new MoreTextPanel();
 	JPanel cardPanel = new JPanel(new CardLayout());
 
 	JButton loadButton = new JButton("Load feature values");
@@ -476,7 +476,6 @@ public class MoleculePropertyPanel extends JPanel
 				cardPanel.setVisible(true);
 			}
 		}
-
 	}
 
 	public MoleculePropertySet getSelectedPropertySet()
@@ -494,7 +493,9 @@ public class MoleculePropertyPanel extends JPanel
 	{
 		selectedPropertySet = prop;
 		selectedPropertyIndex = 0;
-		descPanel.setText(null, (prop != null) ? prop.getDescription() : "");
+		descPanel.clear();
+		if (prop != null)
+			descPanel.addParagraph(prop.getDescription());
 
 		if (prop != null && prop.getBinary() != null && !prop.getBinary().isFound())
 		{
@@ -512,7 +513,8 @@ public class MoleculePropertyPanel extends JPanel
 	{
 		selectedPropertySet = null;
 		selectedPropertyIndex = -1;
-		descPanel.setText(null, text);
+		descPanel.clear();
+		descPanel.addParagraph(text);
 		cardPanel.setVisible(false);
 	}
 }

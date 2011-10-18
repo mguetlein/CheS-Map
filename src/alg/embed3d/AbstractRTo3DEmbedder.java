@@ -18,7 +18,6 @@ import org.apache.commons.math.geometry.Vector3D;
 
 import rscript.RScriptUtil;
 import util.ArrayUtil;
-import util.DistanceMatrix;
 import util.ExternalToolUtil;
 import data.DatasetFile;
 import data.DistanceUtil;
@@ -26,7 +25,7 @@ import data.RScriptUser;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 
-public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implements ThreeDEmbedder
+public abstract class AbstractRTo3DEmbedder extends RScriptUser implements ThreeDEmbedder
 {
 	List<Vector3f> positions;
 
@@ -45,8 +44,7 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 	}
 
 	@Override
-	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
-			final DistanceMatrix<MolecularPropertyOwner> distances)
+	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features)
 	{
 		this.numInstances = instances.size();
 
@@ -118,23 +116,11 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 		return null;
 	}
 
-	@Override
-	public void setProperties(Property[] properties)
-	{
-
-	}
-
-	@Override
-	public boolean requiresDistances()
-	{
-		return false;
-	}
-
 	public abstract int getMinNumFeatures();
 
 	public abstract int getMinNumInstances();
 
-	public static class TSNEFeature3DEmbedder extends AbstractRFeatureTo3DEmbedder
+	public static class TSNEFeature3DEmbedder extends AbstractRTo3DEmbedder
 	{
 
 		public int getMinNumFeatures()
@@ -163,53 +149,26 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 		@Override
 		public String getDescription()
 		{
-			return "Uses " + Settings.R_STRING + ".\n\n" + "The Embedding is done with the t-SNE algorithm."
-					+ "\n(The following R-library is required: http://cran.r-project.org/web/packages/tsne)\n";
+			return "Uses " + Settings.R_STRING + ".\n" + "Performs T-Distributed Stochastic Neighbor Embedding.\n\n"
+					+ "Details: http://cran.r-project.org/web/packages/tsne\n";
 		}
 
 		private int getPerplexity()
 		{
 			if (numInstances == -1)
 				throw new IllegalStateException("num instances not set before");
-			return 3;
-			//return Math.max(2, Math.min(perplexity, (int) (numInstances * 2 / 3.0)));
+			return Math.max(2, Math.min(perplexity.getValue(), (int) (numInstances * 2 / 3.0)));
 		}
 
-		private final int maxNumIterationsDefault = 1000;
-		private final int initial_dimsDefault = 30;
-		private final int perplexityDefault = 30;
-
-		private int maxNumIterations = maxNumIterationsDefault;
-		private int initial_dims = initial_dimsDefault;
-		private int perplexity = perplexityDefault;
-
-		public static final String PROPERTY_MAX_NUM_ITERATIONS = "Maximum number of iterations (max_iter)";
-		public static final String PROPERTY_PERPLEXITY = "Optimal number of neighbors (perplexity)";
-		public static final String PROPERTY_INITIAL_DIMS = "The number of dimensions to use in reduction method (initial_dims)";
-
-		private Property[] properties = new Property[] {
-				new IntegerProperty(PROPERTY_MAX_NUM_ITERATIONS, maxNumIterations, maxNumIterationsDefault),
-				new IntegerProperty(PROPERTY_PERPLEXITY, perplexity, perplexityDefault),
-				new IntegerProperty(PROPERTY_INITIAL_DIMS, initial_dims, initial_dimsDefault) };
+		IntegerProperty maxNumIterations = new IntegerProperty("Maximum number of iterations (max_iter)", 1000);
+		IntegerProperty perplexity = new IntegerProperty("Optimal number of neighbors (perplexity)", 30);
+		IntegerProperty initial_dims = new IntegerProperty(
+				"The number of dimensions to use in reduction method (initial_dims)", 30);
 
 		@Override
 		public Property[] getProperties()
 		{
-			return properties;
-		}
-
-		@Override
-		public void setProperties(Property[] properties)
-		{
-			for (Property property : properties)
-			{
-				if (property.getName().equals(PROPERTY_MAX_NUM_ITERATIONS))
-					maxNumIterations = ((IntegerProperty) property).getValue();
-				if (property.getName().equals(PROPERTY_PERPLEXITY))
-					perplexity = ((IntegerProperty) property).getValue();
-				if (property.getName().equals(PROPERTY_INITIAL_DIMS))
-					initial_dims = ((IntegerProperty) property).getValue();
-			}
+			return new Property[] { maxNumIterations, perplexity, initial_dims };
 		}
 
 		@Override
@@ -218,18 +177,18 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 			return "args <- commandArgs(TRUE)\n" //
 					+ "\n" + RScriptUtil.installAndLoadPackage("tsne") + "\n"
 					+ "df = read.table(args[1])\n"
-					+ "res <- tsne(df, k = 3, perplexity=" + getPerplexity() + ", max_iter="
-					+ maxNumIterations
-					+ ", initial_dims=" + initial_dims + ")\n" + "print(res$ydata)\n"
-					+ "\n"
-					+ "##res <- smacofSphere.dual(df, ndim = 3)\n" + "#print(res$conf)\n"
-					+ "#print(class(res$conf))\n"
-					+ "\n" + "write.table(res$ydata,args[2]) \n" + "";
+					+ "res <- tsne(df, k = 3, perplexity=" + getPerplexity()
+					+ ", max_iter="
+					+ maxNumIterations.getValue() + ", initial_dims=" + initial_dims.getValue()
+					+ ")\n"
+					+ "print(res$ydata)\n" + "\n" + "##res <- smacofSphere.dual(df, ndim = 3)\n"
+					+ "#print(res$conf)\n"
+					+ "#print(class(res$conf))\n" + "\n" + "write.table(res$ydata,args[2]) \n" + "";
 		}
 
 	}
 
-	public static class PCAFeature3DEmbedder extends AbstractRFeatureTo3DEmbedder
+	public static class PCAFeature3DEmbedder extends AbstractRTo3DEmbedder
 	{
 		public int getMinNumFeatures()
 		{
@@ -251,8 +210,13 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 		@Override
 		public String getDescription()
 		{
-			return "Uses " + Settings.R_STRING + ".\n\n"
-					+ "The first 3 principal components are employed as 3D coordinates.";
+			return "Uses "
+					+ Settings.R_STRING
+					+ ".\n"
+					+ "Principal component analysis (PCA) is a method that reduces the feature space. The "
+					+ "method transforms the orginial features into principal componentes, which are uncorrelated numerical "
+					+ "features. The first, most significant 3 principal components are used for 3D Embedding.\n\n"
+					+ "Details: http://stat.ethz.ch/R-manual/R-patched/library/stats/html/prcomp.html";
 		}
 
 		@Override
@@ -273,6 +237,60 @@ public abstract class AbstractRFeatureTo3DEmbedder extends RScriptUser implement
 					+ "rows <-min(nrow(res$x),3)\n" //
 					+ "print(res$x[,1:rows])\n" //
 					+ "write.table(res$x[,1:rows],args[2]) ";
+		}
+	}
+
+	public static class SMACOF3DEmbedder extends AbstractRTo3DEmbedder
+	{
+		public int getMinNumInstances()
+		{
+			return 4;
+		}
+
+		@Override
+		protected String getRScriptName()
+		{
+			return "smacof_" + maxNumIterations;
+		}
+
+		@Override
+		public String getName()
+		{
+			return "SMACOF 3D Embedder (RScript)";
+		}
+
+		@Override
+		public String getDescription()
+		{
+			return "Uses " + Settings.R_STRING + ".\n"
+					+ "Performs Multidimensional Scaling Using Majorization: SMACOF in R."
+					+ "\n\nDetails: http://cran.r-project.org/web/packages/smacof";
+		}
+
+		IntegerProperty maxNumIterations = new IntegerProperty("Maximum number of iterations (itmax)", 150);
+
+		@Override
+		public Property[] getProperties()
+		{
+			return new Property[] { maxNumIterations };
+		}
+
+		@Override
+		protected String getRScriptCode()
+		{
+			return "args <- commandArgs(TRUE)\n" + "\n" + RScriptUtil.installAndLoadPackage("smacof")
+					+ "\n"
+					+ "df = read.table(args[1])\n"
+					+ "d <- dist(df, method = \"euclidean\")\n" //
+					+ "res <- smacofSym(d, ndim = 3, metric = FALSE, ties = \"secondary\", verbose = TRUE, itmax = "
+					+ maxNumIterations.getValue() + ")\n" + "#res <- smacofSphere.dual(df, ndim = 3)\n"
+					+ "print(res$conf)\n" + "print(class(res$conf))\n" + "write.table(res$conf,args[2]) ";
+		}
+
+		@Override
+		public int getMinNumFeatures()
+		{
+			return 1;
 		}
 	}
 

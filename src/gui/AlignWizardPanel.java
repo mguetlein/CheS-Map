@@ -29,6 +29,12 @@ public class AlignWizardPanel extends GenericWizardPanel
 	}
 
 	@Override
+	public String getAlgorithmType()
+	{
+		return "Align Algorithms";
+	}
+
+	@Override
 	public String getDescription()
 	{
 		return "Aligns the compounds inside a cluster with each other.";

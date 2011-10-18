@@ -395,7 +395,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 	@Override
 	public String getTitle()
 	{
-		return "Load dataset";
+		return "Load Dataset";
 	}
 
 	@Override

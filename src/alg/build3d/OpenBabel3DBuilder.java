@@ -27,7 +27,7 @@ public class OpenBabel3DBuilder extends Abstract3DBuilder
 	{
 		return "Uses "
 				+ Settings.OPENBABEL_STRING
-				+ ".\n\n"
+				+ ".\n"
 				+ "The 'gen3d' option is used to compute 3D coordinates. May take very long, up to a view minutes per compound. "
 				+ "The result is stored so you have to do the computation only once. "
 				+ "(More info: http://openbabel.org/wiki/Tutorial:Basic_Usage)";
@@ -36,15 +36,7 @@ public class OpenBabel3DBuilder extends Abstract3DBuilder
 	@Override
 	public Property[] getProperties()
 	{
-		// TODO Auto-generated method stub
 		return null;
-	}
-
-	@Override
-	public void setProperties(Property[] properties)
-	{
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

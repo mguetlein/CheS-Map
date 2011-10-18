@@ -1,4 +1,4 @@
-package alg.cluster;
+package alg.cluster.r;
 
 import gui.binloc.Binary;
 import gui.property.Property;
@@ -13,6 +13,8 @@ import java.util.List;
 import main.Settings;
 import util.ExternalToolUtil;
 import util.ListUtil;
+import alg.cluster.DatasetClusterer;
+import alg.cluster.DatasetClustererUtil;
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import data.DistanceUtil;
@@ -24,6 +26,10 @@ import dataInterface.MoleculeProperty;
 
 public abstract class AbstractRClusterer extends RScriptUser implements DatasetClusterer
 {
+	public static final DatasetClusterer[] R_CLUSTERER = new AbstractRClusterer[] { new KMeansRClusterer(),
+			new CascadeKMeansRClusterer(), new HierarchicalRClusterer(), new DynamicTreeCutHierarchicalRClusterer() };
+
+	//new ModelBasedRClusterer(), 
 
 	@Override
 	public Binary getBinary()
@@ -100,11 +106,6 @@ public abstract class AbstractRClusterer extends RScriptUser implements DatasetC
 	public Property[] getProperties()
 	{
 		return null;
-	}
-
-	@Override
-	public void setProperties(Property[] properties)
-	{
 	}
 
 	@Override

@@ -29,6 +29,12 @@ public class Build3DWizardPanel extends GenericWizardPanel
 	}
 
 	@Override
+	public String getAlgorithmType()
+	{
+		return "Create 3D Structure Algorithms";
+	}
+
+	@Override
 	public String getDescription()
 	{
 		return "Compute 3D coordinates for all compounds in the dataset.";

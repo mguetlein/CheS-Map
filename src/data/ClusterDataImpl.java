@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.vecmath.Vector3f;
-
 import util.ArraySummary;
 import util.CountedSet;
 import util.DistanceMatrix;
@@ -25,7 +23,6 @@ public class ClusterDataImpl implements ClusterData
 	private String name;
 	private String alignAlgorithm;
 	private String filename;
-	private Vector3f position;
 	private List<CompoundData> compounds = new ArrayList<CompoundData>();
 	private DistanceMatrix<CompoundData> compoundDistances;
 	private HashMap<SubstructureSmartsType, String> substructureSmarts = new HashMap<SubstructureSmartsType, String>();
@@ -51,16 +48,6 @@ public class ClusterDataImpl implements ClusterData
 	public void setFilename(String filename)
 	{
 		this.filename = filename;
-	}
-
-	public Vector3f getPosition()
-	{
-		return position;
-	}
-
-	public void setPosition(Vector3f position)
-	{
-		this.position = position;
 	}
 
 	public List<CompoundData> getCompounds()

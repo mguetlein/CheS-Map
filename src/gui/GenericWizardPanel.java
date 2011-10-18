@@ -5,20 +5,26 @@ import gui.property.PropertyPanel;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 
-import javax.swing.ButtonGroup;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import main.Settings;
 import util.ImageLoader;
@@ -28,6 +34,7 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.DefaultComponentFactory;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.RowSpec;
 import com.jgoodies.forms.layout.Sizes;
 
 import data.DatasetFile;
@@ -37,13 +44,16 @@ public abstract class GenericWizardPanel extends WizardPanel
 {
 	private JLabel infoIcon;
 	JTextArea infoTextArea;
-	IndexedRadioButton radioButtons[];
-	ButtonGroup group;
+
+	DefaultListModel listModel;
+	JList list;
+
 	JPanel propertyPanel;
-	//	PropertyPanel clusterPropertyPanel;
 
 	protected Algorithm selectedAlgorithm;
 	protected boolean preconditionsMet = true;
+
+	protected abstract String getAlgorithmType();
 
 	protected abstract Algorithm[] getAlgorithms();
 
@@ -52,33 +62,44 @@ public abstract class GenericWizardPanel extends WizardPanel
 		INFO, WARNING, ERROR, EMPTY
 	}
 
-	class IndexedRadioButton extends JRadioButton
-	{
-		int index;
-
-		public IndexedRadioButton(String text, int index)
-		{
-			super(text);
-			this.index = index;
-		}
-	}
-
 	public GenericWizardPanel(final CheSMapperWizard w)
 	{
-		group = new ButtonGroup();
-
-		propertyPanel = new JPanel(new CardLayout());
-		radioButtons = new IndexedRadioButton[getAlgorithms().length];
-
-		int bCount = 0;
-		for (Algorithm algorithm : getAlgorithms())
+		listModel = new DefaultListModel();
+		list = new JList(listModel);
+		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		list.setVisibleRowCount(7);
+		final Font defaultFont = ((JLabel) list.getCellRenderer()).getFont();
+		final Font disabledFont = defaultFont.deriveFont(Font.ITALIC);
+		final Color defaultColor = ((JLabel) list.getCellRenderer()).getForeground();
+		final Color disabledColor = defaultColor.brighter().brighter();
+		list.setCellRenderer(new DefaultListCellRenderer()
 		{
-			final IndexedRadioButton b = new IndexedRadioButton(algorithm.getName(), bCount);
-			if (algorithm.getBinary() != null && !algorithm.getBinary().isFound())
+
+			@Override
+			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+					boolean cellHasFocus)
 			{
-				b.setFont(b.getFont().deriveFont(Font.ITALIC));
-				b.setForeground(b.getForeground().brighter().brighter());
-				final Binary bin = algorithm.getBinary();
+				Algorithm a = (Algorithm) value;
+				JLabel l = (JLabel) super.getListCellRendererComponent(list, a.getName(), index, isSelected,
+						cellHasFocus);
+				if (a.getBinary() != null && !a.getBinary().isFound())
+				{
+					l.setFont(disabledFont);
+					l.setForeground(disabledColor);
+				}
+				else
+				{
+					l.setFont(defaultFont);
+					l.setForeground(defaultColor);
+				}
+				return l;
+			}
+		});
+		for (final Algorithm algorithm : getAlgorithms())
+		{
+			listModel.addElement(algorithm);
+			final Binary bin = algorithm.getBinary();
+			if (bin != null)
 				bin.addPropertyChangeListener(new PropertyChangeListener()
 				{
 					@Override
@@ -86,34 +107,41 @@ public abstract class GenericWizardPanel extends WizardPanel
 					{
 						if (bin.isFound())
 						{
-							b.setFont(new JRadioButton().getFont());
-							b.setForeground(new JRadioButton().getForeground());
-							if (b.isSelected())
+							list.repaint();
+							if (list.getSelectedValue() == algorithm)
 							{
-								updateAlgorithmSelection(b.index);
+								updateAlgorithmSelection(list.getSelectedIndex());
 								w.update();
 							}
 						}
 					}
 				});
-			}
-			b.addActionListener(new ActionListener()
-			{
-				@Override
-				public void actionPerformed(ActionEvent e)
-				{
-					updateAlgorithmSelection(b.index);
-					w.update();
-				}
-			});
-			group.add(b);
-			radioButtons[bCount++] = b;
 		}
+		list.addListSelectionListener(new ListSelectionListener()
+		{
+			int lastSelected = 0;
 
-		//DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout("fill:p:grow"));
+			@Override
+			public void valueChanged(ListSelectionEvent e)
+			{
+				if (list.getSelectedIndex() == -1)
+				{
+					list.setSelectedValue(getAlgorithms()[lastSelected], true);
+					return;
+				}
+				//				Algorithm a = (Algorithm) list.getSelectedValue();
+				updateAlgorithmSelection(list.getSelectedIndex());
+				w.update();
+
+				lastSelected = list.getSelectedIndex();
+			}
+		});
+
+		propertyPanel = new JPanel(new CardLayout());
+
 		CellConstraints cc = new CellConstraints();
 		int row = 1;
-		setLayout(new FormLayout("fill:p:grow", "p,5dlu,p,15dlu,p,5dlu,fill:p:grow"));
+		setLayout(new FormLayout("fill:p:grow", "p,3dlu,p,5dlu,p,15dlu,p,0dlu,fill:p:grow"));
 
 		infoIcon = new JLabel();
 		infoTextArea = new JTextArea();
@@ -126,79 +154,35 @@ public abstract class GenericWizardPanel extends WizardPanel
 		JPanel p = new JPanel(new BorderLayout(5, 0));
 		p.add(infoIcon, BorderLayout.WEST);
 		p.add(infoTextArea);
+
+		setInfo("", MsgType.EMPTY);
+
+		add(new JLabel(getAlgorithmType() + ":"), cc.xy(1, row));
+		row += 2;
+
+		add(new JScrollPane(list), cc.xy(1, row));
+		row += 2;
+
 		add(p, cc.xy(1, row));
 		row += 2;
 
-		setInfo("", MsgType.EMPTY);
-		//builder.nextLine();
-
-		DefaultFormBuilder rBuilder = new DefaultFormBuilder(new FormLayout("fill:p:grow"));
-		for (JRadioButton b : radioButtons)
-		{
-			rBuilder.append(b);
-			rBuilder.nextLine();
-		}
-		add(rBuilder.getPanel(), cc.xy(1, row));
-		row += 2;
-
-		//		builder.appendParagraphGapRow();
-		//		builder.nextLine();
-
-		//		builder.appendSeparator(getTitle() + " Properties");
-		//		builder.nextLine();
-
-		//		JPanel sep = new JPanel(new BorderLayout(5, 5));
-		//		JLabel l = new JLabel(getTitle() + " Properties");
-		//		l.setFont(l.getFont().deriveFont(Font.BOLD));
-		//		sep.add(l, BorderLayout.WEST);
-		//		JSeparator s = new JSeparator();
-		//		sep.setAlignmentY(0.5f);
-		//		sep.add(s);
 		JComponent sep = DefaultComponentFactory.getInstance().createSeparator(getTitle() + " Properties");
 		add(sep, cc.xy(1, row));
 		row += 2;
 
-		//		descriptionPanel = new DescriptionPanel();
-		//		//		builder.append(descriptionPanel);
-		//		add(descriptionPanel, cc.xy(1, row));
-		//		row += 2;
-
-		//		builder.appendParagraphGapRow();
-		//		builder.nextLine();
-
-		//		JPanel pp = new JPanel(new BorderLayout());
-		//		pp.add(propertyDescriptionTextArea);
-		//		pp.add(moreDescriptionButton, BorderLayout.EAST);
-		//		builder.append(pp);
-
-		//		JScrollPane scroll = new JScrollPane();
-		//		scroll.add(propertyPanel);
-		//		builder.append(scroll);
-
-		//		builder.append(propertyPanel);
 		add(propertyPanel, cc.xy(1, row));
 		row += 2;
-		//propertyPanel.setBorder(new EtchedBorder());
-
-		//		setLayout(new BorderLayout());
-
-		//		JScrollPane scroll = new JScrollPane(builder.getPanel());
-		//		scroll.setBorder(null);
-		//		add(scroll);
-
-		//		add(builder.getPanel());
 
 		String method = (String) Settings.PROPS.get(getTitle() + "-method");
 		boolean selected = false;
 		if (method != null)
 		{
-			for (IndexedRadioButton b : radioButtons)
+			for (Algorithm a : getAlgorithms())
 			{
-				if (b.getText().equals(method))
+				if (a.getName().equals(method))
 				{
-					b.setSelected(true);
+					list.setSelectedValue(a, true);
 					selected = true;
-					updateAlgorithmSelection(b.index);
 					break;
 				}
 			}
@@ -216,8 +200,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 						break;
 					}
 			}
-			radioButtons[selection].setSelected(true);
-			updateAlgorithmSelection(selection);
+			list.setSelectedValue(getAlgorithms()[selection], true);
 		}
 	}
 
@@ -227,41 +210,56 @@ public abstract class GenericWizardPanel extends WizardPanel
 	{
 		selectedAlgorithm = getAlgorithms()[index];
 
-		int numProps = 0;
-		if (selectedAlgorithm.getProperties() != null)
-			numProps = selectedAlgorithm.getProperties().length;
-		int maxLength;
-		if (numProps == 0)
-			maxLength = 1200;
-		else
-			maxLength = 400;
-
 		preconditionsMet = selectedAlgorithm.getBinary() == null || selectedAlgorithm.getBinary().isFound();
 		setInfo("", MsgType.EMPTY);
 
 		if (!cards.containsKey(selectedAlgorithm.toString()))
 		{
-			DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("fill:p:grow"));
-			b.setLineGapSize(Sizes.DLUX8);
+			DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout("fill:p:grow"));
+			builder.setLineGapSize(Sizes.dluX(16));
 
-			DescriptionPanel descriptionPanel = new DescriptionPanel();
-			descriptionPanel.setText(selectedAlgorithm.getName(), selectedAlgorithm.getDescription(), maxLength);
-			b.append(descriptionPanel);
+			MoreTextPanel descriptionPanel = new MoreTextPanel();
+			descriptionPanel.addParagraph(selectedAlgorithm.getDescription());
+			descriptionPanel.setDialogTitle(selectedAlgorithm.getName());
+			descriptionPanel.setPreferredWith(GenericWizardPanel.this.getPreferredSize().width - 20);
+			builder.append(descriptionPanel);
+
+			// layout HACK
+			// top:100:grow has the side effect of add large gaps between following rows
+			// this ugly when the description panel is very small
+			// -> use 'top:100:grow' only for large descriptions, else use 'p'
+			if (descriptionPanel.getPreferredSize().getHeight() > 200)
+				builder.getLayout().setRowSpec(builder.getRow(),
+						new RowSpec(RowSpec.TOP, Sizes.pixel(100), RowSpec.DEFAULT_GROW));
+			else
+				builder.getLayout().setRowSpec(builder.getRow(),
+						new RowSpec(RowSpec.TOP, Sizes.PREFERRED, RowSpec.NO_GROW));
 
 			if (selectedAlgorithm.getBinary() != null)
-				b.append(Settings.getBinaryComponent(selectedAlgorithm.getBinary()));
+			{
+				JComponent pp = Settings.getBinaryComponent(selectedAlgorithm.getBinary());
+				pp.setBorder(new EmptyBorder(0, 0, 5, 0));
+
+				builder.append(pp);
+				builder.getLayout().setRowSpec(builder.getRow(),
+						new RowSpec(RowSpec.TOP, Sizes.PREFERRED, RowSpec.NO_GROW));
+			}
 
 			PropertyPanel clusterPropertyPanel = new PropertyPanel(selectedAlgorithm.getProperties(), Settings.PROPS,
 					Settings.PROPERTIES_FILE);
-			b.append(clusterPropertyPanel);
-			propertyPanel.add(b.getPanel(), selectedAlgorithm.toString());
+			if (selectedAlgorithm.getProperties() != null)
+			{
+				if (selectedAlgorithm.getBinary() != null)
+					builder.setLineGapSize(Sizes.dluX(8));
 
+				builder.append(clusterPropertyPanel);
+				builder.getLayout().setRowSpec(builder.getRow(),
+						new RowSpec(RowSpec.TOP, Sizes.PREFERRED, RowSpec.NO_GROW));
+			}
+			propertyPanel.add(builder.getPanel(), selectedAlgorithm.toString());
 			cards.put(selectedAlgorithm.toString(), clusterPropertyPanel);
 		}
 		((CardLayout) propertyPanel.getLayout()).show(propertyPanel, selectedAlgorithm.toString());
-
-		//		validate();
-		//		repaint();
 	}
 
 	public void update(DatasetFile dataset, int numFeatures, Type featureType)
@@ -323,19 +321,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 
 	public Algorithm getSelectedAlgorithm()
 	{
-		//		Algorithm c = null;
-		//		try
-		//		{
-		//			c = (Algorithm) Class.forName(selectedAlgorithm.getClass().getName()).newInstance();
-		//		}
-		//		catch (Exception e)
-		//		{
-		//			e.printStackTrace();
-		//		}
-
-		Algorithm c = (Algorithm) selectedAlgorithm;
-		c.setProperties(cards.get(selectedAlgorithm.toString()).getProperties());
-		return c;
+		return selectedAlgorithm;
 	}
 
 }

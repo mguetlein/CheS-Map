@@ -27,11 +27,6 @@ public class NoAligner implements ThreeDAligner
 	}
 
 	@Override
-	public void setProperties(Property[] properties)
-	{
-	}
-
-	@Override
 	public void algin(DatasetFile dataset, List<ClusterData> clusters)
 	{
 		clusterFiles = new ArrayList<String>();

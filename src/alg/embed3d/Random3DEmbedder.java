@@ -9,7 +9,6 @@ import java.util.List;
 import javax.vecmath.Vector3f;
 
 import main.Settings;
-import util.DistanceMatrix;
 import util.Vector3fUtil;
 import data.DatasetFile;
 import dataInterface.MolecularPropertyOwner;
@@ -65,8 +64,7 @@ public class Random3DEmbedder implements ThreeDEmbedder
 	List<Vector3f> positions;
 
 	@Override
-	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
-			DistanceMatrix<MolecularPropertyOwner> distances)
+	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features)
 	{
 		positions = getPositions(instances.size());
 	}
@@ -84,12 +82,6 @@ public class Random3DEmbedder implements ThreeDEmbedder
 	}
 
 	@Override
-	public void setProperties(Property[] properties)
-	{
-
-	}
-
-	@Override
 	public String getName()
 	{
 		return "No 3D Embedding (Random positions)";
@@ -99,12 +91,6 @@ public class Random3DEmbedder implements ThreeDEmbedder
 	public String getDescription()
 	{
 		return "The compound features are ignored. This compounds are arranged randomly, equally distributed in a sphere.";
-	}
-
-	@Override
-	public boolean requiresDistances()
-	{
-		return false;
 	}
 
 	@Override

@@ -26,12 +26,67 @@ public class Vector3fUtil
 
 	public static Vector3f center(Vector3f[] vectors)
 	{
+		Vector3f v = new Vector3f(0, 0, 0);
+		for (Vector3f vv : vectors)
+			v.add(vv);
+		v.scale(1 / (float) vectors.length);
+		return v;
+	}
+
+	public static Vector3f centerBoundbox(Vector3f[] vectors)
+	{
+		float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, minZ = Float.MAX_VALUE;
+		float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE, maxZ = -Float.MAX_VALUE;
+		for (Vector3f v : vectors)
+		{
+			minX = Math.min(minX, v.x);
+			minY = Math.min(minY, v.y);
+			minZ = Math.min(minZ, v.z);
+			maxX = Math.max(maxX, v.x);
+			maxY = Math.max(maxY, v.y);
+			maxZ = Math.max(maxZ, v.z);
+		}
+		return new Vector3f((maxX + minX) / 2.0f, (maxY + minY) / 2.0f, (maxZ + minZ) / 2.0f);
+	}
+
+	/**
+	 * this is still not the centroid (better then simple center or centerBoundBox) 
+	 * 
+	 * drift-two-top-left-example in 2d:
+	 * .x..............
+	 * x..............x
+	 * ................
+	 * ................ 
+	 * .xxx............
+	 * .xx.............
+	 * .x..............
+	 * 
+	 * 
+	 * @param vectors
+	 * @return
+	 */
+	public static Vector3f centerBoundboxConvexHull(Vector3f[] vectors)
+	{
+		float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, minZ = Float.MAX_VALUE;
+		float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE, maxZ = -Float.MAX_VALUE;
+		for (Vector3f v : vectors)
+		{
+			minX = Math.min(minX, v.x);
+			minY = Math.min(minY, v.y);
+			minZ = Math.min(minZ, v.z);
+			maxX = Math.max(maxX, v.x);
+			maxY = Math.max(maxY, v.y);
+			maxZ = Math.max(maxZ, v.z);
+		}
 		int vCount = 0;
 		Vector3f v = new Vector3f(0, 0, 0);
 		for (Vector3f vv : vectors)
 		{
-			v.add(vv);
-			vCount++;
+			if (vv.x == minX || vv.x == maxX || vv.y == minY || vv.y == maxY || vv.z == minZ || vv.z == maxZ)
+			{
+				v.add(vv);
+				vCount++;
+			}
 		}
 		v.scale(1 / (float) vCount);
 		return v;

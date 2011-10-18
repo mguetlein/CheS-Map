@@ -6,8 +6,6 @@ import gui.property.Property;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.vecmath.Vector3f;
-
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import dataInterface.ClusterData;
@@ -21,11 +19,6 @@ public class NoClusterer implements DatasetClusterer
 	public Property[] getProperties()
 	{
 		return null;
-	}
-
-	@Override
-	public void setProperties(Property[] properties)
-	{
 	}
 
 	@Override
@@ -55,7 +48,7 @@ public class NoClusterer implements DatasetClusterer
 		c = new ClusterDataImpl();
 		c.setFilename(dataset.getSDFPath(true));
 		c.setName("Single cluster");
-		c.setPosition(new Vector3f(0f, 0f, 0f));
+		//		c.setPosition(new Vector3f(0f, 0f, 0f));
 		for (CompoundData compound : compounds)
 			c.addCompound(compound);
 	}

@@ -4,42 +4,24 @@ import gui.binloc.Binary;
 import gui.property.Property;
 import gui.property.SelectProperty;
 import main.Settings;
-
-import org.openscience.cdk.modeling.builder3d.ModelBuilder3D;
-
 import data.DatasetFile;
 import data.FeatureService;
 
 public class CDK3DBuilder extends Abstract3DBuilder
 {
 	public static final String[] FORCEFIELDS = { "mm2", "mmff94" };
-	private String forcefield = FORCEFIELDS[0];
-	private final String forcefieldDefault = FORCEFIELDS[0];
-
-	public static final String PROPERTY_FORCEFIELD = "forcefield";
-	private Property[] properties = new Property[] { new SelectProperty(PROPERTY_FORCEFIELD, FORCEFIELDS, forcefield,
-			forcefieldDefault) };
+	SelectProperty forcefield = new SelectProperty("forcefield", FORCEFIELDS, FORCEFIELDS[0]);
 
 	@Override
 	public Property[] getProperties()
 	{
-		return properties;
-	}
-
-	@Override
-	public void setProperties(Property[] properties)
-	{
-		for (Property property : properties)
-		{
-			if (property.getName().equals(PROPERTY_FORCEFIELD))
-				forcefield = property.getValue().toString();
-		}
+		return new Property[] { forcefield };
 	}
 
 	@Override
 	public void build3D(DatasetFile dataset, String outfile)
 	{
-		FeatureService.generateCDK3D(dataset, outfile, forcefield);
+		FeatureService.generateCDK3D(dataset, outfile, forcefield.getValue().toString());
 	}
 
 	@Override
@@ -51,8 +33,10 @@ public class CDK3DBuilder extends Abstract3DBuilder
 	@Override
 	public String getDescription()
 	{
-		return "Uses " + Settings.CDK_STRING + ".\n\n" + "The Model Builder 3D (" + ModelBuilder3D.class.getName()
-				+ ") supports 2 different forcefields. Tends to be faster but less acurate then OpenBabel.";
+		return "Uses "
+				+ Settings.CDK_STRING
+				+ ".\n"
+				+ "The Model Builder 3D supports 2 different forcefields. Tends to be faster but less acurate then OpenBabel.\n\nCDK API: http://pele.farmbio.uu.se/nightly/api/org/openscience/cdk/modeling/builder3d/ModelBuilder3D.html";
 	}
 
 	@Override

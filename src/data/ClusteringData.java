@@ -3,11 +3,8 @@ package data;
 import java.util.ArrayList;
 import java.util.List;
 
-import util.DistanceMatrix;
-import util.ListUtil;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
-import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 import dataInterface.SubstructureSmartsType;
 
@@ -21,9 +18,7 @@ public class ClusteringData
 	private List<SubstructureSmartsType> substructureSmartsTypes = new ArrayList<SubstructureSmartsType>();
 
 	private List<ClusterData> clusters = new ArrayList<ClusterData>();
-	private DistanceMatrix<ClusterData> clusterDistances;
 	private List<CompoundData> compounds = new ArrayList<CompoundData>();
-	private DistanceMatrix<CompoundData> compoundDistances;
 
 	private String clusterAlgorithm;
 	private String embedAlgorithm;
@@ -91,22 +86,6 @@ public class ClusteringData
 	public List<MoleculeProperty> getFeatures()
 	{
 		return features;
-	}
-
-	public DistanceMatrix<ClusterData> getClusterDistances()
-	{
-		if (clusterDistances == null)
-			clusterDistances = DistanceUtil.computeDistances(ListUtil.cast(MolecularPropertyOwner.class, clusters),
-					features).cast(ClusterData.class);
-		return clusterDistances;
-	}
-
-	public DistanceMatrix<CompoundData> getCompoundDistances()
-	{
-		if (compoundDistances == null)
-			compoundDistances = DistanceUtil.computeDistances(ListUtil.cast(MolecularPropertyOwner.class, compounds),
-					features).cast(CompoundData.class);
-		return compoundDistances;
 	}
 
 	public String getSDFFilename()

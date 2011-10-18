@@ -5,13 +5,9 @@ import java.util.List;
 import javax.vecmath.Vector3f;
 
 import main.TaskProvider;
-import util.DistanceMatrix;
 import util.ListUtil;
-import util.Vector3fUtil;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
-import dataInterface.ClusterData;
-import dataInterface.CompoundData;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 
@@ -49,31 +45,19 @@ public class EmbedClusters
 		List<MoleculeProperty> features = clustering.getFeatures();
 
 		emb = secureEmbed(emb, "compound", dataset.numCompounds() + " compounds", dataset,
-				ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), features,
-				emb.requiresDistances() ? clustering.getCompoundDistances().cast(MolecularPropertyOwner.class) : null,
-				null);
+				ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), features);
 
 		int cCount = 0;
 		for (Vector3f v : emb.getPositions())
 			((CompoundDataImpl) clustering.getCompounds().get(cCount++)).setPosition(v);
-
-		for (final ClusterData cluster : clustering.getClusters())
-		{
-			Vector3f positions[] = new Vector3f[cluster.getSize()];
-			cCount = 0;
-			for (CompoundData c : cluster.getCompounds())
-				positions[cCount++] = c.getPosition();
-			((ClusterDataImpl) cluster).setPosition(Vector3fUtil.center(positions));
-		}
 	}
 
 	private ThreeDEmbedder secureEmbed(ThreeDEmbedder emb, String embedItem, String embedItems, DatasetFile dataset,
-			List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
-			DistanceMatrix<MolecularPropertyOwner> distances, ClusterDataImpl c)
+			List<MolecularPropertyOwner> instances, List<MoleculeProperty> features)
 	{
 		try
 		{
-			emb.embed(dataset, instances, features, distances);
+			emb.embed(dataset, instances, features);
 			return emb;
 		}
 		catch (Exception e)
@@ -99,7 +83,7 @@ public class EmbedClusters
 
 			try
 			{
-				random.embed(dataset, instances, features, distances);
+				random.embed(dataset, instances, features);
 				return random;
 			}
 			catch (Exception e2)

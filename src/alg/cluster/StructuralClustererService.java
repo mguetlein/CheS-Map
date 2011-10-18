@@ -23,10 +23,6 @@ import dataInterface.MoleculeProperty;
 public class StructuralClustererService implements DatasetClusterer
 {
 	String origURI;
-	private final String clusterAlgorithmDefault = "http://opentox-dev.informatik.tu-muenchen.de:8080/OpenTox-dev/algorithm/StructuralClustering";
-	private String clusterAlgorithm = clusterAlgorithmDefault;
-	private final double thresholdDefault = 0.4;
-	private double threshold = thresholdDefault;
 	List<ClusterData> clusters;
 
 	@Override
@@ -45,14 +41,14 @@ public class StructuralClustererService implements DatasetClusterer
 				origURI = dataset.getURI();
 
 			HashMap<String, String> params = new HashMap<String, String>();
-			params.put("threshold", threshold + "");
+			params.put("threshold", threshold.getValue() + "");
 			params.put("dataset_uri", origURI);
 
 			if (TaskProvider.task().isCancelled())
 				return;
 			TaskProvider.task().update("Building cluster model with TUM algorithm web service");
 
-			String modelURI = RESTUtil.post(clusterAlgorithm, params);
+			String modelURI = RESTUtil.post(clusterAlgorithm.getValue(), params);
 			//			urisToDelete.add(modelURI);
 
 			if (TaskProvider.task().isCancelled())
@@ -148,29 +144,14 @@ public class StructuralClustererService implements DatasetClusterer
 		return false;
 	}
 
-	public static final String PROPERTY_THETA = "theta (size of common substructure)";
-	public static final String PROPERTY_SERVICE = "structural clustering webservice";
-
-	private Property[] properties = new Property[] {
-			new StringProperty(PROPERTY_SERVICE, clusterAlgorithm, clusterAlgorithmDefault),
-			new DoubleProperty(PROPERTY_THETA, threshold, thresholdDefault) };
+	StringProperty clusterAlgorithm = new StringProperty("structural clustering webservice",
+			"http://opentox-dev.informatik.tu-muenchen.de:8080/OpenTox-dev/algorithm/StructuralClustering");
+	DoubleProperty threshold = new DoubleProperty("theta (size of common substructure)", 0.4);
 
 	@Override
 	public Property[] getProperties()
 	{
-		return properties;
-	}
-
-	@Override
-	public void setProperties(Property[] properties)
-	{
-		for (Property property : properties)
-		{
-			if (property.getName().equals(PROPERTY_THETA))
-				threshold = ((DoubleProperty) property).getValue();
-			else if (property.getName().equals(PROPERTY_SERVICE))
-				clusterAlgorithm = ((StringProperty) property).getValue();
-		}
+		return new Property[] { clusterAlgorithm, threshold };
 	}
 
 	@Override

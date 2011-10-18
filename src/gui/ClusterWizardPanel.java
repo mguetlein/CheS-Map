@@ -3,9 +3,9 @@ package gui;
 import util.ArrayUtil;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
-import alg.cluster.RClustererSet;
 import alg.cluster.StructuralClustererService;
 import alg.cluster.WekaClusterer;
+import alg.cluster.r.AbstractRClusterer;
 import data.DatasetFile;
 import dataInterface.MoleculeProperty.Type;
 
@@ -16,8 +16,8 @@ public class ClusterWizardPanel extends GenericWizardPanel
 	static
 	{
 		CLUSTERERS = ArrayUtil.concat(DatasetClusterer.class, new DatasetClusterer[] { new NoClusterer() },
-				WekaClusterer.WEKA_CLUSTERER, new DatasetClusterer[] { new StructuralClustererService() },
-				RClustererSet.R_CLUSTERER);
+				AbstractRClusterer.R_CLUSTERER, WekaClusterer.WEKA_CLUSTERER,
+				new DatasetClusterer[] { new StructuralClustererService() });
 	}
 
 	public ClusterWizardPanel(CheSMapperWizard w)
@@ -55,7 +55,13 @@ public class ClusterWizardPanel extends GenericWizardPanel
 	@Override
 	public String getTitle()
 	{
-		return "Cluster dataset";
+		return "Cluster Dataset";
+	}
+
+	@Override
+	public String getAlgorithmType()
+	{
+		return "Cluster Algorithms";
 	}
 
 	@Override

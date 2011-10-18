@@ -39,11 +39,6 @@ public class UseOrigStructures implements ThreeDBuilder
 	}
 
 	@Override
-	public void setProperties(Property[] properties)
-	{
-	}
-
-	@Override
 	public boolean isReal3DBuilder()
 	{
 		return false;

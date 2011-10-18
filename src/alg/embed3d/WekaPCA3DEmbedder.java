@@ -12,7 +12,6 @@ import java.util.List;
 import javax.vecmath.Vector3f;
 
 import main.Settings;
-import util.DistanceMatrix;
 import weka.CompoundArffWriter;
 import weka.WekaPropertyUtil;
 import weka.attributeSelection.PrincipalComponents;
@@ -30,9 +29,11 @@ public class WekaPCA3DEmbedder implements ThreeDEmbedder
 	Property[] properties = WekaPropertyUtil.getProperties(pca);
 
 	@Override
-	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
-			DistanceMatrix<MolecularPropertyOwner> distances) throws Exception
+	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features)
+			throws Exception
 	{
+		WekaPropertyUtil.setProperties(pca, properties);
+
 		if (instances.size() < 2)
 			throw new Exception("too few instances");
 		File f = CompoundArffWriter.writeArffFile(instances, features);
@@ -63,12 +64,6 @@ public class WekaPCA3DEmbedder implements ThreeDEmbedder
 	}
 
 	@Override
-	public void setProperties(Property[] properties)
-	{
-		WekaPropertyUtil.setProperties(pca, properties);
-	}
-
-	@Override
 	public String getName()
 	{
 		return "PCA 3D Embedder (WEKA)";
@@ -77,10 +72,14 @@ public class WekaPCA3DEmbedder implements ThreeDEmbedder
 	@Override
 	public String getDescription()
 	{
-		return "Uses " + Settings.WEKA_STRING + ".\n\n"
-				+ "The first 3 principal components are employed as 3D coordinates.\n\n" + pca.globalInfo()
-				+ "\n\n(see http://weka.sourceforge.net/doc/" + pca.getClass().getName().replaceAll("\\.", "/")
-				+ ".html)";
+		String s = "Uses " + Settings.WEKA_STRING + ".\n";
+		s += "Principal component analysis (PCA) is a method that reduces the feature space. The "
+				+ "method transforms the orginial features into principal componentes, which are uncorrelated numerical "
+				+ "features. The first, most significant 3 principal components are used for 3D Embedding.\n\n";
+		s += "<i>WEKA API documentation:</i> http://weka.sourceforge.net/doc/"
+				+ pca.getClass().getName().replaceAll("\\.", "/") + ".html\n\n";
+		s += "<i>Internal WEKA description:</i>\n" + pca.globalInfo();
+		return s;
 	}
 
 	@Override
@@ -93,12 +92,6 @@ public class WekaPCA3DEmbedder implements ThreeDEmbedder
 	public boolean requiresFeatures()
 	{
 		return true;
-	}
-
-	@Override
-	public boolean requiresDistances()
-	{
-		return false;
 	}
 
 	@Override

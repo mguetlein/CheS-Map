@@ -1,6 +1,5 @@
 package main;
 
-import util.ListUtil;
 import util.SwingUtil;
 import alg.DatasetProvider;
 import alg.FeatureComputer;
@@ -112,17 +111,9 @@ public class CheSMapping
 						clustering.addCluster(c);
 					clustering.setClusterAlgorithm(datasetClusterer.getName());
 
-					if (threeDEmbedder.requiresDistances())
-					{
-						TaskProvider.task().update(40, "Compute distances");
-						clustering.getClusterDistances();
-						for (ClusterDataImpl c : ListUtil.cast(ClusterDataImpl.class, clustering.getClusters()))
-							c.getCompoundDistances(clustering.getFeatures());
-					}
-
 					if (TaskProvider.task().isCancelled())
 						return;
-					TaskProvider.task().update(50,
+					TaskProvider.task().update(40,
 							"Embedding clusters into 3D space (num clusters: " + clustering.getClusters().size() + ")");
 					EmbedClusters embedder = new EmbedClusters();
 					embedder.embed(threeDEmbedder, dataset, clustering);
@@ -132,14 +123,14 @@ public class CheSMapping
 					{
 						if (TaskProvider.task().isCancelled())
 							return;
-						TaskProvider.task().update(60, "Compute MCS of clusters");
+						TaskProvider.task().update(50, "Compute MCS of clusters");
 						ComputeMCS.computeMCS(dataset, clustering.getClusters());
 						clustering.addSubstructureSmartsTypes(SubstructureSmartsType.MCS);
 					}
 
 					if (TaskProvider.task().isCancelled())
 						return;
-					TaskProvider.task().update(70, "3D align compounds");
+					TaskProvider.task().update(60, "3D align compounds");
 					threeDAligner.algin(dataset, clustering.getClusters());
 					int cCount = 0;
 					for (String alignedFile : threeDAligner.getAlginedClusterFiles())
@@ -151,12 +142,10 @@ public class CheSMapping
 					//			if (SDFUtil.countCompounds(threeDAligner.getAlginedClusterFiles()[cCount++]) != indices.length)
 					//				throw new IllegalStateException();
 
-					TaskProvider.task().update(80, "Mapping complete - Loading 3D library");
+					TaskProvider.task().update(70, "Mapping complete - Loading 3D library");
 
 					for (ClusterData c : clustering.getClusters())
 					{
-						if (c.getPosition() == null)
-							throw new Error("internal error: cluster position is null!");
 						for (CompoundData co : c.getCompounds())
 							if (co.getPosition() == null)
 								throw new Error("internal error: cluster position is null!");
