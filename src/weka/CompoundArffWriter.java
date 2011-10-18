@@ -70,9 +70,9 @@ public class CompoundArffWriter implements ArffWritable
 		else
 		{
 			String s = "{";
-			for (Object o : features.get(attribute).getNominalDomain())
+			for (String o : features.get(attribute).getNominalDomain())
 			{
-				if (o.toString().length() > 1)
+				if (o != null && o.length() > 1)
 					s += "\"" + o + "\",";
 				else
 					s += o + ",";
@@ -97,7 +97,7 @@ public class CompoundArffWriter implements ArffWritable
 		else
 		{
 			String s = compounds.get(instance).getStringValue(features.get(attribute));
-			if (s.length() > 1)
+			if (s != null && s.length() > 1)
 				return "\"" + s + "\"";
 			else
 				return s;

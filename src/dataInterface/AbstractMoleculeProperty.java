@@ -16,7 +16,7 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 
 	Type type;
 	HashSet<Type> types = new HashSet<Type>(ArrayUtil.toList(Type.values()));
-	Object[] domain;
+	String[] domain;
 	protected String smarts;
 
 	private static HashMap<String, AbstractMoleculeProperty> uniqueNames = new HashMap<String, AbstractMoleculeProperty>();
@@ -106,13 +106,13 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	}
 
 	@Override
-	public Object[] getNominalDomain()
+	public String[] getNominalDomain()
 	{
 		return domain;
 	}
 
 	@Override
-	public void setNominalDomain(Object domain[])
+	public void setNominalDomain(String domain[])
 	{
 		this.domain = domain;
 	}

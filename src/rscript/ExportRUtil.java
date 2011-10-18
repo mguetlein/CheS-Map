@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import util.ArrayUtil;
+import util.ObjectUtil;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculeProperty.Type;
 
@@ -41,14 +42,14 @@ public class ExportRUtil
 				System.err.println("Transforming nominal feature: " + feature.getName() + " "
 						+ ArrayUtil.toString(feature.getNominalDomain()));
 
-				for (Object val : feature.getNominalDomain())
+				for (String val : feature.getNominalDomain())
 				{
 					String name = feature.getName() + "_is_" + val;
 					featureNames2.add(name);
 					String vals[] = new String[featureValues1.get(count).length];
 					for (int i = 0; i < vals.length; i++)
 					{
-						if (val.toString().equals(featureValues1.get(count)[i]))
+						if (ObjectUtil.equals(val, featureValues1.get(count)[i]))
 							vals[i] = "1";
 						else
 							vals[i] = "0";

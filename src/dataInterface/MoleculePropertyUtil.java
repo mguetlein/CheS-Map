@@ -52,10 +52,9 @@ public class MoleculePropertyUtil
 
 	public static Color getNominalColor(MoleculeProperty p, String val)
 	{
-		Object s[] = ArrayUtil.toStringArray(p.getNominalDomain());
-		int index = ArrayUtil.indexOf(s, val);
+		int index = ArrayUtil.indexOf(p.getNominalDomain(), val);
 		if (index == -1)
-			throw new IllegalStateException(val + " not found in " + ArrayUtil.toString(s));
+			throw new IllegalStateException(val + " not found in " + ArrayUtil.toString(p.getNominalDomain()));
 		return getNominalColors(p)[index];
 	}
 }

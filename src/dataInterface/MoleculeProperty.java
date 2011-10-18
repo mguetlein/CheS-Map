@@ -21,9 +21,9 @@ public interface MoleculeProperty
 
 	public void setTypeAllowed(Type type, boolean allowed);
 
-	public Object[] getNominalDomain();
+	public String[] getNominalDomain();
 
-	public void setNominalDomain(Object domain[]);
+	public void setNominalDomain(String domain[]);
 
 	public boolean isSmartsProperty();
 

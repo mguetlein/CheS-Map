@@ -294,22 +294,23 @@ public class FeatureService
 					// add trailing nulls for missing props
 					l.add(null);
 				}
-				String o[] = new String[l.size()];
-				l.toArray(o);
+				String stringValues[] = new String[l.size()];
+				l.toArray(stringValues);
 
-				Set<Object> distinctValues = ArrayUtil.getDistinctValues(o);
+				Set<String> distinctValues = ArrayUtil.getDistinctValues(stringValues);
 				int numDistinct = distinctValues.size();
-				Object dom[] = distinctValues.toArray();
+				String dom[] = new String[distinctValues.size()];
+				distinctValues.toArray(dom);
 				Arrays.sort(dom, new ToStringComparator());
 				p.setNominalDomain(dom);
 
-				Double d[] = ArrayUtil.parse(o);
-				if (d != null)
+				Double doubleValues[] = ArrayUtil.parse(stringValues);
+				if (doubleValues != null)
 				{
 					//					numericSdfProperties.get(f).add(p);
 					p.setTypeAllowed(Type.NOMINAL, true);
 					p.setTypeAllowed(Type.NUMERIC, true);
-					if (guessNominalFeatureType(numDistinct, o.length))
+					if (guessNominalFeatureType(numDistinct, stringValues.length))
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(Type.NUMERIC);
@@ -318,15 +319,15 @@ public class FeatureService
 				{
 					p.setTypeAllowed(Type.NOMINAL, true);
 					p.setTypeAllowed(Type.NUMERIC, false);
-					if (guessNominalFeatureType(numDistinct, o.length))
+					if (guessNominalFeatureType(numDistinct, stringValues.length))
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(null);
 				}
 				if (p.getType() == Type.NUMERIC)
-					p.setDoubleValues(dataset, d);
+					p.setDoubleValues(dataset, doubleValues);
 				else
-					p.setStringValues(dataset, o);
+					p.setStringValues(dataset, stringValues);
 			}
 
 			IMolecule res[] = new IMolecule[mols.size()];
