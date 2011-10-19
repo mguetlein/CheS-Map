@@ -45,6 +45,8 @@ public class Settings
 {
 	// -------------------------- GRAPHICAL STUFF ---------------------------------
 
+	public static boolean SCREENSHOT_SETUP = false;
+
 	static
 	{
 		try
@@ -60,20 +62,6 @@ public class Settings
 			e.printStackTrace();
 		}
 	}
-
-	public static Color BACKGROUND = Color.BLACK;
-	public static Color FOREGROUND = new Color(170, 170, 170);
-	public static Color LIST_SELECTION_FOREGROUND = FOREGROUND.brighter().brighter();
-	public static Color LIST_ACTIVE_BACKGROUND = new Color(51, 102, 255);
-
-	//	public static Color BACKGROUND = Color.WHITE;
-	//	public static Color FOREGROUND = new Color(50, 50, 50);
-	//	public static Color LIST_SELECTION_FOREGROUND = FOREGROUND.darker().darker();
-	//	public static Color LIST_ACTIVE_BACKGROUND = new Color(101, 152, 255);
-
-	public static Color TRANSPARENT_BACKGROUND = new Color(BACKGROUND.getRed(), BACKGROUND.getGreen(),
-			BACKGROUND.getBlue(), 200);
-	public static Color LIST_WATCH_BACKGROUND = LIST_ACTIVE_BACKGROUND.darker().darker();
 
 	public static Component TOP_LEVEL_COMPONENT = null;
 	public static Random RANDOM = new Random();

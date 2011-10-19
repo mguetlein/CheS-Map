@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import util.ArrayUtil;
-import util.ColorUtil;
 import dataInterface.MoleculeProperty.Type;
 import freechart.FreeChartUtil;
 
@@ -13,7 +12,7 @@ public class MoleculePropertyUtil
 {
 	private static HashMap<MoleculeProperty, Color[]> mapping = new HashMap<MoleculeProperty, Color[]>();
 
-	public static Color[] AVAILABLE_COLORS = ColorUtil.darker(FreeChartUtil.COLORS);
+	private static Color[] AVAILABLE_COLORS = FreeChartUtil.BRIGHT_COLORS;
 	static
 	{
 		Color col = AVAILABLE_COLORS[0];

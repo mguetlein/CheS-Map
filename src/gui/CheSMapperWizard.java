@@ -3,7 +3,9 @@ package gui;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
+import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.border.EtchedBorder;
 
 import main.CheSMapping;
 import main.Settings;
@@ -84,6 +86,8 @@ public class CheSMapperWizard extends WizardDialog
 			}
 		}
 
+		if (Settings.SCREENSHOT_SETUP)
+			((JComponent) getContentPane().getComponent(0)).setBorder(new EtchedBorder());
 		setVisible(true);
 	}
 
