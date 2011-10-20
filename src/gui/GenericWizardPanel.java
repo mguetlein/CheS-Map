@@ -141,7 +141,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 
 		CellConstraints cc = new CellConstraints();
 		int row = 1;
-		setLayout(new FormLayout("fill:p:grow", "p,3dlu,p,5dlu,p,15dlu,p,0dlu,fill:p:grow"));
+		setLayout(new FormLayout("fill:p:grow", "p,3dlu,p,5dlu,p,15dlu,p,3dlu,fill:p:grow"));
 
 		infoIcon = new JLabel();
 		infoTextArea = new JTextArea();
@@ -228,7 +228,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 			// top:100:grow has the side effect of add large gaps between following rows
 			// this ugly when the description panel is very small
 			// -> use 'top:100:grow' only for large descriptions, else use 'p'
-			if (descriptionPanel.getPreferredSize().getHeight() > 200)
+			if (descriptionPanel.getPreferredSize().getHeight() > 180)
 				builder.getLayout().setRowSpec(builder.getRow(),
 						new RowSpec(RowSpec.TOP, Sizes.pixel(100), RowSpec.DEFAULT_GROW));
 			else
