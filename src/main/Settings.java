@@ -24,10 +24,12 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
+import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,7 +47,7 @@ public class Settings
 {
 	// -------------------------- GRAPHICAL STUFF ---------------------------------
 
-	public static boolean SCREENSHOT_SETUP = false;
+	public static boolean SCREENSHOT_SETUP = true;
 
 	static
 	{
@@ -61,6 +63,23 @@ public class Settings
 		{
 			e.printStackTrace();
 		}
+	}
+
+	private static ResourceBundle text = ResourceBundle.getBundle("ches-map");
+
+	public static String text(String key)
+	{
+		return text.getString(key);
+	}
+
+	public static String text(String key, String param1)
+	{
+		return MessageFormat.format(text.getString(key), param1);
+	}
+
+	public static String text(String key, String param1, String param2)
+	{
+		return MessageFormat.format(text.getString(key), param1, param2);
 	}
 
 	public static Component TOP_LEVEL_COMPONENT = null;
@@ -127,17 +146,16 @@ public class Settings
 		}
 	}
 
+	public static String CDK_VERSION = "1.4.0";
+	public static String CDK_STRING = text("lib.cdk", CDK_VERSION);
+	public static String OPENBABEL_STRING = text("lib.openbabel");
+	public static String R_STRING = text("lib.r");
+	public static String WEKA_STRING = text("lib.weka", Version.VERSION);
+
 	public static String VERSION_STRING = VERSION + " Initial Prototype"
 			+ ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
 	public static String TITLE = "CheS-Mapper";
 	public static String HOMEPAGE = "http://opentox.informatik.uni-freiburg.de/ches-mapper";
-	public static String CDK_VERSION = "1.4.0";
-	public static String CDK_STRING = "The Chemistry Development Kit (CDK) (Version " + CDK_VERSION
-			+ ", see http://cdk.sourceforge.net)";
-	public static String OPENBABEL_STRING = "Open Babel: The Open Source Chemistry Toolbox (http://openbabel.org)";
-	public static String WEKA_STRING = "WEKA : Data Mining Software in Java (Version " + Version.VERSION
-			+ ", see http://www.cs.waikato.ac.nz/ml/weka)";
-	public static String R_STRING = "The R Project for Statistical Computing (http://www.r-project.org)";
 	public static String SMSD_STRING = "The Small Molecule Subgraph Detector (SMSD) (see http://www.ebi.ac.uk/thornton-srv/software/SMSD, integrated into CDK)";
 
 	// ------------------ TMP/RESULT-FILE SUPPORT --------------------------------------------- 
@@ -145,10 +163,11 @@ public class Settings
 	public static String BASE_DIR = System.getProperty("user.home") + File.separator + ".ches-mapper";
 	public static String STRUCTURAL_FRAGMENT_DIR = BASE_DIR + File.separator + "structural_fragments";
 	public static String MODIFIED_BABEL_DATA_DIR = BASE_DIR + File.separator + "babel_data";
+	public static String R_LIB_DIR = BASE_DIR + File.separator + "r_libs";
 
 	static
 	{
-		for (String d : new String[] { BASE_DIR, STRUCTURAL_FRAGMENT_DIR, MODIFIED_BABEL_DATA_DIR })
+		for (String d : new String[] { BASE_DIR, STRUCTURAL_FRAGMENT_DIR, MODIFIED_BABEL_DATA_DIR, R_LIB_DIR })
 		{
 			File dir = new File(d);
 			if (!dir.exists())

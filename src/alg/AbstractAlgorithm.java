@@ -6,16 +6,26 @@ import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
 import dataInterface.MoleculeProperty.Type;
 
-public interface Algorithm
+public abstract class AbstractAlgorithm implements Algorithm
 {
-	public Property[] getProperties();
 
-	public String getName();
+	@Override
+	public Property[] getProperties()
+	{
+		return null;
+	}
 
-	public String getDescription();
+	@Override
+	public Binary getBinary()
+	{
+		return null;
+	}
 
-	public Binary getBinary();
-
+	@Override
 	public Message getMessage(DatasetFile dataset, int numFeatures, Type featureType, boolean smartsFeaturesSelected,
-			DatasetClusterer clusterer);
+			DatasetClusterer clusterer)
+	{
+		return null;
+	}
+
 }

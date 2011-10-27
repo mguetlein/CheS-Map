@@ -1,10 +1,9 @@
 package alg.build3d;
 
-import gui.binloc.Binary;
-import gui.property.Property;
+import main.Settings;
 import data.DatasetFile;
 
-public class UseOrigStructures implements ThreeDBuilder
+public class UseOrigStructures extends Abstract3DBuilder
 {
 	String f;
 
@@ -23,37 +22,19 @@ public class UseOrigStructures implements ThreeDBuilder
 	@Override
 	public String getName()
 	{
-		return "No 3D Structure Generation (Use Original Structures)";
+		return Settings.text("build3d.no-3d");
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return "Does NOT create 3D structures, leaves the dataset as it is.";
-	}
-
-	@Override
-	public Property[] getProperties()
-	{
-		return null;
+		return Settings.text("build3d.no-3d.desc");
 	}
 
 	@Override
 	public boolean isReal3DBuilder()
 	{
 		return false;
-	}
-
-	@Override
-	public Binary getBinary()
-	{
-		return null;
-	}
-
-	@Override
-	public String getWarning()
-	{
-		return null;
 	}
 
 	@Override

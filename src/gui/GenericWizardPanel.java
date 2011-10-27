@@ -29,6 +29,9 @@ import javax.swing.event.ListSelectionListener;
 import main.Settings;
 import util.ImageLoader;
 import alg.Algorithm;
+import alg.Message;
+import alg.MessageType;
+import alg.cluster.DatasetClusterer;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.DefaultComponentFactory;
@@ -51,16 +54,10 @@ public abstract class GenericWizardPanel extends WizardPanel
 	JPanel propertyPanel;
 
 	protected Algorithm selectedAlgorithm;
-	protected boolean preconditionsMet = true;
-
-	protected abstract String getAlgorithmType();
+	private boolean canProceed = false;
+	private boolean binaryFound = true;
 
 	protected abstract Algorithm[] getAlgorithms();
-
-	protected enum MsgType
-	{
-		INFO, WARNING, ERROR, EMPTY
-	}
 
 	public GenericWizardPanel(final CheSMapperWizard w)
 	{
@@ -155,9 +152,9 @@ public abstract class GenericWizardPanel extends WizardPanel
 		p.add(infoIcon, BorderLayout.WEST);
 		p.add(infoTextArea);
 
-		setInfo("", MsgType.EMPTY);
+		setInfo(null);
 
-		add(new JLabel(getAlgorithmType() + ":"), cc.xy(1, row));
+		add(new JLabel(getTitle() + " Algorithms:"), cc.xy(1, row));
 		row += 2;
 
 		add(new JScrollPane(list), cc.xy(1, row));
@@ -210,8 +207,8 @@ public abstract class GenericWizardPanel extends WizardPanel
 	{
 		selectedAlgorithm = getAlgorithms()[index];
 
-		preconditionsMet = selectedAlgorithm.getBinary() == null || selectedAlgorithm.getBinary().isFound();
-		setInfo("", MsgType.EMPTY);
+		binaryFound = selectedAlgorithm.getBinary() == null || selectedAlgorithm.getBinary().isFound();
+		setInfo(null);
 
 		if (!cards.containsKey(selectedAlgorithm.toString()))
 		{
@@ -262,49 +259,6 @@ public abstract class GenericWizardPanel extends WizardPanel
 		((CardLayout) propertyPanel.getLayout()).show(propertyPanel, selectedAlgorithm.toString());
 	}
 
-	public void update(DatasetFile dataset, int numFeatures, Type featureType)
-	{
-		if (canProceed() && getSelectedAlgorithm().getWarning() != null)
-			setInfo(getSelectedAlgorithm().getWarning(), MsgType.WARNING);
-	}
-
-	protected int defaultSelection()
-	{
-		return -1;
-	}
-
-	protected void setInfo(String string, MsgType type)
-	{
-		//infoTextArea.setVisible(type != MsgType.EMPTY);
-		infoTextArea.setText(string);
-		switch (type)
-		{
-			case INFO:
-				infoIcon.setIcon(ImageLoader.INFO);
-				break;
-			case WARNING:
-				infoIcon.setIcon(ImageLoader.WARNING);
-				break;
-			case ERROR:
-				infoIcon.setIcon(ImageLoader.ERROR);
-				break;
-			case EMPTY:
-				infoIcon.setIcon(new ImageIcon()
-				{
-					public int getIconHeight()
-					{
-						return 16;
-					}
-
-					public int getIconWidth()
-					{
-						return 16;
-					}
-				});
-				break;
-		}
-	}
-
 	@Override
 	public void proceed()
 	{
@@ -314,9 +268,65 @@ public abstract class GenericWizardPanel extends WizardPanel
 	}
 
 	@Override
-	public boolean canProceed()
+	public final boolean canProceed()
 	{
-		return preconditionsMet;
+		return canProceed && binaryFound;
+	}
+
+	public void update(DatasetFile dataset, int numFeatures, Type featureType, boolean smartsFeaturesSelected,
+			DatasetClusterer clusterer)
+	{
+		canProceed = false;
+		if (!binaryFound)
+			setInfo(null);
+		else
+		{
+			Message msg = getSelectedAlgorithm().getMessage(dataset, numFeatures, featureType, smartsFeaturesSelected,
+					clusterer);
+			canProceed = (msg == null || msg.getType() != MessageType.Error);
+			setInfo(msg);
+		}
+	}
+
+	protected int defaultSelection()
+	{
+		return -1;
+	}
+
+	private void setInfo(Message msg)
+	{
+		if (msg == null)
+		{
+			infoTextArea.setText("");
+			infoIcon.setIcon(new ImageIcon()
+			{
+				public int getIconHeight()
+				{
+					return 16;
+				}
+
+				public int getIconWidth()
+				{
+					return 16;
+				}
+			});
+		}
+		else
+		{
+			infoTextArea.setText(msg.getString());
+			switch (msg.getType())
+			{
+				case Info:
+					infoIcon.setIcon(ImageLoader.INFO);
+					break;
+				case Warning:
+					infoIcon.setIcon(ImageLoader.WARNING);
+					break;
+				case Error:
+					infoIcon.setIcon(ImageLoader.ERROR);
+					break;
+			}
+		}
 	}
 
 	public Algorithm getSelectedAlgorithm()

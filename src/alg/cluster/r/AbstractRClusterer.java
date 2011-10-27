@@ -1,7 +1,6 @@
 package alg.cluster.r;
 
 import gui.binloc.Binary;
-import gui.property.Property;
 import io.RUtil;
 
 import java.io.File;
@@ -12,20 +11,20 @@ import java.util.List;
 
 import main.Settings;
 import rscript.ExportRUtil;
+import rscript.RScriptUtil;
 import util.ExternalToolUtil;
 import util.ListUtil;
+import alg.cluster.AbstractDatasetClusterer;
 import alg.cluster.DatasetClusterer;
-import alg.cluster.DatasetClustererUtil;
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import data.DistanceUtil;
-import data.RScriptUser;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 
-public abstract class AbstractRClusterer extends RScriptUser implements DatasetClusterer
+public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 {
 	public static final DatasetClusterer[] R_CLUSTERER = new AbstractRClusterer[] { new KMeansRClusterer(),
 			new CascadeKMeansRClusterer(), new HierarchicalRClusterer(), new DynamicTreeCutHierarchicalRClusterer() };
@@ -38,13 +37,9 @@ public abstract class AbstractRClusterer extends RScriptUser implements DatasetC
 		return Settings.RSCRIPT_BINARY;
 	}
 
-	@Override
-	public String getWarning()
-	{
-		return null;
-	}
+	protected abstract String getRScriptName();
 
-	List<ClusterData> clusters;
+	protected abstract String getRScriptCode();
 
 	@Override
 	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
@@ -65,8 +60,11 @@ public abstract class AbstractRClusterer extends RScriptUser implements DatasetC
 				DistanceUtil.values(features, ListUtil.cast(MolecularPropertyOwner.class, compounds)),
 				f.getAbsolutePath());
 
-		String errorOut = ExternalToolUtil.run(getRScriptName(), Settings.RSCRIPT_BINARY.getLocation() + " "
-				+ getScriptPath() + " " + f.getAbsolutePath() + " " + f2.getAbsolutePath());
+		String errorOut = ExternalToolUtil.run(
+				getRScriptName(),
+				Settings.RSCRIPT_BINARY.getLocation() + " "
+						+ RScriptUtil.getScriptPath(getRScriptName(), getRScriptCode()) + " " + f.getAbsolutePath()
+						+ " " + f2.getAbsolutePath());
 
 		List<Integer> cluster = RUtil.readCluster(f2.getAbsolutePath());
 		if (cluster.size() != compounds.size())
@@ -89,31 +87,7 @@ public abstract class AbstractRClusterer extends RScriptUser implements DatasetC
 			c.addCompound(compounds.get(i));
 		}
 
-		DatasetClustererUtil.storeClusters(dataset.getSDFPath(true), getRScriptName(), getName(), clusters);
-	}
-
-	@Override
-	public List<ClusterData> getClusters()
-	{
-		return clusters;
-	}
-
-	@Override
-	public boolean requiresFeatures()
-	{
-		return true;
-	}
-
-	@Override
-	public Property[] getProperties()
-	{
-		return null;
-	}
-
-	@Override
-	public String getFixedNumClustersProperty()
-	{
-		return null;
+		storeClusters(dataset.getSDFPath(true), getRScriptName(), getName(), clusters);
 	}
 
 }

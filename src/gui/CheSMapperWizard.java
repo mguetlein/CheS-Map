@@ -98,24 +98,17 @@ public class CheSMapperWizard extends WizardDialog
 
 	protected void update(int status)
 	{
-		//		if (status == 0 && dataset.getDatasetFile() != null)
-		//		{
 		if (dataset.getDatasetFile() != null)
 		{
-			create3D.update(dataset.getDatasetFile());
+			create3D.update(dataset.getDatasetFile(), -1, null, false, null);
 			features.updateIntegratedFeatures(dataset.getDatasetFile());
+			int n = features.getNumSelectedFeatures();
+			Type t = features.getSelectedFeatureType();
+			boolean b = features.smartsFeaturesSelected();
+			cluster.update(dataset.getDatasetFile(), n, t, b, cluster.getDatasetClusterer());
+			embed.update(dataset.getDatasetFile(), n, t, b, cluster.getDatasetClusterer());
+			align.update(dataset.getDatasetFile(), n, t, b, cluster.getDatasetClusterer());
 		}
-		//		}
-		//		if (status == 2)
-		//		{
-
-		int n = features.getNumSelectedFeatures();
-		Type t = features.getSelectedFeatureType();
-
-		cluster.update(dataset.getDatasetFile(), n, t);
-		embed.update(dataset.getDatasetFile(), n, t);
-		align.update(cluster.getDatasetClusterer());
-		//		}
 		super.update(status);
 	}
 

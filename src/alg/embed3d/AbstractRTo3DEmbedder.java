@@ -16,33 +16,22 @@ import main.Settings;
 
 import org.apache.commons.math.geometry.Vector3D;
 
-import rscript.RScriptUtil;
 import rscript.ExportRUtil;
+import rscript.RScriptUtil;
 import util.ArrayUtil;
 import util.ExternalToolUtil;
 import data.DatasetFile;
 import data.DistanceUtil;
-import data.RScriptUser;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 
-public abstract class AbstractRTo3DEmbedder extends RScriptUser implements ThreeDEmbedder
+public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 {
-	List<Vector3f> positions;
-
 	protected int numInstances = -1;
 
-	@Override
-	public boolean requiresFeatures()
-	{
-		return true;
-	}
+	protected abstract String getRScriptName();
 
-	@Override
-	public String getWarning()
-	{
-		return null;
-	}
+	protected abstract String getRScriptCode();
 
 	@Override
 	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features)
@@ -69,8 +58,9 @@ public abstract class AbstractRTo3DEmbedder extends RScriptUser implements Three
 
 		ExternalToolUtil.run(
 				getRScriptName(),
-				Settings.RSCRIPT_BINARY.getLocation() + " " + getScriptPath() + " " + f.getAbsolutePath() + " "
-						+ f2.getAbsolutePath());
+				Settings.RSCRIPT_BINARY.getLocation() + " "
+						+ RScriptUtil.getScriptPath(getRScriptName(), getRScriptCode()) + " " + f.getAbsolutePath()
+						+ " " + f2.getAbsolutePath());
 
 		List<Vector3D> v3d = RUtil.readRVectorMatrix(f2.getAbsolutePath());
 		if (v3d.size() != instances.size())
@@ -105,18 +95,6 @@ public abstract class AbstractRTo3DEmbedder extends RScriptUser implements Three
 		return Settings.RSCRIPT_BINARY;
 	}
 
-	@Override
-	public List<Vector3f> getPositions()
-	{
-		return positions;
-	}
-
-	@Override
-	public Property[] getProperties()
-	{
-		return null;
-	}
-
 	public abstract int getMinNumFeatures();
 
 	public abstract int getMinNumInstances();
@@ -144,14 +122,13 @@ public abstract class AbstractRTo3DEmbedder extends RScriptUser implements Three
 		@Override
 		public String getName()
 		{
-			return "TSNE 3D Embedder (RScript)";
+			return Settings.text("embed.r.tsne");
 		}
 
 		@Override
 		public String getDescription()
 		{
-			return "Uses " + Settings.R_STRING + ".\n" + "Performs T-Distributed Stochastic Neighbor Embedding.\n\n"
-					+ "Details: http://cran.r-project.org/web/packages/tsne\n";
+			return Settings.text("embed.r.tsne.desc", Settings.R_STRING);
 		}
 
 		private int getPerplexity()
@@ -209,21 +186,15 @@ public abstract class AbstractRTo3DEmbedder extends RScriptUser implements Three
 		}
 
 		@Override
-		public String getDescription()
+		public String getName()
 		{
-			return "Uses "
-					+ Settings.R_STRING
-					+ ".\n"
-					+ "Principal component analysis (PCA) is a method that reduces the feature space. The "
-					+ "method transforms the orginial features into principal componentes, which are uncorrelated numerical "
-					+ "features. The first, most significant 3 principal components are used for 3D Embedding.\n\n"
-					+ "Details: http://stat.ethz.ch/R-manual/R-patched/library/stats/html/prcomp.html";
+			return Settings.text("embed.r.pca");
 		}
 
 		@Override
-		public String getName()
+		public String getDescription()
 		{
-			return "PCA 3D Embedder (RScript)";
+			return Settings.text("embed.r.pca.desc", Settings.R_STRING);
 		}
 
 		@Override
@@ -257,15 +228,13 @@ public abstract class AbstractRTo3DEmbedder extends RScriptUser implements Three
 		@Override
 		public String getName()
 		{
-			return "SMACOF 3D Embedder (RScript)";
+			return Settings.text("embed.r.smacof");
 		}
 
 		@Override
 		public String getDescription()
 		{
-			return "Uses " + Settings.R_STRING + ".\n"
-					+ "Performs Multidimensional Scaling Using Majorization: SMACOF in R."
-					+ "\n\nDetails: http://cran.r-project.org/web/packages/smacof";
+			return Settings.text("embed.r.smacof.desc", Settings.R_STRING);
 		}
 
 		IntegerProperty maxNumIterations = new IntegerProperty("Maximum number of iterations (itmax)", 150);

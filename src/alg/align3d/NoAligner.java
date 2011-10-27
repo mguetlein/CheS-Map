@@ -1,33 +1,34 @@
 package alg.align3d;
 
-import gui.binloc.Binary;
-import gui.property.Property;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import main.Settings;
+import alg.AbstractAlgorithm;
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import dataInterface.ClusterData;
+import dataInterface.MoleculeProperty;
+import dataInterface.SubstructureSmartsType;
 
-public class NoAligner implements ThreeDAligner
+public class NoAligner extends AbstractAlgorithm implements ThreeDAligner
 {
 	List<String> clusterFiles;
 
 	@Override
+	public String getName()
+	{
+		return Settings.text("align.no-align");
+	}
+
+	@Override
 	public String getDescription()
 	{
-		return "Does NOT align compounds. Hence, the compounds are oriented in 3D space as provided in the dataset.";
+		return Settings.text("align.no-align.desc");
 	}
 
 	@Override
-	public Property[] getProperties()
-	{
-		return null;
-	}
-
-	@Override
-	public void algin(DatasetFile dataset, List<ClusterData> clusters)
+	public void algin(DatasetFile dataset, List<ClusterData> clusters, List<MoleculeProperty> features)
 	{
 		clusterFiles = new ArrayList<String>();
 		for (ClusterData c : clusters)
@@ -44,19 +45,13 @@ public class NoAligner implements ThreeDAligner
 	}
 
 	@Override
-	public String getName()
+	public boolean requiresStructuralFragments()
 	{
-		return "No Cluster Aligner";
+		return false;
 	}
 
 	@Override
-	public Binary getBinary()
-	{
-		return null;
-	}
-
-	@Override
-	public String getWarning()
+	public SubstructureSmartsType getSubstructureSmartsType()
 	{
 		return null;
 	}

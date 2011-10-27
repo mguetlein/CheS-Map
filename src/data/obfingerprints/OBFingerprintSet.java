@@ -43,20 +43,20 @@ public class OBFingerprintSet extends FragmentPropertySet
 		switch (type)
 		{
 			case FP2:
-				name = "OpenBabel Linear Fragments (FP2)";
-				description = "FP2 - Indexes linear fragments up to 7 atoms.";
+				name = Settings.text("features.struct.fp2");
+				description = Settings.text("features.struct.fp2.desc");
 				break;
 			case FP3:
-				name = "OpenBabel FP3";
-				description = "FP3 - SMARTS patterns specified in the file patterns.txt";
+				name = Settings.text("features.struct.fp3");
+				description = Settings.text("features.struct.fp3.desc");
 				break;
 			case FP4:
-				name = "OpenBabel FP4";
-				description = "FP4 - SMARTS patterns specified in the file SMARTS_InteLigand.txt";
+				name = Settings.text("features.struct.fp4");
+				description = Settings.text("features.struct.fp4.desc");
 				break;
 			case MACCS:
-				name = "OpenBabel MACCS";
-				description = "MACCS - SMARTS patterns specified in the file MACCS.txt";
+				name = Settings.text("features.struct.maccs");
+				description = Settings.text("features.struct.maccs.desc");
 				break;
 			default:
 				throw new Error("Unknown type");

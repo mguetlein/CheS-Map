@@ -3,7 +3,6 @@ package main;
 import util.SwingUtil;
 import alg.DatasetProvider;
 import alg.FeatureComputer;
-import alg.align3d.MCSAligner;
 import alg.align3d.ThreeDAligner;
 import alg.build3d.OpenBabel3DBuilder;
 import alg.build3d.ThreeDBuilder;
@@ -12,7 +11,6 @@ import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
 import data.ClusterDataImpl;
 import data.ClusteringData;
-import data.ComputeMCS;
 import data.DatasetFile;
 import data.DefaultFeatureComputer;
 import data.EmbedClusters;
@@ -20,7 +18,6 @@ import data.FeatureService;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MoleculeProperty;
-import dataInterface.SubstructureSmartsType;
 
 public class CheSMapping
 {
@@ -119,19 +116,12 @@ public class CheSMapping
 					embedder.embed(threeDEmbedder, dataset, clustering);
 					clustering.setEmbedAlgorithm(threeDEmbedder.getName());
 
-					if (threeDAligner instanceof MCSAligner)
-					{
-						if (TaskProvider.task().isCancelled())
-							return;
-						TaskProvider.task().update(50, "Compute MCS of clusters");
-						ComputeMCS.computeMCS(dataset, clustering.getClusters());
-						clustering.addSubstructureSmartsTypes(SubstructureSmartsType.MCS);
-					}
-
 					if (TaskProvider.task().isCancelled())
 						return;
-					TaskProvider.task().update(60, "3D align compounds");
-					threeDAligner.algin(dataset, clustering.getClusters());
+					TaskProvider.task().update(50, "3D align compounds");
+					threeDAligner.algin(dataset, clustering.getClusters(), clustering.getFeatures());
+					if (threeDAligner.getSubstructureSmartsType() != null)
+						clustering.addSubstructureSmartsTypes(threeDAligner.getSubstructureSmartsType());
 					int cCount = 0;
 					for (String alignedFile : threeDAligner.getAlginedClusterFiles())
 						((ClusterDataImpl) clustering.getClusters().get(cCount++)).setFilename(alignedFile);
@@ -142,7 +132,7 @@ public class CheSMapping
 					//			if (SDFUtil.countCompounds(threeDAligner.getAlginedClusterFiles()[cCount++]) != indices.length)
 					//				throw new IllegalStateException();
 
-					TaskProvider.task().update(70, "Mapping complete - Loading 3D library");
+					TaskProvider.task().update(60, "Mapping complete - Loading 3D library");
 
 					for (ClusterData c : clustering.getClusters())
 					{

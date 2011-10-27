@@ -240,12 +240,6 @@ public class CDKProperty extends AbstractMoleculeProperty
 				return Type.NOMINAL;
 		}
 
-		@Override
-		public Binary getBinary()
-		{
-			return null;
-		}
-
 		public IMolecularDescriptor newMolecularDescriptor()
 		{
 			return newMolecularDescriptor(desc);
@@ -376,6 +370,12 @@ public class CDKProperty extends AbstractMoleculeProperty
 		public boolean isUsedForMapping()
 		{
 			return true;
+		}
+
+		@Override
+		public Binary getBinary()
+		{
+			return null;
 		}
 	}
 }

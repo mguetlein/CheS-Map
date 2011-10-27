@@ -12,21 +12,13 @@ class HierarchicalRClusterer extends AbstractRClusterer
 	@Override
 	public String getName()
 	{
-		return "Hierachical (R)";
+		return Settings.text("cluster.r.hierachical");
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return "Uses "
-				+ Settings.R_STRING
-				+ ".\n"
-				+ "Starts with each compound as a single cluster. Subsequently merges the two most similar clusters.\n"
-				+ "Similartiy is compouted accroding to the parameter <b>method</b>: \"Ward's minimum variance method aims at finding compact, "
-				+ "spherical clusters. The complete linkage method finds similar clusters. The single linkage method (which is closely "
-				+ "related to the minimal spanning tree) adopts a `friends of friends' clustering strategy. The other methods can be "
-				+ "regarded as aiming for clusters with characteristics somewhere between the single and complete link methods.\"\n"
-				+ "Details: http://svitsrv25.epfl.ch/R-doc/library/GLAD/html/hclust.html";
+		return Settings.text("cluster.r.hierachical.desc", Settings.R_STRING);
 	}
 
 	@Override

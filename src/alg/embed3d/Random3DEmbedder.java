@@ -1,6 +1,5 @@
 package alg.embed3d;
 
-import gui.binloc.Binary;
 import gui.property.Property;
 
 import java.util.ArrayList;
@@ -14,7 +13,7 @@ import data.DatasetFile;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 
-public class Random3DEmbedder implements ThreeDEmbedder
+public class Random3DEmbedder extends Abstract3DEmbedder
 {
 
 	private static List<Vector3f> getPositions(int numPositions)
@@ -56,23 +55,9 @@ public class Random3DEmbedder implements ThreeDEmbedder
 	}
 
 	@Override
-	public Binary getBinary()
-	{
-		return null;
-	}
-
-	List<Vector3f> positions;
-
-	@Override
 	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features)
 	{
 		positions = getPositions(instances.size());
-	}
-
-	@Override
-	public List<Vector3f> getPositions()
-	{
-		return positions;
 	}
 
 	@Override
@@ -84,13 +69,13 @@ public class Random3DEmbedder implements ThreeDEmbedder
 	@Override
 	public String getName()
 	{
-		return "No 3D Embedding (Random positions)";
+		return Settings.text("embed.random");
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return "The compound features are ignored. This compounds are arranged randomly, equally distributed in a sphere.";
+		return Settings.text("embed.random.desc");
 	}
 
 	@Override
@@ -99,9 +84,4 @@ public class Random3DEmbedder implements ThreeDEmbedder
 		return false;
 	}
 
-	@Override
-	public String getWarning()
-	{
-		return null;
-	}
 }

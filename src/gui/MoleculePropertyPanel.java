@@ -305,6 +305,11 @@ public class MoleculePropertyPanel extends JPanel
 							if (selectedPropertySet.getSize(dataset) > 0)
 							{
 								comboBox.setSelectedIndex(selectedPropertyIndex);
+								if (selectedPropertySet.get(dataset, selectedPropertyIndex).isSmartsProperty())
+									comboBox.setToolTipText(selectedPropertySet.get(dataset, selectedPropertyIndex)
+											.getSmarts());
+								else
+									comboBox.setToolTipText("");
 								comboBox.setEnabled(true);
 							}
 							else

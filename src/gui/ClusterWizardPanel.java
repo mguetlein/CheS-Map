@@ -1,13 +1,11 @@
 package gui;
 
+import main.Settings;
 import util.ArrayUtil;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
-import alg.cluster.StructuralClustererService;
 import alg.cluster.WekaClusterer;
 import alg.cluster.r.AbstractRClusterer;
-import data.DatasetFile;
-import dataInterface.MoleculeProperty.Type;
 
 public class ClusterWizardPanel extends GenericWizardPanel
 {
@@ -16,8 +14,9 @@ public class ClusterWizardPanel extends GenericWizardPanel
 	static
 	{
 		CLUSTERERS = ArrayUtil.concat(DatasetClusterer.class, new DatasetClusterer[] { new NoClusterer() },
-				AbstractRClusterer.R_CLUSTERER, WekaClusterer.WEKA_CLUSTERER,
-				new DatasetClusterer[] { new StructuralClustererService() });
+				AbstractRClusterer.R_CLUSTERER, WekaClusterer.WEKA_CLUSTERER
+		//,new DatasetClusterer[] { new StructuralClustererService() }
+				);
 	}
 
 	public ClusterWizardPanel(CheSMapperWizard w)
@@ -26,48 +25,15 @@ public class ClusterWizardPanel extends GenericWizardPanel
 	}
 
 	@Override
-	public void update(DatasetFile dataset, int numFeatures, Type featureType)
-	{
-		if (!preconditionsMet)
-			return;
-		canProceed = !getDatasetClusterer().requiresFeatures() || numFeatures > 0;
-		if (!canProceed)
-			setInfo(getDatasetClusterer().getName()
-					+ " requires features for clustering, you have no features selected.\nPlease select features in previous step, or select another cluster method.",
-					MsgType.ERROR);
-		else if (getSelectedAlgorithm().getWarning() != null)
-			setInfo(getSelectedAlgorithm().getWarning(), MsgType.WARNING);
-		else if (getDatasetClusterer().getFixedNumClustersProperty() != null)
-			setInfo("This clusterer returns a fixed number of clusters (set property '"
-					+ getDatasetClusterer().getFixedNumClustersProperty() + "').", MsgType.INFO);
-		else
-			setInfo("", MsgType.EMPTY);
-	}
-
-	@Override
-	public boolean canProceed()
-	{
-		if (!preconditionsMet)
-			return false;
-		return canProceed;
-	}
-
-	@Override
 	public String getTitle()
 	{
-		return "Cluster Dataset";
-	}
-
-	@Override
-	public String getAlgorithmType()
-	{
-		return "Cluster Algorithms";
+		return Settings.text("cluster.title");
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return "Divides a dataset into clusters (i.e. into subsets of compounds)";
+		return Settings.text("cluster.desc");
 	}
 
 	@Override

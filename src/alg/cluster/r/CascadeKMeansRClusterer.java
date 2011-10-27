@@ -15,17 +15,13 @@ class CascadeKMeansRClusterer extends AbstractRClusterer
 	@Override
 	public String getName()
 	{
-		return "k-Means - Cascade (R)";
+		return Settings.text("cluster.r.cascade-kmeans");
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return "Uses "
-				+ Settings.R_STRING
-				+ ".\n"
-				+ "Runs k-Means algorithm for different sizes of k. Selects the best clustering result according to one of two available criterias.\n"
-				+ "Details: http://cc.oulu.fi/~jarioksa/softhelp/vegan/html/cascadeKM.html";
+		return Settings.text("cluster.r.cascade-kmeans.desc", Settings.R_STRING);
 	}
 
 	@Override

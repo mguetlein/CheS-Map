@@ -1,12 +1,11 @@
 package alg.build3d;
 
 import gui.binloc.Binary;
-import gui.property.Property;
 import main.Settings;
 import util.ExternalToolUtil;
 import data.DatasetFile;
 
-public class OpenBabel3DBuilder extends Abstract3DBuilder
+public class OpenBabel3DBuilder extends AbstractReal3DBuilder
 {
 	@Override
 	public void build3D(DatasetFile datasetFile, String outfile)
@@ -23,37 +22,20 @@ public class OpenBabel3DBuilder extends Abstract3DBuilder
 	}
 
 	@Override
-	public String getDescription()
-	{
-		return "Uses "
-				+ Settings.OPENBABEL_STRING
-				+ ".\n"
-				+ "The 'gen3d' option is used to compute 3D coordinates. May take very long, up to a view minutes per compound. "
-				+ "The result is stored so you have to do the computation only once. "
-				+ "(More info: http://openbabel.org/wiki/Tutorial:Basic_Usage)";
-	}
-
-	@Override
-	public Property[] getProperties()
-	{
-		return null;
-	}
-
-	@Override
 	public String getName()
 	{
-		return "OpenBabel 3D Structure Generation";
+		return Settings.text("build3d.openbabel");
+	}
+
+	@Override
+	public String getDescription()
+	{
+		return Settings.text("build3d.openbabel.desc", Settings.OPENBABEL_STRING);
 	}
 
 	@Override
 	public String getInitials()
 	{
 		return "ob";
-	}
-
-	@Override
-	public String getWarning()
-	{
-		return null;
 	}
 }

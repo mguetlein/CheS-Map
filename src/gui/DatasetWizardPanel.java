@@ -393,12 +393,6 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 	}
 
 	@Override
-	public String getTitle()
-	{
-		return "Load Dataset";
-	}
-
-	@Override
 	public DatasetFile getDatasetFile()
 	{
 		return dataset;
@@ -410,9 +404,15 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 	}
 
 	@Override
+	public String getTitle()
+	{
+		return Settings.text("dataset.title");
+	}
+
+	@Override
 	public String getDescription()
 	{
-		return "Select a dataset from your file system for clustering, embedding and visualization.";
+		return Settings.text("dataset.desc");
 	}
 
 }

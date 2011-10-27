@@ -1,15 +1,17 @@
 package gui;
 
+import main.Settings;
 import alg.Algorithm;
 import alg.align3d.MCSAligner;
+import alg.align3d.MaxFragAligner;
 import alg.align3d.NoAligner;
 import alg.align3d.ThreeDAligner;
-import alg.cluster.DatasetClusterer;
 
 public class AlignWizardPanel extends GenericWizardPanel
 {
 	boolean canProceed = false;
-	public static final ThreeDAligner ALIGNER[] = new ThreeDAligner[] { new NoAligner(), new MCSAligner() };
+	public static final ThreeDAligner ALIGNER[] = new ThreeDAligner[] { new NoAligner(), new MCSAligner(),
+			new MaxFragAligner() };
 
 	public AlignWizardPanel(CheSMapperWizard w)
 	{
@@ -25,44 +27,17 @@ public class AlignWizardPanel extends GenericWizardPanel
 	@Override
 	public String getTitle()
 	{
-		return "Align Compounds";
-	}
-
-	@Override
-	public String getAlgorithmType()
-	{
-		return "Align Algorithms";
+		return Settings.text("align.title");
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return "Aligns the compounds inside a cluster with each other.";
+		return Settings.text("align.desc");
 	}
 
 	public ThreeDAligner getAlginer()
 	{
 		return (ThreeDAligner) getSelectedAlgorithm();
 	}
-
-	public void update(DatasetClusterer clusterer)
-	{
-		if (!preconditionsMet)
-			return;
-		canProceed = true;
-		//		canProceed = !getAlginer().isRealAligner() || (clusterer instanceof StructuralClusterer);
-		//		if (!canProceed)
-		//			setInfo(getAlginer().getClass().getSimpleName() + " requires structural features.", MsgType.ERROR);
-		//		else
-		//			setInfo("", MsgType.EMPTY);
-	}
-
-	@Override
-	public boolean canProceed()
-	{
-		if (!preconditionsMet)
-			return false;
-		return canProceed;
-	}
-
 }

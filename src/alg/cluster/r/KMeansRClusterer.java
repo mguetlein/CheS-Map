@@ -8,22 +8,19 @@ public class KMeansRClusterer extends AbstractRClusterer
 {
 	public static String getNameStatic()
 	{
-		return "k-Means (R)";
+		return Settings.text("cluster.r.kmeans");
+	}
+
+	@Override
+	public String getDescription()
+	{
+		return Settings.text("cluster.r.kmeans.desc", Settings.R_STRING);
 	}
 
 	@Override
 	public String getName()
 	{
 		return getNameStatic();
-	}
-
-	@Override
-	public String getDescription()
-	{
-		return "Uses " + Settings.R_STRING + ".\n" //
-				+ "Assignes compounds to k randomly initialized centroids. " //
-				+ "Iteratively updates centroid positions and re-assignes compounds until the algorithm converges.\n" //
-				+ "Implementation details: " + "http://stat.ethz.ch/R-manual/R-patched/library/stats/html/kmeans.html";
 	}
 
 	@Override

@@ -1,13 +1,12 @@
 package alg.build3d;
 
-import gui.binloc.Binary;
 import gui.property.Property;
 import gui.property.SelectProperty;
 import main.Settings;
 import data.DatasetFile;
 import data.FeatureService;
 
-public class CDK3DBuilder extends Abstract3DBuilder
+public class CDK3DBuilder extends AbstractReal3DBuilder
 {
 	public static final String[] FORCEFIELDS = { "mm2", "mmff94" };
 	SelectProperty forcefield = new SelectProperty("forcefield", FORCEFIELDS, FORCEFIELDS[0]);
@@ -27,34 +26,19 @@ public class CDK3DBuilder extends Abstract3DBuilder
 	@Override
 	public String getName()
 	{
-		return "CDK 3D Structure Generation";
+		return Settings.text("build3d.cdk");
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return "Uses "
-				+ Settings.CDK_STRING
-				+ ".\n"
-				+ "The Model Builder 3D supports 2 different forcefields. Tends to be faster but less acurate then OpenBabel.\n\nCDK API: http://pele.farmbio.uu.se/nightly/api/org/openscience/cdk/modeling/builder3d/ModelBuilder3D.html";
+		return Settings.text("build3d.cdk.desc", Settings.CDK_STRING);
 	}
 
 	@Override
 	public String getInitials()
 	{
 		return "cdk_" + forcefield + "_";
-	}
-
-	@Override
-	public Binary getBinary()
-	{
-		return null;
-	}
-
-	@Override
-	public String getWarning()
-	{
-		return null;
 	}
 
 }

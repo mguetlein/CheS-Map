@@ -1,6 +1,5 @@
 package alg.cluster;
 
-import gui.binloc.Binary;
 import gui.property.DoubleProperty;
 import gui.property.Property;
 import gui.property.StringProperty;
@@ -12,6 +11,8 @@ import java.util.List;
 import main.TaskProvider;
 import opentox.DatasetUtil;
 import opentox.RESTUtil;
+import alg.Message;
+import alg.MessageType;
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import data.DefaultFeatureComputer;
@@ -19,11 +20,11 @@ import data.IntegratedProperty;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MoleculeProperty;
+import dataInterface.MoleculeProperty.Type;
 
-public class StructuralClustererService implements DatasetClusterer
+public class StructuralClustererService extends AbstractDatasetClusterer
 {
 	String origURI;
-	List<ClusterData> clusters;
 
 	@Override
 	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
@@ -122,7 +123,7 @@ public class StructuralClustererService implements DatasetClusterer
 				if (!assigned)
 					System.err.println("not assigned: " + dataset.getSmiles()[i]);
 			}
-			DatasetClustererUtil.storeClusters(dataset.getSDFPath(true), "structural", getName(), clusters);
+			storeClusters(dataset.getSDFPath(true), "structural", getName(), clusters);
 		}
 		finally
 		{
@@ -130,12 +131,6 @@ public class StructuralClustererService implements DatasetClusterer
 				if (uri != null)
 					RESTUtil.delete(uri);
 		}
-	}
-
-	@Override
-	public List<ClusterData> getClusters()
-	{
-		return clusters;
 	}
 
 	@Override
@@ -172,22 +167,16 @@ public class StructuralClustererService implements DatasetClusterer
 	}
 
 	@Override
-	public Binary getBinary()
+	public Message getMessage(DatasetFile dataset, int numFeatures, Type featureType, boolean smartsFeaturesSelected,
+			DatasetClusterer clusterer)
 	{
-		return null;
-	}
-
-	@Override
-	public String getFixedNumClustersProperty()
-	{
-		return null;
-	}
-
-	@Override
-	public String getWarning()
-	{
-		return "Your data will be send over the internet to an external webserice.\n"
-				+ "The service ignores the features selected in the previous step (see description below).\n"
-				+ "At present the service can handle only small datsets (< 50 compounds).";
+		Message msg = super.getMessage(dataset, numFeatures, featureType, smartsFeaturesSelected, clusterer);
+		if (msg != null && msg.getType() == MessageType.Error)
+			return msg;
+		String warn = "Your data will be send over the internet to an external webserice.\n"
+				+ "The service ignores the features selected in the previous step (see description below).";
+		if (dataset.numCompounds() >= 50)
+			warn += "\nAt present the service can handle only small datsets (< 50 compounds).";
+		return Message.warningMessage(warn);
 	}
 }

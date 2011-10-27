@@ -1,6 +1,5 @@
 package alg.embed3d;
 
-import gui.binloc.Binary;
 import gui.property.Property;
 
 import java.io.BufferedReader;
@@ -21,11 +20,10 @@ import data.DatasetFile;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 
-public class WekaPCA3DEmbedder implements ThreeDEmbedder
+public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 {
 	PrincipalComponents pca = new PrincipalComponents();
 	Instances resultData;
-	List<Vector3f> positions;
 	Property[] properties = WekaPropertyUtil.getProperties(pca);
 
 	@Override
@@ -66,44 +64,16 @@ public class WekaPCA3DEmbedder implements ThreeDEmbedder
 	@Override
 	public String getName()
 	{
-		return "PCA 3D Embedder (WEKA)";
+		return Settings.text("embed.weka.pca");
 	}
 
 	@Override
 	public String getDescription()
 	{
-		String s = "Uses " + Settings.WEKA_STRING + ".\n";
-		s += "Principal component analysis (PCA) is a method that reduces the feature space. The "
-				+ "method transforms the orginial features into principal componentes, which are uncorrelated numerical "
-				+ "features. The first, most significant 3 principal components are used for 3D Embedding.\n\n";
-		s += "<i>WEKA API documentation:</i> http://weka.sourceforge.net/doc/"
-				+ pca.getClass().getName().replaceAll("\\.", "/") + ".html\n\n";
-		s += "<i>Internal WEKA description:</i>\n" + pca.globalInfo();
-		return s;
-	}
-
-	@Override
-	public Binary getBinary()
-	{
-		return null;
-	}
-
-	@Override
-	public boolean requiresFeatures()
-	{
-		return true;
-	}
-
-	@Override
-	public List<Vector3f> getPositions()
-	{
-		return positions;
-	}
-
-	@Override
-	public String getWarning()
-	{
-		return null;
+		return Settings.text("embed.weka.pca.desc", Settings.WEKA_STRING) + "\n\n"
+				+ "<i>WEKA API documentation:</i> http://weka.sourceforge.net/doc/"
+				+ pca.getClass().getName().replaceAll("\\.", "/") + ".html\n\n" + "<i>Internal WEKA description:</i>\n"
+				+ pca.globalInfo();
 	}
 
 }

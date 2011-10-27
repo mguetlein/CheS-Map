@@ -88,12 +88,6 @@ public class IntegratedProperty extends AbstractMoleculeProperty implements Mole
 		return true;
 	}
 
-	@Override
-	public Binary getBinary()
-	{
-		return null;
-	}
-
 	public void setUsedForMapping(boolean usedForMapping)
 	{
 		this.usedForMapping = usedForMapping;
@@ -103,5 +97,11 @@ public class IntegratedProperty extends AbstractMoleculeProperty implements Mole
 	public boolean isUsedForMapping()
 	{
 		return usedForMapping;
+	}
+
+	@Override
+	public Binary getBinary()
+	{
+		return null;
 	}
 }

@@ -1,7 +1,5 @@
 package gui;
 
-import gui.binloc.Binary;
-
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -55,15 +53,16 @@ public class FeatureWizardPanel extends WizardPanel
 	DatasetFile dataset = null;
 	int numSelected;
 	Type selectedFeatureType;
+	boolean smartsFeaturesSelected;
 	boolean selfUpdate;
 
 	private String addFeaturesText = "Add feature";
 	private String remFeaturesText = "Remove feature";
 
 	public static final String ROOT = "Features";
-	public static final String INTEGRATED_FEATURES = "Included in Dataset";
-	public static final String CDK_FEATURES = "CDK Descriptors";
-	public static final String STRUCTURAL_FRAGMENTS = "Structural Fragments";
+	public static final String INTEGRATED_FEATURES = Settings.text("features.integrated");
+	public static final String CDK_FEATURES = Settings.text("features.cdk");
+	public static final String STRUCTURAL_FRAGMENTS = Settings.text("features.struct");
 
 	JPanel propsPanelContainer;
 	private JPanel propsPanel;
@@ -335,36 +334,20 @@ public class FeatureWizardPanel extends WizardPanel
 
 	protected void updateFeatureInfo(String highlightedCategory)
 	{
-		Binary bin = null;
+		//		Binary bin = null;
 		JPanel props = null;
 
-		String info = "The available features are shown in the left panel. Select (a group of) feature/s and click '"
-				+ addFeaturesText
-				+ "'. The selected features - shown in the right panel - will be used for clustering and/or embedding.\n\n"
-				+ "The clustering/embedding result relies on the selected features. For example, select structural features (e.g. OpenBabel Fingerprint FP2) to cluster structural similar compounds together and to place structural similar compounds close together in 3D space.\n\n"
-				+ "Consider carefully how many/which feature/s to chose. "
-				+ "Select only a handfull of features to increase the influence of each single feature on the clustering and embedding. "
-				+ "Selecting a bunch of features will effect the clustering and embedding result to represent 'overall' similarity.";
+		String info = Settings.text("features.desc.long", addFeaturesText);
+
 		if (highlightedCategory != null && !highlightedCategory.equals(ROOT))
 		{
 			if (highlightedCategory.equals(INTEGRATED_FEATURES))
-				info = "Features that are already included in the provided dataset.\n"
-						+ "Not all features may be suitable for clustering and/or embedding (like for example SMILES strings, or info text).";
+				info = Settings.text("features.integrated.desc");
 			else if (highlightedCategory.equals(CDK_FEATURES))
-				info = "Uses "
-						+ Settings.CDK_STRING
-						+ ".\n\n"
-						+ "This integrated library can compute a range of numeric chemical descriptors (like LogP or Weight).";
+				info = Settings.text("features.cdk.desc", Settings.CDK_STRING);
 			else if (highlightedCategory.equals(STRUCTURAL_FRAGMENTS))
 			{
-				info = "Structural fragments are molecular subgraph that are defined via smarts strings."
-						+ "\nEach fragment is used as a binary nominal feature (1 => subgraph occurs, 0 => subgraph does not occur)."
-						+ "\nCopy a smarts.csv into the following folder to integrate any structural fragments: "
-						+ Settings.STRUCTURAL_FRAGMENT_DIR
-						+ File.separator
-						+ "\nEach line in the csv-file should have 2 values, name of the smarts string and smarts string. "
-						+ "Comments (starting with '#') will be printed as description. Example csv file:"
-						+ "\n\"Benzene\",\"c1ccccc1\"" + "\n\"Carbonyl with Carbon\",\"[CX3](=[OX1])C\"";
+				info = Settings.text("features.struct.desc", Settings.STRUCTURAL_FRAGMENT_DIR + File.separator);
 				props = propsPanel;
 				//				if (fragmentProperties.getMatchEngine() == MatchEngine.OpenBabel)
 				//					bin = Settings.BABEL_BINARY;
@@ -372,12 +355,12 @@ public class FeatureWizardPanel extends WizardPanel
 		}
 		moleculePropertyPanel.showInfoText(info);
 
-		if (bin == null)
-			binaryPanelContainer.removeAll();
-		else
-			binaryPanelContainer.add(Settings.getBinaryComponent(bin), BorderLayout.WEST);
-		binaryPanelContainer.revalidate();
-		binaryPanelContainer.repaint();
+		//		if (bin == null)
+		//			binaryPanelContainer.removeAll();
+		//		else
+		//			binaryPanelContainer.add(Settings.getBinaryComponent(bin), BorderLayout.WEST);
+		//		binaryPanelContainer.revalidate();
+		//		binaryPanelContainer.repaint();
 
 		if (props == null)
 			propsPanelContainer.removeAll();
@@ -394,12 +377,15 @@ public class FeatureWizardPanel extends WizardPanel
 	{
 		numSelected = 0;
 		boolean unknown = false;
+		smartsFeaturesSelected = false;
 		for (MoleculePropertySet set : selector.getSelected())
 		{
 			if (set.isSizeDynamic() && !set.isComputed(dataset))
 				unknown = true;
 			else
 				numSelected += set.getSize(dataset);
+			if (set instanceof FragmentPropertySet)
+				smartsFeaturesSelected = true;
 		}
 		numFeaturesLabel.setText("Number of selected features: " + numSelected + (unknown ? " + ?" : ""));
 		if (unknown)
@@ -415,6 +401,11 @@ public class FeatureWizardPanel extends WizardPanel
 	public Type getSelectedFeatureType()
 	{
 		return selectedFeatureType;
+	}
+
+	public boolean smartsFeaturesSelected()
+	{
+		return smartsFeaturesSelected;
 	}
 
 	public void updateIntegratedFeatures(DatasetFile dataset)
@@ -504,21 +495,21 @@ public class FeatureWizardPanel extends WizardPanel
 		return true;
 	}
 
-	@Override
-	public String getTitle()
-	{
-		return "Extract Features";
-	}
-
 	public FeatureComputer getFeatureComputer()
 	{
 		return new DefaultFeatureComputer(selector.getSelected());
 	}
 
 	@Override
+	public String getTitle()
+	{
+		return Settings.text("features.title");
+	}
+
+	@Override
 	public String getDescription()
 	{
-		return "Features may already be included in the dataset, or can be created. The features are used for the Clustering and/or 3D Embeding.";
+		return Settings.text("features.desc");
 	}
 
 	public StructuralFragmentPropertiesPanel getFragmentPropPanel()

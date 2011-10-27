@@ -1,6 +1,5 @@
 package alg.cluster;
 
-import gui.binloc.Binary;
 import gui.property.Property;
 
 import java.io.BufferedReader;
@@ -31,7 +30,7 @@ import dataInterface.CompoundData;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 
-public class WekaClusterer implements DatasetClusterer
+public class WekaClusterer extends AbstractDatasetClusterer
 {
 	private static SimpleKMeans kMeans = new SimpleKMeans();
 	static
@@ -61,41 +60,29 @@ public class WekaClusterer implements DatasetClusterer
 			WekaClusterer wc = new WekaClusterer(c);
 			if (c instanceof Cobweb)
 			{
-				wc.additionalDescription = "Performs hierarchical conceptual clustering. "
-						+ "It computes CU (category utility) of nodes in the hierachical tree, in order to merge/split/insert nodes. Parameters: "
-						+ "\n<b>acuity</b>: CU is computed based on feature standard deviation. Acuity defines a minimum value for the standard deviation. "
-						+ "The lower acuity is, the more clusters will be created. (Only relevant for numeric features.)"
-						+ "\n<b>cutoff</b>: The minimum-threshold for CU to merge/split/insert nodes. The lower cutoff is, the more clusters will be created.";
+				wc.additionalDescription = Settings.text("cluster.weka.cobweb.desc");
 			}
 			else if (c instanceof EM)
 			{
-				wc.name = "Expectation Maximization";
-				wc.additionalDescription = "EM (Expectation Maximization) Clustering models the data as mixture of gaussians. "
-						+ "Each cluster is represented by one gaussion distribution.";
+				wc.name = Settings.text("cluster.weka.em");
+				wc.additionalDescription = Settings.text("cluster.weka.em.desc");
 				for (Property p : wc.getProperties())
 					if (p.getName().equals("numClusters"))
 						p.setDisplayName("numClusters (-1 to automatically detect number of clusters)");
 			}
 			else if (c instanceof HierarchicalClusterer)
 			{
-				wc.name = "Hierachical";
-				wc.additionalDescription = "Starts with each compound as a single cluster. Subsequently merges the two most similar clusters.\n"
-						+ "Similartiy is compouted accroding to the parameter  <b>linkType</b>.";
+				wc.name = Settings.text("cluster.weka.hierachical");
+				wc.additionalDescription = Settings.text("cluster.weka.hierachical.desc");
 			}
 			else if (c instanceof SimpleKMeans)
 			{
-				wc.additionalDescription = "Assignes compounds to k randomly initialized centroids. " //
-						+ "Iteratively updates centroid positions and re-assignes compounds until the algorithm converges.\n"
-						+ "<b>Limitation:</b> This method performs only one random initialisation. The cluster algorithm <i>"
-						+ KMeansRClusterer.getNameStatic() + "</i> should be preferred.";
+				wc.additionalDescription = Settings.text("cluster.weka.kmeans.desc", KMeansRClusterer.getNameStatic());
 			}
 			else if (c instanceof FarthestFirst)
 			{
-				wc.additionalDescription = "k-Means method with particular centroid initialisation: It "
-						+ "starts with a random data point, and chooses the point furthest from it. Subsequently, the point that "
-						+ "is furthest away from the already chosen points is selected unitl k points are obtained.\n"
-						+ "<b>Limitation:</b> This method performs only one random initialisation. The cluster algorithm <i>"
-						+ KMeansRClusterer.getNameStatic() + "</i> should be preferred.";
+				wc.additionalDescription = Settings
+						.text("cluster.weka.farthest.desc", KMeansRClusterer.getNameStatic());
 			}
 			WEKA_CLUSTERER[i++] = wc;
 		}
@@ -103,7 +90,6 @@ public class WekaClusterer implements DatasetClusterer
 
 	Clusterer wekaClusterer;
 	ClusterEvaluation eval;
-	List<ClusterData> clusters;
 	String additionalDescription;
 	Property[] properties;
 	String name;
@@ -165,26 +151,13 @@ public class WekaClusterer implements DatasetClusterer
 			for (int j = toDelete.size() - 1; j >= 0; j--)
 				clusters.remove(toDelete.get(j).intValue());
 
-			DatasetClustererUtil.storeClusters(dataset.getSDFPath(true), wekaClusterer.getClass().getSimpleName(),
-					getName(), clusters);
+			storeClusters(dataset.getSDFPath(true), wekaClusterer.getClass().getSimpleName(), getName(), clusters);
 		}
 		catch (Exception e)
 		{
 			// error is caught in mapping process, message displayed in dialog and stack trace (with error cause) is printed
 			throw new Error("Error occured while clustering with WEKA: " + e.getMessage(), e);
 		}
-	}
-
-	@Override
-	public List<ClusterData> getClusters()
-	{
-		return clusters;
-	}
-
-	@Override
-	public boolean requiresFeatures()
-	{
-		return true;
 	}
 
 	@Override
@@ -234,15 +207,4 @@ public class WekaClusterer implements DatasetClusterer
 		return s;
 	}
 
-	@Override
-	public Binary getBinary()
-	{
-		return null;
-	}
-
-	@Override
-	public String getWarning()
-	{
-		return null;
-	}
 }

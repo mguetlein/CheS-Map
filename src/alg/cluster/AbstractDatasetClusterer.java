@@ -1,16 +1,52 @@
 package alg.cluster;
 
 import io.SDFUtil;
+
+import java.util.List;
+
 import main.Settings;
 import main.TaskProvider;
+import alg.AbstractAlgorithm;
+import alg.Message;
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import dataInterface.ClusterData;
+import dataInterface.MoleculeProperty.Type;
 
-public final class DatasetClustererUtil
+public abstract class AbstractDatasetClusterer extends AbstractAlgorithm implements DatasetClusterer
 {
+	protected List<ClusterData> clusters;
 
-	public static void storeClusters(String sdfFile, String clusterFilePrefix, String clusterAlgName,
+	@Override
+	public final List<ClusterData> getClusters()
+	{
+		return clusters;
+	}
+
+	@Override
+	public boolean requiresFeatures()
+	{
+		return true;
+	}
+
+	@Override
+	public String getFixedNumClustersProperty()
+	{
+		return null;
+	}
+
+	@Override
+	public Message getMessage(DatasetFile dataset, int numFeatures, Type featureType, boolean smartsFeaturesSelected,
+			DatasetClusterer clusterer)
+	{
+		if (requiresFeatures() && numFeatures == 0)
+			return Message.errorMessage(Settings.text("cluster.error.no-features", getName()));
+		else if (getFixedNumClustersProperty() != null)
+			return Message.infoMessage(Settings.text("cluster.info.fixed-k", getFixedNumClustersProperty()));
+		return null;
+	}
+
+	protected void storeClusters(String sdfFile, String clusterFilePrefix, String clusterAlgName,
 			Iterable<ClusterData> clusters)
 	{
 		TaskProvider.task().verbose("Storing cluster results in files");

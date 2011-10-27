@@ -12,18 +12,13 @@ class DynamicTreeCutHierarchicalRClusterer extends AbstractRClusterer
 	@Override
 	public String getName()
 	{
-		//return "Dynamic Tree Cut Hierachical Clusterer (R)";
-		return "Hierachical - Dynamic Tree Cut (R)";
+		return Settings.text("cluster.r.dynamic-hierachical");
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return "Uses "
-				+ Settings.R_STRING
-				+ ".\n"
-				+ "Automatically detects clusters in the dendogram produced by hierachical clustering.\n"
-				+ "Details: http://www.genetics.ucla.edu/labs/horvath/CoexpressionNetwork/BranchCutting (The <i>hybrid</i> method is used that takes the distance matrix and the dendogramm into account.)";
+		return Settings.text("cluster.r.dynamic-hierachical.desc", Settings.R_STRING);
 	}
 
 	@Override
@@ -59,9 +54,4 @@ class DynamicTreeCutHierarchicalRClusterer extends AbstractRClusterer
 		return new Property[] { minClusterSize, method };
 	}
 
-	@Override
-	public String getFixedNumClustersProperty()
-	{
-		return null;
-	}
 }

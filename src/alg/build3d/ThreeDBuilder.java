@@ -11,7 +11,5 @@ public interface ThreeDBuilder extends Algorithm
 
 	public String get3DSDFFile();
 
-	public String getDescription();
-
 	public boolean isReal3DBuilder();
 }
