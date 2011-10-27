@@ -47,7 +47,7 @@ public class Settings
 {
 	// -------------------------- GRAPHICAL STUFF ---------------------------------
 
-	public static boolean SCREENSHOT_SETUP = true;
+	public static boolean SCREENSHOT_SETUP = false;
 
 	static
 	{
