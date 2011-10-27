@@ -415,4 +415,10 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		return Settings.text("dataset.desc");
 	}
 
+	@Override
+	public boolean hasWarning()
+	{
+		return false;
+	}
+
 }

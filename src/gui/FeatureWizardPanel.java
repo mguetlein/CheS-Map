@@ -517,4 +517,10 @@ public class FeatureWizardPanel extends WizardPanel
 		return fragmentProperties;
 	}
 
+	@Override
+	public boolean hasWarning()
+	{
+		return false;
+	}
+
 }

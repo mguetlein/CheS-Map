@@ -55,6 +55,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 
 	protected Algorithm selectedAlgorithm;
 	private boolean canProceed = false;
+	private boolean hasWarning = false;
 	private boolean binaryFound = true;
 
 	protected abstract Algorithm[] getAlgorithms();
@@ -273,6 +274,12 @@ public abstract class GenericWizardPanel extends WizardPanel
 		return canProceed && binaryFound;
 	}
 
+	@Override
+	public boolean hasWarning()
+	{
+		return hasWarning;
+	}
+
 	public void update(DatasetFile dataset, int numFeatures, Type featureType, boolean smartsFeaturesSelected,
 			DatasetClusterer clusterer)
 	{
@@ -284,6 +291,7 @@ public abstract class GenericWizardPanel extends WizardPanel
 			Message msg = getSelectedAlgorithm().getMessage(dataset, numFeatures, featureType, smartsFeaturesSelected,
 					clusterer);
 			canProceed = (msg == null || msg.getType() != MessageType.Error);
+			hasWarning = (msg != null && msg.getType() == MessageType.Warning);
 			setInfo(msg);
 		}
 	}
