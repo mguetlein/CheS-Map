@@ -366,6 +366,14 @@ public class Settings
 	static
 	{
 		bins.add(BABEL_BINARY);
+		BABEL_BINARY.addPropertyChangeListener(new PropertyChangeListener()
+		{
+			@Override
+			public void propertyChange(PropertyChangeEvent evt)
+			{
+				babelVersion = null;
+			}
+		});
 		bins.add(RSCRIPT_BINARY);
 		for (Binary binary : bins)
 		{

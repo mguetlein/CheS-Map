@@ -17,12 +17,13 @@ public class RScriptUtil
 
 	public static String installAndLoadPackage(String pack)
 	{
-		return "packages <- installed.packages()[,1]\n" // 
-				+ "if (!(is.element(\"" + pack + "\", packages))) install.packages(\"" + pack
-				+ "\",repos=\""
-				+ REPOSITORY + "\",dependencies = TRUE,lib=\"" + Settings.R_LIB_DIR + "\")\n" + "library(\""
-				+ pack
-				+ "\")\n";
+		return ".libPaths(\"" + Settings.R_LIB_DIR
+				+ "\")\n"
+				+ //
+				"packages <- installed.packages()[,1]\n" // 
+				+ "if (!(is.element(\"" + pack + "\", packages))) install.packages(\"" + pack + "\",repos=\""
+				+ REPOSITORY + "\",dependencies = TRUE,lib=\"" + Settings.R_LIB_DIR + "\")\n" + //
+				"library(\"" + pack + "\")\n";
 	}
 
 	public static String getScriptPath(String scriptName, String scriptCode)

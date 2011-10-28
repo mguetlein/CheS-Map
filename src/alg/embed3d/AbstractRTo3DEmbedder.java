@@ -116,7 +116,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		@Override
 		public String getRScriptName()
 		{
-			return "tsne_" + maxNumIterations + "_" + getPerplexity() + "_" + initial_dims;
+			return "tsne_" + maxNumIterations.getValue() + "_" + getPerplexity() + "_" + initial_dims.getValue();
 		}
 
 		@Override
@@ -222,7 +222,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		@Override
 		protected String getRScriptName()
 		{
-			return "smacof_" + maxNumIterations;
+			return "smacof_" + maxNumIterations.getValue();
 		}
 
 		@Override

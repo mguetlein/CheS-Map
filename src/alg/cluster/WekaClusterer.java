@@ -182,7 +182,7 @@ public class WekaClusterer extends AbstractDatasetClusterer
 		if (additionalDescription != null)
 			s += additionalDescription + "\n";
 		s += "\n";
-		s += "<i>WEKA API documentation:</i> http://weka.sourceforge.net/doc/weka/clusterers/"
+		s += "<i>WEKA API documentation:</i> http://weka.sourceforge.net/doc.dev/weka/clusterers/"
 				+ wekaClusterer.getClass().getSimpleName() + ".html\n\n";
 
 		// weka has no interface for globalInfo
