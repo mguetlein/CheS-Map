@@ -41,8 +41,7 @@ public class ComputeMCS
 			}
 			if (mcsMolecule != null)
 			{
-				SmilesGenerator g = new SmilesGenerator();
-				g.setUseAromaticityFlag(true);
+				SmilesGenerator g = new SmilesGenerator(true, true);
 				((ClusterDataImpl) c).setSubstructureSmarts(SubstructureSmartsType.MCS, g.createSMILES(mcsMolecule));
 				System.out.println("MCSMolecule: " + c.getSubstructureSmarts(SubstructureSmartsType.MCS));
 

@@ -31,18 +31,22 @@ public class CDKProperty extends AbstractMoleculeProperty
 
 	private static enum CDKDescriptorClass
 	{
-		SMILES, ALOGP, AminoAcidCount, APol, AromaticAtomsCount, AromaticBondsCount, AtomCount,
-		AutocorrelationDescriptorCharge, AutocorrelationDescriptorMass, AutocorrelationDescriptorPolarizability, BCUT,
-		BondCount, BPol, CarbonTypes, ChiChain, ChiCluster, ChiPathCluster, ChiPath, CPSA, EccentricConnectivityIndex,
-		FragmentComplexity, GravitationalIndex, HBondAcceptorCount, HBondDonorCount, IPMolecularLearning,
-		KappaShapeIndices, KierHallSmarts, LargestChain, LargestPiSystem, LengthOverBreadth, LongestAliphaticChain,
-		MDE, MomentOfInertia, PetitjeanNumber, PetitjeanShapeIndex, RotatableBondsCount, RuleOfFive, TPSA, VABC,
-		VAdjMa, Weight, WeightedPath, WHIM, WienerNumbers, XLogP, ZagrebIndex
+		SMILES,
+		ALOGP, //AminoAcidCount, 
+		APol, AromaticAtomsCount, AromaticBondsCount, AtomCount, AutocorrelationDescriptorCharge,
+		AutocorrelationDescriptorMass, AutocorrelationDescriptorPolarizability, BCUT, BondCount, BPol, CarbonTypes,
+		ChiChain, ChiCluster, ChiPathCluster, ChiPath, CPSA, EccentricConnectivityIndex, FragmentComplexity,
+		GravitationalIndex, HBondAcceptorCount, HBondDonorCount, IPMolecularLearning, KappaShapeIndices,
+		KierHallSmarts, LargestChain, LargestPiSystem, LengthOverBreadth, LongestAliphaticChain, MDE, MomentOfInertia,
+		PetitjeanNumber, PetitjeanShapeIndex, RotatableBondsCount, RuleOfFive, TPSA, VABC, VAdjMa, Weight,
+		WeightedPath, WHIM, WienerNumbers, XLogP, ZagrebIndex
 	};
 
-	private static CDKDescriptorClass[] CDK_NUMERIC_DESCRIPTORS = { CDKDescriptorClass.ALOGP, CDKDescriptorClass.APol,
-			CDKDescriptorClass.AminoAcidCount, CDKDescriptorClass.AromaticAtomsCount,
-			CDKDescriptorClass.AromaticBondsCount, CDKDescriptorClass.AtomCount,
+	private static CDKDescriptorClass[] CDK_NUMERIC_DESCRIPTORS = {
+			CDKDescriptorClass.ALOGP,
+			CDKDescriptorClass.APol,
+			//CDKDescriptorClass.AminoAcidCount, 
+			CDKDescriptorClass.AromaticAtomsCount, CDKDescriptorClass.AromaticBondsCount, CDKDescriptorClass.AtomCount,
 			CDKDescriptorClass.AutocorrelationDescriptorCharge, CDKDescriptorClass.AutocorrelationDescriptorMass,
 			CDKDescriptorClass.AutocorrelationDescriptorPolarizability, CDKDescriptorClass.BCUT,
 			CDKDescriptorClass.BondCount, CDKDescriptorClass.BPol, CDKDescriptorClass.CarbonTypes,
@@ -150,8 +154,8 @@ public class CDKProperty extends AbstractMoleculeProperty
 			{
 				case ALOGP:
 					return 3;
-				case AminoAcidCount:
-					return 20;
+					//				case AminoAcidCount:
+					//					return 20;
 				case AutocorrelationDescriptorCharge:
 					return 5;
 				case AutocorrelationDescriptorMass:
@@ -376,6 +380,15 @@ public class CDKProperty extends AbstractMoleculeProperty
 		public Binary getBinary()
 		{
 			return null;
+		}
+	}
+
+	public static void main(String args[])
+	{
+		for (CDKDescriptorClass cl : CDK_NUMERIC_DESCRIPTORS)
+		{
+			System.err.println(cl);
+			CDKDescriptor.newMolecularDescriptor(cl);
 		}
 	}
 }

@@ -7,6 +7,6 @@
 	<classpathentry kind="lib" path="lib/forms-1.2.1/forms-1.2.1.jar" sourcepath="/home/martin/workspace/external/forms-1.2.1/src"/>
 	<classpathentry kind="lib" path="lib/weka-3-7-2/weka.jar" sourcepath="/home/martin/workspace/external/weka-3-7-2/weka-src.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JavaLib"/>
-	<classpathentry kind="lib" path="lib/cdk-jar-1.4.0/cdk-1.4.0.jar" sourcepath="/home/martin/workspace/external/cdk-src+libs-1.4.0/src"/>
+	<classpathentry kind="lib" path="lib/cdk-jar-1.4.4/cdk-1.4.4_mod_arom_smiles.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -23,6 +23,7 @@ import main.TaskProvider;
 
 import org.openscience.cdk.AtomContainer;
 import org.openscience.cdk.ChemFile;
+import org.openscience.cdk.aromaticity.CDKHueckelAromaticityDetector;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -254,6 +255,8 @@ public class FeatureService
 				}
 
 				mol = (IMolecule) AtomContainerManipulator.removeHydrogens(mol);
+				AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
+				CDKHueckelAromaticityDetector.detectAromaticity(mol);
 
 				//			CDKHydrogenAdder ha = CDKHydrogenAdder.getInstance(DefaultChemObjectBuilder.getInstance());
 				//				try
