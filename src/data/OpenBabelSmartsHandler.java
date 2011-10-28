@@ -107,8 +107,11 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 			while ((line = buffy.readLine()) != null)
 			{
 				if (line.startsWith(">"))
+				{
 					compoundIndex++;
-				else
+					line = line.replaceAll("^>[^\\s]*", "").trim();
+				}
+				if (line.length() > 0)
 				{
 					//					System.err.println("frags: " + line);
 					boolean minFreq = false;

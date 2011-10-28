@@ -352,7 +352,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 						if (i != -1)
 							name = name.substring(0, i);
 						String space = name.startsWith(" ") ? "" : " ";
-						//							System.err.println(name);
+						//						System.err.println("name: " + name);
 						f.name = name.trim();
 						maccsFragments.put(matcher.group(1) + space + name, f);
 					}
@@ -364,6 +364,9 @@ public class OBFingerprintSet extends FragmentPropertySet
 			{
 				if (minFreq && s.matches("^\\*[2-4].*"))
 					s = s.substring(2);
+				if (s.matches(".*\\*[2-4]$"))
+					s = s.substring(0, s.length() - 2);
+				//System.err.println("key: " + s);
 				if (!maccsFragments.containsKey(s))
 					throw new Error("key not found: " + s + ", keys: "
 							+ ListUtil.toString(new ArrayList<String>(maccsFragments.keySet()), "\n"));
@@ -442,6 +445,22 @@ public class OBFingerprintSet extends FragmentPropertySet
 	@Override
 	public boolean compute(DatasetFile dataset)
 	{
+		if (type == FingerprintType.FP2)
+		{
+			String version = Settings.getOpenBabelVersion();
+			int index = version.indexOf('.');
+			int major = Integer.parseInt(version.substring(0, index));
+			int nIndex = version.indexOf('.', index + 1);
+			int minor = Integer.parseInt(version.substring(index + 1, nIndex));
+			if (major < 2 || (major == 2 && minor < 3))
+			{
+				TaskProvider.task().warning(
+						"OpenBabel fingerprint " + this + " requires OpenBabel version >= 2.3, your version '"
+								+ version + "'", "");
+				return false;
+			}
+		}
+
 		try
 		{
 			List<String[]> featureValues = new ArrayList<String[]>();
@@ -484,10 +503,16 @@ public class OBFingerprintSet extends FragmentPropertySet
 			int count = -1;
 			while ((s = buffy.readLine()) != null)
 			{
-				//				System.err.println(s);
+				// System.err.println();
+				// System.err.println(count);
+				// System.err.println(s);
 				if (s.startsWith(">"))
+				{
 					count++;
-				else
+					s = s.replaceAll("^>[^\\s]*", "").trim();
+				}
+				// System.err.println(s);
+				if (s.length() > 0)
 				{
 					FPFragment frag[] = FPFragment.parse(type, s);
 					for (FPFragment fpFragment : frag)
