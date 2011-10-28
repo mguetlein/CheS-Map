@@ -146,7 +146,7 @@ public class Settings
 		}
 	}
 
-	public static String CDK_VERSION = "1.4.0";
+	public static String CDK_VERSION = "1.4.4";
 	public static String CDK_STRING = text("lib.cdk", CDK_VERSION);
 	public static String OPENBABEL_STRING = text("lib.openbabel");
 	public static String R_STRING = text("lib.r");
