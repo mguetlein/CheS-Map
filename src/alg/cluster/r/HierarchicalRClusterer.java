@@ -12,13 +12,13 @@ class HierarchicalRClusterer extends AbstractRClusterer
 	@Override
 	public String getName()
 	{
-		return Settings.text("cluster.r.hierachical");
+		return Settings.text("cluster.r.hierarchical");
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return Settings.text("cluster.r.hierachical.desc", Settings.R_STRING);
+		return Settings.text("cluster.r.hierarchical.desc", Settings.R_STRING);
 	}
 
 	@Override

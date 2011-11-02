@@ -72,8 +72,8 @@ public class WekaClusterer extends AbstractDatasetClusterer
 			}
 			else if (c instanceof HierarchicalClusterer)
 			{
-				wc.name = Settings.text("cluster.weka.hierachical");
-				wc.additionalDescription = Settings.text("cluster.weka.hierachical.desc");
+				wc.name = Settings.text("cluster.weka.hierarchical");
+				wc.additionalDescription = Settings.text("cluster.weka.hierarchical.desc");
 			}
 			else if (c instanceof SimpleKMeans)
 			{

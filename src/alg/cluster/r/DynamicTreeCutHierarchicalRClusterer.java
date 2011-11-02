@@ -12,13 +12,13 @@ class DynamicTreeCutHierarchicalRClusterer extends AbstractRClusterer
 	@Override
 	public String getName()
 	{
-		return Settings.text("cluster.r.dynamic-hierachical");
+		return Settings.text("cluster.r.dynamic-hierarchical");
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return Settings.text("cluster.r.dynamic-hierachical.desc", Settings.R_STRING);
+		return Settings.text("cluster.r.dynamic-hierarchical.desc", Settings.R_STRING);
 	}
 
 	@Override
