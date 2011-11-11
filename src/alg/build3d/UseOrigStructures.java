@@ -38,7 +38,7 @@ public class UseOrigStructures extends Abstract3DBuilder
 	}
 
 	@Override
-	public boolean threeDFileAlreadyExists(DatasetFile datasetFile)
+	public boolean isCached(DatasetFile datasetFile)
 	{
 		return true;
 	}

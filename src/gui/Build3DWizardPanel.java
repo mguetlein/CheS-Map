@@ -1,5 +1,6 @@
 package gui;
 
+import gui.wizard.GenericWizardPanel;
 import main.Settings;
 import alg.build3d.CDK3DBuilder;
 import alg.build3d.OpenBabel3DBuilder;
@@ -37,6 +38,18 @@ public class Build3DWizardPanel extends GenericWizardPanel
 	public ThreeDBuilder get3DBuilder()
 	{
 		return (ThreeDBuilder) getSelectedAlgorithm();
+	}
+
+	@Override
+	protected boolean hasSimpleView()
+	{
+		return false;
+	}
+
+	@Override
+	protected SimplePanel createSimpleView()
+	{
+		return null;
 	}
 
 }

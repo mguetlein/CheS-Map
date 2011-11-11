@@ -9,7 +9,7 @@ import java.util.HashMap;
 import main.Settings;
 import rscript.RScriptUtil;
 
-class CascadeKMeansRClusterer extends AbstractRClusterer
+public class CascadeKMeansRClusterer extends AbstractRClusterer
 {
 
 	@Override
@@ -38,7 +38,8 @@ class CascadeKMeansRClusterer extends AbstractRClusterer
 		s += "df = read.table(args[1])\n";
 		s += "if(" + maxK.getValue() + " < " + minK.getValue() + ") stop(\"min > max\")\n";
 		s += "maxK <- min(" + maxK.getValue() + ",nrow(unique(df)))\n";
-		s += "if(maxK < " + minK.getValue() + ") stop(\"min > num unique data points\")\n";
+		s += "maxK <- min(maxK,nrow(df)-1)\n"; // somehow the maximum value for maxK is n-1 for cascade 
+		s += "if(maxK < " + minK.getValue() + ") stop(\"" + TOO_FEW_UNIQUE_DATA_POINTS + "\")\n";
 		s += "print(maxK)\n";
 		s += "ccas <- cascadeKM(df, " + minK.getValue() + ", maxK, iter = " + restart.getValue() + ", criterion = \""
 				+ critMap.get(criterion.getValue().toString()) + "\")\n";
@@ -68,6 +69,11 @@ class CascadeKMeansRClusterer extends AbstractRClusterer
 	public Property[] getProperties()
 	{
 		return new Property[] { minK, maxK, restart, criterion };
+	}
+
+	public int getMinK()
+	{
+		return minK.getMinValue();
 	}
 
 }

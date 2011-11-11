@@ -69,6 +69,11 @@ public class Random3DEmbedder extends Abstract3DEmbedder
 	@Override
 	public String getName()
 	{
+		return getNameStatic();
+	}
+
+	public static String getNameStatic()
+	{
 		return Settings.text("embed.random");
 	}
 

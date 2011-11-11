@@ -56,26 +56,27 @@ public abstract class OBFitAligner extends Abstract3DAligner
 				File tmpAligned = null;
 				try
 				{
-					tmpFirst = File.createTempFile("first.", ".sdf");
-					tmpRemainder = File.createTempFile("remainder.", ".sdf");
-					tmpAligned = File.createTempFile("aligned.", ".sdf");
-				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
-				}
-				//				String alignedStructures = FileUtil.getParent(clusterFile) + File.separator
-				//						+ FileUtil.getFilename(clusterFile, false) + ".aligned.sdf";
-				String alignedStructures = Settings.destinationFile(clusterFile,
-						FileUtil.getFilename(clusterFile, false) + ".aligned.sdf");
+					try
+					{
+						tmpFirst = File.createTempFile("first.", ".sdf");
+						tmpRemainder = File.createTempFile("remainder.", ".sdf");
+						tmpAligned = File.createTempFile("aligned.", ".sdf");
+					}
+					catch (IOException e)
+					{
+						throw new RuntimeException(e);
+					}
+					//				String alignedStructures = FileUtil.getParent(clusterFile) + File.separator
+					//						+ FileUtil.getFilename(clusterFile, false) + ".aligned.sdf";
+					String alignedStructures = Settings.destinationFile(clusterFile,
+							FileUtil.getFilename(clusterFile, false) + ".aligned.sdf");
 
-				SDFUtil.filter(clusterFile, tmpFirst.getAbsolutePath(), new int[] { 0 });
-				int remainderIndices[] = new int[cluster.getCompounds().size() - 1];
-				for (int j = 0; j < remainderIndices.length; j++)
-					remainderIndices[j] = (j + 1);
-				SDFUtil.filter(clusterFile, tmpRemainder.getAbsolutePath(), remainderIndices);
-				try
-				{
+					SDFUtil.filter(clusterFile, tmpFirst.getAbsolutePath(), new int[] { 0 });
+					int remainderIndices[] = new int[cluster.getCompounds().size() - 1];
+					for (int j = 0; j < remainderIndices.length; j++)
+						remainderIndices[j] = (j + 1);
+					SDFUtil.filter(clusterFile, tmpRemainder.getAbsolutePath(), remainderIndices);
+
 					ExternalToolUtil.run("obfit", Settings.BABEL_BINARY.getSisterCommandLocation("obfit") + " "
 							+ cluster.getSubstructureSmarts(type) + " " + tmpFirst.getAbsolutePath() + " "
 							+ tmpRemainder.getAbsolutePath(), tmpAligned);
@@ -91,14 +92,11 @@ public abstract class OBFitAligner extends Abstract3DAligner
 					((ClusterDataImpl) cluster).setAligned(true);
 					((ClusterDataImpl) cluster).setAlignAlgorithm(getName());
 				}
-				catch (Error e)
+				finally
 				{
-					System.err.println("ERROR in algin: " + e.getMessage());
-					TaskProvider.task().warning(
-							"Cannot align cluster " + (count + 1) + " (size: " + cluster.getSize() + ") according to "
-									+ cluster.getSubstructureSmarts(type), e);
-					alignedFiles.add(cluster.getFilename());
-					((ClusterDataImpl) cluster).setAlignAlgorithm("Failed: " + getName());
+					tmpFirst.delete();
+					tmpRemainder.delete();
+					tmpAligned.delete();
 				}
 			}
 

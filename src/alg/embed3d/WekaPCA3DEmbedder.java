@@ -1,5 +1,8 @@
 package alg.embed3d;
 
+import gui.FeatureWizardPanel.FeatureInfo;
+import gui.Message;
+import gui.Messages;
 import gui.property.Property;
 
 import java.io.BufferedReader;
@@ -16,6 +19,7 @@ import weka.WekaPropertyUtil;
 import weka.attributeSelection.PrincipalComponents;
 import weka.core.Instance;
 import weka.core.Instances;
+import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
@@ -24,26 +28,37 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 {
 	PrincipalComponents pca = new PrincipalComponents();
 	Instances resultData;
-	Property[] properties = WekaPropertyUtil.getProperties(pca);
+	Property[] properties;
+
+	public WekaPCA3DEmbedder()
+	{
+		this(false);
+	}
+
+	public WekaPCA3DEmbedder(boolean withProps)
+	{
+		if (withProps)
+			properties = WekaPropertyUtil.getProperties(pca);
+	}
 
 	@Override
 	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features)
 			throws Exception
 	{
-		WekaPropertyUtil.setProperties(pca, properties);
+		if (properties != null)
+			WekaPropertyUtil.setProperties(pca, properties);
 
-		if (instances.size() < 2)
-			throw new Exception("too few instances");
-		File f = CompoundArffWriter.writeArffFile(instances, features);
+		File f = CompoundArffWriter.writeArffFile(dataset, instances, features);
 		BufferedReader reader = new BufferedReader(new FileReader(f));
 		Instances data = new Instances(reader);
+
 		pca.buildEvaluator(data);
 		resultData = pca.transformedData(data);
 
 		positions = new ArrayList<Vector3f>();
 		for (int i = 0; i < resultData.numInstances(); i++)
 		{
-			Instance in = resultData.get(i);
+			Instance in = resultData.instance(i);
 			float x = (float) in.value(0);
 			float y = 0;
 			if (resultData.numAttributes() > 1)
@@ -53,6 +68,15 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 				z = (float) in.value(2);
 			positions.add(new Vector3f(x, y, z));
 		}
+	}
+
+	@Override
+	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
+	{
+		Messages m = super.getMessages(dataset, featureInfo, clusterer);
+		if (dataset.numCompounds() >= 50 && featureInfo.isNumFeaturesHigh())
+			m.add(Message.slowMessage(featureInfo.getNumFeaturesWarning()));
+		return m;
 	}
 
 	@Override

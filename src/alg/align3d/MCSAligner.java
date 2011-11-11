@@ -1,5 +1,8 @@
 package alg.align3d;
 
+import gui.FeatureWizardPanel.FeatureInfo;
+import gui.Message;
+import gui.Messages;
 import gui.binloc.Binary;
 
 import java.util.List;
@@ -7,14 +10,11 @@ import java.util.List;
 import main.Settings;
 import main.TaskProvider;
 import util.ExternalToolUtil;
-import alg.Message;
-import alg.MessageType;
 import alg.cluster.DatasetClusterer;
 import data.ComputeMCS;
 import data.DatasetFile;
 import dataInterface.ClusterData;
 import dataInterface.MoleculeProperty;
-import dataInterface.MoleculeProperty.Type;
 import dataInterface.SubstructureSmartsType;
 
 public class MCSAligner extends OBFitAligner
@@ -60,16 +60,12 @@ public class MCSAligner extends OBFitAligner
 	}
 
 	@Override
-	public Message getMessage(DatasetFile dataset, int numFeatures, Type featureType, boolean smartsFeaturesSelected,
-			DatasetClusterer clusterer)
+	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
-		Message msg = super.getMessage(dataset, numFeatures, featureType, smartsFeaturesSelected, clusterer);
-		if (msg != null && msg.getType() == MessageType.Error)
-			return msg;
+		Messages m = super.getMessages(dataset, featureInfo, clusterer);
 		if (dataset.numCompounds() >= 50)
-			return Message.warningMessage("MCS computation is a time consuming task. '"
-					+ MaxFragAligner.getNameStatic() + "' should be preferred for large datasets.");
-		return msg;
+			m.add(Message.slowMessage(Settings.text("align.mcs.slow", MaxFragAligner.getNameStatic())));
+		return m;
 	}
 
 	@Override

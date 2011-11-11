@@ -34,6 +34,7 @@ public class KMeansRClusterer extends AbstractRClusterer
 	{
 		return "args <- commandArgs(TRUE)\n" //
 				+ "df = read.table(args[1])\n" //
+				+ "if(" + k.getValue() + " > nrow(unique(df))) stop(\"" + TOO_FEW_UNIQUE_DATA_POINTS + "\")\n" //
 				+ "res <- kmeans(df, " + k.getValue() + ",nstart=" + restart.getValue() + ")\n" //
 				+ "print(res$cluster)\n" //
 				+ "print(res$withinss)\n" //

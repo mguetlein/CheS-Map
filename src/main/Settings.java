@@ -264,6 +264,7 @@ public class Settings
 			in.close();
 			//			System.out.println("property-keys: " + CollectionUtil.toString(PROPS.keySet()));
 			//			System.out.println("property-values: " + CollectionUtil.toString(PROPS.values()));
+			System.out.println("Read properties from: " + PROPERTIES_FILE);
 		}
 		catch (Exception e)
 		{
@@ -315,6 +316,7 @@ public class Settings
 						break;
 					}
 				}
+				bVersion.delete();
 			}
 			catch (Exception e)
 			{

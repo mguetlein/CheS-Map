@@ -38,7 +38,6 @@ public class CDK3DBuilder extends AbstractReal3DBuilder
 	@Override
 	public String getInitials()
 	{
-		return "cdk_" + forcefield + "_";
+		return "cdk_" + forcefield.getValue() + "_";
 	}
-
 }

@@ -1,15 +1,17 @@
 package alg.embed3d;
 
+import gui.FeatureWizardPanel.FeatureInfo;
+import gui.Message;
+import gui.Messages;
+
 import java.util.List;
 
 import javax.vecmath.Vector3f;
 
 import main.Settings;
 import alg.AbstractAlgorithm;
-import alg.Message;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
-import dataInterface.MoleculeProperty.Type;
 
 public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedder
 {
@@ -28,13 +30,13 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	}
 
 	@Override
-	public Message getMessage(DatasetFile dataset, int numFeatures, Type featureType, boolean smartsFeaturesSelected,
-			DatasetClusterer clusterer)
+	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
-		if (requiresFeatures() && numFeatures == 0)
-			return Message.errorMessage(Settings.text("embed.error.no-features", getName()));
-		else if (requiresFeatures() && featureType == Type.NOMINAL)
-			return Message.infoMessage(Settings.text("embed.info.only-nominal"));
-		return null;
+		Messages m = super.getMessages(dataset, featureInfo, clusterer);
+		if (requiresFeatures() && !featureInfo.featuresSelected)
+			m.add(Message.errorMessage(Settings.text("error.no-features")));
+		else if (requiresFeatures() && !featureInfo.numericFeaturesSelected)
+			m.add(Message.infoMessage(Settings.text("embed.info.only-nominal")));
+		return m;
 	}
 }

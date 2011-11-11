@@ -1,5 +1,8 @@
 package alg.cluster;
 
+import gui.FeatureWizardPanel.FeatureInfo;
+import gui.Message;
+import gui.Messages;
 import gui.property.Property;
 
 import java.io.BufferedReader;
@@ -12,6 +15,7 @@ import java.util.List;
 import main.Settings;
 import main.TaskProvider;
 import util.ListUtil;
+import weka.CascadeSimpleKMeans;
 import weka.CompoundArffWriter;
 import weka.WekaPropertyUtil;
 import weka.clusterers.ClusterEvaluation;
@@ -21,6 +25,7 @@ import weka.clusterers.EM;
 import weka.clusterers.FarthestFirst;
 import weka.clusterers.HierarchicalClusterer;
 import weka.clusterers.SimpleKMeans;
+import weka.clusterers.XMeans;
 import weka.core.Instances;
 import alg.cluster.r.KMeansRClusterer;
 import data.ClusterDataImpl;
@@ -33,6 +38,7 @@ import dataInterface.MoleculeProperty;
 public class WekaClusterer extends AbstractDatasetClusterer
 {
 	private static SimpleKMeans kMeans = new SimpleKMeans();
+	private static XMeans xMeans = new XMeans();
 	static
 	{
 		try
@@ -48,7 +54,7 @@ public class WekaClusterer extends AbstractDatasetClusterer
 	private static String SKIP_PROPERTIES[] = new String[] { "saveInstanceData", "displayStdDevs", "debug",
 			"displayModelInOldFormat", "printNewick" };
 	private static final Clusterer[] CLUSTERER = new Clusterer[] { new EM(), new Cobweb(), new HierarchicalClusterer(),
-			kMeans, new FarthestFirst(), };
+			kMeans, xMeans, new FarthestFirst(), new CascadeSimpleKMeans() };
 
 	public static WekaClusterer[] WEKA_CLUSTERER;
 	static
@@ -57,7 +63,7 @@ public class WekaClusterer extends AbstractDatasetClusterer
 		int i = 0;
 		for (Clusterer c : CLUSTERER)
 		{
-			WekaClusterer wc = new WekaClusterer(c);
+			WekaClusterer wc = new WekaClusterer(c, true);
 			if (c instanceof Cobweb)
 			{
 				wc.additionalDescription = Settings.text("cluster.weka.cobweb.desc");
@@ -84,6 +90,9 @@ public class WekaClusterer extends AbstractDatasetClusterer
 				wc.additionalDescription = Settings
 						.text("cluster.weka.farthest.desc", KMeansRClusterer.getNameStatic());
 			}
+			else if (c == xMeans)
+			{
+			}
 			WEKA_CLUSTERER[i++] = wc;
 		}
 	}
@@ -94,10 +103,16 @@ public class WekaClusterer extends AbstractDatasetClusterer
 	Property[] properties;
 	String name;
 
-	private WekaClusterer(Clusterer wekaClusterer)
+	public WekaClusterer(Clusterer wekaClusterer)
+	{
+		this(wekaClusterer, false);
+	}
+
+	private WekaClusterer(Clusterer wekaClusterer, boolean withProps)
 	{
 		this.wekaClusterer = wekaClusterer;
-		properties = WekaPropertyUtil.getProperties(wekaClusterer, SKIP_PROPERTIES);
+		if (withProps)
+			properties = WekaPropertyUtil.getProperties(wekaClusterer, SKIP_PROPERTIES);
 	}
 
 	@Override
@@ -113,10 +128,13 @@ public class WekaClusterer extends AbstractDatasetClusterer
 	@Override
 	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
 	{
-		WekaPropertyUtil.setProperties(wekaClusterer, properties);
+		if (properties != null)
+			WekaPropertyUtil.setProperties(wekaClusterer, properties);
 
 		TaskProvider.task().verbose("Converting data to arff-format");
-		File f = CompoundArffWriter.writeArffFile(ListUtil.cast(MolecularPropertyOwner.class, compounds), features);
+		File f = CompoundArffWriter.writeArffFile(dataset, ListUtil.cast(MolecularPropertyOwner.class, compounds),
+				features);
+
 		try
 		{
 			BufferedReader reader = new BufferedReader(new FileReader(f));
@@ -164,6 +182,18 @@ public class WekaClusterer extends AbstractDatasetClusterer
 	public Property[] getProperties()
 	{
 		return properties;
+	}
+
+	@Override
+	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
+	{
+		Messages m = super.getMessages(dataset, featureInfo, clusterer);
+		if (wekaClusterer instanceof EM || wekaClusterer instanceof CascadeSimpleKMeans)
+		{
+			if (dataset.numCompounds() >= 50 && featureInfo.isNumFeaturesHigh())
+				m.add(Message.slowMessage(featureInfo.getNumFeaturesWarning()));
+		}
+		return m;
 	}
 
 	@Override

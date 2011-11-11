@@ -19,6 +19,7 @@ import util.ArrayUtil;
 import util.ExternalToolUtil;
 import util.ListUtil;
 import data.DatasetFile;
+import data.fragments.StructuralFragmentProperties;
 import dataInterface.FragmentPropertySet;
 import dataInterface.MoleculeProperty.Type;
 
@@ -95,6 +96,12 @@ public class OBFingerprintSet extends FragmentPropertySet
 	}
 
 	@Override
+	public boolean isCached(DatasetFile dataset)
+	{
+		return false;
+	}
+
+	@Override
 	public Binary getBinary()
 	{
 		return Settings.BABEL_BINARY;
@@ -108,8 +115,9 @@ public class OBFingerprintSet extends FragmentPropertySet
 			List<OBFingerprintProperty> filteredList = new ArrayList<OBFingerprintProperty>();
 			for (OBFingerprintProperty p : props.get(d))
 			{
-				boolean frequent = p.getFrequency(d) >= minFrequency;
-				boolean skipOmni = skipOmnipresent && p.getFrequency(d) == d.numCompounds();
+				boolean frequent = p.getFrequency(d) >= StructuralFragmentProperties.getMinFrequency();
+				boolean skipOmni = StructuralFragmentProperties.isSkipOmniFragments()
+						&& p.getFrequency(d) == d.numCompounds();
 				if (frequent && !skipOmni)
 					filteredList.add(p);
 			}
@@ -463,6 +471,10 @@ public class OBFingerprintSet extends FragmentPropertySet
 
 		try
 		{
+			System.out.println("computing structural fragment " + StructuralFragmentProperties.getMatchEngine() + " "
+					+ StructuralFragmentProperties.getMinFrequency() + " "
+					+ StructuralFragmentProperties.isSkipOmniFragments());
+
 			List<String[]> featureValues = new ArrayList<String[]>();
 
 			//					if (obProp.getOBType() != OBFingerprintProperty.FingerprintType.FP2)
@@ -569,4 +581,24 @@ public class OBFingerprintSet extends FragmentPropertySet
 		return true;
 	}
 
+	@Override
+	public String getNameIncludingParams()
+	{
+		return toString() + "_" + StructuralFragmentProperties.getMatchEngine() + "_"
+				+ StructuralFragmentProperties.getMinFrequency() + "_"
+				+ StructuralFragmentProperties.isSkipOmniFragments();
+	}
+
+	@Override
+	public boolean isSizeDynamicHigh(DatasetFile dataset)
+	{
+		return type == FingerprintType.FP2 && dataset.numCompounds() >= 100
+				&& StructuralFragmentProperties.getMinFrequency() <= 2;
+	}
+
+	@Override
+	public boolean isComputationSlow()
+	{
+		return false;
+	}
 }

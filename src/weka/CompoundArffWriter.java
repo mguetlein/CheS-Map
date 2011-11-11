@@ -1,28 +1,33 @@
 package weka;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
+import main.Settings;
+import util.FileUtil;
+import data.DatasetFile;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculeProperty.Type;
+import dataInterface.MoleculePropertyUtil;
 
 public class CompoundArffWriter implements ArffWritable
 {
-	public static File writeArffFile(List<MolecularPropertyOwner> compounds, List<MoleculeProperty> features)
+	public static File writeArffFile(DatasetFile dataset, List<MolecularPropertyOwner> compounds,
+			List<MoleculeProperty> features)
 	{
-		try
+		String enc = MoleculePropertyUtil.getSetMD5(features, dataset.getMD5());
+		String arffFile = Settings.destinationFile(dataset.getSDFPath(false),
+				FileUtil.getFilename(dataset.getSDFPath(false)) + "." + enc + ".arff");
+		File file = new File(arffFile);
+		if (!file.exists())
 		{
-			File f = File.createTempFile("compounds", "arff");
-			ArffWriter.writeToArffFile(f, new CompoundArffWriter(compounds, features));
-			return f;
+			System.out.println("writing arff file: " + arffFile);
+			ArffWriter.writeToArffFile(file, new CompoundArffWriter(compounds, features));
 		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-			return null;
-		}
+		else
+			System.out.println("arff file already exists: " + arffFile);
+		return file;
 	}
 
 	List<MolecularPropertyOwner> compounds;

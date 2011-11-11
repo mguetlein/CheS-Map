@@ -60,7 +60,10 @@ public class MoleculePropertyPanel extends JPanel
 	MoreTextPanel descPanel = new MoreTextPanel();
 	JPanel cardPanel = new JPanel(new CardLayout());
 
-	JButton loadButton = new JButton("Load feature values");
+	public static String LOAD_FEATURE_VALUES = "Load feature values";
+	JButton loadButton = new JButton(LOAD_FEATURE_VALUES);
+	JPanel loadButtonPanel;
+	JPanel babelBinaryPanel;
 
 	//	JLabel loadingLabel = new JLabel("Loading feature...");
 
@@ -72,6 +75,7 @@ public class MoleculePropertyPanel extends JPanel
 	ButtonGroup radioGroup = new ButtonGroup();
 	JToggleButton nominalFeatureButton = new JToggleButton("Nominal", ImageLoader.DISTINCT);
 	JToggleButton numericFeatureButton = new JToggleButton("Numeric", ImageLoader.NUMERIC);
+	JPanel mainPanel;
 
 	private boolean selfUpdate = false;
 
@@ -98,7 +102,7 @@ public class MoleculePropertyPanel extends JPanel
 		add(p, BorderLayout.NORTH);
 		add(cardPanel);
 
-		JPanel main = new JPanel(new BorderLayout(10, 10));
+		mainPanel = new JPanel(new BorderLayout(10, 10));
 
 		radioGroup.add(nominalFeatureButton);
 		radioGroup.add(numericFeatureButton);
@@ -116,11 +120,11 @@ public class MoleculePropertyPanel extends JPanel
 		comboBuilder.append(comboBox);
 		comboPanel = comboBuilder.getPanel();
 
-		main.add(comboPanel, BorderLayout.NORTH);
-		main.add(featurePlotPanel);
-		main.add(radioBuilder.getPanel(), BorderLayout.WEST);
+		mainPanel.add(comboPanel, BorderLayout.NORTH);
+		mainPanel.add(featurePlotPanel);
+		mainPanel.add(radioBuilder.getPanel(), BorderLayout.WEST);
 
-		cardPanel.add(main, "main");
+		cardPanel.add(mainPanel, "main");
 
 		//		JPanel p = new JPanel(new BorderLayout());
 		//		p.add(loadingLabel);
@@ -128,11 +132,13 @@ public class MoleculePropertyPanel extends JPanel
 
 		DefaultFormBuilder b2 = new DefaultFormBuilder(new FormLayout("p"));
 		b2.append(loadButton);
-		cardPanel.add(b2.getPanel(), "loadButton");
+		loadButtonPanel = b2.getPanel();
+		cardPanel.add(loadButtonPanel, "loadButton");
 
 		DefaultFormBuilder b3 = new DefaultFormBuilder(new FormLayout("p"));
 		b3.append(Settings.getBinaryComponent(Settings.BABEL_BINARY));
-		cardPanel.add(b3.getPanel(), "babel-binary");
+		babelBinaryPanel = b3.getPanel();
+		cardPanel.add(babelBinaryPanel, "babel-binary");
 	}
 
 	private void addListeners()
@@ -266,6 +272,9 @@ public class MoleculePropertyPanel extends JPanel
 		//			cardPanel.setVisible(true);
 		//		}
 
+		final MoleculePropertySet selectedPropertySet = MoleculePropertyPanel.this.selectedPropertySet;
+		final int selectedPropertyIndex = MoleculePropertyPanel.this.selectedPropertyIndex;
+
 		Thread th = new Thread(new Runnable()
 		{
 			@Override
@@ -275,9 +284,6 @@ public class MoleculePropertyPanel extends JPanel
 				{
 					selfUpdate = true;
 					comboBox.removeAllItems();
-
-					MoleculePropertySet selectedPropertySet = MoleculePropertyPanel.this.selectedPropertySet;
-					int selectedPropertyIndex = MoleculePropertyPanel.this.selectedPropertyIndex;
 					boolean error = false;
 
 					if (selectedPropertySet != null)
@@ -290,6 +296,9 @@ public class MoleculePropertyPanel extends JPanel
 							cardPanel.add(TaskProvider.task().getPanel(), "computing-features");
 							TaskProvider.task().update("Computing feature: " + selectedPropertySet + " ...");
 							((CardLayout) cardPanel.getLayout()).show(cardPanel, "computing-features");
+              // HACK: jsplitpane and cardlayout dont quite like themselves,
+              // the preferred size of the card-layout-component has to be decreased by hand
+							cardPanel.setPreferredSize(TaskProvider.task().getPanel().getPreferredSize());
 							cardPanel.setVisible(true);
 						}
 
@@ -444,7 +453,10 @@ public class MoleculePropertyPanel extends JPanel
 						update(false);
 					else if (selectedPropertySet == MoleculePropertyPanel.this.selectedPropertySet
 							&& selectedPropertyIndex == MoleculePropertyPanel.this.selectedPropertyIndex)
+					{
 						((CardLayout) cardPanel.getLayout()).show(cardPanel, "main");
+						cardPanel.setPreferredSize(mainPanel.getPreferredSize());
+					}
 				}
 			}
 		});
@@ -478,6 +490,7 @@ public class MoleculePropertyPanel extends JPanel
 			else
 			{
 				((CardLayout) cardPanel.getLayout()).show(cardPanel, "loadButton");
+				cardPanel.setPreferredSize(loadButtonPanel.getPreferredSize());
 				cardPanel.setVisible(true);
 			}
 		}
@@ -507,11 +520,16 @@ public class MoleculePropertyPanel extends JPanel
 			if (prop.getBinary() != Settings.BABEL_BINARY)
 				throw new Error("implement properly");
 			((CardLayout) cardPanel.getLayout()).show(cardPanel, "babel-binary");
+			cardPanel.setPreferredSize(babelBinaryPanel.getPreferredSize());
 			cardPanel.setVisible(true);
 			fragmentProps.setVisible(false);
 		}
 		else
+		{
+			if (prop != null && !prop.isComputed(dataset) && prop.isCached(dataset))
+				prop.compute(dataset);
 			update(prop != null && prop.isComputed(dataset));
+		}
 	}
 
 	public void showInfoText(String text)

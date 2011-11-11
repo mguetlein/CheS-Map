@@ -15,6 +15,8 @@ public class ExportRUtil
 	public static void toRTable(Iterable<MoleculeProperty> features, List<String[]> featureValues,
 			String destinationFile)
 	{
+		System.out.println("store features in " + destinationFile);
+
 		// transpose
 		List<String[]> featureValues1 = new ArrayList<String[]>();
 		for (@SuppressWarnings("unused")

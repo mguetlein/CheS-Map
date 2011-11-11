@@ -1,10 +1,6 @@
 package gui;
 
-import gui.property.BooleanProperty;
-import gui.property.IntegerProperty;
-import gui.property.Property;
 import gui.property.PropertyPanel;
-import gui.property.SelectProperty;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -24,24 +20,17 @@ import util.SwingUtil;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
-import data.StructuralFragments.MatchEngine;
+import data.fragments.MatchEngine;
+import data.fragments.StructuralFragmentProperties;
 
 public class StructuralFragmentPropertiesPanel extends JPanel
 {
-	static IntegerProperty minFreqProp = new IntegerProperty("Minimum frequency", "Minimum frequency", 10, 1,
-			Integer.MAX_VALUE);
-	static BooleanProperty skipOmniProp = new BooleanProperty("Skip fragments that match all compounds", true);
-	static SelectProperty matchEngine = new SelectProperty("Smarts matching software for smarts files",
-			MatchEngine.values(), MatchEngine.OpenBabel);
-
-	private static Property[] properties = new Property[] { minFreqProp, skipOmniProp, matchEngine };
-
 	private PropertyPanel propPanel;
 	private JComponent babelPanel;
 
 	public StructuralFragmentPropertiesPanel()
 	{
-		propPanel = new PropertyPanel(properties, Settings.PROPS, Settings.PROPERTIES_FILE);
+		propPanel = new PropertyPanel(StructuralFragmentProperties.getProperties(), Settings.PROPS, Settings.PROPERTIES_FILE);
 		babelPanel = Settings.getBinaryComponent(Settings.BABEL_BINARY);
 
 		DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("p,fill:p:grow"));
@@ -52,43 +41,23 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 		add(b.getPanel(), BorderLayout.WEST);
 
 		if (!Settings.BABEL_BINARY.isFound())
-			matchEngine.setValue(MatchEngine.CDK);
+			StructuralFragmentProperties.setMatchEngine(MatchEngine.CDK);
 
-		matchEngine.addPropertyChangeListener(new PropertyChangeListener()
+		StructuralFragmentProperties.addMatchEngingePropertyChangeListenerToProperties(new PropertyChangeListener()
 		{
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
-				babelPanel.setVisible(getMatchEngine() == MatchEngine.OpenBabel);
+				babelPanel.setVisible(StructuralFragmentProperties.getMatchEngine() == MatchEngine.OpenBabel);
 				StructuralFragmentPropertiesPanel.this.revalidate();
 				StructuralFragmentPropertiesPanel.this.repaint();
 			}
 		});
 	}
 
-	public void addPropertyChangeListenerToProperties(PropertyChangeListener l)
-	{
-		propPanel.addPropertyChangeListenerToProperties(l);
-	}
-
 	public void store()
 	{
 		propPanel.store();
-	}
-
-	public int getMinFrequency()
-	{
-		return minFreqProp.getValue();
-	}
-
-	public boolean isSkipOmniFragments()
-	{
-		return skipOmniProp.getValue();
-	}
-
-	public MatchEngine getMatchEngine()
-	{
-		return (MatchEngine) matchEngine.getValue();
 	}
 
 	public JPanel getSummaryPanel()
@@ -119,7 +88,7 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 								@Override
 								public void run()
 								{
-									babelPanel.setVisible(getMatchEngine() == MatchEngine.OpenBabel);
+									babelPanel.setVisible(StructuralFragmentProperties.getMatchEngine() == MatchEngine.OpenBabel);
 								}
 							});
 				}
@@ -142,10 +111,10 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 		private void update()
 		{
 			String skip = "";
-			if (isSkipOmniFragments())
+			if (StructuralFragmentProperties.isSkipOmniFragments())
 				skip = "skip omnipresent fragments, ";
-			l.setText("Settings for fragments: min-frequency " + getMinFrequency() + ", " + skip + "match with "
-					+ getMatchEngine());
+			l.setText("Settings for fragments: min-frequency " + StructuralFragmentProperties.getMinFrequency() + ", "
+					+ skip + "match with " + StructuralFragmentProperties.getMatchEngine());
 		}
 	}
 

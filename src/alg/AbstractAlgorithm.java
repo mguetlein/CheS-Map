@@ -1,10 +1,11 @@
 package alg;
 
+import gui.FeatureWizardPanel.FeatureInfo;
+import gui.Messages;
 import gui.binloc.Binary;
 import gui.property.Property;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
-import dataInterface.MoleculeProperty.Type;
 
 public abstract class AbstractAlgorithm implements Algorithm
 {
@@ -22,10 +23,8 @@ public abstract class AbstractAlgorithm implements Algorithm
 	}
 
 	@Override
-	public Message getMessage(DatasetFile dataset, int numFeatures, Type featureType, boolean smartsFeaturesSelected,
-			DatasetClusterer clusterer)
+	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
-		return null;
+		return new Messages();
 	}
-
 }

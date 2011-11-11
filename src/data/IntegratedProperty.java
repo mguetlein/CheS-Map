@@ -104,4 +104,28 @@ public class IntegratedProperty extends AbstractMoleculeProperty implements Mole
 	{
 		return null;
 	}
+
+	@Override
+	public String getNameIncludingParams()
+	{
+		return toString() + "_" + getType();
+	}
+
+	@Override
+	public boolean isCached(DatasetFile dataset)
+	{
+		return true;
+	}
+
+	@Override
+	public boolean isSizeDynamicHigh(DatasetFile dataset)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean isComputationSlow()
+	{
+		return false;
+	}
 }

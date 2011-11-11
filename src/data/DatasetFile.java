@@ -16,6 +16,7 @@ public class DatasetFile
 	private String name;
 	private String sdfPath;
 	private String sdf3DPath;
+	private String md5;
 
 	public boolean isLocal()
 	{
@@ -63,7 +64,6 @@ public class DatasetFile
 	public static DatasetFile localFile(String localPath)
 	{
 		return uniqueDatasetFile(new DatasetFile(null, localPath, FileUtil.getFilename(localPath)));
-
 	}
 
 	public static DatasetFile getURLDataset(String uRI)
@@ -158,6 +158,8 @@ public class DatasetFile
 	public void loadDataset(boolean loadHydrogen) throws Exception
 	{
 		featureService.loadDataset(this, loadHydrogen);
+		if (getSDFPath(false) == null)
+			FeatureService.writeSDFFile(this);
 	}
 
 	public int numCompounds()
@@ -185,5 +187,12 @@ public class DatasetFile
 	public boolean has3D()
 	{
 		return featureService.has3D(this);
+	}
+
+	public String getMD5()
+	{
+		if (md5 == null)
+			md5 = FileUtil.getMD5String(getLocalPath());
+		return md5;
 	}
 }

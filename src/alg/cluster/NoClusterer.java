@@ -15,6 +15,11 @@ public class NoClusterer extends AbstractDatasetClusterer
 	@Override
 	public String getName()
 	{
+		return getNameStatic();
+	}
+
+	public static String getNameStatic()
+	{
 		return Settings.text("cluster.no-cluster");
 	}
 

@@ -1,5 +1,6 @@
 package gui;
 
+import gui.wizard.GenericWizardPanel;
 import main.Settings;
 import alg.Algorithm;
 import alg.align3d.MCSAligner;
@@ -39,5 +40,17 @@ public class AlignWizardPanel extends GenericWizardPanel
 	public ThreeDAligner getAlginer()
 	{
 		return (ThreeDAligner) getSelectedAlgorithm();
+	}
+
+	@Override
+	protected boolean hasSimpleView()
+	{
+		return false;
+	}
+
+	@Override
+	protected SimplePanel createSimpleView()
+	{
+		return null;
 	}
 }

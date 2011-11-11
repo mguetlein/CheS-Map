@@ -1,6 +1,9 @@
 package gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,32 +14,39 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
 import main.Settings;
+import main.TaskProvider;
 import util.ArrayUtil;
+import util.DoubleImageIcon;
 import util.FileUtil;
 import util.ImageLoader;
+import util.SwingUtil;
 import util.VectorUtil;
+import util.WizardComponentFactory;
 import alg.FeatureComputer;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
-import data.CDKProperty;
-import data.CDKProperty.CDKDescriptor;
 import data.DatasetFile;
 import data.DefaultFeatureComputer;
 import data.IntegratedProperty;
-import data.StructuralFragments;
-import data.StructuralFragments.MatchEngine;
+import data.cdk.CDKPropertySet;
+import data.fragments.MatchEngine;
+import data.fragments.StructuralFragmentProperties;
+import data.fragments.StructuralFragments;
 import dataInterface.FragmentPropertySet;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculeProperty.Type;
@@ -47,13 +57,11 @@ public class FeatureWizardPanel extends WizardPanel
 {
 	Selector<MoleculePropertySet> selector;
 	JLabel numFeaturesLabel;
-	JPanel binaryPanelContainer;
+	LinkButton loadFeaturesButton = new LinkButton("Load");
 	MoleculePropertyPanel moleculePropertyPanel;
+	JScrollPane propertyScroll;
 
 	DatasetFile dataset = null;
-	int numSelected;
-	Type selectedFeatureType;
-	boolean smartsFeaturesSelected;
 	boolean selfUpdate;
 
 	private String addFeaturesText = "Add feature";
@@ -67,47 +75,112 @@ public class FeatureWizardPanel extends WizardPanel
 	JPanel propsPanelContainer;
 	private JPanel propsPanel;
 	private StructuralFragmentPropertiesPanel fragmentProperties;
+	CheSMapperWizard wizard;
 
-	public FeatureWizardPanel(final CheSMapperWizard wizard)
+	private JButton addSmarts;
+
+	public FeatureWizardPanel(CheSMapperWizard wizard)
 	{
-		DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout("min:grow"));
+		this.wizard = wizard;
+
+		createSelector();
+		buildLayout();
+		addListeners();
+
+		updateFeatureProperties(null);
+	}
+
+	private void buildLayout()
+	{
+
+		JPanel labelPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+		JLabel label = new JLabel("Available Features:");
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		labelPanel.add(label);
+		JLabel label2 = new JLabel("Selected Features:");
+		label2.setFont(label2.getFont().deriveFont(Font.BOLD));
+		labelPanel.add(label2);
+
+		selector.setAddButtonText(addFeaturesText);
+		selector.setRemoveButtonText(remFeaturesText);
+
 		numFeaturesLabel = new JLabel();
+		JPanel numFeaturesPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+		numFeaturesPanel.add(new JLabel(""));
+		JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		p.add(numFeaturesLabel);
+		loadFeaturesButton.setForegroundFont(loadFeaturesButton.getFont().deriveFont(Font.PLAIN));
+		loadFeaturesButton.setSelectedForegroundFont(loadFeaturesButton.getFont().deriveFont(Font.PLAIN));
+		loadFeaturesButton.setSelectedForegroundColor(Color.BLUE);
+		p.add(loadFeaturesButton);
+		numFeaturesPanel.add(p);
 
-		JPanel lPanel = new JPanel(new GridLayout(0, 2, 10, 10));
-		lPanel.add(new JLabel("Available Features:"));
-		lPanel.add(new JLabel("Selected Features:"));
-		builder.append(lPanel);
+		JPanel selectPanel = new JPanel(new BorderLayout(5, 5));
+		selectPanel.add(labelPanel, BorderLayout.NORTH);
+		selectPanel.add(selector);
+		selectPanel.add(numFeaturesPanel, BorderLayout.SOUTH);
+
+		JLabel label3 = new JLabel("Feature properties:");
+		label3.setFont(label3.getFont().deriveFont(Font.BOLD));
+
+		fragmentProperties = new StructuralFragmentPropertiesPanel();
+
+		fragmentProperties.setBorder(new CompoundBorder(new EmptyBorder(0, 0, 10, 0), fragmentProperties.getBorder()));
+		DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout("p,fill:p:grow"));
+		addSmarts = new JButton("Add SMARTS file");
+
+		builder.append(addSmarts);
 		builder.nextLine();
+		builder.appendParagraphGapRow();
+		builder.nextLine();
+		builder.append(fragmentProperties.getSummaryPanel(), 2);
+		propsPanel = builder.getPanel();
 
-		Settings.BABEL_BINARY.addPropertyChangeListener(new PropertyChangeListener()
-		{
-			@Override
-			public void propertyChange(PropertyChangeEvent evt)
-			{
-				if (Settings.BABEL_BINARY.isFound())
-					selector.repaintSelector();
-			}
-		});
+		moleculePropertyPanel = new MoleculePropertyPanel(this);
+		propsPanelContainer = new JPanel(new BorderLayout());
+		JPanel combinedPropertyPanel = new JPanel(new BorderLayout());
+		combinedPropertyPanel.add(moleculePropertyPanel, BorderLayout.NORTH);
+		combinedPropertyPanel.add(propsPanelContainer, BorderLayout.CENTER);
+		combinedPropertyPanel.setBorder(new EmptyBorder(2, 2, 2, 2));
+		propertyScroll = WizardComponentFactory.getVerticalScrollPane(combinedPropertyPanel);
 
+		JPanel propsPanel = new JPanel(new BorderLayout(5, 5));
+		propsPanel.add(label3, BorderLayout.NORTH);
+		propsPanel.add(propertyScroll);
+
+		setLayout(new BorderLayout(10, 10));
+		add(selectPanel, BorderLayout.NORTH);
+		add(propsPanel);
+	}
+
+	private void createSelector()
+	{
 		selector = new Selector<MoleculePropertySet>(MoleculePropertySet.class, ROOT)
 		{
-			public ImageIcon getIcon(MoleculePropertySet elem)
+			public Icon getIcon(MoleculePropertySet elem)
 			{
+				ImageIcon warningIcon = null;
+				ImageIcon typeIcon = null;
+
 				if (elem.getBinary() != null && !elem.getBinary().isFound())
-					return ImageLoader.ERROR;
+					warningIcon = ImageLoader.ERROR;
 
 				MoleculeProperty.Type type = MoleculePropertySetUtil.getType(elem);
 				if (type == Type.NUMERIC)
-					return ImageLoader.NUMERIC;
+					typeIcon = ImageLoader.NUMERIC;
 				else if (type == Type.NOMINAL)
-					return ImageLoader.DISTINCT;
-				else
-				{
-					if (elem.getSize(dataset) == 1)
-						return ImageLoader.WARNING;
-					else
-						return null;
-				}
+					typeIcon = ImageLoader.DISTINCT;
+				else if (elem.getSize(dataset) == 1 && warningIcon == null)
+					warningIcon = ImageLoader.WARNING;
+
+				if (!elem.isComputed(dataset) && !elem.isCached(dataset) && elem.isComputationSlow())
+					warningIcon = ImageLoader.HOURGLASS;
+
+				if (warningIcon == null)
+					return typeIcon;
+				if (typeIcon == null)
+					return warningIcon;
+				return new DoubleImageIcon(typeIcon, warningIcon);
 			}
 
 			@Override
@@ -123,7 +196,8 @@ public class FeatureWizardPanel extends WizardPanel
 			@Override
 			public ImageIcon getCategoryIcon(String name)
 			{
-				if (STRUCTURAL_FRAGMENTS.equals(name) && fragmentProperties.getMatchEngine() == MatchEngine.OpenBabel
+				if (STRUCTURAL_FRAGMENTS.equals(name)
+						&& StructuralFragmentProperties.getMatchEngine() == MatchEngine.OpenBabel
 						&& !Settings.BABEL_BINARY.isFound())
 					return ImageLoader.ERROR;
 				else
@@ -141,17 +215,26 @@ public class FeatureWizardPanel extends WizardPanel
 					return elem.toString();
 			}
 		};
+	}
 
-		selector.setAddButtonText(addFeaturesText);
-		selector.setRemoveButtonText(remFeaturesText);
+	private void addListeners()
+	{
+		Settings.BABEL_BINARY.addPropertyChangeListener(new PropertyChangeListener()
+		{
+			@Override
+			public void propertyChange(PropertyChangeEvent evt)
+			{
+				if (Settings.BABEL_BINARY.isFound())
+					selector.repaintSelector();
+			}
+		});
+
 		selector.addPropertyChangeListener(Selector.PROPERTY_SELECTION_CHANGED, new PropertyChangeListener()
 		{
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
 				update();
-				if (!selfUpdate)
-					wizard.update();
 			}
 		});
 		selector.addPropertyChangeListener(Selector.PROPERTY_HIGHLIGHTING_CHANGED, new PropertyChangeListener()
@@ -162,10 +245,6 @@ public class FeatureWizardPanel extends WizardPanel
 				if (selector.getHighlightedElement() != null)
 				{
 					moleculePropertyPanel.setSelectedPropertySet(selector.getHighlightedElement());
-					binaryPanelContainer.removeAll();
-					binaryPanelContainer.revalidate();
-					binaryPanelContainer.repaint();
-
 					propsPanelContainer.removeAll();
 					propsPanelContainer.revalidate();
 					propsPanelContainer.repaint();
@@ -173,7 +252,7 @@ public class FeatureWizardPanel extends WizardPanel
 				else
 				{
 					moleculePropertyPanel.setSelectedPropertySet(null);
-					updateFeatureInfo(selector.getHighlightedCategory());
+					updateFeatureProperties(selector.getHighlightedCategory());
 				}
 			}
 		});
@@ -220,46 +299,60 @@ public class FeatureWizardPanel extends WizardPanel
 			}
 		});
 
-		builder.append(selector);
-		builder.nextLine();
-
-		JPanel lPanel2 = new JPanel(new GridLayout(0, 2, 10, 10));
-		lPanel2.add(new JLabel(""));
-		lPanel2.add(numFeaturesLabel);
-		builder.append(lPanel2);
-		builder.nextLine();
-
-		//		builder.appendParagraphGapRow();
-		//		builder.nextLine();
-
-		builder.appendSeparator("Feature properties");
-
-		fragmentProperties = new StructuralFragmentPropertiesPanel();
-		StructuralFragments.instance.setMinFrequency(fragmentProperties.getMinFrequency());
-		StructuralFragments.instance.setSkipOmniFragments(fragmentProperties.isSkipOmniFragments());
-		StructuralFragments.instance.setMatchEngine(fragmentProperties.getMatchEngine());
-		fragmentProperties.addPropertyChangeListenerToProperties(new PropertyChangeListener()
+		loadFeaturesButton.addActionListener(new ActionListener()
 		{
 			@Override
-			public void propertyChange(PropertyChangeEvent evt)
+			public void actionPerformed(ActionEvent e)
 			{
-				StructuralFragments.instance.setMinFrequency(fragmentProperties.getMinFrequency());
-				StructuralFragments.instance.setSkipOmniFragments(fragmentProperties.isSkipOmniFragments());
-				StructuralFragments.instance.setMatchEngine(fragmentProperties.getMatchEngine());
-				selector.repaintSelector();
-				update();
-
-				// // to show/hide open babel binary link:
-				// updateFeatureInfo(selector.getHighlightedCategory());
-
-				// update chart
-				if (selector.getHighlightedElement() != null)
-					moleculePropertyPanel.setSelectedPropertySet(selector.getHighlightedElement());
+				Thread th = new Thread(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						try
+						{
+							TaskProvider.registerThread("Compute features");
+							TaskProvider.task().showDialog((JFrame) FeatureWizardPanel.this.getTopLevelAncestor(),
+									"Computing features");
+							int num = 0;
+							MoleculePropertySet sets[] = selector.getSelected();
+							for (MoleculePropertySet set : sets)
+								if (!set.isComputed(dataset))
+									num++;
+							int step = 100 / num;
+							int p = 0;
+							for (MoleculePropertySet set : sets)
+								if (!set.isComputed(dataset))
+								{
+									TaskProvider.task().update(p, " Compute feature: " + set);
+									p += step;
+									set.compute(dataset);
+									if (TaskProvider.task().isCancelled())
+										break;
+								}
+							selector.repaint();
+							FeatureWizardPanel.this.update();
+							if (selector.getHighlightedElement() != null) // update chart
+								moleculePropertyPanel.setSelectedPropertySet(selector.getHighlightedElement());
+							TaskProvider.task().getDialog().setVisible(false);
+						}
+						catch (Throwable e)
+						{
+							e.printStackTrace();
+							TaskProvider.task().error(e.getMessage(), e);
+							if (TaskProvider.task().getDialog() != null)
+								SwingUtil.waitWhileVisible(TaskProvider.task().getDialog());
+						}
+						finally
+						{
+							TaskProvider.clear();
+						}
+					}
+				});
+				th.start();
 			}
 		});
-		fragmentProperties.setBorder(new CompoundBorder(new EmptyBorder(0, 0, 10, 0), fragmentProperties.getBorder()));
-		DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("p,fill:p:grow"));
-		JButton addSmarts = new JButton("Add SMARTS file");
+
 		addSmarts.addActionListener(new ActionListener()
 		{
 			JFileChooser fc;
@@ -284,21 +377,11 @@ public class FeatureWizardPanel extends WizardPanel
 					}
 					FileUtil.copy(f, new File(dest));
 					StructuralFragments.instance.reset(name);
-					StructuralFragments.instance.setMinFrequency(fragmentProperties.getMinFrequency());
-					StructuralFragments.instance.setSkipOmniFragments(fragmentProperties.isSkipOmniFragments());
-					StructuralFragments.instance.setMatchEngine(fragmentProperties.getMatchEngine());
 					updateIntegratedFeatures(dataset, true);
 				}
 			}
 		});
-		b.append(addSmarts);
-		b.nextLine();
-		b.appendParagraphGapRow();
-		b.nextLine();
-		b.append(fragmentProperties.getSummaryPanel(), 2);
-		propsPanel = b.getPanel();
 
-		moleculePropertyPanel = new MoleculePropertyPanel(this);
 		moleculePropertyPanel.addPropertyChangeListener(new PropertyChangeListener()
 		{
 			@Override
@@ -313,55 +396,43 @@ public class FeatureWizardPanel extends WizardPanel
 			}
 		});
 
-		builder.append(moleculePropertyPanel);
-		moleculePropertyPanel.setBorder(new CompoundBorder(new EmptyBorder(0, 0, 10, 0), moleculePropertyPanel
-				.getBorder()));
-		builder.nextLine();
-
-		propsPanelContainer = new JPanel(new BorderLayout());
-		builder.append(propsPanelContainer);
-		builder.nextLine();
-
-		binaryPanelContainer = new JPanel(new BorderLayout());
-		builder.append(binaryPanelContainer);
-		builder.nextLine();
-
-		setLayout(new BorderLayout());
-		add(builder.getPanel());
-
-		updateFeatureInfo(null);
+		StructuralFragments.instance.toString(); // load instances first (listener order is important)
+		StructuralFragmentProperties.addPropertyChangeListenerToProperties(new PropertyChangeListener()
+		{
+			@Override
+			public void propertyChange(PropertyChangeEvent evt)
+			{
+				selector.repaintSelector();
+				update();
+				// update chart
+				if (selector.getHighlightedElement() != null)
+					moleculePropertyPanel.setSelectedPropertySet(selector.getHighlightedElement());
+			}
+		});
 	}
 
-	protected void updateFeatureInfo(String highlightedCategory)
+	protected void updateFeatureProperties(String highlightedCategory)
 	{
-		//		Binary bin = null;
 		JPanel props = null;
 
-		String info = Settings.text("features.desc.long", addFeaturesText);
-
-		if (highlightedCategory != null && !highlightedCategory.equals(ROOT))
+		String info;
+		if (highlightedCategory == null || highlightedCategory.equals(ROOT))
+			info = Settings.text("features.desc.long", addFeaturesText);
+		else if (highlightedCategory.equals(INTEGRATED_FEATURES))
+			info = Settings.text("features.integrated.desc");
+		else if (highlightedCategory.equals(STRUCTURAL_FRAGMENTS))
 		{
-			if (highlightedCategory.equals(INTEGRATED_FEATURES))
-				info = Settings.text("features.integrated.desc");
-			else if (highlightedCategory.equals(CDK_FEATURES))
-				info = Settings.text("features.cdk.desc", Settings.CDK_STRING);
-			else if (highlightedCategory.equals(STRUCTURAL_FRAGMENTS))
-			{
-				info = Settings.text("features.struct.desc", Settings.STRUCTURAL_FRAGMENT_DIR + File.separator);
-				props = propsPanel;
-				//				if (fragmentProperties.getMatchEngine() == MatchEngine.OpenBabel)
-				//					bin = Settings.BABEL_BINARY;
-			}
+			info = Settings.text("features.struct.desc", Settings.STRUCTURAL_FRAGMENT_DIR + File.separator);
+			props = propsPanel;
+		}
+		else if (highlightedCategory.equals(CDK_FEATURES))
+			info = Settings.text("features.cdk.desc", Settings.CDK_STRING);
+		else
+		{
+			//cdk sub categories
+			info = Settings.text("features.cdk.desc", Settings.CDK_STRING);
 		}
 		moleculePropertyPanel.showInfoText(info);
-
-		//		if (bin == null)
-		//			binaryPanelContainer.removeAll();
-		//		else
-		//			binaryPanelContainer.add(Settings.getBinaryComponent(bin), BorderLayout.WEST);
-		//		binaryPanelContainer.revalidate();
-		//		binaryPanelContainer.repaint();
-
 		if (props == null)
 			propsPanelContainer.removeAll();
 		else
@@ -372,40 +443,94 @@ public class FeatureWizardPanel extends WizardPanel
 
 	int selectedPropertyIndex = 0;
 	List<MoleculeProperty> selectedProperties = new ArrayList<MoleculeProperty>();
+	FeatureInfo featureInfo;
+	Messages msg;
 
 	public void update()
 	{
-		numSelected = 0;
-		boolean unknown = false;
-		smartsFeaturesSelected = false;
+		boolean notComputed = false;
+		boolean slowFeaturesSelected = false;
+		msg = null;
+		featureInfo = new FeatureInfo();
 		for (MoleculePropertySet set : selector.getSelected())
 		{
+			featureInfo.featuresSelected = true;
 			if (set.isSizeDynamic() && !set.isComputed(dataset))
-				unknown = true;
+			{
+				featureInfo.numFeaturesUnknown = true;
+				if (set.isSizeDynamicHigh(dataset))
+					featureInfo.numFeaturesUnknownHigh = true;
+			}
 			else
-				numSelected += set.getSize(dataset);
+			{
+				int num = set.getSize(dataset);
+				featureInfo.numFeatures += num;
+			}
 			if (set instanceof FragmentPropertySet)
-				smartsFeaturesSelected = true;
+				featureInfo.smartsFeaturesSelected = true;
+			if (!set.isComputed(dataset))
+				notComputed = true;
+			if (!set.isComputed(dataset) && !set.isCached(dataset) && set.isComputationSlow())
+				slowFeaturesSelected = true;
+			if (set.getType() == Type.NUMERIC)
+				featureInfo.numericFeaturesSelected = true;
+			if (set.getType() == Type.NOMINAL)
+				featureInfo.nominalFeaturesSelected = true;
 		}
-		numFeaturesLabel.setText("Number of selected features: " + numSelected + (unknown ? " + ?" : ""));
-		if (unknown)
-			numSelected = Integer.MAX_VALUE;
-		selectedFeatureType = MoleculePropertySetUtil.getType(selector.getSelected());
+		numFeaturesLabel.setText("Number of selected features: " + featureInfo.numFeatures
+				+ (featureInfo.numFeaturesUnknown ? " + ?" : ""));
+
+		if (slowFeaturesSelected)
+			msg = Messages.slowMessage(Settings.text("features.slow"));
+		loadFeaturesButton.setVisible(notComputed);
+		if (!selfUpdate)
+			wizard.update();
 	}
 
-	public int getNumSelectedFeatures()
+	public FeatureInfo getFeatureInfo()
 	{
-		return numSelected;
+		return featureInfo;
 	}
 
-	public Type getSelectedFeatureType()
+	public static class FeatureInfo
 	{
-		return selectedFeatureType;
-	}
+		public int numFeatures = 0;
+		public boolean numFeaturesUnknown = false;
+		public boolean numFeaturesUnknownHigh = false;
+		public boolean featuresSelected = false;
+		public boolean numericFeaturesSelected = false;
+		public boolean nominalFeaturesSelected = false;
+		public boolean smartsFeaturesSelected = false;
 
-	public boolean smartsFeaturesSelected()
-	{
-		return smartsFeaturesSelected;
+		public boolean isNumFeaturesHigh()
+		{
+			if (numFeatures >= 1000)
+				return true;
+			if (numFeaturesUnknown)
+				return numFeaturesUnknownHigh;
+			return false;
+		}
+
+		public String getNumFeaturesWarning()
+		{
+			if (!isNumFeaturesHigh())
+				throw new IllegalStateException();
+			String msg = "The selected algorithm could run a long time because the number of features is ";
+			if (numFeatures >= 1000)
+			{
+				msg += "high (" + (numFeaturesUnknown ? ">=" : "") + numFeatures + ").";
+				//				if (smartsFeaturesSelected)
+				//					msg += " You could try to increase minimum-frequency ";
+				//				else
+				//					msg += " You could select less features ";
+				//				msg += "in the feature wizard step.";
+			}
+			else
+				msg += "probably high.";
+			//						+ " Try precomputing the features in the feature wizard step" + " by pressing '"
+			//						+ MoleculePropertyPanel.LOAD_FEATURE_VALUES + "').";
+			return msg;
+		}
 	}
 
 	public void updateIntegratedFeatures(DatasetFile dataset)
@@ -427,10 +552,10 @@ public class FeatureWizardPanel extends WizardPanel
 		selector.clearElements();
 
 		IntegratedProperty[] integrated = dataset.getIntegratedProperties(true);
-
 		selector.addElementList(INTEGRATED_FEATURES, integrated);
-		selector.addElementList(CDK_FEATURES, CDKProperty.NUMERIC_DESCRIPTORS);
-		//		selector.addElementList(OB_FINGERPRINT_FEATURES, OBFingerprintProperty.FINGERPRINTS);
+		for (CDKPropertySet p : CDKPropertySet.NUMERIC_DESCRIPTORS)
+			for (String clazz : p.getDictionaryClass())
+				selector.addElements(new String[] { CDK_FEATURES, clazz }, p);
 		selector.addElements(STRUCTURAL_FRAGMENTS);
 		selector.addElementList(STRUCTURAL_FRAGMENTS, StructuralFragments.instance.getSets());
 
@@ -452,7 +577,7 @@ public class FeatureWizardPanel extends WizardPanel
 		selection = VectorUtil.fromCSVString(cdkFeatures);
 		for (String string : selection)
 		{
-			CDKDescriptor d = CDKDescriptor.fromString(string);
+			CDKPropertySet d = CDKPropertySet.fromString(string);
 			selector.setSelected(d);
 		}
 
@@ -490,9 +615,9 @@ public class FeatureWizardPanel extends WizardPanel
 	}
 
 	@Override
-	public boolean canProceed()
+	public Messages canProceed()
 	{
-		return true;
+		return msg;
 	}
 
 	public FeatureComputer getFeatureComputer()
@@ -515,12 +640,6 @@ public class FeatureWizardPanel extends WizardPanel
 	public StructuralFragmentPropertiesPanel getFragmentPropPanel()
 	{
 		return fragmentProperties;
-	}
-
-	@Override
-	public boolean hasWarning()
-	{
-		return false;
 	}
 
 }

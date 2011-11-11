@@ -31,12 +31,12 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 		int index = sdfFile.lastIndexOf('.');
 		if (index == -1)
 			throw new IllegalStateException("filename has no '.'");
-		return Settings.destinationFile(sdfFile, FileUtil.getFilename(sdfFile, false) + "." + getInitials() + "3d"
-				+ sdfFile.substring(index));
+		return Settings.destinationFile(sdfFile, FileUtil.getFilename(sdfFile, false) + "." + dataset.getMD5() + "."
+				+ getInitials() + "3d" + sdfFile.substring(index));
 	}
 
 	@Override
-	public boolean threeDFileAlreadyExists(DatasetFile dataset)
+	public boolean isCached(DatasetFile dataset)
 	{
 		File threeD = new File(destinationFile(dataset));
 		return threeD.exists();

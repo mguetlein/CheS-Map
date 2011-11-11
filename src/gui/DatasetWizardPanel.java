@@ -56,9 +56,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 	JLabel label3D;
 
 	WizardDialog wizard;
-
-	boolean loading = false;
-
+	Blockable block;
 	Vector<DatasetFile> oldDatasets;
 
 	private DatasetFile dataset;
@@ -66,6 +64,10 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 	public DatasetWizardPanel(WizardDialog wizard)
 	{
 		this.wizard = wizard;
+		if (wizard != null)
+			block = wizard;
+		else
+			block = new BlockableFrame("");
 		DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout(
 				"pref,5dlu,pref:grow(0.99),5dlu,right:p:grow(0.01)"));
 
@@ -166,7 +168,6 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 					//textField.setText(((Dataset) recentlyUsed.getSelectedValue()).getPath());
 					load(((DatasetFile) recentlyUsed.getSelectedValue()).getPath());
 				}
-
 			}
 		});
 		recentlyUsed.addKeyListener(new KeyAdapter()
@@ -206,7 +207,9 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 
 		//		builder.appendParagraphGapRow();
 		//		builder.nextLine();
-		builder.appendSeparator("Dataset Properties");
+		JLabel l = new JLabel("Dataset Properties:");
+		l.setFont(l.getFont().deriveFont(Font.BOLD));
+		builder.append(l);
 		builder.nextLine();
 
 		labelFile = new JLabel("-");
@@ -234,7 +237,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		add(builder.getPanel());
 
 		// auto load last selected dataset
-		if (oldDatasets.size() > 0)
+		if (wizard != null && oldDatasets.size() > 0)
 			load(oldDatasets.get(0).getPath());
 		//textField.setText(oldDatasets.get(0).getPath());
 	}
@@ -261,7 +264,8 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 				else
 					recentlyUsed.clearSelection();
 		}
-		wizard.update();
+		if (wizard != null)//in test suite, wizard is null
+			wizard.update();
 	}
 
 	//	public static void main(String args[])
@@ -277,11 +281,11 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 	//			load(d.getURI());
 	//	}
 
-	public void load(String f)
+	public void load(final String f)
 	{
-		if (loading)
+		if (block.isBlocked())
 			return;
-		loading = true;
+		block.block(f);
 
 		dataset = null;
 		if (!textField.getText().equals(f))
@@ -299,7 +303,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		{
 			dataset = d;
 			updateDataset();
-			loading = false;
+			block.unblock(f);
 		}
 		else
 		{
@@ -344,7 +348,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 							if (res == JOptionPane.YES_OPTION)
 							{
 								SDFUtil.filter_exclude(d.getSDFPath(false), cleanedSdf, e.illegalCompounds);
-								loading = false;
+								block.unblock(f);
 								load(cleanedSdf);
 								return;
 							}
@@ -365,7 +369,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 					if (dataset == null)
 						buttonLoad.setEnabled(true);
 					updateDataset();
-					loading = false;
+					block.unblock(f);
 				}
 			});
 			th.start();
@@ -387,15 +391,23 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 	}
 
 	@Override
-	public boolean canProceed()
+	public Messages canProceed()
 	{
-		return getDatasetFile() != null;
+		if (getDatasetFile() != null)
+			return null;
+		else
+			return Messages.errorMessage(""); // error is obvious (select dataset!)
 	}
 
 	@Override
 	public DatasetFile getDatasetFile()
 	{
 		return dataset;
+	}
+
+	public boolean isLoading()
+	{
+		return block.isBlocked();
 	}
 
 	public DatasetProvider getDatasetProvider()
@@ -414,11 +426,4 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 	{
 		return Settings.text("dataset.desc");
 	}
-
-	@Override
-	public boolean hasWarning()
-	{
-		return false;
-	}
-
 }

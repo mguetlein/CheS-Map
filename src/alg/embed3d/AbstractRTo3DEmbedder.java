@@ -1,12 +1,14 @@
 package alg.embed3d;
 
+import gui.FeatureWizardPanel.FeatureInfo;
+import gui.Message;
+import gui.Messages;
 import gui.binloc.Binary;
 import gui.property.IntegerProperty;
 import gui.property.Property;
 import io.RUtil;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,49 +22,61 @@ import rscript.ExportRUtil;
 import rscript.RScriptUtil;
 import util.ArrayUtil;
 import util.ExternalToolUtil;
+import util.FileUtil;
+import alg.AlgorithmException.EmbedException;
+import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
 import data.DistanceUtil;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
+import dataInterface.MoleculePropertyUtil;
 
 public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 {
 	protected int numInstances = -1;
+	protected int numFeatures = -1;
 
 	protected abstract String getRScriptName();
 
 	protected abstract String getRScriptCode();
 
 	@Override
-	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features)
+	public void embed(DatasetFile dataset, final List<MolecularPropertyOwner> instances,
+			final List<MoleculeProperty> features)
 	{
 		this.numInstances = instances.size();
+		this.numFeatures = features.size();
 
-		if (features.size() < getMinNumFeatures() || instances.size() < getMinNumInstances())
-			throw new Error(getRScriptName() + " needs at least " + getMinNumFeatures() + " features and "
-					+ getMinNumInstances() + " instances for embedding");
+		if (features.size() < getMinNumFeatures())
+			throw new EmbedException(this, getRScriptName() + " requires for embedding at least " + getMinNumFeatures()
+					+ " features with non-unique values (num features is '" + features.size() + "')");
+		if (instances.size() < getMinNumInstances())
+			throw new EmbedException(this, getRScriptName() + " requires for embedding at least "
+					+ getMinNumInstances() + " compounds (num compounds is '" + instances.size() + "')");
 
-		File f = null;
-		File f2 = null;
-		try
+		// name is used : encode dataset md5 + feature md5 into name!
+		String enc = MoleculePropertyUtil.getSetMD5(features, dataset.getMD5());
+		String embeddingMatrixFile = Settings.destinationFile(dataset.getSDFPath(false), getRScriptName() + "."
+
+		+ FileUtil.getFilename(dataset.getSDFPath(false)) + "." + enc + ".embedding.matrix");
+		if (!new File(embeddingMatrixFile).exists())
 		{
-			f = File.createTempFile("features", ".table");
-			f2 = File.createTempFile("embedding", ".matrix");
+			String featureTableFile = Settings.destinationFile(dataset.getSDFPath(false),
+					FileUtil.getFilename(dataset.getSDFPath(false)) + "." + enc + ".features.table");
+			if (!new File(featureTableFile).exists())
+				ExportRUtil.toRTable(features, DistanceUtil.values(features, instances), featureTableFile);
+			else
+				System.out.println("load cached features from " + featureTableFile);
+			String errorOut = ExternalToolUtil.run(getRScriptName(), Settings.RSCRIPT_BINARY.getLocation() + " "
+					+ RScriptUtil.getScriptPath(getRScriptName(), getRScriptCode()) + " " + featureTableFile + " "
+					+ embeddingMatrixFile);
+			if (!new File(embeddingMatrixFile).exists())
+				throw new IllegalStateException("embedding failed:\n" + errorOut);
 		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		else
+			System.out.println("load cached mapping from " + embeddingMatrixFile);
 
-		ExportRUtil.toRTable(features, DistanceUtil.values(features, instances), f.getAbsolutePath());
-
-		ExternalToolUtil.run(
-				getRScriptName(),
-				Settings.RSCRIPT_BINARY.getLocation() + " "
-						+ RScriptUtil.getScriptPath(getRScriptName(), getRScriptCode()) + " " + f.getAbsolutePath()
-						+ " " + f2.getAbsolutePath());
-
-		List<Vector3D> v3d = RUtil.readRVectorMatrix(f2.getAbsolutePath());
+		List<Vector3D> v3d = RUtil.readRVectorMatrix(embeddingMatrixFile);
 		if (v3d.size() != instances.size())
 			throw new IllegalStateException("error using '" + getRScriptName() + "' num results is '" + v3d.size()
 					+ "' instead of '" + instances.size() + "'");
@@ -77,7 +91,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			nonZero |= d[i][0] != 0 || d[i][1] != 0 || d[i][2] != 0;
 		}
 		if (!nonZero && instances.size() > 1)
-			throw new IllegalStateException("No attributes!"); // this is what weka fires as well
+			throw new IllegalStateException("No attributes!");
 
 		//		System.out.println("before: " + ArrayUtil.toString(d));
 		ArrayUtil.normalize(d, -1, 1);
@@ -101,7 +115,6 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 
 	public static class TSNEFeature3DEmbedder extends AbstractRTo3DEmbedder
 	{
-
 		public int getMinNumFeatures()
 		{
 			return 2;
@@ -116,7 +129,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		@Override
 		public String getRScriptName()
 		{
-			return "tsne_" + maxNumIterations.getValue() + "_" + getPerplexity() + "_" + initial_dims.getValue();
+			return "tsne_" + maxNumIterations.getValue() + "_" + getPerplexity() + "_" + getInitialDims();
 		}
 
 		@Override
@@ -135,7 +148,14 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		{
 			if (numInstances == -1)
 				throw new IllegalStateException("num instances not set before");
-			return Math.max(2, Math.min(perplexity.getValue(), (int) (numInstances * 2 / 3.0)));
+			return Math.max(2, Math.min(perplexity.getValue(), (int) numInstances));
+		}
+
+		private int getInitialDims()
+		{
+			if (numFeatures == -1)
+				throw new IllegalStateException("num features not set before");
+			return Math.max(2, Math.min(initial_dims.getValue(), (int) numFeatures));
 		}
 
 		IntegerProperty maxNumIterations = new IntegerProperty("Maximum number of iterations (max_iter)", 1000);
@@ -150,6 +170,15 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		}
 
 		@Override
+		public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
+		{
+			Messages m = super.getMessages(dataset, featureInfo, clusterer);
+			if (dataset.numCompounds() >= 50 && featureInfo.isNumFeaturesHigh())
+				m.add(Message.slowMessage(featureInfo.getNumFeaturesWarning()));
+			return m;
+		}
+
+		@Override
 		protected String getRScriptCode()
 		{
 			return "args <- commandArgs(TRUE)\n" //
@@ -157,9 +186,9 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 					+ "df = read.table(args[1])\n"
 					+ "res <- tsne(df, k = 3, perplexity=" + getPerplexity()
 					+ ", max_iter="
-					+ maxNumIterations.getValue() + ", initial_dims=" + initial_dims.getValue()
-					+ ")\n"
-					+ "print(res$ydata)\n" + "\n" + "##res <- smacofSphere.dual(df, ndim = 3)\n"
+					+ maxNumIterations.getValue() + ", initial_dims=" + getInitialDims() + ")\n"
+					+ "print(res$ydata)\n"
+					+ "\n" + "##res <- smacofSphere.dual(df, ndim = 3)\n"
 					+ "#print(res$conf)\n"
 					+ "#print(class(res$conf))\n" + "\n" + "write.table(res$ydata,args[2]) \n" + "";
 		}
@@ -188,6 +217,11 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		@Override
 		public String getName()
 		{
+			return getNameStatic();
+		}
+
+		public static String getNameStatic()
+		{
 			return Settings.text("embed.r.pca");
 		}
 
@@ -206,17 +240,18 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 					//					+ "print(res$scores[,1:3])\n" //
 					// + "write.table(res$scores[,1:3],args[2]) ";
 					+ "res <- prcomp(df)\n" //
-					+ "rows <-min(nrow(res$x),3)\n" //
+					+ "rows <-min(ncol(res$x),3)\n" //
 					+ "print(res$x[,1:rows])\n" //
 					+ "write.table(res$x[,1:rows],args[2]) ";
 		}
+
 	}
 
 	public static class SMACOF3DEmbedder extends AbstractRTo3DEmbedder
 	{
 		public int getMinNumInstances()
 		{
-			return 4;
+			return 4; //else "Maximum number of dimensions is n-1!"
 		}
 
 		@Override
@@ -255,6 +290,15 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 					+ "res <- smacofSym(d, ndim = 3, metric = FALSE, ties = \"secondary\", verbose = TRUE, itmax = "
 					+ maxNumIterations.getValue() + ")\n" + "#res <- smacofSphere.dual(df, ndim = 3)\n"
 					+ "print(res$conf)\n" + "print(class(res$conf))\n" + "write.table(res$conf,args[2]) ";
+		}
+
+		@Override
+		public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
+		{
+			Messages m = super.getMessages(dataset, featureInfo, clusterer);
+			if (dataset.numCompounds() >= 50)
+				m.add(Message.slowMessage(Settings.text("embed.r.smacof.slow", PCAFeature3DEmbedder.getNameStatic())));
+			return m;
 		}
 
 		@Override

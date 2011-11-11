@@ -63,6 +63,8 @@ public class DefaultFeatureComputer implements FeatureComputer
 			count++;
 		}
 
+		TaskProvider.task().update("Num features computed: " + features.size());
+
 		for (IntegratedProperty p : dataset.getIntegratedProperties(false))
 			if (!props.contains(p))
 			{

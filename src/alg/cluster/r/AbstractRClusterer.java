@@ -4,7 +4,6 @@ import gui.binloc.Binary;
 import io.RUtil;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +12,9 @@ import main.Settings;
 import rscript.ExportRUtil;
 import rscript.RScriptUtil;
 import util.ExternalToolUtil;
+import util.FileUtil;
 import util.ListUtil;
+import alg.AlgorithmException.ClusterException;
 import alg.cluster.AbstractDatasetClusterer;
 import alg.cluster.DatasetClusterer;
 import data.ClusterDataImpl;
@@ -23,6 +24,7 @@ import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
+import dataInterface.MoleculePropertyUtil;
 
 public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 {
@@ -41,34 +43,46 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 
 	protected abstract String getRScriptCode();
 
+	public static String TOO_FEW_UNIQUE_DATA_POINTS = "Too few unique data points, add features or decrease number of clusters.";
+
 	@Override
 	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
 	{
-		File f = null;
-		File f2 = null;
-		try
+		// name is used : encode dataset md5 + feature md5 into name!
+		String enc = MoleculePropertyUtil.getSetMD5(features, dataset.getMD5());
+		String clusterMatrixFile = Settings.destinationFile(dataset.getSDFPath(false), getRScriptName() + "."
+				+ FileUtil.getFilename(dataset.getSDFPath(false)) + "." + enc + ".cluster.matrix");
+
+		String errorOut = null;
+		if (!new File(clusterMatrixFile).exists())
 		{
-			f = File.createTempFile("features", ".table");
-			f2 = File.createTempFile("cluster", ".matrix");
+			String featureTableFile = Settings.destinationFile(dataset.getSDFPath(false),
+					FileUtil.getFilename(dataset.getSDFPath(false)) + "." + enc + ".features.table");
+			if (!new File(featureTableFile).exists())
+				ExportRUtil.toRTable(features,
+						DistanceUtil.values(features, ListUtil.cast(MolecularPropertyOwner.class, compounds)),
+						featureTableFile);
+			else
+				System.out.println("load cached features from " + featureTableFile);
+			errorOut = ExternalToolUtil.run(
+					getRScriptName(),
+					Settings.RSCRIPT_BINARY.getLocation() + " "
+							+ RScriptUtil.getScriptPath(getRScriptName(), getRScriptCode()) + " " + featureTableFile
+							+ " " + clusterMatrixFile);
 		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		else
+			System.out.println("load cached clustering from " + clusterMatrixFile);
 
-		ExportRUtil.toRTable(features,
-				DistanceUtil.values(features, ListUtil.cast(MolecularPropertyOwner.class, compounds)),
-				f.getAbsolutePath());
-
-		String errorOut = ExternalToolUtil.run(
-				getRScriptName(),
-				Settings.RSCRIPT_BINARY.getLocation() + " "
-						+ RScriptUtil.getScriptPath(getRScriptName(), getRScriptCode()) + " " + f.getAbsolutePath()
-						+ " " + f2.getAbsolutePath());
-
-		List<Integer> cluster = RUtil.readCluster(f2.getAbsolutePath());
+		List<Integer> cluster = new ArrayList<Integer>();
+		if (new File(clusterMatrixFile).exists())
+			cluster = RUtil.readCluster(clusterMatrixFile);
 		if (cluster.size() != compounds.size())
-			throw new Error(getRScriptName() + " failed: \n" + errorOut);
+		{
+			if (errorOut.contains(TOO_FEW_UNIQUE_DATA_POINTS))
+				throw new ClusterException(this, getRScriptName() + " failed: " + TOO_FEW_UNIQUE_DATA_POINTS);
+			// else: unknown exception
+			throw new IllegalStateException(getRScriptName() + " failed: \n" + errorOut);
+		}
 		//			throw new IllegalStateException("error using '" + getRScriptName() + "' num results is '" + cluster.size()
 		//					+ "' instead of '" + compounds.size() + "'");
 
@@ -89,5 +103,4 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 
 		storeClusters(dataset.getSDFPath(true), getRScriptName(), getName(), clusters);
 	}
-
 }

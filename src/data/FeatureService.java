@@ -40,6 +40,7 @@ import org.openscience.cdk.io.SMILESReader;
 import org.openscience.cdk.layout.StructureDiagramGenerator;
 import org.openscience.cdk.modeling.builder3d.ModelBuilder3D;
 import org.openscience.cdk.modeling.builder3d.TemplateHandler3D;
+import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 
@@ -47,6 +48,7 @@ import util.ArrayUtil;
 import util.FileUtil;
 import util.StringUtil;
 import util.ToStringComparator;
+import util.ValueFileCache;
 import dataInterface.MoleculeProperty.Type;
 
 public class FeatureService
@@ -55,6 +57,7 @@ public class FeatureService
 	private HashMap<DatasetFile, Boolean> fileHas3D = new HashMap<DatasetFile, Boolean>();
 	private HashMap<DatasetFile, Set<IntegratedProperty>> integratedProperties = new HashMap<DatasetFile, Set<IntegratedProperty>>();
 	private HashMap<DatasetFile, IntegratedProperty> integratedSmiles = new HashMap<DatasetFile, IntegratedProperty>();
+	private HashMap<DatasetFile, String[]> cdkSmiles = new HashMap<DatasetFile, String[]>();
 
 	public FeatureService()
 	{
@@ -370,12 +373,30 @@ public class FeatureService
 	{
 		if (integratedSmiles.containsKey(dataset))
 			return integratedSmiles.get(dataset).getStringValues(dataset);
-		else
+		else if (!cdkSmiles.containsKey(dataset))
 		{
-			if (!CDKProperty.SMILES.isValuesSet(dataset))
-				CDKProperty.SMILES.getMoleculePropertySet().compute(dataset);
-			return CDKProperty.SMILES.getStringValues(dataset);
+			String smilesFile = Settings.destinationFile(dataset.getSDFPath(false),
+					FileUtil.getFilename(dataset.getSDFPath(false)) + "." + dataset.getMD5() + ".smiles");
+			String smiles[];
+			if (new File(smilesFile).exists())
+			{
+				System.out.println("read cached smiles from: " + smilesFile);
+				smiles = ValueFileCache.readCacheString(smilesFile).get(0);
+			}
+			else
+			{
+				System.out.print("compute smiles.. ");
+				SmilesGenerator sg = new SmilesGenerator();
+				smiles = new String[dataset.getMolecules().length];
+				int i = 0;
+				for (IMolecule m : dataset.getMolecules())
+					smiles[i++] = sg.createSMILES(m);
+				System.out.println(" ..done, store: " + smilesFile);
+				ValueFileCache.writeCacheString(smilesFile, smiles);
+			}
+			cdkSmiles.put(dataset, smiles);
 		}
+		return cdkSmiles.get(dataset);
 	}
 
 	public boolean has3D(DatasetFile dataset)
@@ -447,10 +468,9 @@ public class FeatureService
 	{
 		try
 		{
-			String md5 = FileUtil.getMD5String(dataset.getLocalPath());
 			File f = new File(dataset.getLocalPath());
 			String sdfFile = Settings.destinationFile(f.getParent(), FileUtil.getFilename(f.getAbsolutePath(), false)
-					+ md5 + ".sdf");
+					+ dataset.getMD5() + ".sdf");
 			if (!new File(sdfFile).exists())
 			{
 				File tmpFile = File.createTempFile("sdf_build", "tmp");

@@ -1,5 +1,8 @@
 package alg.cluster;
 
+import gui.FeatureWizardPanel.FeatureInfo;
+import gui.Message;
+import gui.Messages;
 import gui.property.DoubleProperty;
 import gui.property.Property;
 import gui.property.StringProperty;
@@ -11,8 +14,6 @@ import java.util.List;
 import main.TaskProvider;
 import opentox.DatasetUtil;
 import opentox.RESTUtil;
-import alg.Message;
-import alg.MessageType;
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import data.DefaultFeatureComputer;
@@ -20,7 +21,6 @@ import data.IntegratedProperty;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MoleculeProperty;
-import dataInterface.MoleculeProperty.Type;
 
 public class StructuralClustererService extends AbstractDatasetClusterer
 {
@@ -167,16 +167,14 @@ public class StructuralClustererService extends AbstractDatasetClusterer
 	}
 
 	@Override
-	public Message getMessage(DatasetFile dataset, int numFeatures, Type featureType, boolean smartsFeaturesSelected,
-			DatasetClusterer clusterer)
+	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
-		Message msg = super.getMessage(dataset, numFeatures, featureType, smartsFeaturesSelected, clusterer);
-		if (msg != null && msg.getType() == MessageType.Error)
-			return msg;
+		Messages m = super.getMessages(dataset, featureInfo, clusterer);
 		String warn = "Your data will be send over the internet to an external webserice.\n"
 				+ "The service ignores the features selected in the previous step (see description below).";
 		if (dataset.numCompounds() >= 50)
 			warn += "\nAt present the service can handle only small datsets (< 50 compounds).";
-		return Message.warningMessage(warn);
+		m.add(Message.warningMessage(warn));
+		return m;
 	}
 }

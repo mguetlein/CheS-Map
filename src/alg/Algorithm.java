@@ -1,10 +1,11 @@
 package alg;
 
+import gui.FeatureWizardPanel.FeatureInfo;
+import gui.Messages;
 import gui.binloc.Binary;
 import gui.property.Property;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
-import dataInterface.MoleculeProperty.Type;
 
 public interface Algorithm
 {
@@ -16,6 +17,5 @@ public interface Algorithm
 
 	public Binary getBinary();
 
-	public Message getMessage(DatasetFile dataset, int numFeatures, Type featureType, boolean smartsFeaturesSelected,
-			DatasetClusterer clusterer);
+	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer);
 }

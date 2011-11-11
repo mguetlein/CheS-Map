@@ -1,5 +1,8 @@
 package alg.cluster;
 
+import gui.FeatureWizardPanel.FeatureInfo;
+import gui.Message;
+import gui.Messages;
 import io.SDFUtil;
 
 import java.util.List;
@@ -7,11 +10,9 @@ import java.util.List;
 import main.Settings;
 import main.TaskProvider;
 import alg.AbstractAlgorithm;
-import alg.Message;
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import dataInterface.ClusterData;
-import dataInterface.MoleculeProperty.Type;
 
 public abstract class AbstractDatasetClusterer extends AbstractAlgorithm implements DatasetClusterer
 {
@@ -36,14 +37,14 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 	}
 
 	@Override
-	public Message getMessage(DatasetFile dataset, int numFeatures, Type featureType, boolean smartsFeaturesSelected,
-			DatasetClusterer clusterer)
+	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
-		if (requiresFeatures() && numFeatures == 0)
-			return Message.errorMessage(Settings.text("cluster.error.no-features", getName()));
+		Messages m = super.getMessages(dataset, featureInfo, clusterer);
+		if (requiresFeatures() && !featureInfo.featuresSelected)
+			m.add(Message.errorMessage(Settings.text("error.no-features")));
 		else if (getFixedNumClustersProperty() != null)
-			return Message.infoMessage(Settings.text("cluster.info.fixed-k", getFixedNumClustersProperty()));
-		return null;
+			m.add(Message.infoMessage(Settings.text("cluster.info.fixed-k", getFixedNumClustersProperty())));
+		return m;
 	}
 
 	protected void storeClusters(String sdfFile, String clusterFilePrefix, String clusterAlgName,

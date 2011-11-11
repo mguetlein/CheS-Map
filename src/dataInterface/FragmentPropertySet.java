@@ -1,40 +1,24 @@
 package dataInterface;
 
-import data.StructuralFragments.MatchEngine;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import data.fragments.StructuralFragmentProperties;
 
 public abstract class FragmentPropertySet implements MoleculePropertySet
 {
-	protected MatchEngine matchEngine;
-	protected int minFrequency = -1;
-	protected boolean skipOmnipresent = false;
-
-	public void setMinFrequency(int minFrequency)
+	public FragmentPropertySet()
 	{
-		if (this.minFrequency != minFrequency)
+		StructuralFragmentProperties.addPropertyChangeListenerToProperties(new PropertyChangeListener()
 		{
-			this.minFrequency = minFrequency;
-			updateFragments();
-		}
-	}
+			@Override
+			public void propertyChange(PropertyChangeEvent evt)
+			{
+				updateFragments();
 
-	public void setSkipOmniFragments(boolean skipOmniFragments)
-	{
-		if (this.skipOmnipresent != skipOmniFragments)
-		{
-			this.skipOmnipresent = skipOmniFragments;
-			updateFragments();
-		}
-	}
-
-	public void setMatchEngine(MatchEngine matchEngine)
-	{
-		if (this.matchEngine != matchEngine)
-		{
-			this.matchEngine = matchEngine;
-			updateFragments();
-		}
+			}
+		});
 	}
 
 	protected abstract void updateFragments();
-
 }

@@ -160,6 +160,7 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 		if (values.containsKey(dataset))
 			throw new IllegalStateException();
 		Double normalized[] = ArrayUtil.normalize(vals);
+		//Double normalized[] = ArrayUtil.normalizeLog(vals);
 		values.put(dataset, vals);
 		normalizedValues.put(dataset, normalized);
 	}

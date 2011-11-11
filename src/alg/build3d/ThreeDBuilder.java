@@ -5,7 +5,7 @@ import data.DatasetFile;
 
 public interface ThreeDBuilder extends Algorithm
 {
-	public boolean threeDFileAlreadyExists(DatasetFile datasetFile);
+	public boolean isCached(DatasetFile datasetFile);
 
 	public void build3D(DatasetFile datasetFile);
 

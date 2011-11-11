@@ -7,9 +7,13 @@ public interface MoleculePropertySet
 {
 	public boolean isComputed(DatasetFile dataset);
 
+	public boolean isCached(DatasetFile dataset);
+
 	public boolean compute(DatasetFile dataset);
 
 	public boolean isSizeDynamic();
+
+	public boolean isSizeDynamicHigh(DatasetFile dataset);
 
 	public int getSize(DatasetFile d);
 
@@ -22,4 +26,8 @@ public interface MoleculePropertySet
 	public Binary getBinary();
 
 	public boolean isUsedForMapping();
+
+	public String getNameIncludingParams();
+
+	public boolean isComputationSlow();
 }

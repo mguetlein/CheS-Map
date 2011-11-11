@@ -12,7 +12,6 @@ import main.Settings;
 import util.SwingUtil;
 import weka.gui.GenericObjectEditor;
 import data.ClusteringData;
-import dataInterface.MoleculeProperty.Type;
 
 public class CheSMapperWizard extends WizardDialog
 {
@@ -100,14 +99,14 @@ public class CheSMapperWizard extends WizardDialog
 	{
 		if (dataset.getDatasetFile() != null)
 		{
-			create3D.update(dataset.getDatasetFile(), -1, null, false, null);
+			create3D.update(dataset.getDatasetFile(), null, null);
 			features.updateIntegratedFeatures(dataset.getDatasetFile());
-			int n = features.getNumSelectedFeatures();
-			Type t = features.getSelectedFeatureType();
-			boolean b = features.smartsFeaturesSelected();
-			cluster.update(dataset.getDatasetFile(), n, t, b, cluster.getDatasetClusterer());
-			embed.update(dataset.getDatasetFile(), n, t, b, cluster.getDatasetClusterer());
-			align.update(dataset.getDatasetFile(), n, t, b, cluster.getDatasetClusterer());
+			if (features.getFeatureInfo() != null)
+			{
+				cluster.update(dataset.getDatasetFile(), features.getFeatureInfo(), cluster.getDatasetClusterer());
+				embed.update(dataset.getDatasetFile(), features.getFeatureInfo(), cluster.getDatasetClusterer());
+				align.update(dataset.getDatasetFile(), features.getFeatureInfo(), cluster.getDatasetClusterer());
+			}
 		}
 		super.update(status);
 	}
