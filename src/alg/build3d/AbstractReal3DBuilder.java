@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import main.Settings;
 import main.TaskProvider;
-import util.FileUtil;
 import data.DatasetFile;
 
 public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
@@ -27,12 +26,8 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 
 	private String destinationFile(DatasetFile dataset)
 	{
-		String sdfFile = dataset.getSDFPath(false);
-		int index = sdfFile.lastIndexOf('.');
-		if (index == -1)
-			throw new IllegalStateException("filename has no '.'");
-		return Settings.destinationFile(sdfFile, FileUtil.getFilename(sdfFile, false) + "." + dataset.getMD5() + "."
-				+ getInitials() + "3d" + sdfFile.substring(index));
+		return Settings.destinationFile(dataset, dataset.getShortName() + "." + dataset.getMD5() + "." + getInitials()
+				+ "3d.sdf");
 	}
 
 	@Override

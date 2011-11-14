@@ -45,7 +45,6 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 
 import util.ArrayUtil;
-import util.FileUtil;
 import util.StringUtil;
 import util.ToStringComparator;
 import util.ValueFileCache;
@@ -375,8 +374,8 @@ public class FeatureService
 			return integratedSmiles.get(dataset).getStringValues(dataset);
 		else if (!cdkSmiles.containsKey(dataset))
 		{
-			String smilesFile = Settings.destinationFile(dataset.getSDFPath(false),
-					FileUtil.getFilename(dataset.getSDFPath(false)) + "." + dataset.getMD5() + ".smiles");
+			String smilesFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + dataset.getMD5()
+					+ ".smiles");
 			String smiles[];
 			if (new File(smilesFile).exists())
 			{
@@ -464,13 +463,10 @@ public class FeatureService
 		}
 	}
 
-	public static void writeSDFFile(DatasetFile dataset)
+	public static void writeSDFFile(DatasetFile dataset, String sdfFile)
 	{
 		try
 		{
-			File f = new File(dataset.getLocalPath());
-			String sdfFile = Settings.destinationFile(f.getParent(), FileUtil.getFilename(f.getAbsolutePath(), false)
-					+ dataset.getMD5() + ".sdf");
 			if (!new File(sdfFile).exists())
 			{
 				File tmpFile = File.createTempFile("sdf_build", "tmp");

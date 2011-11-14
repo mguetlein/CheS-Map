@@ -24,9 +24,9 @@ public class KMeansRClusterer extends AbstractRClusterer
 	}
 
 	@Override
-	protected String getRScriptName()
+	protected String getShortName()
 	{
-		return "kmeans_" + k.getValue() + "_" + restart.getValue();
+		return "kmeans";
 	}
 
 	@Override

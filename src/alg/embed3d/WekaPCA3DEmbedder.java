@@ -30,23 +30,19 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 	Instances resultData;
 	Property[] properties;
 
-	public WekaPCA3DEmbedder()
+	public WekaPCA3DEmbedder(Property[] properties)
 	{
-		this(false);
-	}
-
-	public WekaPCA3DEmbedder(boolean withProps)
-	{
-		if (withProps)
-			properties = WekaPropertyUtil.getProperties(pca);
+		if (properties != null)
+			this.properties = properties;
+		else
+			this.properties = WekaPropertyUtil.getProperties(pca);
 	}
 
 	@Override
-	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features)
-			throws Exception
+	public List<Vector3f> embed(DatasetFile dataset, List<MolecularPropertyOwner> instances,
+			List<MoleculeProperty> features) throws Exception
 	{
-		if (properties != null)
-			WekaPropertyUtil.setProperties(pca, properties);
+		WekaPropertyUtil.setProperties(pca, properties);
 
 		File f = CompoundArffWriter.writeArffFile(dataset, instances, features);
 		BufferedReader reader = new BufferedReader(new FileReader(f));
@@ -55,7 +51,7 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 		pca.buildEvaluator(data);
 		resultData = pca.transformedData(data);
 
-		positions = new ArrayList<Vector3f>();
+		List<Vector3f> positions = new ArrayList<Vector3f>();
 		for (int i = 0; i < resultData.numInstances(); i++)
 		{
 			Instance in = resultData.instance(i);
@@ -68,6 +64,7 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 				z = (float) in.value(2);
 			positions.add(new Vector3f(x, y, z));
 		}
+		return positions;
 	}
 
 	@Override
@@ -89,6 +86,12 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 	public String getName()
 	{
 		return Settings.text("embed.weka.pca");
+	}
+
+	@Override
+	public String getShortName()
+	{
+		return "pca_weka";
 	}
 
 	@Override

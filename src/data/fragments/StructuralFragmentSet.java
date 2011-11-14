@@ -31,7 +31,8 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	DoubleKeyHashMap<MatchEngine, DatasetFile, String> cacheFile = new DoubleKeyHashMap<MatchEngine, DatasetFile, String>();
 	DoubleKeyHashMap<MatchEngine, DatasetFile, List<StructuralFragment>> computedFragments = new DoubleKeyHashMap<MatchEngine, DatasetFile, List<StructuralFragment>>();
 
-	public StructuralFragmentSet(String name, String description, HashMap<MatchEngine, List<StructuralFragment>> fragments)
+	public StructuralFragmentSet(String name, String description,
+			HashMap<MatchEngine, List<StructuralFragment>> fragments)
 	{
 		this.fragments = fragments;
 		this.description = description;
@@ -156,8 +157,9 @@ public class StructuralFragmentSet extends FragmentPropertySet
 			cacheFile.put(
 					StructuralFragmentProperties.getMatchEngine(),
 					dataset,
-					Settings.destinationFile(dataset.getSDFPath(false), StructuralFragmentProperties.getMatchEngine()
-							+ "." + FileUtil.getFilename(dataset.getSDFPath(false)) + "." + enc + ".matches.csv"));
+					Settings.destinationFile(dataset,
+							StructuralFragmentProperties.getMatchEngine() + "." + dataset.getShortName() + "." + enc
+									+ ".matches.csv"));
 		}
 		return cacheFile.get(StructuralFragmentProperties.getMatchEngine(), dataset);
 	}
@@ -219,8 +221,8 @@ public class StructuralFragmentSet extends FragmentPropertySet
 			fragment.setFrequency(dataset, f);
 			fragment.setStringValues(dataset, m);
 			if (!computedFragments.containsKeyPair(StructuralFragmentProperties.getMatchEngine(), dataset))
-				computedFragments
-						.put(StructuralFragmentProperties.getMatchEngine(), dataset, new ArrayList<StructuralFragment>());
+				computedFragments.put(StructuralFragmentProperties.getMatchEngine(), dataset,
+						new ArrayList<StructuralFragment>());
 			addFragment(fragment, dataset, StructuralFragmentProperties.getMatchEngine());
 			count++;
 		}

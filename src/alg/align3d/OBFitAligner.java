@@ -68,7 +68,7 @@ public abstract class OBFitAligner extends Abstract3DAligner
 					}
 					//				String alignedStructures = FileUtil.getParent(clusterFile) + File.separator
 					//						+ FileUtil.getFilename(clusterFile, false) + ".aligned.sdf";
-					String alignedStructures = Settings.destinationFile(clusterFile,
+					String alignedStructures = Settings.destinationFile(dataset,
 							FileUtil.getFilename(clusterFile, false) + ".aligned.sdf");
 
 					SDFUtil.filter(clusterFile, tmpFirst.getAbsolutePath(), new int[] { 0 });

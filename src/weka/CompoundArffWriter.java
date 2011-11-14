@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.List;
 
 import main.Settings;
-import util.FileUtil;
 import data.DatasetFile;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
@@ -17,8 +16,7 @@ public class CompoundArffWriter implements ArffWritable
 			List<MoleculeProperty> features)
 	{
 		String enc = MoleculePropertyUtil.getSetMD5(features, dataset.getMD5());
-		String arffFile = Settings.destinationFile(dataset.getSDFPath(false),
-				FileUtil.getFilename(dataset.getSDFPath(false)) + "." + enc + ".arff");
+		String arffFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + enc + ".arff");
 		File file = new File(arffFile);
 		if (!file.exists())
 		{

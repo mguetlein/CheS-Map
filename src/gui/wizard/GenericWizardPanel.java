@@ -196,10 +196,9 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 			simpleView = createSimpleView();
 			simple().add(simpleView);
 			String simpleSelected = (String) Settings.PROPS.get(getTitle() + "-simple-selected");
-			if (simpleSelected != null && simpleSelected.equals("true"))
+			if (simpleSelected == null || simpleSelected.equals("true"))
 				toggle(true);
 		}
-
 	}
 
 	HashMap<String, PropertyPanel> cards = new HashMap<String, PropertyPanel>();

@@ -6,9 +6,11 @@ import gui.Messages;
 import gui.binloc.Binary;
 import gui.property.IntegerProperty;
 import gui.property.Property;
+import gui.property.PropertyUtil;
 import io.RUtil;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +24,6 @@ import rscript.ExportRUtil;
 import rscript.RScriptUtil;
 import util.ArrayUtil;
 import util.ExternalToolUtil;
-import util.FileUtil;
 import alg.AlgorithmException.EmbedException;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
@@ -36,71 +37,73 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 	protected int numInstances = -1;
 	protected int numFeatures = -1;
 
-	protected abstract String getRScriptName();
-
 	protected abstract String getRScriptCode();
 
+	protected abstract String getShortName();
+
 	@Override
-	public void embed(DatasetFile dataset, final List<MolecularPropertyOwner> instances,
-			final List<MoleculeProperty> features)
+	public List<Vector3f> embed(DatasetFile dataset, final List<MolecularPropertyOwner> instances,
+			final List<MoleculeProperty> features) throws IOException
 	{
 		this.numInstances = instances.size();
 		this.numFeatures = features.size();
 
 		if (features.size() < getMinNumFeatures())
-			throw new EmbedException(this, getRScriptName() + " requires for embedding at least " + getMinNumFeatures()
+			throw new EmbedException(this, getShortName() + " requires for embedding at least " + getMinNumFeatures()
 					+ " features with non-unique values (num features is '" + features.size() + "')");
 		if (instances.size() < getMinNumInstances())
-			throw new EmbedException(this, getRScriptName() + " requires for embedding at least "
-					+ getMinNumInstances() + " compounds (num compounds is '" + instances.size() + "')");
+			throw new EmbedException(this, getShortName() + " requires for embedding at least " + getMinNumInstances()
+					+ " compounds (num compounds is '" + instances.size() + "')");
 
-		// name is used : encode dataset md5 + feature md5 into name!
-		String enc = MoleculePropertyUtil.getSetMD5(features, dataset.getMD5());
-		String embeddingMatrixFile = Settings.destinationFile(dataset.getSDFPath(false), getRScriptName() + "."
-
-		+ FileUtil.getFilename(dataset.getSDFPath(false)) + "." + enc + ".embedding.matrix");
-		if (!new File(embeddingMatrixFile).exists())
+		File tmp = File.createTempFile(dataset.getName(), "emb");
+		try
 		{
-			String featureTableFile = Settings.destinationFile(dataset.getSDFPath(false),
-					FileUtil.getFilename(dataset.getSDFPath(false)) + "." + enc + ".features.table");
+			String propsMD5 = PropertyUtil.getPropertyMD5(getProperties());
+			String datasetMD5 = MoleculePropertyUtil.getSetMD5(features, dataset.getMD5());
+
+			String featureTableFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + datasetMD5
+					+ ".features.table");
 			if (!new File(featureTableFile).exists())
 				ExportRUtil.toRTable(features, DistanceUtil.values(features, instances), featureTableFile);
 			else
 				System.out.println("load cached features from " + featureTableFile);
-			String errorOut = ExternalToolUtil.run(getRScriptName(), Settings.RSCRIPT_BINARY.getLocation() + " "
-					+ RScriptUtil.getScriptPath(getRScriptName(), getRScriptCode()) + " " + featureTableFile + " "
-					+ embeddingMatrixFile);
-			if (!new File(embeddingMatrixFile).exists())
+			String errorOut = ExternalToolUtil.run(getShortName(), Settings.RSCRIPT_BINARY.getLocation() + " "
+					+ RScriptUtil.getScriptPath(getShortName() + "." + propsMD5, getRScriptCode()) + " "
+					+ featureTableFile + " " + tmp);
+			if (!tmp.exists())
 				throw new IllegalStateException("embedding failed:\n" + errorOut);
+
+			List<Vector3D> v3d = RUtil.readRVectorMatrix(tmp.getAbsolutePath());
+			if (v3d.size() != instances.size())
+				throw new IllegalStateException("error using '" + getShortName() + "' num results is '" + v3d.size()
+						+ "' instead of '" + instances.size() + "'");
+
+			boolean nonZero = false;
+			double d[][] = new double[v3d.size()][3];
+			for (int i = 0; i < v3d.size(); i++)
+			{
+				d[i][0] = (float) v3d.get(i).getX();
+				d[i][1] = (float) v3d.get(i).getY();
+				d[i][2] = (float) v3d.get(i).getZ();
+				nonZero |= d[i][0] != 0 || d[i][1] != 0 || d[i][2] != 0;
+			}
+			if (!nonZero && instances.size() > 1)
+				throw new IllegalStateException("No attributes!");
+
+			//		System.out.println("before: " + ArrayUtil.toString(d));
+			ArrayUtil.normalize(d, -1, 1);
+			//		System.out.println("after: " + ArrayUtil.toString(d));
+
+			List<Vector3f> positions = new ArrayList<Vector3f>();
+			for (int i = 0; i < instances.size(); i++)
+				positions.add(new Vector3f((float) d[i][0], (float) d[i][1], (float) d[i][2]));
+			return positions;
+			//v3f[i] = new Vector3f((float) v3d.get(i).getX(), (float) v3d.get(i).getY(), (float) v3d.get(i).getZ());
 		}
-		else
-			System.out.println("load cached mapping from " + embeddingMatrixFile);
-
-		List<Vector3D> v3d = RUtil.readRVectorMatrix(embeddingMatrixFile);
-		if (v3d.size() != instances.size())
-			throw new IllegalStateException("error using '" + getRScriptName() + "' num results is '" + v3d.size()
-					+ "' instead of '" + instances.size() + "'");
-
-		boolean nonZero = false;
-		double d[][] = new double[v3d.size()][3];
-		for (int i = 0; i < v3d.size(); i++)
+		finally
 		{
-			d[i][0] = (float) v3d.get(i).getX();
-			d[i][1] = (float) v3d.get(i).getY();
-			d[i][2] = (float) v3d.get(i).getZ();
-			nonZero |= d[i][0] != 0 || d[i][1] != 0 || d[i][2] != 0;
+			tmp.delete();
 		}
-		if (!nonZero && instances.size() > 1)
-			throw new IllegalStateException("No attributes!");
-
-		//		System.out.println("before: " + ArrayUtil.toString(d));
-		ArrayUtil.normalize(d, -1, 1);
-		//		System.out.println("after: " + ArrayUtil.toString(d));
-
-		positions = new ArrayList<Vector3f>();
-		for (int i = 0; i < instances.size(); i++)
-			positions.add(new Vector3f((float) d[i][0], (float) d[i][1], (float) d[i][2]));
-		//v3f[i] = new Vector3f((float) v3d.get(i).getX(), (float) v3d.get(i).getY(), (float) v3d.get(i).getZ());
 	}
 
 	@Override
@@ -127,9 +130,9 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		}
 
 		@Override
-		public String getRScriptName()
+		public String getShortName()
 		{
-			return "tsne_" + maxNumIterations.getValue() + "_" + getPerplexity() + "_" + getInitialDims();
+			return "tsne";
 		}
 
 		@Override
@@ -209,7 +212,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		}
 
 		@Override
-		public String getRScriptName()
+		public String getShortName()
 		{
 			return "pca";
 		}
@@ -255,9 +258,9 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		}
 
 		@Override
-		protected String getRScriptName()
+		protected String getShortName()
 		{
-			return "smacof_" + maxNumIterations.getValue();
+			return "smacof";
 		}
 
 		@Override

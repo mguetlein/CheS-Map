@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.vecmath.Vector3f;
+
 import util.FileUtil.CSVFile;
 
 public class ValueFileCache
@@ -28,6 +30,32 @@ public class ValueFileCache
 		return d;
 	}
 
+	public static List<Integer[]> readCacheInteger(String cacheFile)
+	{
+		List<Integer[]> d = new ArrayList<Integer[]>();
+		for (String[] strings : readCacheString(cacheFile))
+			d.add(ArrayUtil.parseIntegers(strings));
+		return d;
+	}
+
+	public static List<Integer> readCacheInteger2(String cacheFile)
+	{
+		return ArrayUtil.toList(readCacheInteger(cacheFile).get(0));
+	}
+
+	private static List<Vector3f[]> readCachePosition(String cacheFile)
+	{
+		List<Vector3f[]> d = new ArrayList<Vector3f[]>();
+		for (String[] strings : readCacheString(cacheFile))
+			d.add(Vector3fUtil.parseArray(strings));
+		return d;
+	}
+
+	public static List<Vector3f> readCachePosition2(String cacheFile)
+	{
+		return ArrayUtil.toList(readCachePosition(cacheFile).get(0));
+	}
+
 	public static void writeCacheString(String cacheFile, String[] values)
 	{
 		List<Object[]> l = new ArrayList<Object[]>();
@@ -39,6 +67,21 @@ public class ValueFileCache
 	{
 		List<Object[]> l = new ArrayList<Object[]>();
 		for (Double[] o : values)
+			l.add(o);
+		writeCache(cacheFile, l);
+	}
+
+	public static void writeCacheInteger2(String cacheFile, List<Integer> values)
+	{
+		List<Integer[]> l = new ArrayList<Integer[]>();
+		l.add(ArrayUtil.toIntegerArray(values));
+		writeCacheInteger(cacheFile, l);
+	}
+
+	public static void writeCacheInteger(String cacheFile, List<Integer[]> values)
+	{
+		List<Object[]> l = new ArrayList<Object[]>();
+		for (Integer[] o : values)
 			l.add(o);
 		writeCache(cacheFile, l);
 	}
@@ -60,4 +103,23 @@ public class ValueFileCache
 			throw new Error(e);
 		}
 	}
+
+	public static void writeCachePosition2(String filename, List<Vector3f> positions)
+	{
+		File f = new File(filename);
+		try
+		{
+			BufferedWriter b = new BufferedWriter(new FileWriter(f));
+			String s = "";
+			for (Vector3f vector3f : positions)
+				s += Vector3fUtil.serialize(vector3f) + ",";
+			b.write(s + "\n");
+			b.close();
+		}
+		catch (IOException e)
+		{
+			throw new Error(e);
+		}
+	}
+
 }

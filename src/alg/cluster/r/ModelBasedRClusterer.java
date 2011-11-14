@@ -19,7 +19,7 @@ class ModelBasedRClusterer extends AbstractRClusterer
 	}
 
 	@Override
-	protected String getRScriptName()
+	protected String getShortName()
 	{
 		return "mclust";
 	}

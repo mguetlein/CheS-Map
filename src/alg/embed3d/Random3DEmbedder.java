@@ -9,12 +9,15 @@ import javax.vecmath.Vector3f;
 
 import main.Settings;
 import util.Vector3fUtil;
+import alg.AbstractAlgorithm;
 import data.DatasetFile;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 
-public class Random3DEmbedder extends Abstract3DEmbedder
+public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedder
 {
+
+	private List<Vector3f> positions;
 
 	private static List<Vector3f> getPositions(int numPositions)
 	{
@@ -55,7 +58,8 @@ public class Random3DEmbedder extends Abstract3DEmbedder
 	}
 
 	@Override
-	public void embed(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features)
+	public void embedDataset(DatasetFile dataset, List<MolecularPropertyOwner> instances,
+			List<MoleculeProperty> features)
 	{
 		positions = getPositions(instances.size());
 	}
@@ -87,6 +91,12 @@ public class Random3DEmbedder extends Abstract3DEmbedder
 	public boolean requiresFeatures()
 	{
 		return false;
+	}
+
+	@Override
+	public List<Vector3f> getPositions()
+	{
+		return positions;
 	}
 
 }

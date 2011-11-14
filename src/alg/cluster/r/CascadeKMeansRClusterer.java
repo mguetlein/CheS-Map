@@ -25,9 +25,9 @@ public class CascadeKMeansRClusterer extends AbstractRClusterer
 	}
 
 	@Override
-	protected String getRScriptName()
+	protected String getShortName()
 	{
-		return "cascadeKM_" + minK.getValue() + "_" + maxK.getValue() + "_" + restart.getValue();
+		return "cascadeKM";
 	}
 
 	@Override

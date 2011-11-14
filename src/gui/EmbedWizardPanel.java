@@ -1,5 +1,6 @@
 package gui;
 
+import gui.property.Property;
 import gui.wizard.GenericWizardPanel;
 
 import java.awt.BorderLayout;
@@ -22,7 +23,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 public class EmbedWizardPanel extends GenericWizardPanel
 {
-	public static final ThreeDEmbedder EMBEDDERS[] = { new Random3DEmbedder(), new WekaPCA3DEmbedder(true),
+	public static final ThreeDEmbedder EMBEDDERS[] = { new Random3DEmbedder(), new WekaPCA3DEmbedder(null),
 			new AbstractRTo3DEmbedder.PCAFeature3DEmbedder(), new AbstractRTo3DEmbedder.TSNEFeature3DEmbedder(),
 			new AbstractRTo3DEmbedder.SMACOF3DEmbedder() };
 
@@ -135,6 +136,6 @@ public class EmbedWizardPanel extends GenericWizardPanel
 
 	public static ThreeDEmbedder getDefaultEmbedder()
 	{
-		return new WekaPCA3DEmbedder();
+		return new WekaPCA3DEmbedder(new Property[0]);
 	}
 }

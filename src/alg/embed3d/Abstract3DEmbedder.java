@@ -3,15 +3,21 @@ package alg.embed3d;
 import gui.FeatureWizardPanel.FeatureInfo;
 import gui.Message;
 import gui.Messages;
+import gui.property.PropertyUtil;
 
+import java.io.File;
 import java.util.List;
 
 import javax.vecmath.Vector3f;
 
 import main.Settings;
+import util.ValueFileCache;
 import alg.AbstractAlgorithm;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
+import dataInterface.MolecularPropertyOwner;
+import dataInterface.MoleculeProperty;
+import dataInterface.MoleculePropertyUtil;
 
 public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedder
 {
@@ -21,7 +27,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		return true;
 	}
 
-	protected List<Vector3f> positions;
+	private List<Vector3f> positions;
 
 	@Override
 	public final List<Vector3f> getPositions()
@@ -39,4 +45,35 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 			m.add(Message.infoMessage(Settings.text("embed.info.only-nominal")));
 		return m;
 	}
+
+	protected abstract List<Vector3f> embed(DatasetFile dataset, List<MolecularPropertyOwner> instances,
+			List<MoleculeProperty> features) throws Exception;
+
+	protected abstract String getShortName();
+
+	public void embedDataset(DatasetFile dataset, List<MolecularPropertyOwner> instances,
+			List<MoleculeProperty> features) throws Exception
+	{
+		String filename = Settings.destinationFile(
+				dataset,
+				dataset.getShortName()
+						+ "."
+						+ getShortName()
+						+ "."
+						+ MoleculePropertyUtil.getSetMD5(features,
+								dataset.getMD5() + " " + PropertyUtil.getPropertyMD5(getProperties())) + ".embed");
+
+		if (new File(filename).exists())
+		{
+			System.out.println("read cached embedding results from: " + filename);
+			positions = ValueFileCache.readCachePosition2(filename);
+		}
+		else
+		{
+			positions = embed(dataset, instances, features);
+			System.out.println("store embedding results to: " + filename);
+			ValueFileCache.writeCachePosition2(filename, positions);
+		}
+	}
+
 }

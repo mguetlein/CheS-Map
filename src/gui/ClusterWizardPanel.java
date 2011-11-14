@@ -29,8 +29,14 @@ public class ClusterWizardPanel extends GenericWizardPanel
 {
 	boolean canProceed = false;
 	public static DatasetClusterer CLUSTERERS[];
-	private static IntegerProperty min = new IntegerProperty("min num clusters", 2, 1, Integer.MAX_VALUE);
-	private static IntegerProperty max = new IntegerProperty("max num clusters", 10, 1, Integer.MAX_VALUE);
+	private static IntegerProperty min = new IntegerProperty("minNumClusters", 2, 1, Integer.MAX_VALUE);
+	private static IntegerProperty max = new IntegerProperty("maxNumClusters", 10, 1, Integer.MAX_VALUE);
+	private static Property[] PROPS = new Property[] { min, max };
+	static
+	{
+		min.setDisplayName("minimum number of clusters");
+		max.setDisplayName("maximum number of clusters");
+	}
 
 	static
 	{
@@ -42,10 +48,7 @@ public class ClusterWizardPanel extends GenericWizardPanel
 
 	public static DatasetClusterer getDefaultClusterer()
 	{
-		CascadeSimpleKMeans cascade = new CascadeSimpleKMeans();
-		cascade.setMinNumClusters(min.getValue());
-		cascade.setMaxNumClusters(max.getValue());
-		return new WekaClusterer(cascade);
+		return new WekaClusterer(new CascadeSimpleKMeans(), PROPS);
 	}
 
 	public ClusterWizardPanel(CheSMapperWizard w)
@@ -144,13 +147,17 @@ public class ClusterWizardPanel extends GenericWizardPanel
 			propertyPanel.store();
 			Settings.PROPS.put(getTitle() + "-simple-yes", buttonYes.isSelected() ? "true" : "false");
 		}
-
 	}
 
 	@Override
 	protected SimplePanel createSimpleView()
 	{
 		return new SimpleClusterPanel();
+	}
+
+	protected int defaultSelection()
+	{
+		return 6;
 	}
 
 }

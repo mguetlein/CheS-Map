@@ -10,7 +10,8 @@ import dataInterface.MoleculeProperty;
 
 public interface DatasetClusterer extends Algorithm
 {
-	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features);
+	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
+			throws Exception;
 
 	public List<ClusterData> getClusters();
 

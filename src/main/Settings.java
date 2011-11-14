@@ -42,6 +42,7 @@ import util.FileUtil;
 import util.ImageLoader;
 import util.OSUtil;
 import weka.core.Version;
+import data.DatasetFile;
 
 public class Settings
 {
@@ -212,7 +213,7 @@ public class Settings
 		return STRUCTURAL_FRAGMENT_DIR + File.separator + string;
 	}
 
-	public static String destinationFile(String sourceFilePath, String destinationFilename)
+	public static String destinationFile(DatasetFile dataset, String destinationFilename)
 	{
 		try
 		{
@@ -224,12 +225,22 @@ public class Settings
 			e.printStackTrace();
 			return null;
 		}
+		return destinationFileForFileAndName(dataset.getSDFPath(false), destinationFilename);
+	}
 
-		if (sourceFilePath.startsWith(BASE_DIR))
-			return FileUtil.getParent(sourceFilePath) + File.separator + destinationFilename;
+	public static String destinationSDFFile(DatasetFile dataset)
+	{
+		return destinationFileForFileAndName(dataset.getLocalPath(),
+				FileUtil.getFilename(dataset.getLocalPath(), false) + "." + dataset.getMD5() + ".sdf");
+	}
+
+	private static String destinationFileForFileAndName(String origFile, String filename)
+	{
+		if (origFile.startsWith(BASE_DIR))
+			return FileUtil.getParent(origFile) + File.separator + filename;
 		else
 		{
-			String path = FileUtil.getParent(sourceFilePath);
+			String path = FileUtil.getParent(origFile);
 			if (OSUtil.isWindows() && path.charAt(1) == ':')
 				path = path.charAt(0) + path.substring(2);
 			String parent = BASE_DIR + File.separator + path;
@@ -238,7 +249,7 @@ public class Settings
 				dir.mkdirs();
 			if (!dir.exists())
 				throw new Error("could not create: " + dir);
-			return dir.getAbsolutePath() + File.separator + destinationFilename;
+			return dir.getAbsolutePath() + File.separator + filename;
 		}
 	}
 

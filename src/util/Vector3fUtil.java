@@ -8,6 +8,46 @@ import javax.vecmath.Vector3f;
 
 public class Vector3fUtil
 {
+	public static String serialize(Vector3f v)
+	{
+		return v.x + "#" + v.y + "#" + v.z;
+	}
+
+	public static Vector3f deserialize(String s)
+	{
+		String ss[] = s.split("#");
+		return new Vector3f(Float.parseFloat(ss[0]), Float.parseFloat(ss[1]), Float.parseFloat(ss[2]));
+	}
+
+	/**
+	 * trys to parse String array into Vector3f array (empty strings/null are inserted as null)
+	 * returns null if a non-parsable String is included
+	 * 
+	 * @param array
+	 * @return
+	 */
+	public static Vector3f[] parseArray(Object[] array)
+	{
+		Vector3f vectors[] = new Vector3f[array.length];
+		for (int i = 0; i < vectors.length; i++)
+		{
+			if (array[i] == null || array[i].equals("null") || array[i].toString().trim().length() == 0)
+				vectors[i] = null;
+			else
+			{
+				try
+				{
+					vectors[i] = deserialize(array[i].toString());
+				}
+				catch (Exception e)
+				{
+					return null;
+				}
+			}
+		}
+		return vectors;
+	}
+
 	public static String toString(Vector3f v)
 	{
 		return "{" + v.x + " " + v.y + " " + v.z + "}";
@@ -171,25 +211,27 @@ public class Vector3fUtil
 
 	public static void main(String args[])
 	{
-		Random random = new Random();
-		Vector3f sum = null;
-		long runs = 0;
+		System.out.println(new Vector3f(2, 3, 4));
 
-		while (runs < 100000)
-		{
-			Vector3f v = randomVector(1, random);
-			// System.out.println(runs + "   v: " + v);
-
-			if (sum == null)
-				sum = new Vector3f(v);
-			else
-				sum.add(v);
-			runs++;
-		}
-		Vector3f avg = new Vector3f(sum);
-		avg.scale(1 / (float) runs);
-		System.out.println(runs + " avg: " + avg);
-		System.out.println(runs + " length: " + avg.length());
+		//		Random random = new Random();
+		//		Vector3f sum = null;
+		//		long runs = 0;
+		//
+		//		while (runs < 100000)
+		//		{
+		//			Vector3f v = randomVector(1, random);
+		//			// System.out.println(runs + "   v: " + v);
+		//
+		//			if (sum == null)
+		//				sum = new Vector3f(v);
+		//			else
+		//				sum.add(v);
+		//			runs++;
+		//		}
+		//		Vector3f avg = new Vector3f(sum);
+		//		avg.scale(1 / (float) runs);
+		//		System.out.println(runs + " avg: " + avg);
+		//		System.out.println(runs + " length: " + avg.length());
 
 	}
 }

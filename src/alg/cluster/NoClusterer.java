@@ -4,14 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import main.Settings;
+import alg.AbstractAlgorithm;
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MoleculeProperty;
 
-public class NoClusterer extends AbstractDatasetClusterer
+public class NoClusterer extends AbstractAlgorithm implements DatasetClusterer
 {
+	private List<ClusterData> clusters;
+
 	@Override
 	public String getName()
 	{
@@ -46,5 +49,17 @@ public class NoClusterer extends AbstractDatasetClusterer
 	public boolean requiresFeatures()
 	{
 		return false;
+	}
+
+	@Override
+	public List<ClusterData> getClusters()
+	{
+		return clusters;
+	}
+
+	@Override
+	public String getFixedNumClustersProperty()
+	{
+		return null;
 	}
 }

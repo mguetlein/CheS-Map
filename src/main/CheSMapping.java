@@ -253,7 +253,7 @@ public class CheSMapping
 		}
 		try
 		{
-			emb.embed(dataset, ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), featuresWithInfo);
+			emb.embedDataset(dataset, ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), featuresWithInfo);
 		}
 		catch (Exception e)
 		{
@@ -264,7 +264,7 @@ public class CheSMapping
 			TaskProvider.task().warning(emb.getName() + " failed on embedding dataset, using random positions",
 					e.getMessage());
 			emb = randomEmbedder;
-			randomEmbedder.embed(dataset, ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), null);
+			randomEmbedder.embedDataset(dataset, ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), null);
 		}
 
 		clustering.setEmbedAlgorithm(emb.getName());

@@ -38,6 +38,11 @@ public class DatasetFile
 		return name;
 	}
 
+	public String getShortName()
+	{
+		return FileUtil.getFilename(localPath, false);
+	}
+
 	public String getSDFPath(boolean threeD)
 	{
 		if (threeD)
@@ -145,7 +150,7 @@ public class DatasetFile
 	{
 		for (DatasetFile f : instances)
 		{
-			if (f.getLocalPath().equals(sdfFile) || sdfFile.equals(f.getSDFPath(true)))
+			if (f.localPath.equals(sdfFile) || sdfFile.equals(f.getSDFPath(true)))
 				f.clear();
 		}
 	}
@@ -159,7 +164,9 @@ public class DatasetFile
 	{
 		featureService.loadDataset(this, loadHydrogen);
 		if (getSDFPath(false) == null)
-			FeatureService.writeSDFFile(this);
+		{
+			FeatureService.writeSDFFile(this, Settings.destinationSDFFile(this));
+		}
 	}
 
 	public int numCompounds()
@@ -192,7 +199,7 @@ public class DatasetFile
 	public String getMD5()
 	{
 		if (md5 == null)
-			md5 = FileUtil.getMD5String(getLocalPath());
+			md5 = FileUtil.getMD5String(localPath);
 		return md5;
 	}
 }

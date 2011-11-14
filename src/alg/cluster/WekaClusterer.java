@@ -25,12 +25,8 @@ import weka.clusterers.EM;
 import weka.clusterers.FarthestFirst;
 import weka.clusterers.HierarchicalClusterer;
 import weka.clusterers.SimpleKMeans;
-import weka.clusterers.XMeans;
 import weka.core.Instances;
-import alg.cluster.r.KMeansRClusterer;
-import data.ClusterDataImpl;
 import data.DatasetFile;
-import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
@@ -38,7 +34,6 @@ import dataInterface.MoleculeProperty;
 public class WekaClusterer extends AbstractDatasetClusterer
 {
 	private static SimpleKMeans kMeans = new SimpleKMeans();
-	private static XMeans xMeans = new XMeans();
 	static
 	{
 		try
@@ -53,8 +48,10 @@ public class WekaClusterer extends AbstractDatasetClusterer
 
 	private static String SKIP_PROPERTIES[] = new String[] { "saveInstanceData", "displayStdDevs", "debug",
 			"displayModelInOldFormat", "printNewick" };
-	private static final Clusterer[] CLUSTERER = new Clusterer[] { new EM(), new Cobweb(), new HierarchicalClusterer(),
-			kMeans, xMeans, new FarthestFirst(), new CascadeSimpleKMeans() };
+	private static final Clusterer[] CLUSTERER = new Clusterer[] { kMeans, new CascadeSimpleKMeans(),
+			new FarthestFirst(), new EM(), new Cobweb(), new HierarchicalClusterer()
+	//, new XMeans() 
+	};
 
 	public static WekaClusterer[] WEKA_CLUSTERER;
 	static
@@ -63,7 +60,7 @@ public class WekaClusterer extends AbstractDatasetClusterer
 		int i = 0;
 		for (Clusterer c : CLUSTERER)
 		{
-			WekaClusterer wc = new WekaClusterer(c, true);
+			WekaClusterer wc = new WekaClusterer(c);
 			if (c instanceof Cobweb)
 			{
 				wc.additionalDescription = Settings.text("cluster.weka.cobweb.desc");
@@ -83,15 +80,18 @@ public class WekaClusterer extends AbstractDatasetClusterer
 			}
 			else if (c instanceof SimpleKMeans)
 			{
-				wc.additionalDescription = Settings.text("cluster.weka.kmeans.desc", KMeansRClusterer.getNameStatic());
+				wc.additionalDescription = Settings.text("cluster.weka.kmeans.desc",
+						Settings.text("cluster.weka.cascade"));
 			}
 			else if (c instanceof FarthestFirst)
 			{
-				wc.additionalDescription = Settings
-						.text("cluster.weka.farthest.desc", KMeansRClusterer.getNameStatic());
+				wc.additionalDescription = Settings.text("cluster.weka.farthest.desc",
+						Settings.text("cluster.weka.cascade"));
 			}
-			else if (c == xMeans)
+			else if (c instanceof CascadeSimpleKMeans)
 			{
+				wc.name = Settings.text("cluster.weka.cascade");
+				wc.additionalDescription = Settings.text("cluster.weka.cascade.desc");
 			}
 			WEKA_CLUSTERER[i++] = wc;
 		}
@@ -103,16 +103,18 @@ public class WekaClusterer extends AbstractDatasetClusterer
 	Property[] properties;
 	String name;
 
-	public WekaClusterer(Clusterer wekaClusterer)
+	private WekaClusterer(Clusterer wekaClusterer)
 	{
-		this(wekaClusterer, false);
+		this(wekaClusterer, null);
 	}
 
-	private WekaClusterer(Clusterer wekaClusterer, boolean withProps)
+	public WekaClusterer(Clusterer wekaClusterer, Property[] properties)
 	{
 		this.wekaClusterer = wekaClusterer;
-		if (withProps)
-			properties = WekaPropertyUtil.getProperties(wekaClusterer, SKIP_PROPERTIES);
+		if (properties != null)
+			this.properties = properties;
+		else
+			this.properties = WekaPropertyUtil.getProperties(wekaClusterer, SKIP_PROPERTIES);
 	}
 
 	@Override
@@ -126,10 +128,9 @@ public class WekaClusterer extends AbstractDatasetClusterer
 	}
 
 	@Override
-	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
+	protected List<Integer> cluster(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
 	{
-		if (properties != null)
-			WekaPropertyUtil.setProperties(wekaClusterer, properties);
+		WekaPropertyUtil.setProperties(wekaClusterer, properties);
 
 		TaskProvider.task().verbose("Converting data to arff-format");
 		File f = CompoundArffWriter.writeArffFile(dataset, ListUtil.cast(MolecularPropertyOwner.class, compounds),
@@ -148,34 +149,22 @@ public class WekaClusterer extends AbstractDatasetClusterer
 			eval.evaluateClusterer(data);
 			System.out.println("# of clusters: " + eval.getNumClusters());
 
-			clusters = new ArrayList<ClusterData>();
-			int numClusters = eval.getNumClusters();
-			for (int i = 0; i < numClusters; i++)
-			{
-				ClusterDataImpl c = new ClusterDataImpl();
-				clusters.add(c);
-			}
+			List<Integer> clusterAssignements = new ArrayList<Integer>();
 			for (int j = 0; j < eval.getClusterAssignments().length; j++)
-				((ClusterDataImpl) clusters.get((int) eval.getClusterAssignments()[j])).addCompound(compounds.get(j));
-
-			List<Integer> toDelete = new ArrayList<Integer>();
-			int i = 0;
-			for (ClusterData c : clusters)
-			{
-				if (c.getSize() == 0)
-					toDelete.add(i);
-				i++;
-			}
-			for (int j = toDelete.size() - 1; j >= 0; j--)
-				clusters.remove(toDelete.get(j).intValue());
-
-			storeClusters(dataset.getSDFPath(true), wekaClusterer.getClass().getSimpleName(), getName(), clusters);
+				clusterAssignements.add((int) eval.getClusterAssignments()[j]);
+			return clusterAssignements;
 		}
 		catch (Exception e)
 		{
 			// error is caught in mapping process, message displayed in dialog and stack trace (with error cause) is printed
 			throw new Error("Error occured while clustering with WEKA: " + e.getMessage(), e);
 		}
+	}
+
+	@Override
+	public String getShortName()
+	{
+		return wekaClusterer.getClass().getSimpleName();
 	}
 
 	@Override
@@ -212,8 +201,9 @@ public class WekaClusterer extends AbstractDatasetClusterer
 		if (additionalDescription != null)
 			s += additionalDescription + "\n";
 		s += "\n";
-		s += "<i>WEKA API documentation:</i> http://weka.sourceforge.net/doc.dev/weka/clusterers/"
-				+ wekaClusterer.getClass().getSimpleName() + ".html\n\n";
+		if (!(wekaClusterer instanceof CascadeSimpleKMeans))
+			s += "<i>WEKA API documentation:</i> http://weka.sourceforge.net/doc.stable/weka/clusterers/"
+					+ wekaClusterer.getClass().getSimpleName() + ".html\n\n";
 
 		// weka has no interface for globalInfo
 		try
@@ -233,7 +223,6 @@ public class WekaClusterer extends AbstractDatasetClusterer
 		{
 			e.printStackTrace();
 		}
-
 		return s;
 	}
 

@@ -17,7 +17,6 @@ import org.openscience.cdk.qsar.result.IDescriptorResult;
 import org.openscience.cdk.qsar.result.IntegerArrayResult;
 import org.openscience.cdk.qsar.result.IntegerResult;
 
-import util.FileUtil;
 import util.StringUtil;
 import util.ValueFileCache;
 import data.DatasetFile;
@@ -122,12 +121,8 @@ public class CDKPropertySet implements MoleculePropertySet
 
 	private String cacheFile(DatasetFile dataset)
 	{
-		String sdfFile = dataset.getSDFPath(false);
-		int index = sdfFile.lastIndexOf('.');
-		if (index == -1)
-			throw new IllegalStateException("filename has no '.'");
-		return Settings.destinationFile(sdfFile, FileUtil.getFilename(sdfFile) + "." + dataset.getMD5() + "."
-				+ StringUtil.encodeFilename(desc.toString()));
+		return Settings.destinationFile(dataset,
+				dataset.getShortName() + "." + dataset.getMD5() + "." + StringUtil.encodeFilename(desc.toString()));
 	}
 
 	@Override

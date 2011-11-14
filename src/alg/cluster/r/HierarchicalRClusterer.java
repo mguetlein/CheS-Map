@@ -22,9 +22,9 @@ class HierarchicalRClusterer extends AbstractRClusterer
 	}
 
 	@Override
-	protected String getRScriptName()
+	protected String getShortName()
 	{
-		return "hclust_" + k.getValue();
+		return "hclust";
 	}
 
 	@Override
