@@ -569,7 +569,7 @@ public class FeatureWizardPanel extends WizardPanel
 			Type t = Type.valueOf(string.substring(index + 1));
 			String feat = string.substring(0, index);
 
-			IntegratedProperty p = IntegratedProperty.fromString(feat, t);
+			IntegratedProperty p = IntegratedProperty.fromString(feat, t, dataset);
 			selector.setSelected(p);
 		}
 

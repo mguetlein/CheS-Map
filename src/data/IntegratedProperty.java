@@ -1,9 +1,7 @@
 package data;
 
 import gui.binloc.Binary;
-
-import java.util.HashMap;
-
+import util.DoubleKeyHashMap;
 import dataInterface.AbstractMoleculeProperty;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculePropertySet;
@@ -13,24 +11,24 @@ public class IntegratedProperty extends AbstractMoleculeProperty implements Mole
 	String property;
 	private boolean usedForMapping;
 
-	private static HashMap<String, IntegratedProperty> instances = new HashMap<String, IntegratedProperty>();
+	private static DoubleKeyHashMap<String, DatasetFile, IntegratedProperty> instances = new DoubleKeyHashMap<String, DatasetFile, IntegratedProperty>();
 
-	private IntegratedProperty(String property)
+	private IntegratedProperty(String property, DatasetFile dataset)
 	{
-		super(property, "Included in Dataset");
+		super(property, property + "." + dataset.getShortName() + "." + dataset.getMD5(), "Included in Dataset");
 		this.property = property;
 	}
 
-	public static IntegratedProperty create(String property)
+	public static IntegratedProperty create(String property, DatasetFile dataset)
 	{
-		if (!instances.containsKey(property))
-			instances.put(property, new IntegratedProperty(property));
-		return instances.get(property);
+		if (!instances.containsKeyPair(property, dataset))
+			instances.put(property, dataset, new IntegratedProperty(property, dataset));
+		return instances.get(property, dataset);
 	}
 
-	public static IntegratedProperty fromString(String property, Type t)
+	public static IntegratedProperty fromString(String property, Type t, DatasetFile dataset)
 	{
-		IntegratedProperty p = create(property);
+		IntegratedProperty p = create(property, dataset);
 		if (!p.isTypeAllowed(t))
 			throw new IllegalArgumentException();
 		p.setType(t);

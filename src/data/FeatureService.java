@@ -241,7 +241,7 @@ public class FeatureService
 					//						if (ArrayUtil.indexOf(allCDKDescriptors, key.toString()) != -1)
 					//							throw new IllegalStateException("sdf-property has equal name as cdk-descriptor: "
 					//									+ key.toString());
-					IntegratedProperty p = IntegratedProperty.create(key.toString());
+					IntegratedProperty p = IntegratedProperty.create(key.toString(), dataset);
 					// add key to sdfProperties
 					integratedProperties.get(dataset).add(p);
 
