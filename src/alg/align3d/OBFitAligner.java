@@ -66,8 +66,8 @@ public abstract class OBFitAligner extends Abstract3DAligner
 					{
 						throw new RuntimeException(e);
 					}
-					//				String alignedStructures = FileUtil.getParent(clusterFile) + File.separator
-					//						+ FileUtil.getFilename(clusterFile, false) + ".aligned.sdf";
+					// String alignedStructures = FileUtil.getParent(clusterFile) + File.separator
+					// + FileUtil.getFilename(clusterFile, false) + ".aligned.sdf";
 					String alignedStructures = Settings.destinationFile(dataset,
 							FileUtil.getFilename(clusterFile, false) + ".aligned.sdf");
 
@@ -77,18 +77,20 @@ public abstract class OBFitAligner extends Abstract3DAligner
 						remainderIndices[j] = (j + 1);
 					SDFUtil.filter(clusterFile, tmpRemainder.getAbsolutePath(), remainderIndices);
 
-					ExternalToolUtil.run("obfit", Settings.BABEL_BINARY.getSisterCommandLocation("obfit") + " "
-							+ cluster.getSubstructureSmarts(type) + " " + tmpFirst.getAbsolutePath() + " "
-							+ tmpRemainder.getAbsolutePath(), tmpAligned);
+					ExternalToolUtil.run(
+							"obfit",
+							new String[] { Settings.BABEL_BINARY.getSisterCommandLocation("obfit"),
+									cluster.getSubstructureSmarts(type), tmpFirst.getAbsolutePath(),
+									tmpRemainder.getAbsolutePath() }, tmpAligned);
 
 					DatasetFile.clearFilesWith3DSDF(alignedStructures);
 
 					FileUtil.join(tmpFirst.getAbsolutePath(), tmpAligned.getAbsolutePath(), alignedStructures);
 					alignedFiles.add(alignedStructures);
-					//					if (SDFUtil.countCompounds(alignedStructures) != SDFUtil.countCompounds(clusterFile))
-					//						throw new IllegalStateException(alignedStructures + " "
-					//								+ SDFUtil.countCompounds(alignedStructures) + " != " + clusterFile + " "
-					//								+ SDFUtil.countCompounds(clusterFile));
+					// if (SDFUtil.countCompounds(alignedStructures) != SDFUtil.countCompounds(clusterFile))
+					// throw new IllegalStateException(alignedStructures + " "
+					// + SDFUtil.countCompounds(alignedStructures) + " != " + clusterFile + " "
+					// + SDFUtil.countCompounds(clusterFile));
 					((ClusterDataImpl) cluster).setAligned(true);
 					((ClusterDataImpl) cluster).setAlignAlgorithm(getName());
 				}
