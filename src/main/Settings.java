@@ -95,33 +95,33 @@ public class Settings
 	public static String BUILD_DATE = null;
 	static
 	{
-		//ADD TO BUILD SCRIPT:
-		//		   <tstamp>
-		//		     <format property="TODAY" pattern="yyyy-MM-dd HH:mm" />
-		//		   </tstamp>
-		//            <manifest>
-		//            	 <attribute name="Built-Date" value="${TODAY}"/>  
-		//            </manifest>
+		// ADD TO BUILD SCRIPT:
+		// <tstamp>
+		// <format property="TODAY" pattern="yyyy-MM-dd HH:mm" />
+		// </tstamp>
+		// <manifest>
+		// <attribute name="Built-Date" value="${TODAY}"/>
+		// </manifest>
 		try
 		{
 			URL manifestUrl = Settings.class.getResource("/META-INF/MANIFEST.MF");
-			//			System.out.println(manifestUrl);
+			// System.out.println(manifestUrl);
 			BufferedReader br = new BufferedReader(new InputStreamReader(manifestUrl.openStream()));
 			String line;
 			while ((line = br.readLine()) != null)
 			{
-				//				System.out.println(line);
+				// System.out.println(line);
 				if (line.matches("(?i).*built.*date.*"))
 				{
 					Settings.BUILD_DATE = line;
 					break;
 				}
 			}
-			//			System.out.println(BUILD_DATE);
+			// System.out.println(BUILD_DATE);
 		}
 		catch (Exception e)
 		{
-			//			e.printStackTrace();
+			// e.printStackTrace();
 		}
 	}
 
@@ -159,7 +159,7 @@ public class Settings
 	public static String HOMEPAGE = "http://opentox.informatik.uni-freiburg.de/ches-mapper";
 	public static String SMSD_STRING = "The Small Molecule Subgraph Detector (SMSD) (see http://www.ebi.ac.uk/thornton-srv/software/SMSD, integrated into CDK)";
 
-	// ------------------ TMP/RESULT-FILE SUPPORT --------------------------------------------- 
+	// ------------------ TMP/RESULT-FILE SUPPORT ---------------------------------------------
 
 	public static String BASE_DIR = System.getProperty("user.home") + File.separator + ".ches-mapper";
 	public static String STRUCTURAL_FRAGMENT_DIR = BASE_DIR + File.separator + "structural_fragments";
@@ -186,7 +186,7 @@ public class Settings
 			@Override
 			public boolean accept(File dir, String name)
 			{
-				//return name.endsWith(".csv");
+				// return name.endsWith(".csv");
 				return true;
 			}
 		});
@@ -258,7 +258,7 @@ public class Settings
 		return BASE_DIR + File.separator + destinationFilename;
 	}
 
-	// ------------- LOAD AND STORE PROPS ----------------------------------	
+	// ------------- LOAD AND STORE PROPS ----------------------------------
 
 	public static Properties PROPS;
 	public static final String PROPERTIES_FILE = BASE_DIR + File.separator + "ches.mapper." + MAJOR_MINOR_VERSION
@@ -266,15 +266,15 @@ public class Settings
 
 	static
 	{
-		//try loading props
+		// try loading props
 		PROPS = new Properties();
 		try
 		{
 			FileInputStream in = new FileInputStream(PROPERTIES_FILE);
 			PROPS.load(in);
 			in.close();
-			//			System.out.println("property-keys: " + CollectionUtil.toString(PROPS.keySet()));
-			//			System.out.println("property-values: " + CollectionUtil.toString(PROPS.values()));
+			// System.out.println("property-keys: " + CollectionUtil.toString(PROPS.keySet()));
+			// System.out.println("property-values: " + CollectionUtil.toString(PROPS.values()));
 			System.out.println("Read properties from: " + PROPERTIES_FILE);
 		}
 		catch (Exception e)
@@ -310,9 +310,10 @@ public class Settings
 			throw new IllegalStateException();
 		if (babelVersion == null)
 		{
+			File bVersion = null;
 			try
 			{
-				File bVersion = File.createTempFile("babel", "version");
+				bVersion = File.createTempFile("babel", "version");
 				ExternalTool ext = new ExternalTool();
 				ext.run("babel", BABEL_BINARY.getLocation() + " -V", bVersion, true);
 				BufferedReader b = new BufferedReader(new FileReader(bVersion));
@@ -327,11 +328,14 @@ public class Settings
 						break;
 					}
 				}
-				bVersion.delete();
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
+			}
+			finally
+			{
+				bVersion.delete();
 			}
 		}
 		return babelVersion;
@@ -356,11 +360,11 @@ public class Settings
 		}
 		else
 		{
-			//default dir
+			// default dir
 			String f = "/usr/local/share/openbabel/" + getOpenBabelVersion() + "/" + s;
 			if (new File(f).exists())
 				return f;
-			//hack
+			// hack
 			while (p.length() > 1)
 			{
 				f = p + "/share/openbabel/" + getOpenBabelVersion() + "/" + s;
