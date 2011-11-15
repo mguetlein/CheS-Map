@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JRadioButton;
+import javax.swing.border.EmptyBorder;
 
 import main.Settings;
 import alg.Algorithm;
@@ -20,6 +21,7 @@ import alg.embed3d.WekaPCA3DEmbedder;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.Sizes;
 
 public class EmbedWizardPanel extends GenericWizardPanel
 {
@@ -74,7 +76,8 @@ public class EmbedWizardPanel extends GenericWizardPanel
 
 	class SimpleEmbedPanel extends SimplePanel
 	{
-		JRadioButton buttonYes = new JRadioButton("Yes", true);
+		JRadioButton buttonYes = new JRadioButton("Yes (recommended, applies " + getDefaultEmbedder().getName() + ")",
+				true);
 		JRadioButton buttonNo = new JRadioButton("No");
 
 		public SimpleEmbedPanel()
@@ -93,11 +96,14 @@ public class EmbedWizardPanel extends GenericWizardPanel
 			buttonYes.addActionListener(a);
 			buttonNo.addActionListener(a);
 			DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("p"));
+			b.setLineGapSize(Sizes.dluX(4));
 			b.append(new JLabel("Embedd compounds according to their feature values into 3D space?"));
 			b.nextLine();
 			b.append(buttonYes);
+			b.setLineGapSize(Sizes.dluX(4));
 			b.nextLine();
 			b.append(buttonNo);
+			b.setBorder(new EmptyBorder(5, 0, 0, 0));
 
 			setLayout(new BorderLayout());
 			add(b.getPanel());

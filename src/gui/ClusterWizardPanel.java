@@ -11,7 +11,9 @@ import java.awt.event.ActionListener;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.border.EmptyBorder;
 
 import main.Settings;
 import util.ArrayUtil;
@@ -24,6 +26,7 @@ import alg.cluster.r.AbstractRClusterer;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.Sizes;
 
 public class ClusterWizardPanel extends GenericWizardPanel
 {
@@ -87,7 +90,7 @@ public class ClusterWizardPanel extends GenericWizardPanel
 
 	class SimpleClusterPanel extends SimplePanel
 	{
-		JRadioButton buttonYes = new JRadioButton("Yes", true);
+		JRadioButton buttonYes = new JRadioButton("Yes (recommended)", true);
 		JRadioButton buttonNo = new JRadioButton("No");
 		PropertyPanel propertyPanel = new PropertyPanel(new Property[] { min, max }, Settings.PROPS,
 				Settings.PROPERTIES_FILE);
@@ -107,13 +110,19 @@ public class ClusterWizardPanel extends GenericWizardPanel
 			};
 			buttonYes.addActionListener(a);
 			buttonNo.addActionListener(a);
-			DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("p,30px,p"));
+			DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("p,10px,p"));
+			b.setLineGapSize(Sizes.dluX(4));
 			b.append(new JLabel("Cluster dataset?"), 3);
 			b.nextLine();
 			b.append(buttonYes);
-			b.append(propertyPanel);
+			b.setLineGapSize(Sizes.dluX(4));
+			JPanel props = new JPanel(new BorderLayout(5, 5));
+			props.add(new JLabel("Applies " + getDefaultClusterer().getName() + ""), BorderLayout.NORTH);
+			props.add(propertyPanel);
+			b.append(props);
 			b.nextLine();
 			b.append(buttonNo, 3);
+			b.setBorder(new EmptyBorder(5, 0, 0, 0));
 
 			setLayout(new BorderLayout());
 			add(b.getPanel());

@@ -39,7 +39,6 @@ class CDKDescriptor
 		try
 		{
 			//			List<IDescriptor> descriptorList = ENGINE.getDescriptorInstances(); // not working in webstart
-
 			List<IDescriptor> descriptorList = new ArrayList<IDescriptor>();
 			BufferedReader buffy = new BufferedReader(new InputStreamReader(
 					IMolecularDescriptor.class.getResourceAsStream("/qsar-descriptors.set")));
