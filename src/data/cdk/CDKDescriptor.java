@@ -38,6 +38,8 @@ class CDKDescriptor
 	{
 		try
 		{
+			//			List<IDescriptor> descriptorList = ENGINE.getDescriptorInstances(); // not working in webstart
+
 			List<IDescriptor> descriptorList = new ArrayList<IDescriptor>();
 			BufferedReader buffy = new BufferedReader(new InputStreamReader(
 					IMolecularDescriptor.class.getResourceAsStream("/qsar-descriptors.set")));
@@ -53,6 +55,7 @@ class CDKDescriptor
 						//						System.err.println("could not init descriptor: " + s);
 						//						e.printStackTrace();
 					}
+			buffy.close();
 			Collections.sort(descriptorList, new Comparator<IDescriptor>()
 			{
 				@Override
@@ -62,30 +65,6 @@ class CDKDescriptor
 				}
 			});
 			System.out.println("loaded " + descriptorList.size() + " cdk descriptors");
-
-			//			List<IDescriptor> l = ENGINE.getDescriptorInstances(); // not working in webstart
-
-			// hard coded, if the above solution does not work
-			//			IMolecularDescriptor l[] = new IMolecularDescriptor[] { new ALOGPDescriptor(), new APolDescriptor(),
-			//					new AcidicGroupCountDescriptor(), new AromaticAtomsCountDescriptor(),
-			//					new AromaticBondsCountDescriptor(), new AtomCountDescriptor(),
-			//					new AutocorrelationDescriptorCharge(), new AutocorrelationDescriptorMass(),
-			//					new AutocorrelationDescriptorPolarizability(), new BCUTDescriptor(), new BPolDescriptor(),
-			//					new BasicGroupCountDescriptor(), new BondCountDescriptor(), new CPSADescriptor(),
-			//					new CarbonTypesDescriptor(), new ChiChainDescriptor(), new ChiClusterDescriptor(),
-			//					new ChiPathClusterDescriptor(), new ChiPathDescriptor(),
-			//					new EccentricConnectivityIndexDescriptor(), new FMFDescriptor(),
-			//					new FragmentComplexityDescriptor(), new GravitationalIndexDescriptor(),
-			//					new HBondAcceptorCountDescriptor(), new HBondDonorCountDescriptor(),
-			//					new HybridizationRatioDescriptor(), new IPMolecularLearningDescriptor(),
-			//					new KappaShapeIndicesDescriptor(), new KierHallSmartsDescriptor(), new LargestChainDescriptor(),
-			//					new LargestPiSystemDescriptor(), new LengthOverBreadthDescriptor(),
-			//					new LongestAliphaticChainDescriptor(), new MDEDescriptor(), new MannholdLogPDescriptor(),
-			//					new MomentOfInertiaDescriptor(), new PetitjeanNumberDescriptor(),
-			//					new PetitjeanShapeIndexDescriptor(), new RotatableBondsCountDescriptor(),
-			//					new RuleOfFiveDescriptor(), new TPSADescriptor(), new VABCDescriptor(), new VAdjMaDescriptor(),
-			//					new WHIMDescriptor(), new WeightDescriptor(), new WeightedPathDescriptor(),
-			//					new WienerNumbersDescriptor(), new XLogPDescriptor(), new ZagrebIndexDescriptor() };
 
 			CDK_DESCRIPTORS = new CDKDescriptor[descriptorList.size()];
 			int i = 0;
