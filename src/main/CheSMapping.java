@@ -100,7 +100,8 @@ public class CheSMapping
 					threeDGenerator.build3D(dataset);
 					dataset.setSDFPath(threeDGenerator.get3DSDFFile(), true);
 
-					ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getSDFPath(true));
+					ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getFullName(), dataset
+							.getSDFPath(true));
 
 					if (TaskProvider.task().isCancelled())
 						return;
@@ -253,7 +254,8 @@ public class CheSMapping
 		}
 		try
 		{
-			emb.embedDataset(dataset, ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), featuresWithInfo);
+			emb.embedDataset(dataset, ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()),
+					featuresWithInfo);
 		}
 		catch (Exception e)
 		{
@@ -264,7 +266,8 @@ public class CheSMapping
 			TaskProvider.task().warning(emb.getName() + " failed on embedding dataset, using random positions",
 					e.getMessage());
 			emb = randomEmbedder;
-			randomEmbedder.embedDataset(dataset, ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), null);
+			randomEmbedder.embedDataset(dataset,
+					ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), null);
 		}
 
 		clustering.setEmbedAlgorithm(emb.getName());

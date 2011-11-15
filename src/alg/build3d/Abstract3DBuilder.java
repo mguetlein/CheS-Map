@@ -17,9 +17,9 @@ public abstract class Abstract3DBuilder extends AbstractAlgorithm implements Thr
 		if (isReal3DBuilder() && isCached(dataset))
 			m.add(Message.infoMessage(Settings.text("build3d.info.cached", getName())));
 		else if (dataset.has3D() && isReal3DBuilder())
-			m.add(Message.warningMessage(Settings.text("build3d.warn.already-3d", dataset.getName())));
+			m.add(Message.warningMessage(Settings.text("build3d.warn.already-3d", dataset.getFullName())));
 		else if (!dataset.has3D() && !isReal3DBuilder())
-			m.add(Message.warningMessage(Settings.text("build3d.warn.3d-missing", dataset.getName())));
+			m.add(Message.warningMessage(Settings.text("build3d.warn.3d-missing", dataset.getFullName())));
 		else if (isReal3DBuilder() && !isCached(dataset))
 			m.add(Message.slowMessage(Settings.text("build3d.slow")));
 		return m;

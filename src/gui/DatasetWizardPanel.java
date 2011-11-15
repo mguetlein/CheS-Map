@@ -151,7 +151,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 					boolean cellHasFocus)
 			{
 				DatasetFile d = (DatasetFile) value;
-				String s = "<html><b>" + d.getName() + "</b><br>(" + d.getLocalPath() + ")</html>";
+				String s = "<html><b>" + d.getFullName() + "</b><br>(" + d.getLocalPath() + ")</html>";
 				setBorder(new EmptyBorder(0, 0, 3, 0));
 				return super.getListCellRendererComponent(list, s, index, isSelected, cellHasFocus);
 			}
@@ -254,7 +254,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		}
 		else
 		{
-			labelFile.setText(dataset.getName());
+			labelFile.setText(dataset.getFullName());
 			labelProps.setText(dataset.getIntegratedProperties(true).length + "");
 			labelSize.setText(dataset.numCompounds() + "");
 			label3D.setText(dataset.has3D() + "");

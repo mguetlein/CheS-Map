@@ -13,11 +13,13 @@ public class DatasetFile
 {
 	private String URI;
 	private String localPath;
-	private String name;
+
 	private String sdfPath;
 	private String sdf3DPath;
 	private String md5;
 	private String shortName;
+	private String fullName;
+	private String name;
 
 	public boolean isLocal()
 	{
@@ -34,8 +36,35 @@ public class DatasetFile
 		return localPath;
 	}
 
+	public String getFullName()
+	{
+		return fullName;
+	}
+
+	private String getNameFromURL(boolean withExtension)
+	{
+		String s[] = URI.split("/");
+		int i = s.length - 1;
+		while (s[i].trim().length() == 0 && i > 0)
+			i--;
+		String ss = s[i];
+		if (withExtension)
+			return ss;
+		int index = ss.lastIndexOf('.');
+		if (index > 0)
+			ss = ss.substring(0, index);
+		return ss;
+	}
+
 	public String getName()
 	{
+		if (name == null)
+		{
+			if (isLocal())
+				name = FileUtil.getFilename(localPath, true);
+			else
+				name = getNameFromURL(true);
+		}
 		return name;
 	}
 
@@ -46,16 +75,7 @@ public class DatasetFile
 			if (isLocal())
 				shortName = FileUtil.getFilename(localPath, false);
 			else
-			{
-				String s[] = URI.split("/");
-				int i = s.length - 1;
-				while (s[i].trim().length() == 0 && i > 0)
-					i--;
-				shortName = s[i];
-				int index = shortName.lastIndexOf('.');
-				if (index > 0)
-					shortName = shortName.substring(0, index);
-			}
+				shortName = getNameFromURL(false);
 		}
 		return shortName;
 	}
@@ -76,11 +96,11 @@ public class DatasetFile
 			this.sdfPath = sdfPath;
 	}
 
-	private DatasetFile(String uRI, String localPath, String name)
+	private DatasetFile(String uRI, String localPath, String fullName)
 	{
 		this.URI = uRI;
 		this.localPath = localPath;
-		this.name = name;
+		this.fullName = fullName;
 	}
 
 	public static DatasetFile localFile(String localPath)
@@ -129,7 +149,7 @@ public class DatasetFile
 
 	public String toString()
 	{
-		return URI + "#" + localPath + "#" + name;
+		return URI + "#" + localPath + "#" + fullName;
 	}
 
 	public boolean equals(Object o)

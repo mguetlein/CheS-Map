@@ -11,6 +11,7 @@ import dataInterface.SubstructureSmartsType;
 public class ClusteringData
 {
 	private String name;
+	private String fullName;
 	private String sdfFilename;
 
 	private List<MoleculeProperty> features = new ArrayList<MoleculeProperty>();
@@ -37,15 +38,21 @@ public class ClusteringData
 
 	// --------------------------------------------
 
-	public ClusteringData(String name, String sdfFilename)
+	public ClusteringData(String name, String fullName, String sdfFilename)
 	{
 		this.name = name;
+		this.fullName = fullName;
 		this.sdfFilename = sdfFilename;
 	}
 
 	public String getName()
 	{
 		return name;
+	}
+
+	public String getFullName()
+	{
+		return fullName;
 	}
 
 	public void addCluster(ClusterData cluster)
