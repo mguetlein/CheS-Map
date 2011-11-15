@@ -238,9 +238,9 @@ public class FeatureService
 				Map<Object, Object> props = mol.getProperties();
 				for (Object key : props.keySet())
 				{
-					//						if (ArrayUtil.indexOf(allCDKDescriptors, key.toString()) != -1)
-					//							throw new IllegalStateException("sdf-property has equal name as cdk-descriptor: "
-					//									+ key.toString());
+					// if (ArrayUtil.indexOf(allCDKDescriptors, key.toString()) != -1)
+					// throw new IllegalStateException("sdf-property has equal name as cdk-descriptor: "
+					// + key.toString());
 					IntegratedProperty p = IntegratedProperty.create(key.toString(), dataset);
 					// add key to sdfProperties
 					integratedProperties.get(dataset).add(p);
@@ -260,25 +260,25 @@ public class FeatureService
 				AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
 				CDKHueckelAromaticityDetector.detectAromaticity(mol);
 
-				//			CDKHydrogenAdder ha = CDKHydrogenAdder.getInstance(DefaultChemObjectBuilder.getInstance());
-				//				try
-				//				{
-				//					if (loadHydrogen)
-				//					{
-				//						AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
-				//						ha.addImplicitHydrogens(mol);
-				//						AtomContainerManipulator.convertImplicitToExplicitHydrogens(mol);
-				//					}
+				// CDKHydrogenAdder ha = CDKHydrogenAdder.getInstance(DefaultChemObjectBuilder.getInstance());
+				// try
+				// {
+				// if (loadHydrogen)
+				// {
+				// AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
+				// ha.addImplicitHydrogens(mol);
+				// AtomContainerManipulator.convertImplicitToExplicitHydrogens(mol);
+				// }
 				//
-				//				}
-				//				catch (CDKException e)
-				//				{
-				//					System.err.println("Could not add hydrogens:  " + e.getMessage());
-				//				}
+				// }
+				// catch (CDKException e)
+				// {
+				// System.err.println("Could not add hydrogens:  " + e.getMessage());
+				// }
 
 				if (mol.getAtomCount() == 0)
 					illegalMolecules.add(mCount);
-				//TaskProvider.task().warning("Could not load molecule (" + mCount + ")", "<not details available>");
+				// TaskProvider.task().warning("Could not load molecule (" + mCount + ")", "<not details available>");
 				mols.add(mol);
 				mCount++;
 			}
@@ -312,7 +312,7 @@ public class FeatureService
 				Double doubleValues[] = ArrayUtil.parse(stringValues);
 				if (doubleValues != null)
 				{
-					//					numericSdfProperties.get(f).add(p);
+					// numericSdfProperties.get(f).add(p);
 					p.setTypeAllowed(Type.NOMINAL, true);
 					p.setTypeAllowed(Type.NUMERIC, true);
 					if (guessNominalFeatureType(numDistinct, stringValues.length))
@@ -339,8 +339,8 @@ public class FeatureService
 			mols.toArray(res);
 			fileToMolecules.put(dataset, res);
 
-			//			System.out.println("integrated properties in file: "
-			//					+ CollectionUtil.toString(integratedProperties.get(dataset)));
+			// System.out.println("integrated properties in file: "
+			// + CollectionUtil.toString(integratedProperties.get(dataset)));
 		}
 	}
 
@@ -400,7 +400,7 @@ public class FeatureService
 
 	public boolean has3D(DatasetFile dataset)
 	{
-		//		loadSdf(dataset);
+		// loadSdf(dataset);
 
 		if (fileHas3D.get(dataset) == null)
 		{
@@ -469,10 +469,10 @@ public class FeatureService
 		{
 			if (!new File(sdfFile).exists())
 			{
-				File tmpFile = File.createTempFile("sdf_build", "tmp");
+				File tmpFile = File.createTempFile(dataset.getShortName(), "build.sdf");
 
 				SDFWriter writer = new SDFWriter(new FileOutputStream(tmpFile));
-				//	ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), "mm2");
+				// ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), "mm2");
 				StructureDiagramGenerator sdg = new StructureDiagramGenerator();
 				for (IMolecule iMolecule : dataset.getMolecules())
 				{
