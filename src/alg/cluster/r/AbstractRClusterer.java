@@ -13,6 +13,7 @@ import main.Settings;
 import rscript.ExportRUtil;
 import rscript.RScriptUtil;
 import util.ExternalToolUtil;
+import util.FileUtil;
 import util.ListUtil;
 import alg.AlgorithmException.ClusterException;
 import alg.cluster.AbstractDatasetClusterer;
@@ -29,7 +30,7 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 	public static final DatasetClusterer[] R_CLUSTERER = new AbstractRClusterer[] { new KMeansRClusterer(),
 			new CascadeKMeansRClusterer(), new HierarchicalRClusterer(), new DynamicTreeCutHierarchicalRClusterer() };
 
-	//new ModelBasedRClusterer(), 
+	// new ModelBasedRClusterer(),
 
 	@Override
 	public Binary getBinary()
@@ -45,7 +46,7 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 	protected List<Integer> cluster(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
 			throws IOException
 	{
-		File tmp = File.createTempFile(dataset.getName(), "cluster");
+		File tmp = File.createTempFile(dataset.getShortName(), "cluster");
 		try
 		{
 			String propsMD5 = PropertyUtil.getPropertyMD5(getProperties());
@@ -59,9 +60,14 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 						featureTableFile);
 			else
 				System.out.println("load cached features from " + featureTableFile);
-			String errorOut = ExternalToolUtil.run(getShortName(), Settings.RSCRIPT_BINARY.getLocation() + " "
-					+ RScriptUtil.getScriptPath(getShortName() + propsMD5, getRScriptCode()) + " " + featureTableFile
-					+ " " + tmp);
+			String errorOut = ExternalToolUtil.run(
+					getShortName(),
+					new String[] {
+							Settings.RSCRIPT_BINARY.getLocation(),
+							FileUtil.getAbsolutePathEscaped(new File(RScriptUtil.getScriptPath(getShortName()
+									+ propsMD5, getRScriptCode()))),
+							FileUtil.getAbsolutePathEscaped(new File(featureTableFile)),
+							FileUtil.getAbsolutePathEscaped(tmp) });
 
 			List<Integer> cluster = new ArrayList<Integer>();
 			if (tmp.exists())

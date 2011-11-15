@@ -17,6 +17,7 @@ public class DatasetFile
 	private String sdfPath;
 	private String sdf3DPath;
 	private String md5;
+	private String shortName;
 
 	public boolean isLocal()
 	{
@@ -40,7 +41,23 @@ public class DatasetFile
 
 	public String getShortName()
 	{
-		return FileUtil.getFilename(localPath, false);
+		if (shortName == null)
+		{
+			if (isLocal())
+				shortName = FileUtil.getFilename(localPath, false);
+			else
+			{
+				String s[] = URI.split("/");
+				int i = s.length - 1;
+				while (s[i].trim().length() == 0 && i > 0)
+					i--;
+				shortName = s[i];
+				int index = shortName.lastIndexOf('.');
+				if (index > 0)
+					shortName = shortName.substring(0, index);
+			}
+		}
+		return shortName;
 	}
 
 	public String getSDFPath(boolean threeD)
@@ -83,6 +100,7 @@ public class DatasetFile
 		int index = instances.indexOf(d);
 		if (index == -1)
 		{
+			System.out.println("new dataset " + d.getShortName());
 			instances.add(d);
 			return d;
 		}

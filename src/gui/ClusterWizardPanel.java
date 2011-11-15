@@ -41,8 +41,8 @@ public class ClusterWizardPanel extends GenericWizardPanel
 	static
 	{
 		CLUSTERERS = ArrayUtil.concat(DatasetClusterer.class, new DatasetClusterer[] { new NoClusterer() },
-				AbstractRClusterer.R_CLUSTERER, WekaClusterer.WEKA_CLUSTERER
-		//,new DatasetClusterer[] { new StructuralClustererService() }
+				WekaClusterer.WEKA_CLUSTERER, AbstractRClusterer.R_CLUSTERER
+		// ,new DatasetClusterer[] { new StructuralClustererService() }
 				);
 	}
 
@@ -157,7 +157,7 @@ public class ClusterWizardPanel extends GenericWizardPanel
 
 	protected int defaultSelection()
 	{
-		return 6;
+		return 2;
 	}
 
 }

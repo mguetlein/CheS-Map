@@ -158,62 +158,62 @@ public class OBFingerprintSet extends FragmentPropertySet
 		return type;
 	}
 
-	//		public List<String> compute(DatasetFile dataset) throws IOException
-	//		{
-	//			if (dataset.getSDFPath(false) == null)
-	//				FeatureService.writeSDFFile(dataset);
+	// public List<String> compute(DatasetFile dataset) throws IOException
+	// {
+	// if (dataset.getSDFPath(false) == null)
+	// FeatureService.writeSDFFile(dataset);
 	//
-	//			String filepath = Settings.destinationFile(dataset.getLocalPath(), dataset.getName() + ".fingerprint.hex");
+	// String filepath = Settings.destinationFile(dataset.getLocalPath(), dataset.getName() + ".fingerprint.hex");
 	//
-	//			String cmd = Settings.BABEL_BINARY.getLocation() + " " + dataset.getSDFPath(false) + " -ofpt -xf" + type
-	//					+ " -xho";
-	//			TaskProvider.task().verbose("Running babel: " + cmd);
-	//			ExternalToolUtil.run("ob-fingerprints", cmd, new File(filepath));
+	// String cmd = Settings.BABEL_BINARY.getLocation() + " " + dataset.getSDFPath(false) + " -ofpt -xf" + type
+	// + " -xho";
+	// TaskProvider.task().verbose("Running babel: " + cmd);
+	// ExternalToolUtil.run("ob-fingerprints", cmd, new File(filepath));
 	//
-	//			TaskProvider.task().verbose("Parsing fingerprints");
-	//			BufferedReader buffy = new BufferedReader(new FileReader(new File(filepath)));
-	//			String s = null;
-	//			String hex = "";
-	//			List<String> hexFingerprints = new ArrayList<String>();
-	//			int hexSize = getSize(dataset) / 4;
+	// TaskProvider.task().verbose("Parsing fingerprints");
+	// BufferedReader buffy = new BufferedReader(new FileReader(new File(filepath)));
+	// String s = null;
+	// String hex = "";
+	// List<String> hexFingerprints = new ArrayList<String>();
+	// int hexSize = getSize(dataset) / 4;
 	//
-	//			while ((s = buffy.readLine()) != null)
-	//			{
-	//				// babel 2.3.0
-	//				if (!CharUtil.isHexChar(s.charAt(0)))
-	//					continue;
-	//				StringTokenizer tok = new StringTokenizer(s, " ");
-	//				while (tok.hasMoreElements())
-	//				{
-	//					String ss = tok.nextToken();
-	//					//					System.out.println(ss);
-	//					hex += ss;
-	//					if (hex.length() == hexSize)
-	//					{
-	//						//						System.out.println(hexFingerprints.size() + " : " + hex);
-	//						hexFingerprints.add(hex);
-	//						hex = "";
-	//					}
-	//					else if (hex.length() > hexSize)
-	//						throw new Error("to long (" + hex.length() + " > " + hexSize + ") : " + hex);
-	//				}
-	//			}
-	//			if (hex.length() != 0)
-	//				throw new Error("hex-leftover: " + hex);
+	// while ((s = buffy.readLine()) != null)
+	// {
+	// // babel 2.3.0
+	// if (!CharUtil.isHexChar(s.charAt(0)))
+	// continue;
+	// StringTokenizer tok = new StringTokenizer(s, " ");
+	// while (tok.hasMoreElements())
+	// {
+	// String ss = tok.nextToken();
+	// // System.out.println(ss);
+	// hex += ss;
+	// if (hex.length() == hexSize)
+	// {
+	// // System.out.println(hexFingerprints.size() + " : " + hex);
+	// hexFingerprints.add(hex);
+	// hex = "";
+	// }
+	// else if (hex.length() > hexSize)
+	// throw new Error("to long (" + hex.length() + " > " + hexSize + ") : " + hex);
+	// }
+	// }
+	// if (hex.length() != 0)
+	// throw new Error("hex-leftover: " + hex);
 	//
-	//			List<String> binFingerprints = new ArrayList<String>();
-	//			for (String string : hexFingerprints)
-	//			{
-	//				String bin = "";
-	//				for (int i = 0; i < string.length(); i++)
-	//					bin += StringUtil.concatChar(Integer.toBinaryString(Character.digit(string.charAt(i), 16)), 4, '0',
-	//							false);
-	//				//				System.out.println(binFingerprints.size() + " : " + bin);
-	//				binFingerprints.add(bin);
-	//			}
+	// List<String> binFingerprints = new ArrayList<String>();
+	// for (String string : hexFingerprints)
+	// {
+	// String bin = "";
+	// for (int i = 0; i < string.length(); i++)
+	// bin += StringUtil.concatChar(Integer.toBinaryString(Character.digit(string.charAt(i), 16)), 4, '0',
+	// false);
+	// // System.out.println(binFingerprints.size() + " : " + bin);
+	// binFingerprints.add(bin);
+	// }
 	//
-	//			return binFingerprints;
-	//		}
+	// return binFingerprints;
+	// }
 
 	static class FPFragment
 	{
@@ -332,24 +332,24 @@ public class OBFingerprintSet extends FragmentPropertySet
 
 		private static FPFragment[] parseMACCSFragment(String line) throws IOException
 		{
-			//System.err.println("frags: " + line);
+			// System.err.println("frags: " + line);
 			if (maccsFragments.size() == 0)
 			{
-				//155:('*!@[CH2]!@*',0), # A!CH2!A
+				// 155:('*!@[CH2]!@*',0), # A!CH2!A
 				BufferedReader buffy = new BufferedReader(new FileReader(new File(Settings.getOBFileOrig("MACCS.txt"))));
 				String s = "";
 				while ((s = buffy.readLine()) != null)
 				{
 					if (!s.trim().startsWith("#") && s.trim().length() > 0)
 					{
-						//							System.err.println(s);
+						// System.err.println(s);
 						Pattern pattern = Pattern.compile("^\\s*([0-9]++\\:)\\(\\'(.*)\\',[0-9]\\),.*#(.*)$");
 						Matcher matcher = pattern.matcher(s);
 						boolean matchFound = matcher.find();
 						if (!matchFound)
 							throw new Error("WTF: " + s);
-						//							for (int i = 0; i <= matcher.groupCount(); i++)
-						//								System.err.println(i + " " + matcher.group(i));
+						// for (int i = 0; i <= matcher.groupCount(); i++)
+						// System.err.println(i + " " + matcher.group(i));
 						FPFragment f = new FPFragment();
 						f.line = s;
 						f.smarts = matcher.group(2);
@@ -360,7 +360,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 						if (i != -1)
 							name = name.substring(0, i);
 						String space = name.startsWith(" ") ? "" : " ";
-						//						System.err.println("name: " + name);
+						// System.err.println("name: " + name);
 						f.name = name.trim();
 						maccsFragments.put(matcher.group(1) + space + name, f);
 					}
@@ -374,7 +374,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 					s = s.substring(2);
 				if (s.matches(".*\\*[2-4]$"))
 					s = s.substring(0, s.length() - 2);
-				//System.err.println("key: " + s);
+				// System.err.println("key: " + s);
 				if (!maccsFragments.containsKey(s))
 					throw new Error("key not found: " + s + ", keys: "
 							+ ListUtil.toString(new ArrayList<String>(maccsFragments.keySet()), "\n"));
@@ -388,19 +388,20 @@ public class OBFingerprintSet extends FragmentPropertySet
 
 		private static String BONDS[] = { null, "-", "=", "#", null, ":" };
 
-		//		private static HashMap<Integer, List<String>> hashKeyNum = new HashMap<Integer, List<String>>();
+		// private static HashMap<Integer, List<String>> hashKeyNum = new HashMap<Integer, List<String>>();
 		//
-		//		private static String getUniqueHashKey(Integer hashKey, String smarts)
-		//		{
-		//			if (!hashKeyNum.containsKey(hashKey))
-		//				hashKeyNum.put(hashKey, new ArrayList<String>());
-		//			if (hashKeyNum.get(hashKey).indexOf(smarts) == -1)
-		//				hashKeyNum.get(hashKey).add(smarts);
-		//			return hashKey + "-" + hashKeyNum.get(hashKey).indexOf(smarts);
-		//		}
+		// private static String getUniqueHashKey(Integer hashKey, String smarts)
+		// {
+		// if (!hashKeyNum.containsKey(hashKey))
+		// hashKeyNum.put(hashKey, new ArrayList<String>());
+		// if (hashKeyNum.get(hashKey).indexOf(smarts) == -1)
+		// hashKeyNum.get(hashKey).add(smarts);
+		// return hashKey + "-" + hashKeyNum.get(hashKey).indexOf(smarts);
+		// }
 
 		/**
 		 * 0 11 1 7 5 6 5 6 <474>
+		 * 
 		 * @param line
 		 */
 		private static FPFragment[] parseFP2Fragment(String line)
@@ -409,7 +410,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 
 			f.line = line;
 			String ringBond = "";
-			//			Integer hashKey = null;
+			// Integer hashKey = null;
 
 			f.smarts = "";
 			String s[] = line.split(" ");
@@ -422,14 +423,14 @@ public class OBFingerprintSet extends FragmentPropertySet
 				else if (i == s.length - 1)
 				{
 					Integer.parseInt(s[i].substring(1, s[i].length() - 1));
-					//					hashKey = Integer.parseInt(s[i].substring(1, s[i].length() - 1));
+					// hashKey = Integer.parseInt(s[i].substring(1, s[i].length() - 1));
 				}
 				else if (i % 2 == 1) // atom
 				{
 					f.smarts += "[#" + s[i] + "]";
 					if (ringBond != null && i == 1)
 						f.smarts += "1";
-					//smarts += PeriodicTable.getSymbol(Integer.parseInt(s[i]));
+					// smarts += PeriodicTable.getSymbol(Integer.parseInt(s[i]));
 				}
 				else if (i % 2 == 0) // atom
 					f.smarts += BONDS[Integer.parseInt(s[i])];
@@ -468,7 +469,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 				return false;
 			}
 		}
-
+		File tmp = null;
 		try
 		{
 			System.out.println("computing structural fragment " + StructuralFragmentProperties.getMatchEngine() + " "
@@ -477,39 +478,39 @@ public class OBFingerprintSet extends FragmentPropertySet
 
 			List<String[]> featureValues = new ArrayList<String[]>();
 
-			//					if (obProp.getOBType() != OBFingerprintProperty.FingerprintType.FP2)
-			//					{
-			//						List<String> fingerprintsForMolecules = obProp.compute(dataset);
-			//						int numMols = fileToMolecules.get(dataset).length;
-			//						if (fingerprintsForMolecules.size() != numMols)
-			//							throw new IllegalStateException("babel returned fingerprints for "
-			//									+ fingerprintsForMolecules.size() + " compounds, but dataset contains " + numMols
-			//									+ " compounds.");
-			//						int numFingerprints = obProp.getSize(dataset);
-			//						if (fingerprintsForMolecules.get(0).length() != numFingerprints)
-			//							throw new IllegalStateException("fingerprint length not correct");
+			// if (obProp.getOBType() != OBFingerprintProperty.FingerprintType.FP2)
+			// {
+			// List<String> fingerprintsForMolecules = obProp.compute(dataset);
+			// int numMols = fileToMolecules.get(dataset).length;
+			// if (fingerprintsForMolecules.size() != numMols)
+			// throw new IllegalStateException("babel returned fingerprints for "
+			// + fingerprintsForMolecules.size() + " compounds, but dataset contains " + numMols
+			// + " compounds.");
+			// int numFingerprints = obProp.getSize(dataset);
+			// if (fingerprintsForMolecules.get(0).length() != numFingerprints)
+			// throw new IllegalStateException("fingerprint length not correct");
 			//
-			//						for (int j = 0; j < numFingerprints; j++)
-			//						{
-			//							String[] featureValue = new String[numMols];
-			//							for (int i = 0; i < numMols; i++)
-			//								featureValue[i] = fingerprintsForMolecules.get(i).charAt(j) + "";
-			//							featureValues.add(featureValue);
-			//						}
-			//					}
-			//					else
-			//					{
+			// for (int j = 0; j < numFingerprints; j++)
+			// {
+			// String[] featureValue = new String[numMols];
+			// for (int i = 0; i < numMols; i++)
+			// featureValue[i] = fingerprintsForMolecules.get(i).charAt(j) + "";
+			// featureValues.add(featureValue);
+			// }
+			// }
+			// else
+			// {
 
 			LinkedHashMap<OBFingerprintProperty, List<Integer>> occurences = new LinkedHashMap<OBFingerprintProperty, List<Integer>>();
 
-			File f = File.createTempFile("asdfasdf", "asdfasfd");
-			String cmd = Settings.BABEL_BINARY.getLocation() + " -isdf " + dataset.getSDFPath(false) + " -ofpt -xf"
-					+ type + " -xs";
-			TaskProvider.task().verbose("Running babel: " + cmd);
-			ExternalToolUtil.run("ob-fingerprints", cmd, f);
+			tmp = File.createTempFile(dataset.getShortName(), "OBfingerprint");
+			String cmd[] = { Settings.BABEL_BINARY.getLocation(), "-isdf", dataset.getSDFPath(false), "-ofpt", "-xf",
+					type.toString(), "-xs" };
+			TaskProvider.task().verbose("Running babel: " + ArrayUtil.toString(cmd, " ", "", ""));
+			ExternalToolUtil.run("ob-fingerprints", cmd, tmp);
 
 			TaskProvider.task().verbose("Parsing fingerprints");
-			BufferedReader buffy = new BufferedReader(new FileReader(f));
+			BufferedReader buffy = new BufferedReader(new FileReader(tmp));
 			String s = null;
 
 			int count = -1;
@@ -529,7 +530,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 					FPFragment frag[] = FPFragment.parse(type, s);
 					for (FPFragment fpFragment : frag)
 					{
-						//OBFingerprintProperty prop = new OBFingerprintProperty(fpFragment, type);
+						// OBFingerprintProperty prop = new OBFingerprintProperty(fpFragment, type);
 						OBFingerprintProperty prop = OBFingerprintProperty.create(type, fpFragment.name.trim(),
 								fpFragment.smarts);
 						if (!occurences.containsKey(prop))
@@ -539,8 +540,8 @@ public class OBFingerprintSet extends FragmentPropertySet
 				}
 			}
 
-			//			for (FP2Fragment frag : occurences.keySet())
-			//				System.err.println(frag + " " + ListUtil.toString(occurences.get(frag)));
+			// for (FP2Fragment frag : occurences.keySet())
+			// System.err.println(frag + " " + ListUtil.toString(occurences.get(frag)));
 
 			if (dataset.numCompounds() - 1 != count)
 				throw new Error("num molecules not correct " + dataset.numCompounds() + " " + count);
@@ -568,11 +569,14 @@ public class OBFingerprintSet extends FragmentPropertySet
 		{
 			e.printStackTrace();
 			TaskProvider.task().warning("Could not compute OpenBabel fingerprint " + this, e);
-			//			for (int j = 0; j < getSize(dataset); j++)
-			//				get(dataset, j).setStringValues(dataset, new String[dataset.numCompounds()]);
+			// for (int j = 0; j < getSize(dataset); j++)
+			// get(dataset, j).setStringValues(dataset, new String[dataset.numCompounds()]);
 			return false;
 		}
-
+		finally
+		{
+			tmp.delete();
+		}
 	}
 
 	@Override

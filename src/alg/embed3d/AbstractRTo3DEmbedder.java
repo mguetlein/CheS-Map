@@ -24,6 +24,7 @@ import rscript.ExportRUtil;
 import rscript.RScriptUtil;
 import util.ArrayUtil;
 import util.ExternalToolUtil;
+import util.FileUtil;
 import alg.AlgorithmException.EmbedException;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
@@ -55,7 +56,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			throw new EmbedException(this, getShortName() + " requires for embedding at least " + getMinNumInstances()
 					+ " compounds (num compounds is '" + instances.size() + "')");
 
-		File tmp = File.createTempFile(dataset.getName(), "emb");
+		File tmp = File.createTempFile(dataset.getShortName(), "emb");
 		try
 		{
 			String propsMD5 = PropertyUtil.getPropertyMD5(getProperties());
@@ -67,9 +68,14 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 				ExportRUtil.toRTable(features, DistanceUtil.values(features, instances), featureTableFile);
 			else
 				System.out.println("load cached features from " + featureTableFile);
-			String errorOut = ExternalToolUtil.run(getShortName(), Settings.RSCRIPT_BINARY.getLocation() + " "
-					+ RScriptUtil.getScriptPath(getShortName() + "." + propsMD5, getRScriptCode()) + " "
-					+ featureTableFile + " " + tmp);
+			String errorOut = ExternalToolUtil.run(
+					getShortName(),
+					new String[] {
+							Settings.RSCRIPT_BINARY.getLocation(),
+							FileUtil.getAbsolutePathEscaped(new File(RScriptUtil.getScriptPath(getShortName() + "."
+									+ propsMD5, getRScriptCode()))),
+							FileUtil.getAbsolutePathEscaped(new File(featureTableFile)),
+							FileUtil.getAbsolutePathEscaped(tmp) });
 			if (!tmp.exists())
 				throw new IllegalStateException("embedding failed:\n" + errorOut);
 
@@ -90,15 +96,15 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			if (!nonZero && instances.size() > 1)
 				throw new IllegalStateException("No attributes!");
 
-			//		System.out.println("before: " + ArrayUtil.toString(d));
+			// System.out.println("before: " + ArrayUtil.toString(d));
 			ArrayUtil.normalize(d, -1, 1);
-			//		System.out.println("after: " + ArrayUtil.toString(d));
+			// System.out.println("after: " + ArrayUtil.toString(d));
 
 			List<Vector3f> positions = new ArrayList<Vector3f>();
 			for (int i = 0; i < instances.size(); i++)
 				positions.add(new Vector3f((float) d[i][0], (float) d[i][1], (float) d[i][2]));
 			return positions;
-			//v3f[i] = new Vector3f((float) v3d.get(i).getX(), (float) v3d.get(i).getY(), (float) v3d.get(i).getZ());
+			// v3f[i] = new Vector3f((float) v3d.get(i).getX(), (float) v3d.get(i).getY(), (float) v3d.get(i).getZ());
 		}
 		finally
 		{
@@ -239,8 +245,8 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		{
 			return "args <- commandArgs(TRUE)\n" //
 					+ "df = read.table(args[1])\n" //
-					//					+ "res <- princomp(df)\n" //
-					//					+ "print(res$scores[,1:3])\n" //
+					// + "res <- princomp(df)\n" //
+					// + "print(res$scores[,1:3])\n" //
 					// + "write.table(res$scores[,1:3],args[2]) ";
 					+ "res <- prcomp(df)\n" //
 					+ "rows <-min(ncol(res$x),3)\n" //
@@ -254,7 +260,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 	{
 		public int getMinNumInstances()
 		{
-			return 4; //else "Maximum number of dimensions is n-1!"
+			return 4; // else "Maximum number of dimensions is n-1!"
 		}
 
 		@Override

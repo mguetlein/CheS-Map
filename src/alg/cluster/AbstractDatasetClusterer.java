@@ -63,14 +63,11 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
 			throws Exception
 	{
-		String filename = Settings.destinationFile(
-				dataset,
-				dataset.getShortName()
-						+ "."
-						+ getShortName()
-						+ "."
-						+ MoleculePropertyUtil.getSetMD5(features,
-								dataset.getMD5() + " " + PropertyUtil.getPropertyMD5(getProperties())) + ".cluster");
+		String datasetFeaturesClusterpropsMD5 = MoleculePropertyUtil.getSetMD5(features, dataset.getMD5() + " "
+				+ PropertyUtil.getPropertyMD5(getProperties()));
+
+		String filename = Settings.destinationFile(dataset, dataset.getShortName() + "." + getShortName() + "."
+				+ datasetFeaturesClusterpropsMD5 + ".cluster");
 		List<Integer> clusterAssignements;
 
 		if (new File(filename).exists())
@@ -117,11 +114,11 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 			if (c.getSize() == 0)
 				throw new Error("try to store empty cluster");
 
-			//String parent = origFile.substring(0, origFile.lastIndexOf("/"));
-			//String origName = origFile.substring(origFile.lastIndexOf("/") + 1);
+			// String parent = origFile.substring(0, origFile.lastIndexOf("/"));
+			// String origName = origFile.substring(origFile.lastIndexOf("/") + 1);
 
-			String name = dataset.getShortName() + "_" + getShortName() + "_"
-					+ PropertyUtil.getPropertyMD5(getProperties()) + "_cluster_" + count++ + ".sdf";
+			String name = dataset.getShortName() + "_" + getShortName() + "_" + datasetFeaturesClusterpropsMD5
+					+ "_cluster_" + count++ + ".sdf";
 			String clusterFile = Settings.destinationFile(dataset, name);
 			if (!new File(clusterFile).exists())
 			{

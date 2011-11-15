@@ -11,6 +11,7 @@ import java.util.List;
 
 import main.Settings;
 import main.TaskProvider;
+import util.ArrayUtil;
 import util.ExternalToolUtil;
 import dataInterface.SmartsHandler;
 
@@ -92,16 +93,17 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 		for (int i = 0; i < smarts.size(); i++)
 			l.add(new boolean[dataset.numCompounds()]);
 
+		File tmp = null;
 		try
 		{
-			File f = File.createTempFile("asdfasdf", "asdfasfd");
-			String cmd = Settings.BABEL_BINARY.getLocation() + " -isdf " + dataset.getSDFPath(false) + " -ofpt -xf"
-					+ FP + " -xs";
-			TaskProvider.task().verbose("Running babel: " + cmd);
-			ExternalToolUtil.run("ob-fingerprints", cmd, f, new String[] { "BABEL_DATADIR="
+			tmp = File.createTempFile(dataset.getShortName(), "OBsmarts");
+			String cmd[] = { Settings.BABEL_BINARY.getLocation(), "-isdf", dataset.getSDFPath(false), "-ofpt", "-xf",
+					FP, "-xs" };
+			TaskProvider.task().verbose("Running babel: " + ArrayUtil.toString(cmd, " ", "", ""));
+			ExternalToolUtil.run("ob-fingerprints", cmd, tmp, new String[] { "BABEL_DATADIR="
 					+ Settings.MODIFIED_BABEL_DATA_DIR });
 			TaskProvider.task().verbose("Parsing smarts");
-			BufferedReader buffy = new BufferedReader(new FileReader(f));
+			BufferedReader buffy = new BufferedReader(new FileReader(tmp));
 			String line = null;
 			int compoundIndex = -1;
 			while ((line = buffy.readLine()) != null)
@@ -113,7 +115,7 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 				}
 				if (line.length() > 0)
 				{
-					//					System.err.println("frags: " + line);
+					// System.err.println("frags: " + line);
 					boolean minFreq = false;
 					for (String s : line.split("\\t"))
 					{
@@ -131,6 +133,10 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 		catch (Exception e)
 		{
 			throw new Error("Error while matching smarts with OpenBabel: " + e.getMessage(), e);
+		}
+		finally
+		{
+			tmp.delete();
 		}
 		return l;
 	}

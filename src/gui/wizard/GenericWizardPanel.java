@@ -47,6 +47,7 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 	JList list;
 	JScrollPane propertyScroll;
 	JPanel propertyPanel;
+	HashMap<String, PropertyPanel> cards = new HashMap<String, PropertyPanel>();
 
 	protected CheSMapperWizard wizard;
 	protected Algorithm selectedAlgorithm;
@@ -70,6 +71,50 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 	public GenericWizardPanel(CheSMapperWizard wizard)
 	{
 		this.wizard = wizard;
+		buildLayout();
+		addListeners();
+
+		String method = (String) Settings.PROPS.get(getTitle() + "-method");
+		boolean selected = false;
+		if (method != null)
+		{
+			for (Algorithm a : getAlgorithms())
+			{
+				if (a.getName().equals(method))
+				{
+					list.setSelectedValue(a, true);
+					selected = true;
+					break;
+				}
+			}
+		}
+		if (!selected)
+		{
+			int selection = defaultSelection();
+			if (selection == -1)
+			{
+				selection = 0;
+				for (int i = 0; i < getAlgorithms().length; i++)
+					if (getAlgorithms()[i].getBinary() == null || getAlgorithms()[i].getBinary().isFound())
+					{
+						selection = i;
+						break;
+					}
+			}
+			list.setSelectedValue(getAlgorithms()[selection], true);
+		}
+		if (hasSimpleView())
+		{
+			simpleView = createSimpleView();
+			simple().add(simpleView);
+			String simpleSelected = (String) Settings.PROPS.get(getTitle() + "-simple-selected");
+			if (simpleSelected == null || simpleSelected.equals("true"))
+				toggle(true);
+		}
+	}
+
+	private void buildLayout()
+	{
 		listModel = new DefaultListModel();
 		list = new JList(listModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -101,45 +146,6 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 				return l;
 			}
 		});
-		for (final Algorithm algorithm : getAlgorithms())
-		{
-			listModel.addElement(algorithm);
-			final Binary bin = algorithm.getBinary();
-			if (bin != null)
-				bin.addPropertyChangeListener(new PropertyChangeListener()
-				{
-					@Override
-					public void propertyChange(PropertyChangeEvent evt)
-					{
-						if (bin.isFound())
-						{
-							list.repaint();
-							if (list.getSelectedValue() == algorithm)
-							{
-								updateAlgorithmSelection(list.getSelectedIndex());
-								GenericWizardPanel.this.wizard.update();
-							}
-						}
-					}
-				});
-		}
-		list.addListSelectionListener(new ListSelectionListener()
-		{
-			int lastSelected = 0;
-
-			@Override
-			public void valueChanged(ListSelectionEvent e)
-			{
-				if (list.getSelectedIndex() == -1)
-				{
-					list.setSelectedValue(getAlgorithms()[lastSelected], true);
-					return;
-				}
-				updateAlgorithmSelection(list.getSelectedIndex());
-				GenericWizardPanel.this.wizard.update();
-				lastSelected = list.getSelectedIndex();
-			}
-		});
 
 		propertyPanel = new JPanel(new CardLayout());
 
@@ -161,55 +167,57 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 		p.add(pp2);
 		advanced().add(p);
 
-		String method = (String) Settings.PROPS.get(getTitle() + "-method");
-		boolean selected = false;
-		if (method != null)
-		{
-			for (Algorithm a : getAlgorithms())
-			{
-				if (a.getName().equals(method))
-				{
-					list.setSelectedValue(a, true);
-					selected = true;
-					break;
-				}
-			}
-		}
-		if (!selected)
-		{
-			int selection = defaultSelection();
-			if (selection == -1)
-			{
-				selection = 0;
-				for (int i = 0; i < getAlgorithms().length; i++)
-					if (getAlgorithms()[i].getBinary() == null || getAlgorithms()[i].getBinary().isFound())
-					{
-						selection = i;
-						break;
-					}
-			}
-			list.setSelectedValue(getAlgorithms()[selection], true);
-		}
-
-		if (hasSimpleView())
-		{
-			simpleView = createSimpleView();
-			simple().add(simpleView);
-			String simpleSelected = (String) Settings.PROPS.get(getTitle() + "-simple-selected");
-			if (simpleSelected == null || simpleSelected.equals("true"))
-				toggle(true);
-		}
 	}
 
-	HashMap<String, PropertyPanel> cards = new HashMap<String, PropertyPanel>();
-
-	private void updateAlgorithmSelection(int index)
+	private void addListeners()
 	{
-		if (selectedAlgorithm == getAlgorithms()[index])
+		for (final Algorithm algorithm : getAlgorithms())
+		{
+			listModel.addElement(algorithm);
+			final Binary bin = algorithm.getBinary();
+			if (bin != null)
+				bin.addPropertyChangeListener(new PropertyChangeListener()
+				{
+					@Override
+					public void propertyChange(PropertyChangeEvent evt)
+					{
+						if (bin.isFound())
+						{
+							list.repaint();
+							if (list.getSelectedValue() == algorithm)
+							{
+								updateAlgorithmSelection(list.getSelectedIndex(), true);
+								GenericWizardPanel.this.wizard.update();
+							}
+						}
+					}
+				});
+		}
+		list.addListSelectionListener(new ListSelectionListener()
+		{
+			int lastSelected = 0;
+
+			@Override
+			public void valueChanged(ListSelectionEvent e)
+			{
+				if (list.getSelectedIndex() == -1)
+				{
+					list.setSelectedValue(getAlgorithms()[lastSelected], true);
+					return;
+				}
+				updateAlgorithmSelection(list.getSelectedIndex(), false);
+				GenericWizardPanel.this.wizard.update();
+				lastSelected = list.getSelectedIndex();
+			}
+		});
+	}
+
+	private void updateAlgorithmSelection(int index, boolean forceUpdate)
+	{
+		if (selectedAlgorithm == getAlgorithms()[index] && !forceUpdate)
 			return;
 
 		selectedAlgorithm = getAlgorithms()[index];
-
 		binaryFound = selectedAlgorithm.getBinary() == null || selectedAlgorithm.getBinary().isFound();
 
 		if (!cards.containsKey(selectedAlgorithm.toString()))
@@ -289,7 +297,7 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 
 	public void update(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
-		if (!binaryFound)
+		if (!isSimpleSelected() && !binaryFound)
 			msg = Messages.errorMessage(""); // error is obvious (there is a error icon in the binary panel)
 		else
 			msg = getSelectedAlgorithm().getMessages(dataset, featureInfo, clusterer);

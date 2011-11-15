@@ -8,9 +8,19 @@ import main.TaskProvider;
 
 public class ExternalToolUtil
 {
+	public static String run(String processName, String cmd[])
+	{
+		return run(processName, cmd, null);
+	}
+
 	public static String run(String processName, String cmd)
 	{
 		return run(processName, cmd, null);
+	}
+
+	public static String run(String processName, String cmd[], File stdOutFile)
+	{
+		return run(processName, cmd, stdOutFile, null);
 	}
 
 	public static String run(String processName, String cmd, File stdOutFile)
@@ -18,7 +28,7 @@ public class ExternalToolUtil
 		return run(processName, cmd, stdOutFile, null);
 	}
 
-	public static String run(String processName, String cmd, File stdOutFile, String env[])
+	public static String run(String processName, Object cmdStringOrArray, File stdOutFile, String env[])
 	{
 		ExternalTool ext = new ExternalTool()
 		{
@@ -38,7 +48,11 @@ public class ExternalToolUtil
 				System.err.println(s);
 			}
 		};
-		Process p = ext.run(processName, cmd, stdOutFile, stdOutFile != null, env);
+		Process p;
+		if (cmdStringOrArray instanceof String)
+			p = ext.run(processName, (String) cmdStringOrArray, stdOutFile, stdOutFile != null, env);
+		else
+			p = ext.run(processName, (String[]) cmdStringOrArray, stdOutFile, stdOutFile != null, env);
 		while (true)
 		{
 			try
