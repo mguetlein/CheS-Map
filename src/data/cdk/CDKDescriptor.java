@@ -3,6 +3,8 @@ package data.cdk;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.openscience.cdk.qsar.DescriptorEngine;
@@ -51,6 +53,14 @@ class CDKDescriptor
 						//						System.err.println("could not init descriptor: " + s);
 						//						e.printStackTrace();
 					}
+			Collections.sort(descriptorList, new Comparator<IDescriptor>()
+			{
+				@Override
+				public int compare(IDescriptor o1, IDescriptor o2)
+				{
+					return o1.getClass().getName().compareTo(o2.getClass().getName());
+				}
+			});
 			System.out.println("loaded " + descriptorList.size() + " cdk descriptors");
 
 			//			List<IDescriptor> l = ENGINE.getDescriptorInstances(); // not working in webstart
