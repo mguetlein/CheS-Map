@@ -604,8 +604,8 @@ public class FeatureWizardPanel extends WizardPanel
 		for (int i = 0; i < serilizedProps.length; i++)
 			serilizedProps[i] = integratedProps[i] + "#" + integratedProps[i].getType();
 		Settings.PROPS.put("features-integrated", ArrayUtil.toCSVString(serilizedProps, true));
-
-		Settings.PROPS.put("features-cdk", ArrayUtil.toCSVString(selector.getSelected(CDK_FEATURES), true));
+		if (CDKPropertySet.NUMERIC_DESCRIPTORS.length > 0)
+			Settings.PROPS.put("features-cdk", ArrayUtil.toCSVString(selector.getSelected(CDK_FEATURES), true));
 		Settings.PROPS.put("features-fragments",
 				ArrayUtil.toCSVString(selector.getSelected(STRUCTURAL_FRAGMENTS), true));
 		Settings.storeProps();

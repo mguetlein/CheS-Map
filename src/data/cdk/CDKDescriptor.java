@@ -1,5 +1,7 @@
 package data.cdk;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,18 +34,71 @@ class CDKDescriptor
 
 	static
 	{
-		List<IDescriptor> l = ENGINE.getDescriptorInstances();
-		CDK_DESCRIPTORS = new CDKDescriptor[l.size()];
-		int i = 0;
-		for (IDescriptor c : l)
-			CDK_DESCRIPTORS[i++] = new CDKDescriptor((IMolecularDescriptor) c);
+		try
+		{
+			List<IDescriptor> descriptorList = new ArrayList<IDescriptor>();
+			BufferedReader buffy = new BufferedReader(new InputStreamReader(
+					IMolecularDescriptor.class.getResourceAsStream("/qsar-descriptors.set")));
+			String s = null;
+			while ((s = buffy.readLine()) != null)
+				if (s.contains("descriptors.molecular"))
+					try
+					{
+						descriptorList.add((IMolecularDescriptor) Class.forName(s).newInstance());
+					}
+					catch (Exception e)
+					{
+						//						System.err.println("could not init descriptor: " + s);
+						//						e.printStackTrace();
+					}
+			System.out.println("loaded " + descriptorList.size() + " cdk descriptors");
 
-		List<CDKDescriptor> numDesc = new ArrayList<CDKDescriptor>();
-		for (CDKDescriptor desc : CDK_DESCRIPTORS)
-			if (desc.numeric)
-				numDesc.add(desc);
-		CDK_NUMERIC_DESCRIPTORS = new CDKDescriptor[numDesc.size()];
-		numDesc.toArray(CDK_NUMERIC_DESCRIPTORS);
+			//			List<IDescriptor> l = ENGINE.getDescriptorInstances(); // not working in webstart
+
+			// hard coded, if the above solution does not work
+			//			IMolecularDescriptor l[] = new IMolecularDescriptor[] { new ALOGPDescriptor(), new APolDescriptor(),
+			//					new AcidicGroupCountDescriptor(), new AromaticAtomsCountDescriptor(),
+			//					new AromaticBondsCountDescriptor(), new AtomCountDescriptor(),
+			//					new AutocorrelationDescriptorCharge(), new AutocorrelationDescriptorMass(),
+			//					new AutocorrelationDescriptorPolarizability(), new BCUTDescriptor(), new BPolDescriptor(),
+			//					new BasicGroupCountDescriptor(), new BondCountDescriptor(), new CPSADescriptor(),
+			//					new CarbonTypesDescriptor(), new ChiChainDescriptor(), new ChiClusterDescriptor(),
+			//					new ChiPathClusterDescriptor(), new ChiPathDescriptor(),
+			//					new EccentricConnectivityIndexDescriptor(), new FMFDescriptor(),
+			//					new FragmentComplexityDescriptor(), new GravitationalIndexDescriptor(),
+			//					new HBondAcceptorCountDescriptor(), new HBondDonorCountDescriptor(),
+			//					new HybridizationRatioDescriptor(), new IPMolecularLearningDescriptor(),
+			//					new KappaShapeIndicesDescriptor(), new KierHallSmartsDescriptor(), new LargestChainDescriptor(),
+			//					new LargestPiSystemDescriptor(), new LengthOverBreadthDescriptor(),
+			//					new LongestAliphaticChainDescriptor(), new MDEDescriptor(), new MannholdLogPDescriptor(),
+			//					new MomentOfInertiaDescriptor(), new PetitjeanNumberDescriptor(),
+			//					new PetitjeanShapeIndexDescriptor(), new RotatableBondsCountDescriptor(),
+			//					new RuleOfFiveDescriptor(), new TPSADescriptor(), new VABCDescriptor(), new VAdjMaDescriptor(),
+			//					new WHIMDescriptor(), new WeightDescriptor(), new WeightedPathDescriptor(),
+			//					new WienerNumbersDescriptor(), new XLogPDescriptor(), new ZagrebIndexDescriptor() };
+
+			CDK_DESCRIPTORS = new CDKDescriptor[descriptorList.size()];
+			int i = 0;
+			for (IDescriptor c : descriptorList)
+			{
+				CDK_DESCRIPTORS[i++] = new CDKDescriptor((IMolecularDescriptor) c);
+				//				System.out.print("new " + c.getClass().getSimpleName() + "(), ");
+			}
+
+			List<CDKDescriptor> numDesc = new ArrayList<CDKDescriptor>();
+			for (CDKDescriptor desc : CDK_DESCRIPTORS)
+				if (desc.numeric)
+					numDesc.add(desc);
+			CDK_NUMERIC_DESCRIPTORS = new CDKDescriptor[numDesc.size()];
+			numDesc.toArray(CDK_NUMERIC_DESCRIPTORS);
+		}
+		catch (Exception e)
+		{
+			System.err.println("could not load CDK descriptors");
+			e.printStackTrace();
+			CDK_DESCRIPTORS = new CDKDescriptor[0];
+			CDK_NUMERIC_DESCRIPTORS = new CDKDescriptor[0];
+		}
 	}
 
 	private IMolecularDescriptor m;
@@ -166,5 +221,10 @@ class CDKDescriptor
 	public boolean isComputationSlow()
 	{
 		return slow;
+	}
+
+	public static void main(String args[])
+	{
+
 	}
 }
