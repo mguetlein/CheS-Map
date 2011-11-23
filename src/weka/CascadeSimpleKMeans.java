@@ -23,6 +23,8 @@ import weka.core.DistanceFunction;
 import weka.core.EuclideanDistance;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.ReplaceMissingValues;
 
 /**
  * cascade simple k means, selects the best k according to calinski-harabasz criterion
@@ -50,8 +52,13 @@ public class CascadeSimpleKMeans extends RandomizableClusterer implements Cluste
 	protected DecimalFormat df = new DecimalFormat("#.##");
 
 	@Override
-	public void buildClusterer(Instances data) throws Exception
+	public void buildClusterer(Instances origData) throws Exception
 	{
+		ReplaceMissingValues rep = new ReplaceMissingValues();
+		Instances data = new Instances(origData);
+		rep.setInputFormat(data);
+		data = Filter.useFilter(data, rep);
+
 		meanInstance = new Instance(data.numAttributes());
 		for (int i = 0; i < data.numAttributes(); i++)
 			meanInstance.setValue(i, data.meanOrMode(i));
@@ -59,6 +66,7 @@ public class CascadeSimpleKMeans extends RandomizableClusterer implements Cluste
 
 		kMeans.setDistanceFunction(distanceFunction);
 		kMeans.setMaxIterations(maxIterations);
+		kMeans.setDontReplaceMissingValues(true);
 
 		Random r = new Random(m_Seed);
 		double meanCHs[] = new double[maxNumClusters + 1 - minNumClusters];
