@@ -76,8 +76,8 @@ public class EmbedWizardPanel extends GenericWizardPanel
 
 	class SimpleEmbedPanel extends SimplePanel
 	{
-		JRadioButton buttonYes = new JRadioButton("Yes (recommended, applies " + getDefaultEmbedder().getName() + ")",
-				true);
+		JRadioButton buttonYes = new JRadioButton(
+				"Yes (recommended, applies '" + getDefaultEmbedder().getName() + "')", true);
 		JRadioButton buttonNo = new JRadioButton("No");
 
 		public SimpleEmbedPanel()

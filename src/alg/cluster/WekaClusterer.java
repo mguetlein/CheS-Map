@@ -61,38 +61,6 @@ public class WekaClusterer extends AbstractDatasetClusterer
 		for (Clusterer c : CLUSTERER)
 		{
 			WekaClusterer wc = new WekaClusterer(c);
-			if (c instanceof Cobweb)
-			{
-				wc.additionalDescription = Settings.text("cluster.weka.cobweb.desc");
-			}
-			else if (c instanceof EM)
-			{
-				wc.name = Settings.text("cluster.weka.em");
-				wc.additionalDescription = Settings.text("cluster.weka.em.desc");
-				for (Property p : wc.getProperties())
-					if (p.getName().equals("numClusters"))
-						p.setDisplayName("numClusters (-1 to automatically detect number of clusters)");
-			}
-			else if (c instanceof HierarchicalClusterer)
-			{
-				wc.name = Settings.text("cluster.weka.hierarchical");
-				wc.additionalDescription = Settings.text("cluster.weka.hierarchical.desc");
-			}
-			else if (c instanceof SimpleKMeans)
-			{
-				wc.additionalDescription = Settings.text("cluster.weka.kmeans.desc",
-						Settings.text("cluster.weka.cascade"));
-			}
-			else if (c instanceof FarthestFirst)
-			{
-				wc.additionalDescription = Settings.text("cluster.weka.farthest.desc",
-						Settings.text("cluster.weka.cascade"));
-			}
-			else if (c instanceof CascadeSimpleKMeans)
-			{
-				wc.name = Settings.text("cluster.weka.cascade");
-				wc.additionalDescription = Settings.text("cluster.weka.cascade.desc");
-			}
 			WEKA_CLUSTERER[i++] = wc;
 		}
 	}
@@ -115,6 +83,37 @@ public class WekaClusterer extends AbstractDatasetClusterer
 			this.properties = properties;
 		else
 			this.properties = WekaPropertyUtil.getProperties(wekaClusterer, SKIP_PROPERTIES);
+
+		if (wekaClusterer instanceof Cobweb)
+		{
+			additionalDescription = Settings.text("cluster.weka.cobweb.desc");
+		}
+		else if (wekaClusterer instanceof EM)
+		{
+			name = Settings.text("cluster.weka.em");
+			additionalDescription = Settings.text("cluster.weka.em.desc");
+			for (Property p : getProperties())
+				if (p.getName().equals("numClusters"))
+					p.setDisplayName("numClusters (-1 to automatically detect number of clusters)");
+		}
+		else if (wekaClusterer instanceof HierarchicalClusterer)
+		{
+			name = Settings.text("cluster.weka.hierarchical");
+			additionalDescription = Settings.text("cluster.weka.hierarchical.desc");
+		}
+		else if (wekaClusterer instanceof SimpleKMeans)
+		{
+			additionalDescription = Settings.text("cluster.weka.kmeans.desc", Settings.text("cluster.weka.cascade"));
+		}
+		else if (wekaClusterer instanceof FarthestFirst)
+		{
+			additionalDescription = Settings.text("cluster.weka.farthest.desc", Settings.text("cluster.weka.cascade"));
+		}
+		else if (wekaClusterer instanceof CascadeSimpleKMeans)
+		{
+			name = Settings.text("cluster.weka.cascade");
+			additionalDescription = Settings.text("cluster.weka.cascade.desc");
+		}
 	}
 
 	@Override

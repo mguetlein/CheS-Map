@@ -117,7 +117,7 @@ public class ClusterWizardPanel extends GenericWizardPanel
 			b.append(buttonYes);
 			b.setLineGapSize(Sizes.dluX(4));
 			JPanel props = new JPanel(new BorderLayout(5, 5));
-			props.add(new JLabel("Applies " + getDefaultClusterer().getName() + ""), BorderLayout.NORTH);
+			props.add(new JLabel("Applies '" + getDefaultClusterer().getName() + "'"), BorderLayout.NORTH);
 			props.add(propertyPanel);
 			b.append(props);
 			b.nextLine();
