@@ -3,6 +3,7 @@ package alg.cluster;
 import gui.FeatureWizardPanel.FeatureInfo;
 import gui.Message;
 import gui.Messages;
+import gui.property.Property;
 import gui.property.PropertyUtil;
 import io.SDFUtil;
 
@@ -14,6 +15,7 @@ import java.util.List;
 import main.Settings;
 import main.TaskProvider;
 import util.ValueFileCache;
+import weka.CascadeSimpleKMeans;
 import alg.AbstractAlgorithm;
 import data.ClusterDataImpl;
 import data.DatasetFile;
@@ -70,7 +72,16 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 				+ datasetFeaturesClusterpropsMD5 + ".cluster");
 		List<Integer> clusterAssignements;
 
-		if (new File(filename).exists())
+		boolean interactive = false;
+		if (this instanceof WekaClusterer && ((WekaClusterer) this).wekaClusterer instanceof CascadeSimpleKMeans)
+			for (Property p : getProperties())
+				if (p.getName().equals("manuallySelectNumClusters") && (Boolean) p.getValue())
+				{
+					interactive = true;
+					break;
+				}
+
+		if (new File(filename).exists() && !interactive)
 		{
 			System.out.println("read cached cluster results from: " + filename);
 			clusterAssignements = ValueFileCache.readCacheInteger2(filename);
@@ -79,7 +90,8 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 		{
 			clusterAssignements = cluster(dataset, compounds, features);
 			System.out.println("store cluster results to: " + filename);
-			ValueFileCache.writeCacheInteger2(filename, clusterAssignements);
+			if (!interactive)
+				ValueFileCache.writeCacheInteger2(filename, clusterAssignements);
 		}
 
 		clusters = new ArrayList<ClusterData>();
@@ -120,7 +132,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 			String name = dataset.getShortName() + "_" + getShortName() + "_" + datasetFeaturesClusterpropsMD5
 					+ "_cluster_" + count++ + ".sdf";
 			String clusterFile = Settings.destinationFile(dataset, name);
-			if (!new File(clusterFile).exists())
+			if (!new File(clusterFile).exists() || interactive)
 			{
 				// already loaded file may be overwritten, clear
 				DatasetFile.clearFilesWith3DSDF(clusterFile);
