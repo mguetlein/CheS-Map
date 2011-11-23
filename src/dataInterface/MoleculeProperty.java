@@ -37,5 +37,9 @@ public interface MoleculeProperty
 
 	public Double[] getNormalizedValues(DatasetFile dataset);
 
+	public Double getNormalizedMedian(DatasetFile dataset);
+
 	public String getUniqueName();
+
+	public int numMissingValues(DatasetFile dataset);
 }

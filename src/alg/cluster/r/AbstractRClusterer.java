@@ -19,7 +19,6 @@ import alg.AlgorithmException.ClusterException;
 import alg.cluster.AbstractDatasetClusterer;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
-import data.DistanceUtil;
 import dataInterface.CompoundData;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
@@ -55,9 +54,10 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 			String featureTableFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + datasetMD5
 					+ ".features.table");
 			if (!new File(featureTableFile).exists())
-				ExportRUtil.toRTable(features,
-						DistanceUtil.values(features, ListUtil.cast(MolecularPropertyOwner.class, compounds)),
-						featureTableFile);
+				ExportRUtil.toRTable(
+						features,
+						MoleculePropertyUtil.valuesReplaceNullWithMedian(features,
+								ListUtil.cast(MolecularPropertyOwner.class, compounds), dataset), featureTableFile);
 			else
 				System.out.println("load cached features from " + featureTableFile);
 			String errorOut = ExternalToolUtil.run(

@@ -28,7 +28,6 @@ import util.FileUtil;
 import alg.AlgorithmException.EmbedException;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
-import data.DistanceUtil;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculePropertyUtil;
@@ -65,7 +64,9 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			String featureTableFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + datasetMD5
 					+ ".features.table");
 			if (!new File(featureTableFile).exists())
-				ExportRUtil.toRTable(features, DistanceUtil.values(features, instances), featureTableFile);
+				ExportRUtil.toRTable(features,
+						MoleculePropertyUtil.valuesReplaceNullWithMedian(features, instances, dataset),
+						featureTableFile);
 			else
 				System.out.println("load cached features from " + featureTableFile);
 			String errorOut = ExternalToolUtil.run(

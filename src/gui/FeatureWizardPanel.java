@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -313,7 +314,8 @@ public class FeatureWizardPanel extends WizardPanel
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				FeatureLoader.instance.loadFeatures(selector.getSelected(), dataset);
+				FeatureLoader.instance.loadFeatures(selector.getSelected(), dataset,
+						(Window) FeatureWizardPanel.this.getTopLevelAncestor());
 			}
 		});
 

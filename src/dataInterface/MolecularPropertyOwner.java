@@ -24,6 +24,6 @@ public interface MolecularPropertyOwner
 	 * @param p
 	 * @return
 	 */
-	public double getNormalizedValue(MoleculeProperty p);
+	public Double getNormalizedValue(MoleculeProperty p);
 
 }

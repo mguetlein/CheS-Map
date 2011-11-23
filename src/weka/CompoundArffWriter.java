@@ -96,11 +96,19 @@ public class CompoundArffWriter implements ArffWritable
 	public String getAttributeValue(int instance, int attribute)
 	{
 		if (features.get(attribute).getType() == Type.NUMERIC)
-			return compounds.get(instance).getNormalizedValue(features.get(attribute)) + "";
+		{
+			Double v = compounds.get(instance).getNormalizedValue(features.get(attribute));
+			if (v == null)
+				return "?";
+			else
+				return v.toString();
+		}
 		else
 		{
 			String s = compounds.get(instance).getStringValue(features.get(attribute));
-			if (s != null && s.length() > 1)
+			if (s == null)
+				return "?";
+			else if (s.length() > 1)
 				return "\"" + s + "\"";
 			else
 				return s;

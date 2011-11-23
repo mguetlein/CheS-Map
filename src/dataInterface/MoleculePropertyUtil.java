@@ -14,6 +14,33 @@ import freechart.FreeChartUtil;
 
 public class MoleculePropertyUtil
 {
+
+	public static List<String[]> valuesReplaceNullWithMedian(List<MoleculeProperty> props,
+			List<MolecularPropertyOwner> values, DatasetFile dataset)
+	{
+		List<String[]> v = new ArrayList<String[]>();
+		for (MolecularPropertyOwner vv : values)
+		{
+			String d[] = new String[props.size()];
+			int count = 0;
+			for (MoleculeProperty p : props)
+			{
+				if (p.getType() == Type.NUMERIC)
+				{
+					Double val = vv.getNormalizedValue(p);
+					if (val == null)
+						d[count++] = p.getNormalizedMedian(dataset) + "";
+					else
+						d[count++] = vv.getNormalizedValue(p) + "";
+				}
+				else
+					d[count++] = vv.getStringValue(p);
+			}
+			v.add(d);
+		}
+		return v;
+	}
+
 	private static HashMap<MoleculeProperty, Color[]> mapping = new HashMap<MoleculeProperty, Color[]>();
 
 	private static Color[] AVAILABLE_COLORS = FreeChartUtil.BRIGHT_COLORS;

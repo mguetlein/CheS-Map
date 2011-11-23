@@ -1,13 +1,11 @@
 package data;
 
+import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JFrame;
-
-import main.Settings;
 import main.TaskProvider;
 import util.SequentialWorkerThread;
 import util.SwingUtil;
@@ -39,12 +37,12 @@ public class FeatureLoader
 			ll.propertyChange(new PropertyChangeEvent(this, prop, false, true));
 	}
 
-	public void loadFeature(MoleculePropertySet set, DatasetFile dataset)
+	public void loadFeature(MoleculePropertySet set, DatasetFile dataset, Window owner)
 	{
-		loadFeatures(new MoleculePropertySet[] { set }, dataset);
+		loadFeatures(new MoleculePropertySet[] { set }, dataset, owner);
 	}
 
-	public void loadFeatures(final MoleculePropertySet[] sets, final DatasetFile dataset)
+	public void loadFeatures(final MoleculePropertySet[] sets, final DatasetFile dataset, final Window owner)
 	{
 		worker.waitUntilDone();
 		worker.addJob(new Runnable()
@@ -55,7 +53,7 @@ public class FeatureLoader
 				try
 				{
 					TaskProvider.registerThread("Compute features");
-					TaskProvider.task().showDialog((JFrame) Settings.TOP_LEVEL_COMPONENT, "Computing features");
+					TaskProvider.task().showDialog(owner, "Computing features");
 					int num = 0;
 					for (MoleculePropertySet set : sets)
 						if (!set.isComputed(dataset))

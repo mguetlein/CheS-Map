@@ -25,6 +25,7 @@ import org.openscience.cdk.AtomContainer;
 import org.openscience.cdk.ChemFile;
 import org.openscience.cdk.aromaticity.CDKHueckelAromaticityDetector;
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.exception.NoSuchAtomTypeException;
 import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IChemFile;
@@ -257,7 +258,14 @@ public class FeatureService
 				}
 
 				mol = (IMolecule) AtomContainerManipulator.removeHydrogens(mol);
-				AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
+				try
+				{
+					AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
+				}
+				catch (NoSuchAtomTypeException e)
+				{
+					e.printStackTrace();
+				}
 				CDKHueckelAromaticityDetector.detectAromaticity(mol);
 
 				// CDKHydrogenAdder ha = CDKHydrogenAdder.getInstance(DefaultChemObjectBuilder.getInstance());
@@ -303,6 +311,8 @@ public class FeatureService
 				l.toArray(stringValues);
 
 				Set<String> distinctValues = ArrayUtil.getDistinctValues(stringValues);
+				if (distinctValues.contains(null))
+					distinctValues.remove(null);
 				int numDistinct = distinctValues.size();
 				String dom[] = new String[distinctValues.size()];
 				distinctValues.toArray(dom);

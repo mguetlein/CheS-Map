@@ -52,7 +52,7 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	public int getSize(DatasetFile d)
 	{
 		if (computedFragments.get(StructuralFragmentProperties.getMatchEngine(), d) == null)
-			throw new Error("mine fp2 fragments first, numer of fp2 fragments is not fixed");
+			throw new Error("mine " + this + " fragments first, number is not fixed");
 		return computedFragments.get(StructuralFragmentProperties.getMatchEngine(), d).size();
 	}
 
@@ -60,7 +60,7 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	public StructuralFragment get(DatasetFile d, int index)
 	{
 		if (computedFragments.get(StructuralFragmentProperties.getMatchEngine(), d) == null)
-			throw new Error("mine fp2 fragments first, numer of fp2 fragments is not fixed");
+			throw new Error("mine " + this + " fragments first, number is not fixed");
 		return computedFragments.get(StructuralFragmentProperties.getMatchEngine(), d).get(index);
 	}
 
@@ -201,6 +201,10 @@ public class StructuralFragmentSet extends FragmentPropertySet
 			writeToFile(smartsMatchFile, matches);
 		}
 
+		//		if (!computedFragments.containsKeyPair(StructuralFragmentProperties.getMatchEngine(), dataset))
+		computedFragments.put(StructuralFragmentProperties.getMatchEngine(), dataset,
+				new ArrayList<StructuralFragment>());
+
 		int count = 0;
 		for (boolean[] match : matches)
 		{
@@ -220,9 +224,6 @@ public class StructuralFragmentSet extends FragmentPropertySet
 			fragment.setNominalDomain(new String[] { "0", "1" });
 			fragment.setFrequency(dataset, f);
 			fragment.setStringValues(dataset, m);
-			if (!computedFragments.containsKeyPair(StructuralFragmentProperties.getMatchEngine(), dataset))
-				computedFragments.put(StructuralFragmentProperties.getMatchEngine(), dataset,
-						new ArrayList<StructuralFragment>());
 			addFragment(fragment, dataset, StructuralFragmentProperties.getMatchEngine());
 			count++;
 		}

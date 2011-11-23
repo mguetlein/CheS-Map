@@ -1,0 +1,8 @@
+# Structural alerts extracted from ToxTree plugin: Cramer rules, with extensions (CramerRulesWithExtensions)
+# (see http://toxtree.sf.net, the alerts do not cover all ToxTree rules)
+"heteroaromatic","a:[a;!c]:a"
+"aromatic","a~a"
+"1","[$(P)!$([P;R0]([O-,OH])(=O)([$([O-,OH]),$(O(P)[C,P])])[$([O-,OH]),$(O(P)[C,P])])]"
+"1","[$([aH1;r6]),$([aX2;r6]),$([a;r6]~A)!$(a~A~*)]1~[$([aH1]),$([aX2]),$(a~A)!$(a~A~*)]~[$([aH1]),$([aX2]),$(a~A)!$(a~A~*)]~[$([aH1]),$([aX2]),$(a~A)!$(a~A~*)]~[$([aH1]),$([aX2]),$(a~A)!$(a~A~*)]~[$([aH1]),$([aX2]),$(a~A)!$(a~A~*)]1"
+"1","[$([S;H0;D2])!$([S;H0;D2]([$([CX4]),$(C(=O)C)])[$([CX4]),$(C(=O)C)])]"
+"1","[$(C!-*)!$(C(!-*)~*)]!-CC~[O,N]"

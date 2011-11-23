@@ -336,8 +336,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 						}
 						catch (IllegalCompoundsException e)
 						{
-							String cleanedSdf = Settings.destinationFile(dataset, dataset.getShortName()
-									+ ".cleaned.sdf");
+							String cleanedSdf = Settings.destinationFile(d, d.getShortName() + ".cleaned.sdf");
 							int res = JOptionPane.showConfirmDialog(
 									Settings.TOP_LEVEL_COMPONENT,
 									"Could not read " + e.illegalCompounds.size() + " compound/s in dataset: "

@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -71,6 +72,7 @@ public class MoleculePropertyPanel extends JPanel
 	JPanel comboPanel = new JPanel();
 	JLabel comboLabel = new JLabel();
 	JComboBox comboBox = new JComboBox();
+	JLabel missingValuesLabel = new JLabel(ImageLoader.WARNING);
 	LinkButton rawDataLink = new LinkButton("Raw data...");
 	JPanel featurePlotPanel = new JPanel(new BorderLayout());
 	ButtonGroup radioGroup = new ButtonGroup();
@@ -112,6 +114,9 @@ public class MoleculePropertyPanel extends JPanel
 		radioBuilder.append("Feature type:");
 		radioBuilder.append(nominalFeatureButton);
 		radioBuilder.append(numericFeatureButton);
+
+		radioBuilder.append(missingValuesLabel);
+
 		rawDataLink.setForegroundFont(rawDataLink.getFont().deriveFont(Font.PLAIN));
 		rawDataLink.setSelectedForegroundFont(rawDataLink.getFont().deriveFont(Font.PLAIN));
 		rawDataLink.setSelectedForegroundColor(Color.BLUE);
@@ -212,7 +217,8 @@ public class MoleculePropertyPanel extends JPanel
 			{
 				//load(true);
 				showCard("loading", loadingPanel);
-				FeatureLoader.instance.loadFeature(selectedPropertySet, dataset);
+				FeatureLoader.instance.loadFeature(selectedPropertySet, dataset,
+						(Window) MoleculePropertyPanel.this.getTopLevelAncestor());
 			}
 		});
 
@@ -240,19 +246,25 @@ public class MoleculePropertyPanel extends JPanel
 	{
 		MoleculeProperty selectedProperty = selectedPropertySet.get(dataset, selectedPropertyIndex);
 		Object o[];
+		Double n[] = null;
+		String[] c = new String[] { "Index", selectedPropertySet.get(dataset, selectedPropertyIndex).toString() };
 		if (selectedProperty.getType() == Type.NUMERIC)
+		{
 			o = selectedProperty.getDoubleValues(dataset);
+			n = selectedProperty.getNormalizedValues(dataset);
+			c = ArrayUtil.concat(c, new String[] { selectedPropertySet.get(dataset, selectedPropertyIndex).toString()
+					+ " normalized" });
+		}
 		else
 			o = selectedProperty.getStringValues(dataset);
-		Double n[] = selectedProperty.getNormalizedValues(dataset);
-		String[] c = new String[] { "Index", selectedPropertySet.get(dataset, selectedPropertyIndex).toString(),
-				selectedPropertySet.get(dataset, selectedPropertyIndex).toString() + " normalized" };
-		Object v[][] = new Object[o.length][3];
+
+		Object v[][] = new Object[o.length][selectedProperty.getType() == Type.NUMERIC ? 3 : 2];
 		for (int i = 0; i < o.length; i++)
 		{
 			v[i][0] = new Integer(i);
 			v[i][1] = o[i];
-			v[i][2] = n[i];
+			if (selectedProperty.getType() == Type.NUMERIC)
+				v[i][2] = n[i];
 		}
 		DefaultTableModel model = new DefaultTableModel(v, c)
 		{
@@ -275,10 +287,12 @@ public class MoleculePropertyPanel extends JPanel
 		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel());
 		sorter.setComparator(0, new DefaultComparator<Integer>());
 		if (selectedProperty.getType() == Type.NUMERIC)
+		{
 			sorter.setComparator(1, new DefaultComparator<Double>());
+			sorter.setComparator(2, new DefaultComparator<Double>());
+		}
 		else
 			sorter.setComparator(1, new DefaultComparator<String>());
-		sorter.setComparator(2, new DefaultComparator<Double>());
 		table.setRowSorter(sorter);
 		return table;
 	}
@@ -319,6 +333,15 @@ public class MoleculePropertyPanel extends JPanel
 			MoleculeProperty selectedProperty = prop.get(dataset, propIndex);
 			nominalFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NOMINAL));
 			numericFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NUMERIC));
+
+			if (prop.get(dataset, propIndex).numMissingValues(dataset) > 0)
+			{
+				missingValuesLabel.setVisible(true);
+				missingValuesLabel.setText("Missing values: " + prop.get(dataset, propIndex).numMissingValues(dataset));
+			}
+			else
+				missingValuesLabel.setVisible(false);
+
 			rawDataLink.setEnabled(true);
 
 			MoleculeProperty.Type type = selectedProperty.getType();
@@ -327,9 +350,12 @@ public class MoleculePropertyPanel extends JPanel
 				nominalFeatureButton.setSelected(true);
 				CountedSet<String> set = CountedSet.fromArray(selectedProperty.getStringValues(dataset));
 				List<String> values = set.values(new DefaultComparator<String>());
+				if (values.contains(null))
+					values.remove(null);
 				List<Double> counts = new ArrayList<Double>();
 				for (String o : values)
-					counts.add((double) set.getCount(o));
+					if (o != null)
+						counts.add((double) set.getCount(o));
 				p = new BarPlotPanel(null, "#compounds", counts, values);
 				p.setOpaque(false);
 				p.setPreferredSize(new Dimension(300, 180));

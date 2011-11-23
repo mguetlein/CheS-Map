@@ -79,11 +79,14 @@ public class DefaultFeatureComputer implements FeatureComputer
 		{
 			Double d[] = null;
 			String s[] = null;
+			Double n[] = null;
 			if (p.getType() == Type.NUMERIC)
+			{
 				d = p.getDoubleValues(dataset);
+				n = p.getNormalizedValues(dataset);
+			}
 			else
 				s = p.getStringValues(dataset);
-			Double n[] = p.getNormalizedValues(dataset);
 
 			if ((d != null && d.length != numCompounds) || (s != null && s.length != numCompounds))
 				throw new Error("illegal num features " + p);
@@ -104,10 +107,13 @@ public class DefaultFeatureComputer implements FeatureComputer
 				}
 
 				if (p.getType() == Type.NUMERIC)
+				{
 					c.setDoubleValue(p, d[i]);
+					c.setNormalizedValue(p, n[i]);
+				}
 				else
 					c.setStringValue(p, s[i]);
-				c.setNormalizedValue(p, n[i]);
+
 			}
 		}
 	}

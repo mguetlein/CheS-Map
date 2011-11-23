@@ -1,6 +1,5 @@
 package data;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import util.ArrayUtil;
@@ -11,25 +10,6 @@ import dataInterface.MoleculeProperty.Type;
 
 public class DistanceUtil
 {
-	public static List<String[]> values(List<MoleculeProperty> props, List<MolecularPropertyOwner> values)
-	{
-		List<String[]> v = new ArrayList<String[]>();
-		for (MolecularPropertyOwner vv : values)
-		{
-			String d[] = new String[props.size()];
-			int count = 0;
-			for (MoleculeProperty p : props)
-			{
-				if (p.getType() == Type.NUMERIC)
-					d[count++] = vv.getNormalizedValue(p) + "";
-				else
-					d[count++] = vv.getStringValue(p);
-			}
-			v.add(d);
-		}
-		return v;
-	}
-
 	public static double distance(MolecularPropertyOwner c1, MolecularPropertyOwner c2, List<MoleculeProperty> props)
 	{
 		double d1[] = new double[props.size()];

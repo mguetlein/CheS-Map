@@ -1,0 +1,4 @@
+# Structural alerts extracted from ToxTree plugin: Cramer rules (CramerRules)
+# (see http://toxtree.sf.net, the alerts do not cover all ToxTree rules)
+"heteroaromatic","a:[a;!c]:a"
+"aromatic","a~a"

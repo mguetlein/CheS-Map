@@ -18,5 +18,7 @@ public interface ClusterData extends MolecularPropertyOwner
 
 	public String getSummaryStringValue(MoleculeProperty p);
 
+	public int numMissingValues(MoleculeProperty p);
+
 	public String getAlignAlgorithm();
 }

@@ -7,9 +7,9 @@ public class StructuralFragment extends AbstractFragmentProperty
 {
 	StructuralFragmentSet set;
 
-	public StructuralFragment(String name, MatchEngine matchEngine, String smarts)
+	public StructuralFragment(String name, MatchEngine matchEngine, String file, String smarts)
 	{
-		super(name, name + "_" + matchEngine, "Structural Fragment, matched with " + matchEngine, smarts);
+		super(name, name + "_" + matchEngine + "_" + file, "Structural Fragment, matched with " + matchEngine, smarts);
 	}
 
 	@Override

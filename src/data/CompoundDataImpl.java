@@ -71,8 +71,10 @@ public class CompoundDataImpl implements CompoundData
 		return stringValues.get(p);
 	}
 
-	public double getNormalizedValue(MoleculeProperty p)
+	public Double getNormalizedValue(MoleculeProperty p)
 	{
+		if (p.getType() != Type.NUMERIC)
+			throw new IllegalStateException();
 		return normalizedValues.get(p);
 	}
 

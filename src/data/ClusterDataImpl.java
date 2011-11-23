@@ -81,6 +81,9 @@ public class ClusterDataImpl implements ClusterData
 
 	private ArraySummary getSummaryValue(MoleculeProperty p, boolean normalized)
 	{
+		if (p.getType() != Type.NUMERIC && normalized)
+			throw new IllegalStateException();
+
 		HashMap<MoleculeProperty, ArraySummary> map;
 		if (normalized)
 			map = normalizedValues;
@@ -126,7 +129,7 @@ public class ClusterDataImpl implements ClusterData
 		return ((CountedSet<String>) getSummaryValue(p, false)).values().get(0);
 	}
 
-	public double getNormalizedValue(MoleculeProperty p)
+	public Double getNormalizedValue(MoleculeProperty p)
 	{
 		return ((DoubleArraySummary) getSummaryValue(p, true)).getMedian();
 	}
@@ -134,6 +137,11 @@ public class ClusterDataImpl implements ClusterData
 	public String getSummaryStringValue(MoleculeProperty p)
 	{
 		return getSummaryValue(p, false).toString();
+	}
+
+	public int numMissingValues(MoleculeProperty p)
+	{
+		return getSummaryValue(p, false).getNumNull();
 	}
 
 	public DistanceMatrix<CompoundData> getCompoundDistances(List<MoleculeProperty> props)

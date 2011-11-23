@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import util.ArrayUtil;
+import util.DoubleArraySummary;
 import data.DatasetFile;
 
 public abstract class AbstractMoleculeProperty implements MoleculeProperty
@@ -44,13 +45,13 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 
 		this.name = name;
 		this.uniqueName = uniqueName;
-		if (this.name.length() > 40)
-		{
-			if (this.name.endsWith(")") && this.name.indexOf('(') != -1)
-				this.name = this.name.replaceAll("\\(.*\\)", "").trim();
-			if (this.name.length() > 40)
-				this.name = this.name.substring(0, 37) + "...";
-		}
+		//		if (this.name.length() > 40)
+		//		{
+		//			if (this.name.endsWith(")") && this.name.indexOf('(') != -1)
+		//				this.name = this.name.replaceAll("\\(.*\\)", "").trim();
+		//			if (this.name.length() > 40)
+		//				this.name = this.name.substring(0, 37) + "...";
+		//		}
 		this.description = description;
 	}
 
@@ -135,7 +136,9 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	}
 
 	private HashMap<DatasetFile, Object[]> values = new HashMap<DatasetFile, Object[]>();
-	private HashMap<DatasetFile, Object[]> normalizedValues = new HashMap<DatasetFile, Object[]>();
+	private HashMap<DatasetFile, Double[]> normalizedValues = new HashMap<DatasetFile, Double[]>();
+	private HashMap<DatasetFile, Double> median = new HashMap<DatasetFile, Double>();
+	private HashMap<DatasetFile, Integer> missing = new HashMap<DatasetFile, Integer>();
 
 	public boolean isValuesSet(DatasetFile dataset)
 	{
@@ -148,9 +151,10 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 			throw new IllegalStateException();
 		if (values.containsKey(dataset))
 			throw new IllegalStateException();
-		Double normalized[] = ArrayUtil.normalizeObjectArray(vals);
+		//		Double normalized[] = ArrayUtil.normalizeObjectArray(vals);
+		setMissing(dataset, vals);
 		values.put(dataset, vals);
-		normalizedValues.put(dataset, normalized);
+		//		normalizedValues.put(dataset, normalized);
 	}
 
 	public void setDoubleValues(DatasetFile dataset, Double vals[])
@@ -159,10 +163,27 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 			throw new IllegalStateException();
 		if (values.containsKey(dataset))
 			throw new IllegalStateException();
-		Double normalized[] = ArrayUtil.normalize(vals);
+		Double normalized[] = ArrayUtil.normalize(vals, false);
+		setMissing(dataset, normalized);
 		//Double normalized[] = ArrayUtil.normalizeLog(vals);
 		values.put(dataset, vals);
 		normalizedValues.put(dataset, normalized);
+		median.put(dataset, DoubleArraySummary.create(normalized).getMedian());
+	}
+
+	private void setMissing(DatasetFile dataset, Object values[])
+	{
+		int miss = 0;
+		for (Object o : values)
+			if (o == null)
+				miss++;
+		missing.put(dataset, miss);
+	}
+
+	@Override
+	public int numMissingValues(DatasetFile dataset)
+	{
+		return missing.get(dataset);
 	}
 
 	@Override
@@ -188,9 +209,21 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	@Override
 	public Double[] getNormalizedValues(DatasetFile dataset)
 	{
+		if (getType() != Type.NUMERIC)
+			throw new IllegalStateException();
 		if (!normalizedValues.containsKey(dataset))
 			throw new Error("values not yet set");
-		return ArrayUtil.cast(Double.class, normalizedValues.get(dataset));
+		return normalizedValues.get(dataset);
+	}
+
+	@Override
+	public Double getNormalizedMedian(DatasetFile dataset)
+	{
+		if (getType() != Type.NUMERIC)
+			throw new IllegalStateException();
+		if (!values.containsKey(dataset))
+			throw new Error("values not yet set");
+		return median.get(dataset);
 	}
 
 }

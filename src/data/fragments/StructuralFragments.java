@@ -3,6 +3,7 @@ package data.fragments;
 import io.JarUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,7 +23,12 @@ public class StructuralFragments
 {
 	List<FragmentPropertySet> fragmentList = new ArrayList<FragmentPropertySet>();
 
-	private static final String[] included = new String[] { "DNA.csv", "Phospholipidosis.csv", "Protein.csv" };
+	private static final String[] included = new String[] { "DNA.csv", "Phospholipidosis.csv", "Protein.csv",
+			"ToxTree_BB_CarcMutRules.csv", "ToxTree_BiodgeradationRules.csv", "ToxTree_CramerRules.csv",
+			"ToxTree_CramerRulesWithExtensions.csv", "ToxTree_EyeIrritationRules.csv", "ToxTree_FuncRules.csv",
+			"ToxTree_Kroes1Tree.csv", "ToxTree_MichaelAcceptorRules.csv", "ToxTree_MICRules.csv",
+			"ToxTree_SicretRules.csv", "ToxTree_SkinSensitisationPlugin.csv", "ToxTree_SMARTCYPPlugin.csv",
+			"ToxTree_VerhaarScheme2.csv", "ToxTree_VerhaarScheme.csv" };
 	public static StructuralFragments instance = new StructuralFragments();
 
 	private StructuralFragments()
@@ -37,7 +43,11 @@ public class StructuralFragments
 		fragmentList.clear();
 		AbstractMoleculeProperty.clearPropertyOfType(StructuralFragment.class);
 
+		for (OBFingerprintSet fp : OBFingerprintSet.FINGERPRINTS)
+			fragmentList.add(fp);
+
 		String files[] = Settings.getFragmentFiles();
+		Arrays.sort(files);
 		for (String filename : files)
 		{
 			try
@@ -54,9 +64,32 @@ public class StructuralFragments
 						throw new IllegalStateException("Illegal format in line '" + a.get(MatchEngine.CDK).size()
 								+ "' (should be <name>,\"<smarts>\"), line:\n" + ArrayUtil.toString(line));
 					else
+					{
+						boolean match = true;
+						String name = line[0];
+						int inc = 1;
+						String finalName = "";
+						while (match)
+						{
+							match = false;
+							finalName = inc == 1 ? name : name + "[" + inc + "]";
+							for (StructuralFragment sf : a.get(MatchEngine.values()[0]))
+							{
+								if (sf.getName().equals(finalName))
+								{
+									match = true;
+									inc++;
+									break;
+								}
+							}
+						}
 						for (MatchEngine m : MatchEngine.values())
-							a.get(m).add(new StructuralFragment(line[0], m, line[1]));
-
+						{
+							a.get(m)
+									.add(new StructuralFragment(finalName, m, FileUtil.getFilename(filename, false),
+											line[1]));
+						}
+					}
 					if (FileUtil.getFilename(filename).equals(showWarningForFile))
 						if (!CDKSmartsHandler.isSMARTS(line[1]))
 							warnings += "Not a valid SMARTS string: '" + line[1] + "'\n";
@@ -85,9 +118,6 @@ public class StructuralFragments
 							JOptionPane.ERROR_MESSAGE);
 			}
 		}
-
-		for (OBFingerprintSet fp : OBFingerprintSet.FINGERPRINTS)
-			fragmentList.add(fp);
 	}
 
 	public int getNumSets()
