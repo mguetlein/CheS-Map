@@ -153,8 +153,7 @@ public class Settings
 	public static String R_STRING = text("lib.r");
 	public static String WEKA_STRING = text("lib.weka", Version.VERSION);
 
-	public static String VERSION_STRING = VERSION + " Initial Prototype"
-			+ ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
+	public static String VERSION_STRING = VERSION + ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
 	public static String TITLE = "CheS-Mapper";
 	public static String HOMEPAGE = "http://opentox.informatik.uni-freiburg.de/ches-mapper";
 	public static String SMSD_STRING = "The Small Molecule Subgraph Detector (SMSD) (see http://www.ebi.ac.uk/thornton-srv/software/SMSD, integrated into CDK)";
