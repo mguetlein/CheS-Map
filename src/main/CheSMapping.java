@@ -6,6 +6,7 @@ import java.util.List;
 import javax.vecmath.Vector3f;
 
 import util.ListUtil;
+import util.StringUtil;
 import util.SwingUtil;
 import alg.DatasetProvider;
 import alg.FeatureComputer;
@@ -15,6 +16,7 @@ import alg.build3d.OpenBabel3DBuilder;
 import alg.build3d.ThreeDBuilder;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
+import alg.embed3d.EmbedUtil;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
 import data.ClusterDataImpl;
@@ -271,6 +273,30 @@ public class CheSMapping
 		}
 
 		clustering.setEmbedAlgorithm(emb.getName());
+
+		double rSquare = EmbedUtil.computeRSquare(
+				ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), featuresWithInfo,
+				emb.getPositions(), dataset);
+		System.out.println("r-square: " + rSquare);
+		String formRSquare = StringUtil.formatDouble(rSquare, 3);
+
+		if (rSquare < 0.6)
+		{
+			TaskProvider.task().warning("The embedding quality is poor (r²:" + formRSquare + ")",
+					Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
+			clustering.setEmbedQuality("poor (r²: " + formRSquare + ")");
+		}
+		else if (rSquare < 0.75)
+		{
+			TaskProvider.task().warning("The embedding quality is moderate (r²:" + formRSquare + ")",
+					Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
+			clustering.setEmbedQuality("moderate (r²: " + formRSquare + ")");
+		}
+		else if (rSquare < 0.9)
+			clustering.setEmbedQuality("good (r²: " + formRSquare + ")");
+		else
+			clustering.setEmbedQuality("excellent (r²: " + formRSquare + ")");
+
 		int cCount = 0;
 		for (Vector3f v : emb.getPositions())
 			((CompoundDataImpl) clustering.getCompounds().get(cCount++)).setPosition(v);
@@ -298,9 +324,9 @@ public class CheSMapping
 		}
 		if (align.getSubstructureSmartsType() != null)
 			clustering.addSubstructureSmartsTypes(align.getSubstructureSmartsType());
-		int cCount = 0;
-		for (String alignedFile : align.getAlginedClusterFiles())
-			((ClusterDataImpl) clustering.getClusters().get(cCount++)).setFilename(alignedFile);
+		for (int i = 0; i < clustering.getSize(); i++)
+			if (((ClusterDataImpl) clustering.getCluster(i)).isAligned())
+				((ClusterDataImpl) clustering.getCluster(i)).setFilename(align.getAlginedClusterFiles().get(i));
 	}
 
 }

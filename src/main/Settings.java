@@ -7,7 +7,7 @@ import gui.binloc.BinaryLocatorDialog;
 import io.ExternalTool;
 
 import java.awt.Color;
-import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -35,12 +35,17 @@ import java.util.regex.Pattern;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
 
 import util.FileUtil;
 import util.ImageLoader;
 import util.OSUtil;
+import util.ScreenUtil;
 import weka.core.Version;
 import data.DatasetFile;
 
@@ -48,7 +53,78 @@ public class Settings
 {
 	// -------------------------- GRAPHICAL STUFF ---------------------------------
 
-	public static boolean SCREENSHOT_SETUP = false;
+	//	public static boolean SCREENSHOT_SETUP = false;
+
+	public static class ScreenSetup
+	{
+		Border wizardBorder;
+		int defaultScreen;
+		Dimension defaultScreenSize;
+		Dimension fullScreenSize;
+		boolean antialiasOn;
+
+		public ScreenSetup(Border wizardBorder, int defaultScreen, Dimension defaultScreenSize,
+				Dimension fullScreenSize, boolean antialiasOn)
+		{
+			this.wizardBorder = wizardBorder;
+			this.defaultScreen = defaultScreen;
+			this.defaultScreenSize = defaultScreenSize;
+			this.fullScreenSize = fullScreenSize;
+			this.antialiasOn = antialiasOn;
+
+			if (defaultScreen == -1)
+				this.defaultScreen = ScreenUtil.getLargestScreen();
+			if (defaultScreenSize == null)
+			{
+				Dimension dim = ScreenUtil.getScreenSize(this.defaultScreen);
+				this.defaultScreenSize = new Dimension(dim.width - 200, dim.height - 200);
+			}
+			if (fullScreenSize == null)
+				this.fullScreenSize = ScreenUtil.getScreenSize(this.defaultScreen);
+			//			System.out.println(this.defaultScreen);
+			//			System.out.println(this.defaultScreenSize);
+			//			System.out.println(this.fullScreenSize);
+		}
+
+		public Border getWizardBorder()
+		{
+			return wizardBorder;
+		}
+
+		public void centerOnScreen(Window w)
+		{
+			ScreenUtil.centerOnScreen(w, defaultScreen);
+		}
+
+		public Dimension getDefaultScreenSize()
+		{
+			return defaultScreenSize;
+		}
+
+		public Dimension getFullScreenSize()
+		{
+			return fullScreenSize;
+		}
+
+		public boolean isAntialiasOn()
+		{
+			return antialiasOn;
+		}
+
+		public int getDefaultScreen()
+		{
+			return defaultScreen;
+		}
+	}
+
+	public static final ScreenSetup SCREEN_SETUP_DEFAULT = new ScreenSetup(new EmptyBorder(0, 0, 0, 0), -1, null, null,
+			false);
+	public static final ScreenSetup SCREEN_SETUP_SCREENSHOT = new ScreenSetup(new EtchedBorder(), -1, new Dimension(
+			1200, 750), new Dimension(1200, 750), true);
+	public static final ScreenSetup SCREEN_SETUP_VIDEO = new ScreenSetup(new EmptyBorder(0, 0, 0, 0), -1,
+			new Dimension(1280, 720), new Dimension(1200, 750), true);
+
+	public static ScreenSetup SCREEN_SETUP = SCREEN_SETUP_DEFAULT;
 
 	static
 	{
@@ -83,9 +159,10 @@ public class Settings
 		return MessageFormat.format(text.getString(key), param1, param2);
 	}
 
-	public static Component TOP_LEVEL_COMPONENT = null;
+	public static JFrame TOP_LEVEL_FRAME = null;
 	public static Random RANDOM = new Random();
 	public static Boolean DBG = false;
+	public static Boolean CACHING_ENABLED = true;
 	public static final ImageIcon CHES_MAPPER_IMAGE = ImageLoader.CHES_MAPPER;
 	public static final ImageIcon CHES_MAPPER_IMAGE_SMALL = ImageLoader.CHES_MAPPER_SMALL;
 	public static final ImageIcon OPENTOX_ICON = ImageLoader.OPENTOX;
@@ -156,6 +233,11 @@ public class Settings
 	public static String VERSION_STRING = VERSION + ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
 	public static String TITLE = "CheS-Mapper";
 	public static String HOMEPAGE = "http://opentox.informatik.uni-freiburg.de/ches-mapper";
+	public static String HOMEPAGE_RUNTIME = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki/index.php?title=Supported_Datasets_and_Algorithm_Runtimes";
+	public static String HOMEPAGE_DOCUMENTATION = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki";
+
+	public static String CONTACT = "Martin Gütlein (ches-mapper@informatik.uni-freiburg.de)";
+
 	public static String SMSD_STRING = "The Small Molecule Subgraph Detector (SMSD) (see http://www.ebi.ac.uk/thornton-srv/software/SMSD, integrated into CDK)";
 
 	// ------------------ TMP/RESULT-FILE SUPPORT ---------------------------------------------
@@ -398,6 +480,13 @@ public class Settings
 				binary.setLocation(path);
 		}
 		locateBinarys();
+		for (Binary binary : bins)
+		{
+			if (binary.isFound())
+				System.err.println("external program " + binary.getCommand() + " found at " + binary.getLocation());
+			else
+				System.err.println("external program " + binary.getCommand() + " not found");
+		}
 	}
 
 	public static void locateBinarys()
@@ -408,7 +497,7 @@ public class Settings
 	public static void showBinaryDialog(Binary select)
 	{
 		locateBinarys();
-		new BinaryLocatorDialog((Window) Settings.TOP_LEVEL_COMPONENT, "External Programs", TITLE, bins, select);
+		new BinaryLocatorDialog((Window) Settings.TOP_LEVEL_FRAME, "External Programs", TITLE, bins, select);
 		for (Binary binary : bins)
 			if (binary.getLocation() != null)
 				Settings.PROPS.put("bin-path-" + binary.getCommand(), binary.getLocation());

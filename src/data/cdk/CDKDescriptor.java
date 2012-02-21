@@ -108,7 +108,7 @@ class CDKDescriptor
 		for (int i = 0; i < dictionaryClass.length; i++)
 			dictionaryClass[i] = dictionaryClass[i].replace("Descriptor", "");
 		description += ArrayUtil.toString(dictionaryClass, ",", "(", ")") + "\n";
-		description += CDKDescriptor.ENGINE.getDictionaryDefinition(m.getSpecification()).trim();
+		description += CDKDescriptor.ENGINE.getDictionaryDefinition(m.getSpecification()).trim() + "\n";
 		description += "API: http://pele.farmbio.uu.se/nightly/api/" + m.getClass().getName().replaceAll("\\.", "/")
 				+ "\n";
 

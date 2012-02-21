@@ -142,7 +142,7 @@ public class CDKPropertySet implements MoleculePropertySet
 		String cache = cacheFile(dataset);
 
 		List<Double[]> vv;
-		if (new File(cache).exists())
+		if (Settings.CACHING_ENABLED && new File(cache).exists())
 		{
 			System.out.println("reading cdk props from: " + cache);
 			vv = ValueFileCache.readCacheDouble(cache);

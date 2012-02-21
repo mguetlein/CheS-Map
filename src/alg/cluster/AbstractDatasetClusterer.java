@@ -81,7 +81,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 					break;
 				}
 
-		if (new File(filename).exists() && !interactive)
+		if (Settings.CACHING_ENABLED && new File(filename).exists() && !interactive)
 		{
 			System.out.println("read cached cluster results from: " + filename);
 			clusterAssignements = ValueFileCache.readCacheInteger2(filename);
@@ -132,7 +132,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 			String name = dataset.getShortName() + "_" + getShortName() + "_" + datasetFeaturesClusterpropsMD5
 					+ "_cluster_" + count++ + ".sdf";
 			String clusterFile = Settings.destinationFile(dataset, name);
-			if (!new File(clusterFile).exists() || interactive)
+			if (!Settings.CACHING_ENABLED || !new File(clusterFile).exists() || interactive)
 			{
 				// already loaded file may be overwritten, clear
 				DatasetFile.clearFilesWith3DSDF(clusterFile);

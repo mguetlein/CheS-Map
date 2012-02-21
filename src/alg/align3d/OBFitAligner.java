@@ -1,6 +1,7 @@
 package alg.align3d;
 
 import gui.binloc.Binary;
+import io.ExternalTool.ExternalToolError;
 import io.SDFUtil;
 
 import java.io.File;
@@ -86,13 +87,35 @@ public abstract class OBFitAligner extends Abstract3DAligner
 					DatasetFile.clearFilesWith3DSDF(alignedStructures);
 
 					FileUtil.join(tmpFirst.getAbsolutePath(), tmpAligned.getAbsolutePath(), alignedStructures);
-					alignedFiles.add(alignedStructures);
 					// if (SDFUtil.countCompounds(alignedStructures) != SDFUtil.countCompounds(clusterFile))
 					// throw new IllegalStateException(alignedStructures + " "
 					// + SDFUtil.countCompounds(alignedStructures) + " != " + clusterFile + " "
 					// + SDFUtil.countCompounds(clusterFile));
+					alignedFiles.add(alignedStructures);
 					((ClusterDataImpl) cluster).setAligned(true);
 					((ClusterDataImpl) cluster).setAlignAlgorithm(getName());
+				}
+				catch (ExternalToolError e)
+				{
+					e.printStackTrace();
+					TaskProvider
+							.task()
+							.warning(
+									"obfit failed on aligning cluster " + (count + 1),
+									e.getMessage()
+											+ "\nMost likely the error cause is that CDK and OpenBabel have different aromaticity definitions");
+
+					alignedFiles.add(null);
+					e.printStackTrace();
+					System.err.println("error occured, checking if smarts are matching in openbabel for debugging");
+					ExternalToolUtil.run("match-ref",
+							new String[] { Settings.BABEL_BINARY.getLocation(), tmpFirst.getAbsolutePath(), "-osmi",
+									"--filter", "\"s='" + cluster.getSubstructureSmarts(type) + "'\"" });
+					ExternalToolUtil.run("match-mve",
+							new String[] { Settings.BABEL_BINARY.getLocation(), tmpRemainder.getAbsolutePath(),
+									"-osmi", "--filter", "\"s='" + cluster.getSubstructureSmarts(type) + "'\"" });
+					//						//convert error to runtime-exception, to not abort the mapping
+					//						throw new RuntimeException(e.getMessage(), e.getCause());
 				}
 				finally
 				{
@@ -105,5 +128,4 @@ public abstract class OBFitAligner extends Abstract3DAligner
 			count++;
 		}
 	}
-
 }

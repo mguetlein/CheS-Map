@@ -18,7 +18,7 @@ public class CompoundArffWriter implements ArffWritable
 		String enc = MoleculePropertyUtil.getSetMD5(features, dataset.getMD5());
 		String arffFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + enc + ".arff");
 		File file = new File(arffFile);
-		if (!file.exists())
+		if (!Settings.CACHING_ENABLED || !file.exists())
 		{
 			System.out.println("writing arff file: " + arffFile);
 			ArffWriter.writeToArffFile(file, new CompoundArffWriter(compounds, features));

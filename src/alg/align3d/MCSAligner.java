@@ -1,7 +1,6 @@
 package alg.align3d;
 
 import gui.FeatureWizardPanel.FeatureInfo;
-import gui.Message;
 import gui.Messages;
 import gui.binloc.Binary;
 
@@ -10,6 +9,7 @@ import java.util.List;
 import main.Settings;
 import main.TaskProvider;
 import util.ExternalToolUtil;
+import util.MessageUtil;
 import alg.cluster.DatasetClusterer;
 import data.ComputeMCS;
 import data.DatasetFile;
@@ -64,7 +64,7 @@ public class MCSAligner extends OBFitAligner
 	{
 		Messages m = super.getMessages(dataset, featureInfo, clusterer);
 		if (dataset.numCompounds() >= 50)
-			m.add(Message.slowMessage(Settings.text("align.mcs.slow", MaxFragAligner.getNameStatic())));
+			m.add(MessageUtil.slowMessage(Settings.text("align.mcs.slow", MaxFragAligner.getNameStatic())));
 		return m;
 	}
 

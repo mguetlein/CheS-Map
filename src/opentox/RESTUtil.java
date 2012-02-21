@@ -120,7 +120,7 @@ public class RESTUtil
 				{
 				}
 			}
-			JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, "Error: could not delete: '" + urlString
+			JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME, "Error: could not delete: '" + urlString
 					+ "'\nError type: '" + e.getClass().getSimpleName() + "'\nMessage: '" + e.getMessage()
 					+ "'\n\nServer Error:\n" + serverError, "Http Connection Error", JOptionPane.ERROR_MESSAGE);
 		}
@@ -165,7 +165,7 @@ public class RESTUtil
 				{
 				}
 			}
-			JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, "Error: could wait for task: '" + urlString
+			JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME, "Error: could wait for task: '" + urlString
 					+ "'\nError type: '" + e.getClass().getSimpleName() + "'\nMessage: '" + e.getMessage()
 					+ "'\n\nServer Error:\n" + serverError, "Http Connection Error", JOptionPane.ERROR_MESSAGE);
 		}
@@ -213,7 +213,7 @@ public class RESTUtil
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, "Error: could not post to: '" + urlString
+			JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME, "Error: could not post to: '" + urlString
 					+ "'\nError type: '" + e.getClass().getSimpleName() + "'\nMessage: '" + e.getMessage() + "'",
 					"Http Connection Error", JOptionPane.ERROR_MESSAGE);
 			return null;
@@ -274,7 +274,7 @@ public class RESTUtil
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, "Error: could not post to: '" + urlString
+			JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME, "Error: could not post to: '" + urlString
 					+ "'\nError type: '" + e.getClass().getSimpleName() + "'\nMessage: '" + e.getMessage() + "'",
 					"Http Connection Error", JOptionPane.ERROR_MESSAGE);
 			return null;

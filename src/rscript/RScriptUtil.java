@@ -18,20 +18,17 @@ public class RScriptUtil
 
 	public static String installAndLoadPackage(String pack)
 	{
-		return ".libPaths(\""
-				+ FileUtil.getAbsolutePathEscaped(new File(Settings.R_LIB_DIR))
+		return ".libPaths(\"" + FileUtil.getAbsolutePathEscaped(new File(Settings.R_LIB_DIR))
 				+ "\")\n"
 				+ //
 				"packages <- installed.packages()[,1]\n" //
 				+ "if (!(is.element(\"" + pack + "\", packages))) install.packages(\"" + pack + "\",repos=\""
-				+ REPOSITORY + "\",dependencies = TRUE,lib=\""
-				+ FileUtil.getAbsolutePathEscaped(new File(Settings.R_LIB_DIR)) + "\")\n" + //
+				+ REPOSITORY + "\",lib=\"" + FileUtil.getAbsolutePathEscaped(new File(Settings.R_LIB_DIR)) + "\")\n" + //
 				"library(\"" + pack + "\")\n";
 	}
 
 	public static String getScriptPath(String scriptName, String scriptCode)
 	{
-
 		String scriptPath = null;
 		try
 		{

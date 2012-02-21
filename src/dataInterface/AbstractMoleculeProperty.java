@@ -135,38 +135,42 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 		this.smarts = smarts;
 	}
 
-	private HashMap<DatasetFile, Object[]> values = new HashMap<DatasetFile, Object[]>();
+	private HashMap<DatasetFile, String[]> stringValues = new HashMap<DatasetFile, String[]>();
+	private HashMap<DatasetFile, Double[]> doubleValues = new HashMap<DatasetFile, Double[]>();
 	private HashMap<DatasetFile, Double[]> normalizedValues = new HashMap<DatasetFile, Double[]>();
 	private HashMap<DatasetFile, Double> median = new HashMap<DatasetFile, Double>();
 	private HashMap<DatasetFile, Integer> missing = new HashMap<DatasetFile, Integer>();
 
 	public boolean isValuesSet(DatasetFile dataset)
 	{
-		return values.containsKey(dataset);
+		if (getType() == Type.NUMERIC)
+			return doubleValues.containsKey(dataset);
+		else
+			return stringValues.containsKey(dataset);
 	}
 
 	public void setStringValues(DatasetFile dataset, String vals[])
 	{
 		if (getType() == Type.NUMERIC)
 			throw new IllegalStateException();
-		if (values.containsKey(dataset))
+		if (stringValues.containsKey(dataset))
 			throw new IllegalStateException();
 		//		Double normalized[] = ArrayUtil.normalizeObjectArray(vals);
 		setMissing(dataset, vals);
-		values.put(dataset, vals);
+		stringValues.put(dataset, vals);
 		//		normalizedValues.put(dataset, normalized);
 	}
 
 	public void setDoubleValues(DatasetFile dataset, Double vals[])
 	{
-		if (getType() != Type.NUMERIC)
+		if (!isTypeAllowed(Type.NUMERIC))
 			throw new IllegalStateException();
-		if (values.containsKey(dataset))
+		if (doubleValues.containsKey(dataset))
 			throw new IllegalStateException();
 		Double normalized[] = ArrayUtil.normalize(vals, false);
 		setMissing(dataset, normalized);
 		//Double normalized[] = ArrayUtil.normalizeLog(vals);
-		values.put(dataset, vals);
+		doubleValues.put(dataset, vals);
 		normalizedValues.put(dataset, normalized);
 		median.put(dataset, DoubleArraySummary.create(normalized).getMedian());
 	}
@@ -191,9 +195,9 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	{
 		if (getType() == Type.NUMERIC)
 			throw new IllegalStateException();
-		if (!values.containsKey(dataset))
+		if (!stringValues.containsKey(dataset))
 			throw new Error("values not yet set");
-		return ArrayUtil.cast(String.class, values.get(dataset));
+		return stringValues.get(dataset);
 	}
 
 	@Override
@@ -201,9 +205,9 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	{
 		if (getType() != Type.NUMERIC)
 			throw new IllegalStateException();
-		if (!values.containsKey(dataset))
+		if (!doubleValues.containsKey(dataset))
 			throw new Error("values not yet set");
-		return ArrayUtil.parse(values.get(dataset));
+		return doubleValues.get(dataset);
 	}
 
 	@Override
@@ -221,7 +225,7 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	{
 		if (getType() != Type.NUMERIC)
 			throw new IllegalStateException();
-		if (!values.containsKey(dataset))
+		if (!doubleValues.containsKey(dataset))
 			throw new Error("values not yet set");
 		return median.get(dataset);
 	}

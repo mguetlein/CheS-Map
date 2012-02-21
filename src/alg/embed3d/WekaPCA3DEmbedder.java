@@ -1,7 +1,6 @@
 package alg.embed3d;
 
 import gui.FeatureWizardPanel.FeatureInfo;
-import gui.Message;
 import gui.Messages;
 import gui.property.Property;
 
@@ -14,6 +13,7 @@ import java.util.List;
 import javax.vecmath.Vector3f;
 
 import main.Settings;
+import util.MessageUtil;
 import weka.CompoundArffWriter;
 import weka.WekaPropertyUtil;
 import weka.attributeSelection.PrincipalComponents;
@@ -72,7 +72,7 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 	{
 		Messages m = super.getMessages(dataset, featureInfo, clusterer);
 		if (dataset.numCompounds() >= 50 && featureInfo.isNumFeaturesHigh())
-			m.add(Message.slowMessage(featureInfo.getNumFeaturesWarning()));
+			m.add(MessageUtil.slowMessage(featureInfo.getNumFeaturesWarning()));
 		return m;
 	}
 

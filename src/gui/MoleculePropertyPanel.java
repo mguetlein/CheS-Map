@@ -47,6 +47,7 @@ import dataInterface.FragmentPropertySet;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculeProperty.Type;
 import dataInterface.MoleculePropertySet;
+import freechart.AbstractFreeChartPanel;
 import freechart.BarPlotPanel;
 import freechart.HistogramPanel;
 
@@ -173,7 +174,8 @@ public class MoleculePropertyPanel extends JPanel
 						&& selectedPropertySet.get(dataset, selectedPropertyIndex).getType() != type
 						&& selectedPropertySet.get(dataset, selectedPropertyIndex).isTypeAllowed(type))
 				{
-					selectedPropertySet.get(dataset, selectedPropertyIndex).setType(type);
+					MoleculeProperty p = selectedPropertySet.get(dataset, selectedPropertyIndex);
+					p.setType(type);
 					firePropertyChange(PROPERTY_TYPE_CHANGED, false, true);
 					loadComputedOrCachedProperty();
 				}
@@ -237,7 +239,7 @@ public class MoleculePropertyPanel extends JPanel
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, new JScrollPane(rawDataTable()));
+				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME, new JScrollPane(rawDataTable()));
 			}
 		});
 	}
@@ -357,14 +359,12 @@ public class MoleculePropertyPanel extends JPanel
 					if (o != null)
 						counts.add((double) set.getCount(o));
 				p = new BarPlotPanel(null, "#compounds", counts, values);
-				p.setOpaque(false);
-				p.setPreferredSize(new Dimension(300, 180));
-
 			}
 			else if (type == Type.NUMERIC)
 			{
 				numericFeatureButton.setSelected(true);
 				List<Double> vals = ArrayUtil.removeNullValues(selectedProperty.getDoubleValues(dataset));
+
 				//List<Double> vals = ArrayUtil.toList(selectedProperty.getNormalizedValues(dataset));
 
 				if (vals.size() == 0)
@@ -376,8 +376,6 @@ public class MoleculePropertyPanel extends JPanel
 				{
 					p = new HistogramPanel(null, null, selectedProperty.toString(), "#compounds", "",
 							ArrayUtil.toPrimitiveDoubleArray(vals), 20, null, true);
-					p.setOpaque(false);
-					p.setPreferredSize(new Dimension(300, 180));
 				}
 			}
 			else
@@ -388,6 +386,13 @@ public class MoleculePropertyPanel extends JPanel
 						+ "It is not numeric, and it has '" + set.size() + "' distinct values."));
 				((MessageLabel) p).setMessageFont(((MessageLabel) p).getMessageFont().deriveFont(Font.BOLD));
 				p.setBorder(new EmptyBorder(0, 10, 0, 0));
+			}
+
+			if (p instanceof AbstractFreeChartPanel)
+			{
+				((AbstractFreeChartPanel) p).setIntegerTickUnits();
+				p.setOpaque(false);
+				p.setPreferredSize(new Dimension(300, 180));
 			}
 		}
 		else
@@ -414,7 +419,8 @@ public class MoleculePropertyPanel extends JPanel
 	private void loadComputedOrCachedProperty()
 	{
 		if (selectedPropertySet == null
-				|| (!selectedPropertySet.isComputed(dataset) && !selectedPropertySet.isCached(dataset)))
+				|| (!selectedPropertySet.isComputed(dataset) && !(Settings.CACHING_ENABLED && selectedPropertySet
+						.isCached(dataset))))
 			throw new Error("WTF");
 
 		final MoleculePropertySet prop = selectedPropertySet;
@@ -491,7 +497,7 @@ public class MoleculePropertyPanel extends JPanel
 			else
 			{
 				fragmentProps.setVisible(selectedPropertySet instanceof FragmentPropertySet);
-				if (prop.isComputed(dataset) || prop.isCached(dataset))
+				if (prop.isComputed(dataset) || (Settings.CACHING_ENABLED && prop.isCached(dataset)))
 					loadComputedOrCachedProperty();
 				else
 					showCard("loadButton", loadButtonPanel);

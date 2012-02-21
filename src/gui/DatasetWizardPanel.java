@@ -28,6 +28,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import main.Settings;
+import main.TaskProvider;
 import opentox.DatasetUtil;
 import util.ListUtil;
 import util.SwingUtil;
@@ -317,6 +318,8 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 			{
 				public void run()
 				{
+					TaskProvider.registerThread("Load-dataset-thread");
+
 					boolean urlDatasetDownloadFailed = false;
 					if (!d.isLocal())
 						urlDatasetDownloadFailed = !DatasetUtil.downloadDataset(d.getURI());
@@ -338,7 +341,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 						{
 							String cleanedSdf = Settings.destinationFile(d, d.getShortName() + ".cleaned.sdf");
 							int res = JOptionPane.showConfirmDialog(
-									Settings.TOP_LEVEL_COMPONENT,
+									Settings.TOP_LEVEL_FRAME,
 									"Could not read " + e.illegalCompounds.size() + " compound/s in dataset: "
 											+ d.getPath() + "\nIndices of compounds that could not be loaded: "
 											+ ListUtil.toString(e.illegalCompounds)
@@ -357,7 +360,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 						{
 							e.printStackTrace();
 							JOptionPane.showMessageDialog(
-									Settings.TOP_LEVEL_COMPONENT,
+									Settings.TOP_LEVEL_FRAME,
 									"Could not load local dataset:\n"
 											+ d.getPath()
 											+ "\nError: '"

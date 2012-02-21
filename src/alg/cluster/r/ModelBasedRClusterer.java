@@ -28,8 +28,10 @@ class ModelBasedRClusterer extends AbstractRClusterer
 	protected String getRScriptCode()
 	{
 		return "args <- commandArgs(TRUE)\n" //
-				+ "\n" + RScriptUtil.installAndLoadPackage("mclust") + "\n"
+				+ "\n" + RScriptUtil.installAndLoadPackage("mclust")
+				+ "\n"
 				+ "df = read.table(args[1])\n"
+				+ "set.seed(1)\n" //
 				+ "res <- Mclust(df)\n" + "print(res$classification)\n" + "\n" + "print(res$loglik)\n"
 				+ "\n"
 				+ "write.table(res$classification,args[2])\n";

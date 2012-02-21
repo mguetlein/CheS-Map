@@ -1,11 +1,9 @@
 package gui;
 
 import java.awt.Dimension;
-import java.awt.Toolkit;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.border.EtchedBorder;
 
 import main.CheSMapping;
 import main.Settings;
@@ -45,11 +43,11 @@ public class CheSMapperWizard extends WizardDialog
 	public CheSMapperWizard(JFrame owner, int startPanel)
 	{
 		super(owner, Settings.TITLE + " Wizard (" + Settings.VERSION_STRING + ")", Settings.CHES_MAPPER_IMAGE,
-				Settings.OPENTOX_ICON);
+				Settings.OPENTOX_ICON, Settings.HOMEPAGE_DOCUMENTATION);
 		addClickLinkToIcon(Settings.HOMEPAGE);
 		addClickLinkToAdditionalIcon("http://opentox.org");
 
-		Settings.TOP_LEVEL_COMPONENT = this;
+		Settings.TOP_LEVEL_FRAME = this;
 
 		setIconImage(Settings.CHES_MAPPER_IMAGE_SMALL.getImage());
 
@@ -70,11 +68,14 @@ public class CheSMapperWizard extends WizardDialog
 		getRootPane().setDefaultButton(finish);
 
 		Dimension d = new Dimension(1024, 768);
-		Dimension full = Toolkit.getDefaultToolkit().getScreenSize();
+		Dimension full = Settings.SCREEN_SETUP.getFullScreenSize();
 		d.width = Math.min(full.width - 100, d.width);
 		d.height = Math.min(full.height - 100, d.height);
 		setSize(d);
-		setLocationRelativeTo(owner);
+		if (owner != null)
+			setLocationRelativeTo(owner);
+		else
+			Settings.SCREEN_SETUP.centerOnScreen(this);
 
 		while (status < startPanel && panels.size() > startPanel)
 		{
@@ -85,8 +86,8 @@ public class CheSMapperWizard extends WizardDialog
 			}
 		}
 
-		if (Settings.SCREENSHOT_SETUP)
-			((JComponent) getContentPane().getComponent(0)).setBorder(new EtchedBorder());
+		((JComponent) getContentPane().getComponent(0)).setBorder(Settings.SCREEN_SETUP.getWizardBorder());
+
 		setVisible(true);
 	}
 

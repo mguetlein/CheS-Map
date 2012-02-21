@@ -33,6 +33,7 @@ class DynamicTreeCutHierarchicalRClusterer extends AbstractRClusterer
 		return "args <- commandArgs(TRUE)\n" //
 				+ RScriptUtil.installAndLoadPackage("dynamicTreeCut")//
 				+ "df = read.table(args[1])\n" //
+				+ "set.seed(1)\n" //
 				+ "d <- dist(df, method = \"euclidean\")\n" //
 				+ "fit <- hclust(d, method=\"" + method.getValue()
 				+ "\")\n" //

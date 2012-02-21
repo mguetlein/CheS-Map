@@ -24,6 +24,8 @@ public class ClusteringData
 	private String clusterAlgorithm;
 	private String embedAlgorithm;
 
+	private String embedQuality;
+
 	// --------------------------------------------
 
 	public int getSize()
@@ -128,6 +130,16 @@ public class ClusteringData
 	public String getEmbedAlgorithm()
 	{
 		return embedAlgorithm;
+	}
+
+	public void setEmbedQuality(String embedQuality)
+	{
+		this.embedQuality = embedQuality;
+	}
+
+	public String getEmbedQuality()
+	{
+		return embedQuality;
 	}
 
 }

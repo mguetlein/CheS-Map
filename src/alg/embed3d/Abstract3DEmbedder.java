@@ -63,7 +63,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 						+ MoleculePropertyUtil.getSetMD5(features,
 								dataset.getMD5() + " " + PropertyUtil.getPropertyMD5(getProperties())) + ".embed");
 
-		if (new File(filename).exists())
+		if (Settings.CACHING_ENABLED && new File(filename).exists())
 		{
 			System.out.println("read cached embedding results from: " + filename);
 			positions = ValueFileCache.readCachePosition2(filename);

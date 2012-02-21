@@ -184,7 +184,7 @@ public class StructuralFragmentSet extends FragmentPropertySet
 		String smartsMatchFile = getSmartsMatchCacheFile(dataset);
 
 		List<boolean[]> matches;
-		if (new File(smartsMatchFile).exists())
+		if (Settings.CACHING_ENABLED && new File(smartsMatchFile).exists())
 		{
 			System.out.println("read cached matches from file: " + smartsMatchFile);
 			matches = readFromFile(smartsMatchFile);

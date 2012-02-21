@@ -30,7 +30,8 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 
 	public StructuralFragmentPropertiesPanel()
 	{
-		propPanel = new PropertyPanel(StructuralFragmentProperties.getProperties(), Settings.PROPS, Settings.PROPERTIES_FILE);
+		propPanel = new PropertyPanel(StructuralFragmentProperties.getProperties(), Settings.PROPS,
+				Settings.PROPERTIES_FILE);
 		babelPanel = Settings.getBinaryComponent(Settings.BABEL_BINARY);
 
 		DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("p,fill:p:grow"));
@@ -90,7 +91,7 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 								{
 									babelPanel.setVisible(StructuralFragmentProperties.getMatchEngine() == MatchEngine.OpenBabel);
 								}
-							});
+							}, Settings.TOP_LEVEL_FRAME);
 				}
 			});
 

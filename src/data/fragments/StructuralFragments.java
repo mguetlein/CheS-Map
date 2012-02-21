@@ -96,7 +96,7 @@ public class StructuralFragments
 				}
 
 				if (warnings.length() > 0)
-					JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, "Warnings while parsing SMARTS file '"
+					JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME, "Warnings while parsing SMARTS file '"
 							+ showWarningForFile + "':\n" + warnings, "Warnings while parsing SMARTS file",
 							JOptionPane.WARNING_MESSAGE);
 
@@ -113,7 +113,7 @@ public class StructuralFragments
 				e.printStackTrace();
 
 				if (FileUtil.getFilename(filename).equals(showWarningForFile))
-					JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, "Could not parse SMARTS file '"
+					JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME, "Could not parse SMARTS file '"
 							+ showWarningForFile + "':\n" + e.getMessage(), "Could not parse SMARTS file",
 							JOptionPane.ERROR_MESSAGE);
 			}

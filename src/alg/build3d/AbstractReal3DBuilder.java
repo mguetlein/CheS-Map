@@ -40,7 +40,7 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 	@Override
 	public void build3D(final DatasetFile dataset)
 	{
-		if (dataset.getSDFPath(false).contains("." + getInitials() + "3d"))
+		if (Settings.CACHING_ENABLED && dataset.getSDFPath(false).contains("." + getInitials() + "3d"))
 		{
 			System.out.println("file already in " + getInitials() + "3d : " + dataset.getSDFPath(false)
 					+ ", no 3d structure generation");
@@ -60,7 +60,7 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 
 			//			System.out.println(threeDFilename);
 			File threeD = new File(finalFile);
-			if (!threeD.exists())
+			if (!threeD.exists() || !Settings.CACHING_ENABLED)
 			{
 				System.out.println("computing 3d: " + finalFile);
 				running = true;

@@ -31,6 +31,7 @@ import util.ArrayUtil;
 import util.DoubleImageIcon;
 import util.FileUtil;
 import util.ImageLoader;
+import util.MessageUtil;
 import util.VectorUtil;
 import util.WizardComponentFactory;
 import alg.FeatureComputer;
@@ -174,7 +175,8 @@ public class FeatureWizardPanel extends WizardPanel
 				else if (elem.getSize(dataset) == 1 && warningIcon == null)
 					warningIcon = ImageLoader.WARNING;
 
-				if (!elem.isComputed(dataset) && !elem.isCached(dataset) && elem.isComputationSlow())
+				if (!elem.isComputed(dataset) && !(Settings.CACHING_ENABLED && elem.isCached(dataset))
+						&& elem.isComputationSlow())
 					warningIcon = ImageLoader.HOURGLASS;
 
 				if (warningIcon == null)
@@ -273,7 +275,7 @@ public class FeatureWizardPanel extends WizardPanel
 				else
 					b.append("The feature(s) is/are most likely not suited for clustering and embedding.\nYou have to asign the feature type manually (by clicking on 'Nominal') before adding the feature/s.");
 
-				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, b.getPanel(),
+				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME, b.getPanel(),
 						"Warning - Could not add feature", JOptionPane.WARNING_MESSAGE);
 			}
 		});
@@ -282,7 +284,7 @@ public class FeatureWizardPanel extends WizardPanel
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
-				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT,
+				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME,
 						"You have no feature/s selected. Please select (a group of) feature/s in the left panel before clicking '"
 								+ addFeaturesText + "'.", "Warning - No feature/s selected",
 						JOptionPane.WARNING_MESSAGE);
@@ -293,7 +295,7 @@ public class FeatureWizardPanel extends WizardPanel
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
-				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT,
+				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME,
 						"You have no feature/s selected. Please select (a group of) feature/s in the right panel before clicking '"
 								+ remFeaturesText + "'.", "Warning - No feature/s selected",
 						JOptionPane.WARNING_MESSAGE);
@@ -328,7 +330,7 @@ public class FeatureWizardPanel extends WizardPanel
 			{
 				if (fc == null)
 					fc = new JFileChooser();
-				int res = fc.showOpenDialog(Settings.TOP_LEVEL_COMPONENT);
+				int res = fc.showOpenDialog(Settings.TOP_LEVEL_FRAME);
 				if (res == JFileChooser.APPROVE_OPTION)
 				{
 					File f = fc.getSelectedFile();
@@ -336,7 +338,7 @@ public class FeatureWizardPanel extends WizardPanel
 					String dest = Settings.getFragmentFileDestination(name);
 					if (new File(dest).exists())
 					{
-						int res2 = JOptionPane.showConfirmDialog(Settings.TOP_LEVEL_COMPONENT, "Smarts file '" + name
+						int res2 = JOptionPane.showConfirmDialog(Settings.TOP_LEVEL_FRAME, "Smarts file '" + name
 								+ "' already exists. Replace?", "File already exists", JOptionPane.YES_OPTION);
 						if (res2 != JOptionPane.YES_OPTION)
 							return;
@@ -431,7 +433,8 @@ public class FeatureWizardPanel extends WizardPanel
 				featureInfo.smartsFeaturesSelected = true;
 			if (!set.isComputed(dataset))
 				notComputed = true;
-			if (!set.isComputed(dataset) && !set.isCached(dataset) && set.isComputationSlow())
+			if (!set.isComputed(dataset) && !(Settings.CACHING_ENABLED && set.isCached(dataset))
+					&& set.isComputationSlow())
 				slowFeaturesSelected = true;
 			if (set.getType() == Type.NUMERIC)
 				featureInfo.numericFeaturesSelected = true;
@@ -442,7 +445,7 @@ public class FeatureWizardPanel extends WizardPanel
 				+ (featureInfo.numFeaturesUnknown ? " + ?" : ""));
 
 		if (slowFeaturesSelected)
-			msg = Messages.slowMessage(Settings.text("features.slow"));
+			msg = MessageUtil.slowMessages(Settings.text("features.slow"));
 		loadFeaturesButton.setVisible(notComputed);
 		if (!selfUpdate)
 			wizard.update();

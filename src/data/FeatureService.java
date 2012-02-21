@@ -342,7 +342,11 @@ public class FeatureService
 				if (p.getType() == Type.NUMERIC)
 					p.setDoubleValues(dataset, doubleValues);
 				else
+				{
 					p.setStringValues(dataset, stringValues);
+					if (p.isTypeAllowed(Type.NUMERIC))
+						p.setDoubleValues(dataset, doubleValues);
+				}
 			}
 
 			IMolecule res[] = new IMolecule[mols.size()];

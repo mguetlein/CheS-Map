@@ -32,6 +32,7 @@ class HierarchicalRClusterer extends AbstractRClusterer
 	{
 		return "args <- commandArgs(TRUE)\n" //
 				+ "df = read.table(args[1])\n" //
+				+ "set.seed(1)\n" //
 				+ "d <- dist(df, method = \"euclidean\")\n" //
 				+ "fit <- hclust(d, method=\"" + method.getValue() + "\")\n" //
 				+ "\ngroups <- cutree(fit, k=" + k.getValue() + ")\n" //

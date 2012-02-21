@@ -61,7 +61,7 @@ public class DatasetUtil
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(Settings.TOP_LEVEL_COMPONENT, "Error: could not load dataset from: '"
+			JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME, "Error: could not load dataset from: '"
 					+ datasetUrl + "'\nError type: '" + e.getClass().getSimpleName() + "'\nMessage: '" + e.getMessage()
 					+ "'", "Http Connection Error", JOptionPane.ERROR_MESSAGE);
 			return false;

@@ -53,13 +53,17 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 
 			String featureTableFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + datasetMD5
 					+ ".features.table");
-			if (!new File(featureTableFile).exists())
+			if (!Settings.CACHING_ENABLED || !new File(featureTableFile).exists())
 				ExportRUtil.toRTable(
 						features,
 						MoleculePropertyUtil.valuesReplaceNullWithMedian(features,
 								ListUtil.cast(MolecularPropertyOwner.class, compounds), dataset), featureTableFile);
 			else
 				System.out.println("load cached features from " + featureTableFile);
+
+			System.out.println("Using r-clusterer " + getName() + " with properties: "
+					+ PropertyUtil.toString(getProperties()));
+
 			String errorOut = ExternalToolUtil.run(
 					getShortName(),
 					new String[] {

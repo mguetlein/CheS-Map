@@ -1,9 +1,9 @@
 package alg.embed3d;
 
 import gui.FeatureWizardPanel.FeatureInfo;
-import gui.Message;
 import gui.Messages;
 import gui.binloc.Binary;
+import gui.property.DoubleProperty;
 import gui.property.IntegerProperty;
 import gui.property.Property;
 import gui.property.PropertyUtil;
@@ -25,6 +25,7 @@ import rscript.RScriptUtil;
 import util.ArrayUtil;
 import util.ExternalToolUtil;
 import util.FileUtil;
+import util.MessageUtil;
 import alg.AlgorithmException.EmbedException;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
@@ -63,12 +64,16 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 
 			String featureTableFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + datasetMD5
 					+ ".features.table");
-			if (!new File(featureTableFile).exists())
+			if (!Settings.CACHING_ENABLED || !new File(featureTableFile).exists())
 				ExportRUtil.toRTable(features,
 						MoleculePropertyUtil.valuesReplaceNullWithMedian(features, instances, dataset),
 						featureTableFile);
 			else
 				System.out.println("load cached features from " + featureTableFile);
+
+			System.out.println("Using r-embedder " + getName() + " with properties: "
+					+ PropertyUtil.toString(getProperties()));
+
 			String errorOut = ExternalToolUtil.run(
 					getShortName(),
 					new String[] {
@@ -184,7 +189,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		{
 			Messages m = super.getMessages(dataset, featureInfo, clusterer);
 			if (dataset.numCompounds() >= 50 && featureInfo.isNumFeaturesHigh())
-				m.add(Message.slowMessage(featureInfo.getNumFeaturesWarning()));
+				m.add(MessageUtil.slowMessage(featureInfo.getNumFeaturesWarning()));
 			return m;
 		}
 
@@ -192,17 +197,21 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		protected String getRScriptCode()
 		{
 			return "args <- commandArgs(TRUE)\n" //
-					+ "\n" + RScriptUtil.installAndLoadPackage("tsne") + "\n"
+					+ "\n"
+					+ RScriptUtil.installAndLoadPackage("tsne")
+					+ "\n"
 					+ "df = read.table(args[1])\n"
+					+ "set.seed(1)\n" //
 					+ "res <- tsne(df, k = 3, perplexity=" + getPerplexity()
 					+ ", max_iter="
-					+ maxNumIterations.getValue() + ", initial_dims=" + getInitialDims() + ")\n"
-					+ "print(res$ydata)\n"
-					+ "\n" + "##res <- smacofSphere.dual(df, ndim = 3)\n"
-					+ "#print(res$conf)\n"
-					+ "#print(class(res$conf))\n" + "\n" + "write.table(res$ydata,args[2]) \n" + "";
+					+ maxNumIterations.getValue() + ", initial_dims=" + getInitialDims()
+					+ ")\n"
+					+ "print(head(res$ydata))\n" + "\n"
+					+ "##res <- smacofSphere.dual(df, ndim = 3)\n"
+					+ "#print(res$conf)\n" + "#print(class(res$conf))\n" + "\n"
+					+ "write.table(res$ydata,args[2]) \n"
+					+ "";
 		}
-
 	}
 
 	public static class PCAFeature3DEmbedder extends AbstractRTo3DEmbedder
@@ -251,7 +260,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 					// + "write.table(res$scores[,1:3],args[2]) ";
 					+ "res <- prcomp(df)\n" //
 					+ "rows <-min(ncol(res$x),3)\n" //
-					+ "print(res$x[,1:rows])\n" //
+					+ "print(head(res$x[,1:rows]))\n" //
 					+ "write.table(res$x[,1:rows],args[2]) ";
 		}
 
@@ -293,13 +302,16 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		@Override
 		protected String getRScriptCode()
 		{
-			return "args <- commandArgs(TRUE)\n" + "\n" + RScriptUtil.installAndLoadPackage("smacof")
-					+ "\n"
+			return "args <- commandArgs(TRUE)\n" + "\n" + RScriptUtil.installAndLoadPackage("smacof") + "\n"
 					+ "df = read.table(args[1])\n"
 					+ "d <- dist(df, method = \"euclidean\")\n" //
+					+ "set.seed(1)\n" //
 					+ "res <- smacofSym(d, ndim = 3, metric = FALSE, ties = \"secondary\", verbose = TRUE, itmax = "
-					+ maxNumIterations.getValue() + ")\n" + "#res <- smacofSphere.dual(df, ndim = 3)\n"
-					+ "print(res$conf)\n" + "print(class(res$conf))\n" + "write.table(res$conf,args[2]) ";
+					+ maxNumIterations.getValue() + ")\n" //
+					+ "#res <- smacofSphere.dual(df, ndim = 3)\n" //
+					+ "print(head(res$conf))\n" //
+					+ "print(class(res$conf))\n" //
+					+ "write.table(res$conf,args[2]) ";
 		}
 
 		@Override
@@ -307,7 +319,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		{
 			Messages m = super.getMessages(dataset, featureInfo, clusterer);
 			if (dataset.numCompounds() >= 50)
-				m.add(Message.slowMessage(Settings.text("embed.r.smacof.slow", PCAFeature3DEmbedder.getNameStatic())));
+				m.add(MessageUtil.slowMessage(Settings.text("embed.r.smacof.slow", Sammon3DEmbedder.getNameStatic())));
 			return m;
 		}
 
@@ -316,6 +328,114 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		{
 			return 1;
 		}
+	}
+
+	public static class Sammon3DEmbedder extends AbstractRTo3DEmbedder
+	{
+		public int getMinNumInstances()
+		{
+			return 2; // else "Maximum number of dimensions is n-1!"
+		}
+
+		@Override
+		protected String getShortName()
+		{
+			return "sammon";
+		}
+
+		@Override
+		public String getName()
+		{
+			return getNameStatic();
+		}
+
+		public static String getNameStatic()
+		{
+			return Settings.text("embed.r.sammon");
+		}
+
+		@Override
+		public String getDescription()
+		{
+			return Settings.text("embed.r.sammon.desc", Settings.R_STRING);
+		}
+
+		IntegerProperty niter = new IntegerProperty("Maximum number of iterations (niter)", 100);
+		DoubleProperty magic = new DoubleProperty(
+				"Initial value of the step size constant in diagonal Newton method (magic)", 0.2);
+		DoubleProperty tol = new DoubleProperty("Tolerance for stopping, in units of stress (tol)", 0.0001, 0.0, 1.0,
+				0.00001);
+
+		@Override
+		public Property[] getProperties()
+		{
+			return new Property[] { niter, magic, tol };
+		}
+
+		@Override
+		protected String getRScriptCode()
+		{
+			return "args <- commandArgs(TRUE)\n" + "\n"
+					+ // 
+					RScriptUtil.installAndLoadPackage("MASS") + "\n"
+					+ //
+					rCode + "\n"
+					+ "df = read.table(args[1])\n" //
+					+ "set.seed(1)\n" //
+					+ "res <- sammon_duplicates(df, k=3, niter=" + niter.getValue() + ", magic=" + magic.getValue()
+					+ ", tol=" + tol.getValue() + " )\n" + //
+					"print(head(res))\n" + //
+					"write.table(res,args[2]) ";
+		}
+
+		@Override
+		public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
+		{
+			Messages m = super.getMessages(dataset, featureInfo, clusterer);
+			//			if (dataset.numCompounds() >= 50)
+			//				m.add(Message.slowMessage(Settings.text("embed.r.smacof.slow", PCAFeature3DEmbedder.getNameStatic())));
+			return m;
+		}
+
+		@Override
+		public int getMinNumFeatures()
+		{
+			return 1;
+		}
+
+		String rCode = "duplicate_indices <- function( data ) {\n" //
+				+ "  indices = 1:nrow(data)\n"// 
+				+ "  z = data\n"
+				+ "  duplicate_index = anyDuplicated(z)\n"// 
+				+ "  while(duplicate_index) {\n"
+				+ "    duplicate_to_index = anyDuplicated(z[1:duplicate_index,],fromLast=T)\n"
+				+ "    #print(paste(duplicate_index,'is dupl to',duplicate_to_index))\n"
+				+ "    indices[duplicate_index] <- duplicate_to_index\n"
+				+ "    z[duplicate_index,] <- paste('123$§%',duplicate_index)\n"
+				+ "    duplicate_index = anyDuplicated(z)\n"// 
+				+ "  }\n"// 
+				+ "  indices\n"// 
+				+ "}\n"
+				+ "add_duplicates <- function( data, dup_indices ) {\n"// 
+				+ "  result = data[1,]\n"
+				+ "  for(i in 2:length(dup_indices)) {\n"// 
+				+ "    row = data[rownames(data)==dup_indices[i],]\n"
+				+ "    if(length(row)==0)\n"
+				+ "       stop(paste('index ',i,' dup-index ',dup_indices[i],'not found in data'))\n"
+				+ "    result = rbind(result, row)\n"// 
+				+ "  }\n"// 
+				+ "  rownames(result)<-NULL\n"// 
+				+ "  result\n"// 
+				+ "}\n"
+				+ "sammon_duplicates <- function( data, ... ) {\n"// 
+				+ "  di <- duplicate_indices(data)\n"
+				+ "  u <- unique(data)\n"// 
+				+ "  print(paste('unique data points',nrow(u),'of',nrow(data)))\n"
+				+ "  points_unique <- sammon(dist(u), ...)$points\n"
+				+ "  points <- add_duplicates(points_unique, di)\n"// 
+				+ "  points\n"// 
+				+ "}\n"// 
+				+ "";
 	}
 
 }

@@ -1,7 +1,6 @@
 package alg.cluster;
 
 import gui.FeatureWizardPanel.FeatureInfo;
-import gui.Message;
 import gui.Messages;
 import gui.property.Property;
 
@@ -15,6 +14,7 @@ import java.util.List;
 import main.Settings;
 import main.TaskProvider;
 import util.ListUtil;
+import util.MessageUtil;
 import weka.CascadeSimpleKMeans;
 import weka.CompoundArffWriter;
 import weka.WekaPropertyUtil;
@@ -179,7 +179,7 @@ public class WekaClusterer extends AbstractDatasetClusterer
 		if (wekaClusterer instanceof EM || wekaClusterer instanceof CascadeSimpleKMeans)
 		{
 			if (dataset.numCompounds() >= 50 && featureInfo.isNumFeaturesHigh())
-				m.add(Message.slowMessage(featureInfo.getNumFeaturesWarning()));
+				m.add(MessageUtil.slowMessage(featureInfo.getNumFeaturesWarning()));
 		}
 		return m;
 	}
@@ -223,6 +223,11 @@ public class WekaClusterer extends AbstractDatasetClusterer
 			e.printStackTrace();
 		}
 		return s;
+	}
+
+	public Clusterer getWekaClusterer()
+	{
+		return wekaClusterer;
 	}
 
 }
