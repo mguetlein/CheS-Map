@@ -1,12 +1,16 @@
 package gui;
 
 import java.awt.Dimension;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
 import main.CheSMapping;
+import main.ScreenSetup;
 import main.Settings;
+import util.ScreenUtil;
 import util.SwingUtil;
 import weka.gui.GenericObjectEditor;
 import data.ClusteringData;
@@ -68,14 +72,22 @@ public class CheSMapperWizard extends WizardDialog
 		getRootPane().setDefaultButton(finish);
 
 		Dimension d = new Dimension(1024, 768);
-		Dimension full = Settings.SCREEN_SETUP.getFullScreenSize();
+		Dimension full = ScreenSetup.SETUP.getFullScreenSize();
 		d.width = Math.min(full.width - 100, d.width);
 		d.height = Math.min(full.height - 100, d.height);
 		setSize(d);
 		if (owner != null)
 			setLocationRelativeTo(owner);
 		else
-			Settings.SCREEN_SETUP.centerOnScreen(this);
+			ScreenSetup.SETUP.centerOnScreen(this);
+
+		addComponentListener(new ComponentAdapter()
+		{
+			public void componentMoved(ComponentEvent e)
+			{
+				ScreenSetup.SETUP.setScreen(ScreenUtil.getScreen(CheSMapperWizard.this));
+			}
+		});
 
 		while (status < startPanel && panels.size() > startPanel)
 		{
@@ -86,7 +98,7 @@ public class CheSMapperWizard extends WizardDialog
 			}
 		}
 
-		((JComponent) getContentPane().getComponent(0)).setBorder(Settings.SCREEN_SETUP.getWizardBorder());
+		((JComponent) getContentPane().getComponent(0)).setBorder(ScreenSetup.SETUP.getWizardBorder());
 
 		setVisible(true);
 	}

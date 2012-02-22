@@ -280,22 +280,23 @@ public class CheSMapping
 		System.out.println("r-square: " + rSquare);
 		String formRSquare = StringUtil.formatDouble(rSquare, 3);
 
-		if (rSquare < 0.6)
-		{
-			TaskProvider.task().warning("The embedding quality is poor (r²:" + formRSquare + ")",
-					Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
-			clustering.setEmbedQuality("poor (r²: " + formRSquare + ")");
-		}
-		else if (rSquare < 0.75)
+		if (rSquare >= 0.9)
+			clustering.setEmbedQuality("excellent (r²: " + formRSquare + ")");
+		else if (rSquare >= 0.7)
+			clustering.setEmbedQuality("good (r²: " + formRSquare + ")");
+		else if (rSquare >= 0.5)
 		{
 			TaskProvider.task().warning("The embedding quality is moderate (r²:" + formRSquare + ")",
 					Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
 			clustering.setEmbedQuality("moderate (r²: " + formRSquare + ")");
 		}
-		else if (rSquare < 0.9)
-			clustering.setEmbedQuality("good (r²: " + formRSquare + ")");
 		else
-			clustering.setEmbedQuality("excellent (r²: " + formRSquare + ")");
+		// < 0.5 
+		{
+			TaskProvider.task().warning("The embedding quality is poor (r²:" + formRSquare + ")",
+					Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
+			clustering.setEmbedQuality("poor (r²: " + formRSquare + ")");
+		}
 
 		int cCount = 0;
 		for (Vector3f v : emb.getPositions())

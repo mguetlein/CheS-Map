@@ -7,7 +7,6 @@ import gui.binloc.BinaryLocatorDialog;
 import io.ExternalTool;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -38,94 +37,15 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
 
 import util.FileUtil;
 import util.ImageLoader;
 import util.OSUtil;
-import util.ScreenUtil;
 import weka.core.Version;
 import data.DatasetFile;
 
 public class Settings
 {
-	// -------------------------- GRAPHICAL STUFF ---------------------------------
-
-	//	public static boolean SCREENSHOT_SETUP = false;
-
-	public static class ScreenSetup
-	{
-		Border wizardBorder;
-		int defaultScreen;
-		Dimension defaultScreenSize;
-		Dimension fullScreenSize;
-		boolean antialiasOn;
-
-		public ScreenSetup(Border wizardBorder, int defaultScreen, Dimension defaultScreenSize,
-				Dimension fullScreenSize, boolean antialiasOn)
-		{
-			this.wizardBorder = wizardBorder;
-			this.defaultScreen = defaultScreen;
-			this.defaultScreenSize = defaultScreenSize;
-			this.fullScreenSize = fullScreenSize;
-			this.antialiasOn = antialiasOn;
-
-			if (defaultScreen == -1)
-				this.defaultScreen = ScreenUtil.getLargestScreen();
-			if (defaultScreenSize == null)
-			{
-				Dimension dim = ScreenUtil.getScreenSize(this.defaultScreen);
-				this.defaultScreenSize = new Dimension(dim.width - 200, dim.height - 200);
-			}
-			if (fullScreenSize == null)
-				this.fullScreenSize = ScreenUtil.getScreenSize(this.defaultScreen);
-			//			System.out.println(this.defaultScreen);
-			//			System.out.println(this.defaultScreenSize);
-			//			System.out.println(this.fullScreenSize);
-		}
-
-		public Border getWizardBorder()
-		{
-			return wizardBorder;
-		}
-
-		public void centerOnScreen(Window w)
-		{
-			ScreenUtil.centerOnScreen(w, defaultScreen);
-		}
-
-		public Dimension getDefaultScreenSize()
-		{
-			return defaultScreenSize;
-		}
-
-		public Dimension getFullScreenSize()
-		{
-			return fullScreenSize;
-		}
-
-		public boolean isAntialiasOn()
-		{
-			return antialiasOn;
-		}
-
-		public int getDefaultScreen()
-		{
-			return defaultScreen;
-		}
-	}
-
-	public static final ScreenSetup SCREEN_SETUP_DEFAULT = new ScreenSetup(new EmptyBorder(0, 0, 0, 0), -1, null, null,
-			false);
-	public static final ScreenSetup SCREEN_SETUP_SCREENSHOT = new ScreenSetup(new EtchedBorder(), -1, new Dimension(
-			1200, 750), new Dimension(1200, 750), true);
-	public static final ScreenSetup SCREEN_SETUP_VIDEO = new ScreenSetup(new EmptyBorder(0, 0, 0, 0), -1,
-			new Dimension(1280, 720), new Dimension(1200, 750), true);
-
-	public static ScreenSetup SCREEN_SETUP = SCREEN_SETUP_DEFAULT;
-
 	static
 	{
 		try
