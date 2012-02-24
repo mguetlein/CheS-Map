@@ -3,6 +3,7 @@ package alg.cluster;
 import gui.FeatureWizardPanel.FeatureInfo;
 import gui.Messages;
 import gui.property.Property;
+import gui.property.PropertyUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -87,6 +88,7 @@ public class WekaClusterer extends AbstractDatasetClusterer
 		if (wekaClusterer instanceof Cobweb)
 		{
 			additionalDescription = Settings.text("cluster.weka.cobweb.desc");
+			clusterApproach = ClusterApproach.Connectivity;
 		}
 		else if (wekaClusterer instanceof EM)
 		{
@@ -95,35 +97,56 @@ public class WekaClusterer extends AbstractDatasetClusterer
 			for (Property p : getProperties())
 				if (p.getName().equals("numClusters"))
 					p.setDisplayName("numClusters (-1 to automatically detect number of clusters)");
+			clusterApproach = ClusterApproach.Distribution;
 		}
 		else if (wekaClusterer instanceof HierarchicalClusterer)
 		{
 			name = Settings.text("cluster.weka.hierarchical");
 			additionalDescription = Settings.text("cluster.weka.hierarchical.desc");
+			clusterApproach = ClusterApproach.Connectivity;
 		}
 		else if (wekaClusterer instanceof SimpleKMeans)
 		{
 			additionalDescription = Settings.text("cluster.weka.kmeans.desc", Settings.text("cluster.weka.cascade"));
+			clusterApproach = ClusterApproach.Centroid;
 		}
 		else if (wekaClusterer instanceof FarthestFirst)
 		{
 			additionalDescription = Settings.text("cluster.weka.farthest.desc", Settings.text("cluster.weka.cascade"));
+			clusterApproach = ClusterApproach.Centroid;
 		}
 		else if (wekaClusterer instanceof CascadeSimpleKMeans)
 		{
 			name = Settings.text("cluster.weka.cascade");
 			additionalDescription = Settings.text("cluster.weka.cascade.desc");
+			clusterApproach = ClusterApproach.Centroid;
 		}
+		else
+			throw new IllegalStateException("unknown cluster approach");
 	}
 
 	@Override
-	public String getFixedNumClustersProperty()
+	public Property getFixedNumClustersProperty()
 	{
-		if (wekaClusterer instanceof SimpleKMeans || wekaClusterer instanceof FarthestFirst
-				|| wekaClusterer instanceof HierarchicalClusterer)
-			return "numClusters";
-		else
-			return null;
+		return PropertyUtil.getProperty(properties, "numClusters");
+	}
+
+	@Override
+	public Property getRandomSeedProperty()
+	{
+		return PropertyUtil.getProperty(properties, "seed");
+	}
+
+	@Override
+	public Property getRandomRestartProperty()
+	{
+		return PropertyUtil.getProperty(properties, "restarts");
+	}
+
+	@Override
+	public Property getDistanceFunctionProperty()
+	{
+		return PropertyUtil.getProperty(properties, "distanceFunction");
 	}
 
 	@Override

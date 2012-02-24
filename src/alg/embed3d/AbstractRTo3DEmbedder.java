@@ -173,15 +173,22 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			return Math.max(2, Math.min(initial_dims.getValue(), (int) numFeatures));
 		}
 
+		@Override
+		public Property getRandomSeedProperty()
+		{
+			return randomSeed;
+		}
+
 		IntegerProperty maxNumIterations = new IntegerProperty("Maximum number of iterations (max_iter)", 1000);
 		IntegerProperty perplexity = new IntegerProperty("Optimal number of neighbors (perplexity)", 30);
 		IntegerProperty initial_dims = new IntegerProperty(
 				"The number of dimensions to use in reduction method (initial_dims)", 30);
+		IntegerProperty randomSeed = new IntegerProperty("Random seed", "Tsne random seed", 1);
 
 		@Override
 		public Property[] getProperties()
 		{
-			return new Property[] { maxNumIterations, perplexity, initial_dims };
+			return new Property[] { maxNumIterations, perplexity, initial_dims, randomSeed };
 		}
 
 		@Override
@@ -201,7 +208,9 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 					+ RScriptUtil.installAndLoadPackage("tsne")
 					+ "\n"
 					+ "df = read.table(args[1])\n"
-					+ "set.seed(1)\n" //
+					+ "set.seed("
+					+ randomSeed.getValue()
+					+ ")\n" //
 					+ "res <- tsne(df, k = 3, perplexity=" + getPerplexity()
 					+ ", max_iter="
 					+ maxNumIterations.getValue() + ", initial_dims=" + getInitialDims()
@@ -211,6 +220,18 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 					+ "#print(res$conf)\n" + "#print(class(res$conf))\n" + "\n"
 					+ "write.table(res$ydata,args[2]) \n"
 					+ "";
+		}
+
+		@Override
+		public boolean isLinear()
+		{
+			return false;
+		}
+
+		@Override
+		public boolean isLocalMapping()
+		{
+			return true;
 		}
 	}
 
@@ -264,6 +285,18 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 					+ "write.table(res$x[,1:rows],args[2]) ";
 		}
 
+		@Override
+		public boolean isLinear()
+		{
+			return true;
+		}
+
+		@Override
+		public boolean isLocalMapping()
+		{
+			return false;
+		}
+
 	}
 
 	public static class SMACOF3DEmbedder extends AbstractRTo3DEmbedder
@@ -305,7 +338,6 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			return "args <- commandArgs(TRUE)\n" + "\n" + RScriptUtil.installAndLoadPackage("smacof") + "\n"
 					+ "df = read.table(args[1])\n"
 					+ "d <- dist(df, method = \"euclidean\")\n" //
-					+ "set.seed(1)\n" //
 					+ "res <- smacofSym(d, ndim = 3, metric = FALSE, ties = \"secondary\", verbose = TRUE, itmax = "
 					+ maxNumIterations.getValue() + ")\n" //
 					+ "#res <- smacofSphere.dual(df, ndim = 3)\n" //
@@ -327,6 +359,18 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		public int getMinNumFeatures()
 		{
 			return 1;
+		}
+
+		@Override
+		public boolean isLinear()
+		{
+			return false;
+		}
+
+		@Override
+		public boolean isLocalMapping()
+		{
+			return false;
 		}
 	}
 
@@ -381,7 +425,6 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 					+ //
 					rCode + "\n"
 					+ "df = read.table(args[1])\n" //
-					+ "set.seed(1)\n" //
 					+ "res <- sammon_duplicates(df, k=3, niter=" + niter.getValue() + ", magic=" + magic.getValue()
 					+ ", tol=" + tol.getValue() + " )\n" + //
 					"print(head(res))\n" + //
@@ -401,6 +444,18 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		public int getMinNumFeatures()
 		{
 			return 1;
+		}
+
+		@Override
+		public boolean isLinear()
+		{
+			return false;
+		}
+
+		@Override
+		public boolean isLocalMapping()
+		{
+			return false;
 		}
 
 		String rCode = "duplicate_indices <- function( data ) {\n" //

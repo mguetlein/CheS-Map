@@ -152,8 +152,8 @@ public class Settings
 
 	public static String VERSION_STRING = VERSION + ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
 	public static String TITLE = "CheS-Mapper";
-	public static String HOMEPAGE = "http://opentox.informatik.uni-freiburg.de/ches-mapper";
-	public static String HOMEPAGE_RUNTIME = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki/index.php?title=Supported_Datasets_and_Algorithm_Runtimes";
+	public static String HOMEPAGE = "http://ches-mapper.org";
+	public static String HOMEPAGE_RUNTIME = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki/index.php?title=Supported_Formats,_Dataset_Size_and_Algorithm_Runtimes";
 	public static String HOMEPAGE_DOCUMENTATION = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki";
 
 	public static String CONTACT = "Martin Gütlein (ches-mapper@informatik.uni-freiburg.de)";

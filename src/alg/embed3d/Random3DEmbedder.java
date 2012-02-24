@@ -1,9 +1,11 @@
 package alg.embed3d;
 
+import gui.property.IntegerProperty;
 import gui.property.Property;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.vecmath.Vector3f;
 
@@ -19,15 +21,20 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 
 	private List<Vector3f> positions;
 
-	private static List<Vector3f> getPositions(int numPositions)
+	private List<Vector3f> getPositions(int numPositions)
 	{
+		rand = new Random((long) randomSeed.getValue());
 		List<Vector3f> pos = new ArrayList<Vector3f>();
 		for (int i = 0; i < numPositions; i++)
 			pos.add(addRandomPosition(pos, 1));//, 0.9f));
 		return pos;
 	}
 
-	private static Vector3f addRandomPosition(List<Vector3f> existing, float radius) //, float clusterRadius)
+	IntegerProperty randomSeed = new IntegerProperty("Random seed", "Random embedding seed", 1);
+
+	private Random rand;
+
+	private Vector3f addRandomPosition(List<Vector3f> existing, float radius) //, float clusterRadius)
 	{
 		//		if (existing == null || existing.size() == 0)
 		//			return new Vector3f(0, 0, 0);
@@ -36,7 +43,7 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 		double dist = radius * 0.9;
 		while (true)
 		{
-			Vector3f v = Vector3fUtil.randomVector(radius, Settings.RANDOM);
+			Vector3f v = Vector3fUtil.randomVector(radius, rand);
 			boolean centerTooClose = false;
 			for (Vector3f v2 : existing)
 			{
@@ -67,7 +74,13 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	@Override
 	public Property[] getProperties()
 	{
-		return new Property[0];
+		return new Property[] { randomSeed };
+	}
+
+	@Override
+	public Property getRandomSeedProperty()
+	{
+		return randomSeed;
 	}
 
 	@Override
@@ -97,6 +110,18 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	public List<Vector3f> getPositions()
 	{
 		return positions;
+	}
+
+	@Override
+	public boolean isLinear()
+	{
+		return false;
+	}
+
+	@Override
+	public boolean isLocalMapping()
+	{
+		return false;
 	}
 
 }

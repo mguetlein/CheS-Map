@@ -26,8 +26,8 @@ import com.jgoodies.forms.layout.Sizes;
 public class EmbedWizardPanel extends GenericWizardPanel
 {
 	public static final ThreeDEmbedder EMBEDDERS[] = { new Random3DEmbedder(), new WekaPCA3DEmbedder(null),
-			new AbstractRTo3DEmbedder.PCAFeature3DEmbedder(), // new AbstractRTo3DEmbedder.TSNEFeature3DEmbedder(),
-			new AbstractRTo3DEmbedder.Sammon3DEmbedder(), new AbstractRTo3DEmbedder.SMACOF3DEmbedder() };
+			new AbstractRTo3DEmbedder.PCAFeature3DEmbedder(), new AbstractRTo3DEmbedder.Sammon3DEmbedder(),
+			new AbstractRTo3DEmbedder.SMACOF3DEmbedder(), new AbstractRTo3DEmbedder.TSNEFeature3DEmbedder() };
 
 	JRadioButton embedButtons[];
 	ButtonGroup group;

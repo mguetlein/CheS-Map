@@ -1,5 +1,7 @@
 package alg.cluster;
 
+import gui.property.Property;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,7 +60,19 @@ public class NoClusterer extends AbstractAlgorithm implements DatasetClusterer
 	}
 
 	@Override
-	public String getFixedNumClustersProperty()
+	public Property getFixedNumClustersProperty()
+	{
+		return null;
+	}
+
+	@Override
+	public ClusterApproach getClusterApproach()
+	{
+		return ClusterApproach.Other;
+	}
+
+	@Override
+	public Property getDistanceFunctionProperty()
 	{
 		return null;
 	}

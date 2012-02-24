@@ -3,9 +3,15 @@ package alg.cluster.r;
 import gui.property.IntegerProperty;
 import gui.property.Property;
 import main.Settings;
+import alg.cluster.ClusterApproach;
 
 public class KMeansRClusterer extends AbstractRClusterer
 {
+	public KMeansRClusterer()
+	{
+		clusterApproach = ClusterApproach.Centroid;
+	}
+
 	public static String getNameStatic()
 	{
 		return Settings.text("cluster.r.kmeans");
@@ -34,7 +40,6 @@ public class KMeansRClusterer extends AbstractRClusterer
 	{
 		return "args <- commandArgs(TRUE)\n" //
 				+ "df = read.table(args[1])\n" //
-				+ "set.seed(1)\n" //
 				+ "if(" + k.getValue() + " > nrow(unique(df))) stop(\"" + TOO_FEW_UNIQUE_DATA_POINTS + "\")\n" //
 				+ "res <- kmeans(df, " + k.getValue() + ",nstart=" + restart.getValue() + ")\n" //
 				+ "print(res$cluster)\n" //
@@ -52,8 +57,14 @@ public class KMeansRClusterer extends AbstractRClusterer
 	}
 
 	@Override
-	public String getFixedNumClustersProperty()
+	public Property getRandomRestartProperty()
 	{
-		return k.getName();
+		return restart;
+	}
+
+	@Override
+	public Property getFixedNumClustersProperty()
+	{
+		return k;
 	}
 }

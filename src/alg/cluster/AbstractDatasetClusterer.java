@@ -27,6 +27,13 @@ import dataInterface.MoleculePropertyUtil;
 public abstract class AbstractDatasetClusterer extends AbstractAlgorithm implements DatasetClusterer
 {
 	private List<ClusterData> clusters;
+	protected ClusterApproach clusterApproach = ClusterApproach.Other;
+
+	@Override
+	public ClusterApproach getClusterApproach()
+	{
+		return clusterApproach;
+	}
 
 	@Override
 	public final List<ClusterData> getClusters()
@@ -41,7 +48,13 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 	}
 
 	@Override
-	public String getFixedNumClustersProperty()
+	public Property getFixedNumClustersProperty()
+	{
+		return null;
+	}
+
+	@Override
+	public Property getDistanceFunctionProperty()
 	{
 		return null;
 	}
@@ -53,7 +66,8 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 		if (requiresFeatures() && !featureInfo.featuresSelected)
 			m.add(Message.errorMessage(Settings.text("error.no-features")));
 		else if (getFixedNumClustersProperty() != null)
-			m.add(Message.infoMessage(Settings.text("cluster.info.fixed-k", getFixedNumClustersProperty())));
+			m.add(Message.infoMessage(Settings.text("cluster.info.fixed-k", getFixedNumClustersProperty()
+					.getDisplayName())));
 		return m;
 	}
 

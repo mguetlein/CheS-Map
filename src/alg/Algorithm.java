@@ -18,4 +18,8 @@ public interface Algorithm
 	public Binary getBinary();
 
 	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer);
+
+	public Property getRandomSeedProperty();
+
+	public Property getRandomRestartProperty();
 }

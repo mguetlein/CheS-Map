@@ -8,9 +8,14 @@ import java.util.HashMap;
 
 import main.Settings;
 import rscript.RScriptUtil;
+import alg.cluster.ClusterApproach;
 
 public class CascadeKMeansRClusterer extends AbstractRClusterer
 {
+	public CascadeKMeansRClusterer()
+	{
+		clusterApproach = ClusterApproach.Centroid;
+	}
 
 	@Override
 	public String getName()
@@ -41,7 +46,6 @@ public class CascadeKMeansRClusterer extends AbstractRClusterer
 		s += "maxK <- min(maxK,nrow(df)-1)\n"; // somehow the maximum value for maxK is n-1 for cascade 
 		s += "if(maxK < " + minK.getValue() + ") stop(\"" + TOO_FEW_UNIQUE_DATA_POINTS + "\")\n";
 		s += "print(maxK)\n";
-		s += "set.seed(1)\n";
 		s += "ccas <- cascadeKM(df, " + minK.getValue() + ", maxK, iter = " + restart.getValue() + ", criterion = \""
 				+ critMap.get(criterion.getValue().toString()) + "\")\n";
 		s += "max <- max.col(ccas$results)[2]\n";
@@ -70,6 +74,12 @@ public class CascadeKMeansRClusterer extends AbstractRClusterer
 	public Property[] getProperties()
 	{
 		return new Property[] { minK, maxK, restart, criterion };
+	}
+
+	@Override
+	public Property getRandomRestartProperty()
+	{
+		return restart;
 	}
 
 	public int getMinK()

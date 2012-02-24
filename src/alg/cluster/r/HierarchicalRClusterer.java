@@ -5,9 +5,14 @@ import gui.property.Property;
 import gui.property.SelectProperty;
 import main.Settings;
 import weka.clusterers.HierarchicalClusterer;
+import alg.cluster.ClusterApproach;
 
 class HierarchicalRClusterer extends AbstractRClusterer
 {
+	public HierarchicalRClusterer()
+	{
+		clusterApproach = ClusterApproach.Connectivity;
+	}
 
 	@Override
 	public String getName()
@@ -52,8 +57,8 @@ class HierarchicalRClusterer extends AbstractRClusterer
 	}
 
 	@Override
-	public String getFixedNumClustersProperty()
+	public Property getFixedNumClustersProperty()
 	{
-		return k.getName();
+		return k;
 	}
 }

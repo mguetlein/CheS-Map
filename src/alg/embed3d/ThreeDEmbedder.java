@@ -13,9 +13,13 @@ public interface ThreeDEmbedder extends Algorithm
 {
 	public boolean requiresFeatures();
 
-	public void embedDataset(DatasetFile dataset, List<MolecularPropertyOwner> instances, List<MoleculeProperty> features)
-			throws Exception;
+	public void embedDataset(DatasetFile dataset, List<MolecularPropertyOwner> instances,
+			List<MoleculeProperty> features) throws Exception;
 
 	public List<Vector3f> getPositions();
+
+	public boolean isLinear();
+
+	public boolean isLocalMapping();
 
 }

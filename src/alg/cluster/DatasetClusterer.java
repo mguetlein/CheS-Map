@@ -1,5 +1,7 @@
 package alg.cluster;
 
+import gui.property.Property;
+
 import java.util.List;
 
 import alg.Algorithm;
@@ -17,5 +19,9 @@ public interface DatasetClusterer extends Algorithm
 
 	public boolean requiresFeatures();
 
-	public String getFixedNumClustersProperty();
+	public Property getFixedNumClustersProperty();
+
+	public ClusterApproach getClusterApproach();
+
+	public Property getDistanceFunctionProperty();
 }

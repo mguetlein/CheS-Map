@@ -27,4 +27,17 @@ public abstract class AbstractAlgorithm implements Algorithm
 	{
 		return new Messages();
 	}
+
+	@Override
+	public Property getRandomSeedProperty()
+	{
+		return null;
+	}
+
+	@Override
+	public Property getRandomRestartProperty()
+	{
+		return null;
+	}
+
 }

@@ -103,4 +103,16 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 				+ pca.globalInfo();
 	}
 
+	@Override
+	public boolean isLinear()
+	{
+		return true;
+	}
+
+	@Override
+	public boolean isLocalMapping()
+	{
+		return false;
+	}
+
 }
