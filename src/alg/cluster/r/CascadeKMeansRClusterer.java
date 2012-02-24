@@ -12,7 +12,9 @@ import alg.cluster.ClusterApproach;
 
 public class CascadeKMeansRClusterer extends AbstractRClusterer
 {
-	public CascadeKMeansRClusterer()
+	public static final CascadeKMeansRClusterer INSTANCE = new CascadeKMeansRClusterer();
+
+	private CascadeKMeansRClusterer()
 	{
 		clusterApproach = ClusterApproach.Centroid;
 	}

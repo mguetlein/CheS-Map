@@ -13,6 +13,11 @@ import dataInterface.SubstructureSmartsType;
 
 public class MaxFragAligner extends OBFitAligner
 {
+	public static final MaxFragAligner INSTANCE = new MaxFragAligner();
+
+	private MaxFragAligner()
+	{
+	}
 
 	@Override
 	public String getName()

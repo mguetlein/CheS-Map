@@ -16,13 +16,11 @@ import javax.swing.JRadioButton;
 import javax.swing.border.EmptyBorder;
 
 import main.Settings;
-import util.ArrayUtil;
 import weka.CascadeSimpleKMeans;
 import alg.Algorithm;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
 import alg.cluster.WekaClusterer;
-import alg.cluster.r.AbstractRClusterer;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
@@ -31,7 +29,6 @@ import com.jgoodies.forms.layout.Sizes;
 public class ClusterWizardPanel extends GenericWizardPanel
 {
 	boolean canProceed = false;
-	public static DatasetClusterer CLUSTERERS[];
 	private static IntegerProperty min = new IntegerProperty("minNumClusters", 2, 1, Integer.MAX_VALUE);
 	private static IntegerProperty max = new IntegerProperty("maxNumClusters", 10, 1, Integer.MAX_VALUE);
 	private static Property[] PROPS = new Property[] { min, max };
@@ -41,17 +38,11 @@ public class ClusterWizardPanel extends GenericWizardPanel
 		max.setDisplayName("maximum number of clusters");
 	}
 
-	static
-	{
-		CLUSTERERS = ArrayUtil.concat(DatasetClusterer.class, new DatasetClusterer[] { new NoClusterer() },
-				WekaClusterer.WEKA_CLUSTERER, AbstractRClusterer.R_CLUSTERER
-		// ,new DatasetClusterer[] { new StructuralClustererService() }
-				);
-	}
+	private static final DatasetClusterer DEFAULT = WekaClusterer.getNewInstance(new CascadeSimpleKMeans(), PROPS);
 
 	public static DatasetClusterer getDefaultClusterer()
 	{
-		return new WekaClusterer(new CascadeSimpleKMeans(), PROPS);
+		return DEFAULT;
 	}
 
 	public ClusterWizardPanel(CheSMapperWizard w)
@@ -74,7 +65,7 @@ public class ClusterWizardPanel extends GenericWizardPanel
 	@Override
 	protected DatasetClusterer[] getAlgorithms()
 	{
-		return CLUSTERERS;
+		return DatasetClusterer.CLUSTERERS;
 	}
 
 	public DatasetClusterer getDatasetClusterer()
@@ -147,7 +138,7 @@ public class ClusterWizardPanel extends GenericWizardPanel
 			if (buttonYes.isSelected())
 				return getDefaultClusterer();
 			else
-				return new NoClusterer();
+				return NoClusterer.INSTANCE;
 		}
 
 		@Override

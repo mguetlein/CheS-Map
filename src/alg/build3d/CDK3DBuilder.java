@@ -9,6 +9,12 @@ import data.FeatureService;
 public class CDK3DBuilder extends AbstractReal3DBuilder
 {
 	public static final String[] FORCEFIELDS = { "mm2", "mmff94" };
+	public static final CDK3DBuilder INSTANCE = new CDK3DBuilder();
+
+	private CDK3DBuilder()
+	{
+	}
+
 	SelectProperty forcefield = new SelectProperty("forcefield", FORCEFIELDS, FORCEFIELDS[0]);
 
 	@Override

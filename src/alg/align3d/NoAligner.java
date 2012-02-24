@@ -13,6 +13,12 @@ import dataInterface.SubstructureSmartsType;
 
 public class NoAligner extends AbstractAlgorithm implements ThreeDAligner
 {
+	public static final NoAligner INSTANCE = new NoAligner();
+
+	private NoAligner()
+	{
+	}
+
 	List<String> clusterFiles;
 
 	@Override

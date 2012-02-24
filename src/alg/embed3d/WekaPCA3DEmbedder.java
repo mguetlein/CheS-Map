@@ -26,11 +26,14 @@ import dataInterface.MoleculeProperty;
 
 public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 {
+	public static final WekaPCA3DEmbedder INSTANCE = new WekaPCA3DEmbedder(null);
+	public static final WekaPCA3DEmbedder INSTANCE_NO_PROBS = new WekaPCA3DEmbedder(new Property[0]);
+
 	PrincipalComponents pca = new PrincipalComponents();
 	Instances resultData;
 	Property[] properties;
 
-	public WekaPCA3DEmbedder(Property[] properties)
+	private WekaPCA3DEmbedder(Property[] properties)
 	{
 		if (properties != null)
 			this.properties = properties;

@@ -5,6 +5,12 @@ import data.DatasetFile;
 
 public class UseOrigStructures extends Abstract3DBuilder
 {
+	public static final UseOrigStructures INSTANCE = new UseOrigStructures();
+
+	private UseOrigStructures()
+	{
+	}
+
 	String f;
 
 	@Override

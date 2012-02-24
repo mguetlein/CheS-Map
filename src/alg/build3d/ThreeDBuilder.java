@@ -5,6 +5,9 @@ import data.DatasetFile;
 
 public interface ThreeDBuilder extends Algorithm
 {
+	public static final ThreeDBuilder BUILDERS[] = { UseOrigStructures.INSTANCE, CDK3DBuilder.INSTANCE,
+			OpenBabel3DBuilder.INSTANCE };
+
 	public boolean isCached(DatasetFile datasetFile);
 
 	public void build3D(DatasetFile datasetFile);

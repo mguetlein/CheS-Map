@@ -18,6 +18,11 @@ import dataInterface.MoleculeProperty;
 
 public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedder
 {
+	public static Random3DEmbedder INSTANCE = new Random3DEmbedder();
+
+	private Random3DEmbedder()
+	{
+	}
 
 	private List<Vector3f> positions;
 
@@ -30,7 +35,7 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 		return pos;
 	}
 
-	IntegerProperty randomSeed = new IntegerProperty("Random seed", "Random embedding seed", 1);
+	IntegerProperty randomSeed = new IntegerProperty("Random seed", "Random embedding - Random seed", 1);
 
 	private Random rand;
 

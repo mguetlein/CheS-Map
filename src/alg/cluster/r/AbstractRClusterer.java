@@ -26,10 +26,9 @@ import dataInterface.MoleculePropertyUtil;
 
 public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 {
-	public static final DatasetClusterer[] R_CLUSTERER = new AbstractRClusterer[] { new KMeansRClusterer(),
-			new CascadeKMeansRClusterer(), new HierarchicalRClusterer(), new DynamicTreeCutHierarchicalRClusterer() };
-
-	// new ModelBasedRClusterer(),
+	public static final DatasetClusterer[] R_CLUSTERER = new AbstractRClusterer[] { KMeansRClusterer.INSTANCE,
+			CascadeKMeansRClusterer.INSTANCE, HierarchicalRClusterer.INSTANCE,
+			DynamicTreeCutHierarchicalRClusterer.INSTANCE };
 
 	@Override
 	public Binary getBinary()

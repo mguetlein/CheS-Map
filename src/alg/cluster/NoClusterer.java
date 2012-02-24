@@ -15,6 +15,12 @@ import dataInterface.MoleculeProperty;
 
 public class NoClusterer extends AbstractAlgorithm implements DatasetClusterer
 {
+	public static final NoClusterer INSTANCE = new NoClusterer();
+
+	private NoClusterer()
+	{
+	}
+
 	private List<ClusterData> clusters;
 
 	@Override

@@ -7,7 +7,9 @@ import alg.cluster.ClusterApproach;
 
 public class KMeansRClusterer extends AbstractRClusterer
 {
-	public KMeansRClusterer()
+	public static final KMeansRClusterer INSTANCE = new KMeansRClusterer();
+
+	private KMeansRClusterer()
 	{
 		clusterApproach = ClusterApproach.Centroid;
 	}

@@ -3,16 +3,11 @@ package gui;
 import gui.wizard.GenericWizardPanel;
 import main.Settings;
 import alg.Algorithm;
-import alg.align3d.MCSAligner;
-import alg.align3d.MaxFragAligner;
-import alg.align3d.NoAligner;
 import alg.align3d.ThreeDAligner;
 
 public class AlignWizardPanel extends GenericWizardPanel
 {
 	boolean canProceed = false;
-	public static final ThreeDAligner ALIGNER[] = new ThreeDAligner[] { new NoAligner(), new MCSAligner(),
-			new MaxFragAligner() };
 
 	public AlignWizardPanel(CheSMapperWizard w)
 	{
@@ -22,7 +17,7 @@ public class AlignWizardPanel extends GenericWizardPanel
 	@Override
 	protected Algorithm[] getAlgorithms()
 	{
-		return ALIGNER;
+		return ThreeDAligner.ALIGNER;
 	}
 
 	@Override

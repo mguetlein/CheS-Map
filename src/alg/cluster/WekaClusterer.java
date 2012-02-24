@@ -66,6 +66,11 @@ public class WekaClusterer extends AbstractDatasetClusterer
 		}
 	}
 
+	public static WekaClusterer getNewInstance(Clusterer wekaClusterer, Property[] properties)
+	{
+		return new WekaClusterer(wekaClusterer, properties);
+	}
+
 	Clusterer wekaClusterer;
 	ClusterEvaluation eval;
 	String additionalDescription;
@@ -77,7 +82,7 @@ public class WekaClusterer extends AbstractDatasetClusterer
 		this(wekaClusterer, null);
 	}
 
-	public WekaClusterer(Clusterer wekaClusterer, Property[] properties)
+	private WekaClusterer(Clusterer wekaClusterer, Property[] properties)
 	{
 		this.wekaClusterer = wekaClusterer;
 		if (properties != null)

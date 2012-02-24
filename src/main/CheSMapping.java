@@ -39,9 +39,9 @@ public class CheSMapping
 	ThreeDEmbedder threeDEmbedder;
 	ThreeDAligner threeDAligner;
 
-	Random3DEmbedder randomEmbedder = new Random3DEmbedder();
-	NoClusterer noClusterer = new NoClusterer();
-	ThreeDAligner noAligner = new NoAligner();
+	Random3DEmbedder randomEmbedder = Random3DEmbedder.INSTANCE;
+	NoClusterer noClusterer = NoClusterer.INSTANCE;
+	ThreeDAligner noAligner = NoAligner.INSTANCE;
 
 	public static CheSMapping testWorkflow()
 	{
@@ -56,8 +56,8 @@ public class CheSMapping
 		FeatureComputer featureComputer = new DefaultFeatureComputer();
 		//DatasetClusterer datasetClusterer = new KMeansClusterer();
 		DatasetClusterer datasetClusterer = null; //mew StructuralClusterer();
-		ThreeDBuilder threeDGenerator = new OpenBabel3DBuilder();
-		ThreeDEmbedder threeDEmbedder = new Random3DEmbedder();
+		ThreeDBuilder threeDGenerator = OpenBabel3DBuilder.INSTANCE;
+		ThreeDEmbedder threeDEmbedder = Random3DEmbedder.INSTANCE;
 		ThreeDAligner threeDAligner = null;
 
 		return new CheSMapping(datasetProvider, featureComputer, datasetClusterer, threeDGenerator, threeDEmbedder,

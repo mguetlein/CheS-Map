@@ -1,6 +1,5 @@
 package alg;
 
-import gui.EmbedWizardPanel;
 import main.Settings;
 import weka.clusterers.EM;
 import alg.cluster.DatasetClusterer;
@@ -62,6 +61,6 @@ public class AlgorithmUtil
 	public static void main(String args[])
 	{
 		//		printProperties(ClusterWizardPanel.CLUSTERERS);
-		printProperties(EmbedWizardPanel.EMBEDDERS);
+		printProperties(ThreeDEmbedder.EMBEDDERS);
 	}
 }

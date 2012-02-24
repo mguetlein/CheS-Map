@@ -7,6 +7,12 @@ import data.DatasetFile;
 
 public class OpenBabel3DBuilder extends AbstractReal3DBuilder
 {
+	public static final OpenBabel3DBuilder INSTANCE = new OpenBabel3DBuilder();
+
+	private OpenBabel3DBuilder()
+	{
+	}
+
 	@Override
 	public void build3D(DatasetFile datasetFile, String outfile)
 	{

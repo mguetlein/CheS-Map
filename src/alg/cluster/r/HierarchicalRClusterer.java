@@ -7,9 +7,12 @@ import main.Settings;
 import weka.clusterers.HierarchicalClusterer;
 import alg.cluster.ClusterApproach;
 
-class HierarchicalRClusterer extends AbstractRClusterer
+public class HierarchicalRClusterer extends AbstractRClusterer
 {
-	public HierarchicalRClusterer()
+	public static final String[] methods = { "ward", "single", "complete", "average", "mcquitty", "median", "centroid" };
+	public static final HierarchicalRClusterer INSTANCE = new HierarchicalRClusterer();
+
+	private HierarchicalRClusterer()
 	{
 		clusterApproach = ClusterApproach.Connectivity;
 	}
@@ -45,7 +48,6 @@ class HierarchicalRClusterer extends AbstractRClusterer
 				+ "write.table(groups,args[2])\n";
 	}
 
-	public static final String[] methods = { "ward", "single", "complete", "average", "mcquitty", "median", "centroid" };
 	IntegerProperty k = new IntegerProperty("number of clusters (k)", HierarchicalRClusterer.class.getName() + "_k", 5);
 	SelectProperty method = new SelectProperty("the agglomeration method to be used (method)",
 			HierarchicalClusterer.class.getName() + "_method", methods, methods[0]);

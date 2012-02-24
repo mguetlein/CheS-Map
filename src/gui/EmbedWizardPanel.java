@@ -1,6 +1,5 @@
 package gui;
 
-import gui.property.Property;
 import gui.wizard.GenericWizardPanel;
 
 import java.awt.BorderLayout;
@@ -14,7 +13,6 @@ import javax.swing.border.EmptyBorder;
 
 import main.Settings;
 import alg.Algorithm;
-import alg.embed3d.AbstractRTo3DEmbedder;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
 import alg.embed3d.WekaPCA3DEmbedder;
@@ -25,10 +23,6 @@ import com.jgoodies.forms.layout.Sizes;
 
 public class EmbedWizardPanel extends GenericWizardPanel
 {
-	public static final ThreeDEmbedder EMBEDDERS[] = { new Random3DEmbedder(), new WekaPCA3DEmbedder(null),
-			new AbstractRTo3DEmbedder.PCAFeature3DEmbedder(), new AbstractRTo3DEmbedder.Sammon3DEmbedder(),
-			new AbstractRTo3DEmbedder.SMACOF3DEmbedder(), new AbstractRTo3DEmbedder.TSNEFeature3DEmbedder() };
-
 	JRadioButton embedButtons[];
 	ButtonGroup group;
 
@@ -65,7 +59,7 @@ public class EmbedWizardPanel extends GenericWizardPanel
 	@Override
 	protected Algorithm[] getAlgorithms()
 	{
-		return EMBEDDERS;
+		return ThreeDEmbedder.EMBEDDERS;
 	}
 
 	@Override
@@ -124,7 +118,7 @@ public class EmbedWizardPanel extends GenericWizardPanel
 			if (buttonYes.isSelected())
 				return getDefaultEmbedder();
 			else
-				return new Random3DEmbedder();
+				return Random3DEmbedder.INSTANCE;
 		}
 
 		@Override
@@ -140,8 +134,10 @@ public class EmbedWizardPanel extends GenericWizardPanel
 		return new SimpleEmbedPanel();
 	}
 
+	private static ThreeDEmbedder DEFAULT = WekaPCA3DEmbedder.INSTANCE_NO_PROBS;
+
 	public static ThreeDEmbedder getDefaultEmbedder()
 	{
-		return new WekaPCA3DEmbedder(new Property[0]);
+		return DEFAULT;
 	}
 }

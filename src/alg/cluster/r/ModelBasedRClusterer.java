@@ -5,6 +5,11 @@ import rscript.RScriptUtil;
 
 class ModelBasedRClusterer extends AbstractRClusterer
 {
+	public static final ModelBasedRClusterer INSTANCE = new ModelBasedRClusterer();
+
+	private ModelBasedRClusterer()
+	{
+	}
 
 	@Override
 	public String getName()

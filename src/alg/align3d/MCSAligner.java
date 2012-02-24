@@ -19,6 +19,12 @@ import dataInterface.SubstructureSmartsType;
 
 public class MCSAligner extends OBFitAligner
 {
+	public static final MCSAligner INSTANCE = new MCSAligner();
+
+	private MCSAligner()
+	{
+	}
+
 	@Override
 	public String getName()
 	{

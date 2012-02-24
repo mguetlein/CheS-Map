@@ -7,9 +7,12 @@ import main.Settings;
 import rscript.RScriptUtil;
 import alg.cluster.ClusterApproach;
 
-class DynamicTreeCutHierarchicalRClusterer extends AbstractRClusterer
+public class DynamicTreeCutHierarchicalRClusterer extends AbstractRClusterer
 {
-	public DynamicTreeCutHierarchicalRClusterer()
+	public static final String[] methods = { "ward", "single", "complete", "average", "mcquitty", "median", "centroid" };
+	public static final DynamicTreeCutHierarchicalRClusterer INSTANCE = new DynamicTreeCutHierarchicalRClusterer();
+
+	private DynamicTreeCutHierarchicalRClusterer()
 	{
 		clusterApproach = ClusterApproach.Connectivity;
 	}
@@ -49,8 +52,6 @@ class DynamicTreeCutHierarchicalRClusterer extends AbstractRClusterer
 
 	IntegerProperty minClusterSize = new IntegerProperty(
 			"minimum number of compounds in each cluster (minClusterSize)", 10);
-
-	public static final String[] methods = { "ward", "single", "complete", "average", "mcquitty", "median", "centroid" };
 	SelectProperty method = new SelectProperty("the agglomeration method to be used (method)", methods, methods[0]);
 
 	@Override

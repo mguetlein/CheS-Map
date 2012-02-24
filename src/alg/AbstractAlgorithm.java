@@ -9,7 +9,6 @@ import data.DatasetFile;
 
 public abstract class AbstractAlgorithm implements Algorithm
 {
-
 	@Override
 	public Property[] getProperties()
 	{

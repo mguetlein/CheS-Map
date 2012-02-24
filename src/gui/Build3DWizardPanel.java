@@ -2,10 +2,7 @@ package gui;
 
 import gui.wizard.GenericWizardPanel;
 import main.Settings;
-import alg.build3d.CDK3DBuilder;
-import alg.build3d.OpenBabel3DBuilder;
 import alg.build3d.ThreeDBuilder;
-import alg.build3d.UseOrigStructures;
 
 public class Build3DWizardPanel extends GenericWizardPanel
 {
@@ -14,13 +11,10 @@ public class Build3DWizardPanel extends GenericWizardPanel
 		super(w);
 	}
 
-	public static final ThreeDBuilder BUILDERS[] = { new UseOrigStructures(), new CDK3DBuilder(),
-			new OpenBabel3DBuilder() };
-
 	@Override
 	protected ThreeDBuilder[] getAlgorithms()
 	{
-		return BUILDERS;
+		return ThreeDBuilder.BUILDERS;
 	}
 
 	@Override

@@ -10,6 +10,9 @@ import dataInterface.SubstructureSmartsType;
 
 public interface ThreeDAligner extends Algorithm
 {
+	public static final ThreeDAligner ALIGNER[] = new ThreeDAligner[] { NoAligner.INSTANCE, MCSAligner.INSTANCE,
+			MaxFragAligner.INSTANCE };
+
 	public void algin(DatasetFile dataset, List<ClusterData> clusters, List<MoleculeProperty> features);
 
 	public List<String> getAlginedClusterFiles();
