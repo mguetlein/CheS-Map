@@ -69,6 +69,9 @@ public class FeatureLoader
 							if (TaskProvider.task().isCancelled())
 								break;
 						}
+
+					//HACK: wait a tiny bit, cannot close dialog if the computation was too fast
+					Thread.sleep(250);
 					TaskProvider.task().getDialog().setVisible(false);
 				}
 				catch (Throwable e)
