@@ -1,6 +1,5 @@
 package gui;
 
-import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
@@ -71,12 +70,8 @@ public class CheSMapperWizard extends WizardDialog
 
 		getRootPane().setDefaultButton(finish);
 
-		Dimension d = new Dimension(1024, 768);
-		Dimension full = ScreenSetup.SETUP.getFullScreenSize();
-		d.width = Math.min(full.width - 100, d.width);
-		d.height = Math.min(full.height - 100, d.height);
-		setSize(d);
-		if (owner != null)
+		setSize(ScreenSetup.SETUP.getWizardSize());
+		if (owner != null && owner.getRootPane().isShowing())
 			setLocationRelativeTo(owner);
 		else
 			ScreenSetup.SETUP.centerOnScreen(this);

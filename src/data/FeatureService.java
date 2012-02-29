@@ -132,7 +132,7 @@ public class FeatureService
 					}
 					firstLine = false;
 				}
-				else
+				else if (!ss.startsWith("#"))
 				{
 					int i = 0;
 					for (String sss : ss.split(","))

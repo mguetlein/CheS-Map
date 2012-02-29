@@ -194,7 +194,7 @@ public class CheSMapping
 	{
 		DatasetClusterer clusterer = datasetClusterer;
 		clusterException = null;
-		if (dataset.numCompounds() == 1)
+		if (dataset.numCompounds() == 1 && !(clusterer instanceof NoClusterer))
 		{
 			TaskProvider
 					.task()
@@ -236,7 +236,7 @@ public class CheSMapping
 	{
 		embedderException = null;
 		ThreeDEmbedder emb = threeDEmbedder;
-		if (dataset.numCompounds() == 1)
+		if (dataset.numCompounds() == 1 && !(emb instanceof Random3DEmbedder))
 		{
 			TaskProvider.task().warning(
 					"Could not embedd dataset, dataset has only one compound",
@@ -274,29 +274,34 @@ public class CheSMapping
 
 		clustering.setEmbedAlgorithm(emb.getName());
 
-		double rSquare = EmbedUtil.computeRSquare(
-				ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), featuresWithInfo,
-				emb.getPositions(), dataset);
-		System.out.println("r-square: " + rSquare);
-		String formRSquare = StringUtil.formatDouble(rSquare, 3);
-
-		if (rSquare >= 0.9)
-			clustering.setEmbedQuality("excellent (r²: " + formRSquare + ")");
-		else if (rSquare >= 0.7)
-			clustering.setEmbedQuality("good (r²: " + formRSquare + ")");
-		else if (rSquare >= 0.5)
+		if (dataset.numCompounds() > 2)
 		{
-			TaskProvider.task().warning("The embedding quality is moderate (r²:" + formRSquare + ")",
-					Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
-			clustering.setEmbedQuality("moderate (r²: " + formRSquare + ")");
+			double rSquare = EmbedUtil.computeRSquare(
+					ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), featuresWithInfo,
+					emb.getPositions(), dataset);
+			System.out.println("r-square: " + rSquare);
+			String formRSquare = StringUtil.formatDouble(rSquare, 3);
+
+			if (rSquare >= 0.9)
+				clustering.setEmbedQuality("excellent (r²: " + formRSquare + ")");
+			else if (rSquare >= 0.7)
+				clustering.setEmbedQuality("good (r²: " + formRSquare + ")");
+			else if (rSquare >= 0.5)
+			{
+				TaskProvider.task().warning("The embedding quality is moderate (r²:" + formRSquare + ")",
+						Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
+				clustering.setEmbedQuality("moderate (r²: " + formRSquare + ")");
+			}
+			else
+			// < 0.5 
+			{
+				TaskProvider.task().warning("The embedding quality is poor (r²:" + formRSquare + ")",
+						Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
+				clustering.setEmbedQuality("poor (r²: " + formRSquare + ")");
+			}
 		}
 		else
-		// < 0.5 
-		{
-			TaskProvider.task().warning("The embedding quality is poor (r²:" + formRSquare + ")",
-					Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
-			clustering.setEmbedQuality("poor (r²: " + formRSquare + ")");
-		}
+			clustering.setEmbedQuality("n/a");
 
 		int cCount = 0;
 		for (Vector3f v : emb.getPositions())
