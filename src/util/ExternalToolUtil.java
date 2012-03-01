@@ -64,7 +64,7 @@ public class ExternalToolUtil
 				e.printStackTrace();
 			}
 			// check if this process should be aborted (via abort dialog)
-			if (TaskProvider.task().isCancelled())
+			if (TaskProvider.exists() && TaskProvider.task().isCancelled())
 			{
 				p.destroy();
 				break;

@@ -13,7 +13,7 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 {
 	String name;
 	private String uniqueName;
-	String description;
+	protected String description;
 
 	Type type;
 	HashSet<Type> types = new HashSet<Type>(ArrayUtil.toList(Type.values()));
@@ -151,7 +151,7 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 
 	public void setStringValues(DatasetFile dataset, String vals[])
 	{
-		if (getType() == Type.NUMERIC)
+		if (!isTypeAllowed(Type.NOMINAL))
 			throw new IllegalStateException();
 		if (stringValues.containsKey(dataset))
 			throw new IllegalStateException();

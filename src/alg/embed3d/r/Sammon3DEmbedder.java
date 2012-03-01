@@ -21,7 +21,7 @@ public class Sammon3DEmbedder extends AbstractRTo3DEmbedder
 
 	public int getMinNumInstances()
 	{
-		return 2; // else "Maximum number of dimensions is n-1!"
+		return 4;
 	}
 
 	@Override

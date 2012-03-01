@@ -18,6 +18,7 @@ import java.util.Vector;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -47,6 +48,7 @@ import data.cdk.CDKPropertySet;
 import data.fragments.MatchEngine;
 import data.fragments.StructuralFragmentProperties;
 import data.fragments.StructuralFragments;
+import data.obdesc.OBDescriptorProperty;
 import dataInterface.FragmentPropertySet;
 import dataInterface.MoleculeProperty;
 import dataInterface.MoleculeProperty.Type;
@@ -70,6 +72,7 @@ public class FeatureWizardPanel extends WizardPanel
 	public static final String ROOT = "Features";
 	public static final String INTEGRATED_FEATURES = Settings.text("features.integrated");
 	public static final String CDK_FEATURES = Settings.text("features.cdk");
+	public static final String OB_FEATURES = Settings.text("features.ob");
 	public static final String STRUCTURAL_FRAGMENTS = Settings.text("features.struct");
 
 	JPanel structuralFragmentPropsContainer;
@@ -82,17 +85,14 @@ public class FeatureWizardPanel extends WizardPanel
 	public FeatureWizardPanel(CheSMapperWizard wizard)
 	{
 		this.wizard = wizard;
-
 		createSelector();
 		buildLayout();
 		addListeners();
-
 		updateFeatureProperties(null);
 	}
 
 	private void buildLayout()
 	{
-
 		JPanel labelPanel = new JPanel(new GridLayout(0, 2, 10, 10));
 		JLabel label = new JLabel("Available Features:");
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
@@ -199,9 +199,9 @@ public class FeatureWizardPanel extends WizardPanel
 			@Override
 			public ImageIcon getCategoryIcon(String name)
 			{
-				if (STRUCTURAL_FRAGMENTS.equals(name)
-						&& StructuralFragmentProperties.getMatchEngine() == MatchEngine.OpenBabel
-						&& !Settings.BABEL_BINARY.isFound())
+				if (!Settings.BABEL_BINARY.isFound()
+						&& ((STRUCTURAL_FRAGMENTS.equals(name) && StructuralFragmentProperties.getMatchEngine() == MatchEngine.OpenBabel) || OB_FEATURES
+								.equals(name)))
 					return ImageLoader.ERROR;
 				else
 					return null;
@@ -228,7 +228,10 @@ public class FeatureWizardPanel extends WizardPanel
 			public void propertyChange(PropertyChangeEvent evt)
 			{
 				if (Settings.BABEL_BINARY.isFound())
+				{
+					selector.addElementList(OB_FEATURES, OBDescriptorProperty.getDescriptors(true));
 					update();
+				}
 			}
 		});
 
@@ -388,6 +391,14 @@ public class FeatureWizardPanel extends WizardPanel
 		}
 		else if (highlightedCategory.equals(CDK_FEATURES))
 			info = Settings.text("features.cdk.desc", Settings.CDK_STRING);
+		else if (highlightedCategory.equals(OB_FEATURES))
+		{
+			info = Settings.text("features.ob.desc", Settings.OPENBABEL_STRING);
+			JComponent pp = Settings.getBinaryComponent(Settings.BABEL_BINARY);
+			JPanel p = new JPanel();
+			p.add(pp);
+			props = p;
+		}
 		else
 		{
 			//cdk sub categories
@@ -523,6 +534,8 @@ public class FeatureWizardPanel extends WizardPanel
 		for (CDKPropertySet p : CDKPropertySet.NUMERIC_DESCRIPTORS)
 			for (String clazz : p.getDictionaryClass())
 				selector.addElements(new String[] { CDK_FEATURES, clazz }, p);
+
+		selector.addElementList(OB_FEATURES, OBDescriptorProperty.getDescriptors(false));
 		selector.addElements(STRUCTURAL_FRAGMENTS);
 		selector.addElementList(STRUCTURAL_FRAGMENTS, StructuralFragments.instance.getSets());
 
@@ -546,6 +559,19 @@ public class FeatureWizardPanel extends WizardPanel
 		{
 			CDKPropertySet d = CDKPropertySet.fromString(string);
 			selector.setSelected(d);
+		}
+
+		String obFeatures = (String) Settings.PROPS.get("features-ob");
+		selection = VectorUtil.fromCSVString(obFeatures);
+		for (String string : selection)
+		{
+			int index = string.lastIndexOf('#');
+			if (index == -1)
+				throw new Error("no type in serialized molecule prop");
+			Type t = Type.valueOf(string.substring(index + 1));
+			String feat = string.substring(0, index);
+			OBDescriptorProperty p = OBDescriptorProperty.fromString(feat, t);
+			selector.setSelected(p);
 		}
 
 		String fragmentFeatures = (String) Settings.PROPS.get("features-fragments");
@@ -573,6 +599,13 @@ public class FeatureWizardPanel extends WizardPanel
 		Settings.PROPS.put("features-integrated", ArrayUtil.toCSVString(serilizedProps, true));
 		if (CDKPropertySet.NUMERIC_DESCRIPTORS.length > 0)
 			Settings.PROPS.put("features-cdk", ArrayUtil.toCSVString(selector.getSelected(CDK_FEATURES), true));
+
+		MoleculePropertySet[] obFeats = selector.getSelected(OB_FEATURES);
+		String[] serilizedOBFeats = new String[obFeats.length];
+		for (int i = 0; i < serilizedOBFeats.length; i++)
+			serilizedOBFeats[i] = obFeats[i] + "#" + obFeats[i].getType();
+		Settings.PROPS.put("features-ob", ArrayUtil.toCSVString(serilizedOBFeats, true));
+
 		Settings.PROPS.put("features-fragments",
 				ArrayUtil.toCSVString(selector.getSelected(STRUCTURAL_FRAGMENTS), true));
 		Settings.storeProps();
