@@ -17,6 +17,7 @@ import org.openscience.cdk.fingerprint.StandardSubstructureSets;
 import org.openscience.cdk.fingerprint.SubstructureFingerprinter;
 import org.openscience.cdk.interfaces.IMolecule;
 
+import util.CountedSet;
 import data.DatasetFile;
 import data.cdk.CDKDescriptor;
 import data.fragments.StructuralFragmentProperties;
@@ -176,7 +177,6 @@ public class CDKFingerprintSet extends FragmentPropertySet
 						hash.put(prop, values);
 					}
 					values[i] = "1";
-					prop.setFrequency(dataset, prop.getFrequency(dataset) + 1);
 				}
 			}
 			catch (CDKException e)
@@ -187,7 +187,15 @@ public class CDKFingerprintSet extends FragmentPropertySet
 				return false;
 		}
 		for (CDKFingerprintProperty p : ps)
-			p.setStringValues(dataset, hash.get(p));
+		{
+			String values[] = hash.get(p);
+			CountedSet<String> cs = CountedSet.fromArray(values);
+			if (cs.getCount("1") + cs.getCount("0") != dataset.numCompounds())
+				throw new IllegalStateException();
+			p.setFrequency(dataset, cs.getCount("1"));
+			//			System.out.println("freq: " + p.getSmarts() + " " + cs.getCount("1"));
+			p.setStringValues(dataset, values);
+		}
 
 		props.put(dataset, ps);
 		updateFragments();
