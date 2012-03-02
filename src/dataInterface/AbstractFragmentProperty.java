@@ -29,6 +29,8 @@ public abstract class AbstractFragmentProperty extends AbstractMoleculeProperty
 
 	public int getFrequency(DatasetFile d)
 	{
+		if (freq.get(d) == null)
+			return 0;
 		return freq.get(d);
 	}
 }

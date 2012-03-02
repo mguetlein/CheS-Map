@@ -5,6 +5,7 @@ import java.util.List;
 
 import main.TaskProvider;
 
+import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.smiles.smarts.SMARTSQueryTool;
 
@@ -12,11 +13,23 @@ import dataInterface.SmartsHandler;
 
 public class CDKSmartsHandler implements SmartsHandler
 {
+	private static SMARTSQueryTool queryTool;
+	static
+	{
+		try
+		{
+			queryTool = new SMARTSQueryTool("C");
+		}
+		catch (CDKException e)
+		{
+		}
+	}
+
 	public static boolean isSMARTS(String smarts)
 	{
 		try
 		{
-			new SMARTSQueryTool(smarts);
+			queryTool.setSmarts(smarts);
 			return true;
 		}
 		catch (Throwable e)
@@ -28,44 +41,47 @@ public class CDKSmartsHandler implements SmartsHandler
 	@Override
 	public List<boolean[]> match(List<String> smarts, DatasetFile dataset)
 	{
-		List<boolean[]> l = new ArrayList<boolean[]>();
-		int count = 0;
-		for (String smart : smarts)
+		List<boolean[]> matchList = new ArrayList<boolean[]>();
+
+		boolean validSmarts[] = new boolean[smarts.size()];
+		for (int s = 0; s < smarts.size(); s++)
 		{
-			TaskProvider.task().update("Matching " + (count + 1) + "/" + smarts.size() + " smarts: " + smart);
-
-			IMolecule mols[] = dataset.getMolecules();
-			boolean m[] = new boolean[mols.length];
-
-			SMARTSQueryTool queryTool = null;
+			matchList.add(new boolean[dataset.numCompounds()]);
 			try
 			{
-				queryTool = new SMARTSQueryTool(smart);
+				queryTool.setSmarts(smarts.get(s));
+				validSmarts[s] = true;
 			}
 			catch (Throwable e)
 			{
 				e.printStackTrace();
-				TaskProvider.task().warning("Illegal Smarts: " + smart, e.getMessage().replaceAll("\n", ", "));
+				TaskProvider.task().warning("Illegal Smarts: " + smarts.get(s), e.getMessage().replaceAll("\n", ", "));
 			}
-
-			int i = 0;
-			for (IMolecule iMolecule : mols)
-			{
-				try
-				{
-					TaskProvider.task().verbose("Matching smarts on " + (i + 1) + "/" + mols.length + " compunds");
-					boolean match = queryTool != null && queryTool.matches(iMolecule);
-					m[i++] = match;
-				}
-				catch (Exception e)
-				{
-					TaskProvider.task().warning("Could not match molecule", e);
-					m[i++] = false;
-				}
-			}
-			l.add(m);
-			count++;
 		}
-		return l;
+
+		IMolecule mols[] = dataset.getMolecules();
+		for (int m = 0; m < mols.length; m++)
+		{
+			TaskProvider.task().verbose("Matching smarts on compound " + (m + 1) + "/" + mols.length);
+			for (int s = 0; s < smarts.size(); s++)
+			{
+				if (validSmarts[s])
+				{
+					//					TaskProvider.task().verbose("Matching smarts " + (s + 1) + "/" + smarts.size());// + " smarts: " + smarts.get(s));
+					try
+					{
+						queryTool.setSmarts(smarts.get(s));
+						matchList.get(s)[m] = queryTool.matches(mols[m]);
+					}
+					catch (Exception e)
+					{
+						TaskProvider.task().warning("Could not match molecule", e);
+					}
+					if (TaskProvider.task().isCancelled())
+						return null;
+				}
+			}
+		}
+		return matchList;
 	}
 }

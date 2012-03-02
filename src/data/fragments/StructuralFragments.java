@@ -15,6 +15,7 @@ import util.FileUtil;
 import util.FileUtil.CSVFile;
 import util.ListUtil;
 import data.CDKSmartsHandler;
+import data.cdkfingerprints.CDKFingerprintSet;
 import data.obfingerprints.OBFingerprintSet;
 import dataInterface.AbstractMoleculeProperty;
 import dataInterface.FragmentPropertySet;
@@ -44,6 +45,9 @@ public class StructuralFragments
 		AbstractMoleculeProperty.clearPropertyOfType(StructuralFragment.class);
 
 		for (OBFingerprintSet fp : OBFingerprintSet.FINGERPRINTS)
+			fragmentList.add(fp);
+
+		for (CDKFingerprintSet fp : CDKFingerprintSet.FINGERPRINTS)
 			fragmentList.add(fp);
 
 		String files[] = Settings.getFragmentFiles();

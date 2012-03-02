@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import main.Settings;
+import main.TaskProvider;
 import util.ArrayUtil;
 import util.DoubleKeyHashMap;
 import util.FileUtil;
@@ -197,6 +198,8 @@ public class StructuralFragmentSet extends FragmentPropertySet
 				matches = new OpenBabelSmartsHandler().match(smarts, dataset);
 			else
 				throw new Error("illegal match engine");
+			if (TaskProvider.task().isCancelled())
+				return false;
 			System.out.println("store matches in file: " + smartsMatchFile);
 			writeToFile(smartsMatchFile, matches);
 		}
@@ -253,6 +256,6 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	@Override
 	public boolean isComputationSlow()
 	{
-		return StructuralFragmentProperties.getMatchEngine() == MatchEngine.CDK;
+		return StructuralFragmentProperties.getMatchEngine() == MatchEngine.CDK && fragments.size() > 1000;
 	}
 }

@@ -79,6 +79,11 @@ public class Settings
 		return MessageFormat.format(text.getString(key), param1, param2);
 	}
 
+	public static String text(String key, String param1, String param2, String param3)
+	{
+		return MessageFormat.format(text.getString(key), param1, param2, param3);
+	}
+
 	public static JFrame TOP_LEVEL_FRAME = null;
 	public static Random RANDOM = new Random();
 	public static Boolean DBG = false;
@@ -144,7 +149,7 @@ public class Settings
 		}
 	}
 
-	public static String CDK_VERSION = "1.4.4";
+	public static String CDK_VERSION = "1.4.7";
 	public static String CDK_STRING = text("lib.cdk", CDK_VERSION);
 	public static String OPENBABEL_STRING = text("lib.openbabel");
 	public static String R_STRING = text("lib.r");

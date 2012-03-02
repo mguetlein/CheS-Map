@@ -10,13 +10,7 @@ import java.util.List;
 import org.openscience.cdk.qsar.DescriptorEngine;
 import org.openscience.cdk.qsar.IDescriptor;
 import org.openscience.cdk.qsar.IMolecularDescriptor;
-import org.openscience.cdk.qsar.descriptors.molecular.ChiChainDescriptor;
-import org.openscience.cdk.qsar.descriptors.molecular.ChiClusterDescriptor;
-import org.openscience.cdk.qsar.descriptors.molecular.ChiPathClusterDescriptor;
-import org.openscience.cdk.qsar.descriptors.molecular.ChiPathDescriptor;
-import org.openscience.cdk.qsar.descriptors.molecular.FMFDescriptor;
 import org.openscience.cdk.qsar.descriptors.molecular.IPMolecularLearningDescriptor;
-import org.openscience.cdk.qsar.descriptors.molecular.WeightedPathDescriptor;
 import org.openscience.cdk.qsar.result.BooleanResultType;
 import org.openscience.cdk.qsar.result.DoubleArrayResultType;
 import org.openscience.cdk.qsar.result.DoubleResult;
@@ -28,7 +22,7 @@ import org.openscience.cdk.qsar.result.IntegerResultType;
 
 import util.ArrayUtil;
 
-class CDKDescriptor
+public class CDKDescriptor
 {
 	public static final DescriptorEngine ENGINE = new DescriptorEngine(DescriptorEngine.MOLECULAR);
 	static CDKDescriptor[] CDK_DESCRIPTORS;
@@ -97,6 +91,11 @@ class CDKDescriptor
 	private String dictionaryClass[];
 	private boolean slow;
 
+	public static String getAPILink(Class<?> clazz)
+	{
+		return "http://pele.farmbio.uu.se/nightly/api/" + clazz.getName().replaceAll("\\.", "/");
+	}
+
 	public CDKDescriptor(IMolecularDescriptor m)
 	{
 		this.m = m;
@@ -109,13 +108,13 @@ class CDKDescriptor
 			dictionaryClass[i] = dictionaryClass[i].replace("Descriptor", "");
 		description += ArrayUtil.toString(dictionaryClass, ",", "(", ")") + "\n";
 		description += CDKDescriptor.ENGINE.getDictionaryDefinition(m.getSpecification()).trim() + "\n";
-		description += "API: http://pele.farmbio.uu.se/nightly/api/" + m.getClass().getName().replaceAll("\\.", "/")
-				+ "\n";
+		description += "API: " + getAPILink(m.getClass()) + "\n";
 
-		slow = m instanceof IPMolecularLearningDescriptor || m instanceof ChiChainDescriptor
-				|| m instanceof ChiClusterDescriptor || m instanceof ChiPathDescriptor
-				|| m instanceof ChiPathClusterDescriptor || m instanceof FMFDescriptor
-				|| m instanceof WeightedPathDescriptor;
+		slow = m instanceof IPMolecularLearningDescriptor;
+		//				|| m instanceof ChiChainDescriptor
+		//				|| m instanceof ChiClusterDescriptor || m instanceof ChiPathDescriptor
+		//				|| m instanceof ChiPathClusterDescriptor || m instanceof FMFDescriptor
+		//				|| m instanceof WeightedPathDescriptor;
 
 		IDescriptorResult r = m.getDescriptorResultType();
 		if (r instanceof BooleanResultType)
