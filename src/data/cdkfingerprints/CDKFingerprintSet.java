@@ -175,7 +175,7 @@ public class CDKFingerprintSet extends FragmentPropertySet
 						Arrays.fill(values, "0");
 						hash.put(prop, values);
 					}
-					values[m] = "1";
+					values[i] = "1";
 					prop.setFrequency(dataset, prop.getFrequency(dataset) + 1);
 				}
 			}
