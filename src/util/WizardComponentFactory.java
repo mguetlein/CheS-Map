@@ -8,6 +8,8 @@ import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 
+import main.ScreenSetup;
+
 public class WizardComponentFactory
 {
 	/**
@@ -19,7 +21,8 @@ public class WizardComponentFactory
 	public static JScrollPane getVerticalScrollPane(final JComponent comp)
 	{
 		final JScrollPane scroll = new JScrollPane(comp);
-		scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		if (!ScreenSetup.SETUP.isWizardSpaceSmall())
+			scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scroll.setBorder(new EmptyBorder(1, 1, 1, 0));
 		scroll.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener()
 		{

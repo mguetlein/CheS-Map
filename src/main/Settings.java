@@ -8,6 +8,7 @@ import io.ExternalTool;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,6 +38,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
+import javax.swing.plaf.InsetsUIResource;
 
 import util.FileUtil;
 import util.ImageLoader;
@@ -50,11 +52,28 @@ public class Settings
 	{
 		try
 		{
-			Font font = new Font("Dialog", Font.PLAIN, 12);
+			Font font = new Font("Dialog", Font.PLAIN, ScreenSetup.SETUP.getFontSize());
 			UIDefaults uiDefaults = UIManager.getDefaults();
-			String comps[] = { "Label", "CheckBox", "List", "RadioButton", "Table" };
+			String comps[] = { "Label", "CheckBox", "List", "RadioButton", "Table", "TextField", "Button", "TextArea",
+					"Tree", "ToggleButton", "ComboBox", "Spinner", "TextPane", "Panel", "PopupMenu", "OptionPane",
+					"ScrollPane", "MenuBar", "FormattedTextField" };
 			for (String s : comps)
-				uiDefaults.put(s + ".font", font);
+			{
+				int style;
+				if (s.equals("Label") || s.equals("RadioButton") || s.equals("List") || s.equals("CheckBox"))
+					style = Font.PLAIN;
+				else
+				{
+					Font f = uiDefaults.getFont(s + ".font");
+					style = f.getStyle();
+				}
+				uiDefaults.put(s + ".font", font.deriveFont(style));
+			}
+
+			if (ScreenSetup.SETUP.getFontSize() < 12)
+			{
+				uiDefaults.put("Button.margin", new InsetsUIResource(2, 8, 2, 8));
+			}
 		}
 		catch (Exception e)
 		{
@@ -88,9 +107,20 @@ public class Settings
 	public static Random RANDOM = new Random();
 	public static Boolean DBG = false;
 	public static Boolean CACHING_ENABLED = true;
-	public static final ImageIcon CHES_MAPPER_IMAGE = ImageLoader.CHES_MAPPER;
-	public static final ImageIcon CHES_MAPPER_IMAGE_SMALL = ImageLoader.CHES_MAPPER_SMALL;
-	public static final ImageIcon OPENTOX_ICON = ImageLoader.OPENTOX;
+	public static ImageIcon CHES_MAPPER_IMAGE = ImageLoader.CHES_MAPPER;
+	public static ImageIcon CHES_MAPPER_ICON = ImageLoader.CHES_MAPPER_ICON;
+	public static ImageIcon OPENTOX_IMAGE = ImageLoader.OPENTOX;
+
+	static
+	{
+		if (ScreenSetup.SETUP.getWizardSize().getWidth() <= 800)
+		{
+			CHES_MAPPER_IMAGE = new ImageIcon(Settings.CHES_MAPPER_IMAGE.getImage().getScaledInstance(-1, 100,
+					Image.SCALE_SMOOTH));
+			OPENTOX_IMAGE = new ImageIcon(Settings.OPENTOX_IMAGE.getImage().getScaledInstance(80, -1,
+					Image.SCALE_SMOOTH));
+		}
+	}
 
 	// ------------------ TMP/RESULT-FILE SUPPORT ---------------------------------------------
 

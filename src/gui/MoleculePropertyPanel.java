@@ -31,6 +31,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import main.ScreenSetup;
 import main.Settings;
 import util.ArrayUtil;
 import util.CountedSet;
@@ -391,6 +392,7 @@ public class MoleculePropertyPanel extends JPanel
 			if (p instanceof AbstractFreeChartPanel)
 			{
 				((AbstractFreeChartPanel) p).setIntegerTickUnits();
+				((AbstractFreeChartPanel) p).setFontSize(ScreenSetup.SETUP.getFontSize());
 				p.setOpaque(false);
 				p.setPreferredSize(new Dimension(300, 180));
 			}

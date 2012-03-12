@@ -46,13 +46,13 @@ public class CheSMapperWizard extends WizardDialog
 	public CheSMapperWizard(JFrame owner, int startPanel)
 	{
 		super(owner, Settings.TITLE + " Wizard (" + Settings.VERSION_STRING + ")", Settings.CHES_MAPPER_IMAGE,
-				Settings.OPENTOX_ICON, Settings.HOMEPAGE_DOCUMENTATION);
+				Settings.OPENTOX_IMAGE, Settings.HOMEPAGE_DOCUMENTATION);
 		addClickLinkToIcon(Settings.HOMEPAGE);
 		addClickLinkToAdditionalIcon("http://opentox.org");
 
 		Settings.TOP_LEVEL_FRAME = this;
 
-		setIconImage(Settings.CHES_MAPPER_IMAGE_SMALL.getImage());
+		setIconImage(Settings.CHES_MAPPER_ICON.getImage());
 
 		dataset = new DatasetWizardPanel(this);
 		create3D = new Build3DWizardPanel(this);
@@ -75,6 +75,7 @@ public class CheSMapperWizard extends WizardDialog
 			setLocationRelativeTo(owner);
 		else
 			ScreenSetup.SETUP.centerOnScreen(this);
+		setUndecorated(ScreenSetup.SETUP.isWizardUndecorated());
 
 		addComponentListener(new ComponentAdapter()
 		{

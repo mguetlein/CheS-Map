@@ -17,16 +17,21 @@ public class ScreenSetup
 	Dimension wizardSize;
 	Dimension fullScreenSize;
 	boolean antialiasOn;
+	int fontSize;
+	boolean wizardUndecorated;
 
-	public static final ScreenSetup DEFAULT = new ScreenSetup(new EmptyBorder(0, 0, 0, 0), null, null, false);
-	public static final ScreenSetup SCREENSHOT = new ScreenSetup(new EtchedBorder(), new Dimension(1200, 750), null,
-			true);
+	public static final ScreenSetup DEFAULT = new ScreenSetup(new EmptyBorder(0, 0, 0, 0), null, null, false, 12, false);
+	//	public static final ScreenSetup SCREENSHOT = new ScreenSetup(new EtchedBorder(), new Dimension(1200, 750),
+	//			new Dimension(600, 375), true, 10, true);
+	public static final ScreenSetup SCREENSHOT = new ScreenSetup(new EtchedBorder(), new Dimension(1200, 750),
+			new Dimension(1200, 750), true, 20, true);
 	public static final ScreenSetup VIDEO = new ScreenSetup(new EmptyBorder(0, 0, 0, 0), new Dimension(1280, 720),
-			new Dimension(1280, 720), true);
+			new Dimension(1280, 720), true, 12, false);
 
 	public static ScreenSetup SETUP = DEFAULT;
 
-	private ScreenSetup(Border wizardBorder, Dimension viewerFixedSize, Dimension wizardFixedSize, boolean antialiasOn)
+	private ScreenSetup(Border wizardBorder, Dimension viewerFixedSize, Dimension wizardFixedSize, boolean antialiasOn,
+			int fontSize, boolean wizardUndecorated)
 	{
 		this.wizardBorder = wizardBorder;
 		this.viewerSize = viewerFixedSize;
@@ -34,6 +39,8 @@ public class ScreenSetup
 		this.wizardSize = wizardFixedSize;
 		this.antialiasOn = antialiasOn;
 		this.screen = ScreenUtil.getLargestScreen();
+		this.fontSize = fontSize;
+		this.wizardUndecorated = wizardUndecorated;
 	}
 
 	public Border getWizardBorder()
@@ -92,5 +99,20 @@ public class ScreenSetup
 	public void setScreen(int s)
 	{
 		screen = s;
+	}
+
+	public int getFontSize()
+	{
+		return fontSize;
+	}
+
+	public boolean isWizardUndecorated()
+	{
+		return wizardUndecorated;
+	}
+
+	public boolean isWizardSpaceSmall()
+	{
+		return getWizardSize().getHeight() <= 500 || fontSize > 12;
 	}
 }

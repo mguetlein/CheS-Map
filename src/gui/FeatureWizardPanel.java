@@ -27,6 +27,7 @@ import javax.swing.JScrollPane;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
+import main.ScreenSetup;
 import main.Settings;
 import util.ArrayUtil;
 import util.DoubleImageIcon;
@@ -157,7 +158,8 @@ public class FeatureWizardPanel extends WizardPanel
 
 	private void createSelector()
 	{
-		selector = new Selector<MoleculePropertySet>(MoleculePropertySet.class, ROOT)
+		selector = new Selector<MoleculePropertySet>(MoleculePropertySet.class, ROOT,
+				(ScreenSetup.SETUP.isWizardSpaceSmall() ? 6 : 12))
 		{
 			public Icon getIcon(MoleculePropertySet elem)
 			{
