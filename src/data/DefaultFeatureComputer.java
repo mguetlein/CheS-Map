@@ -52,14 +52,14 @@ public class DefaultFeatureComputer implements FeatureComputer
 			boolean computed = true;
 			if (!propSet.isComputed(dataset))
 				computed = propSet.compute(dataset);
-			
+
 			if (computed)
 			{
 				for (int i = 0; i < propSet.getSize(dataset); i++)
 				{
 					props.add(propSet.get(dataset, i));
 					features.add(propSet.get(dataset, i));
-	
+
 					if (TaskProvider.task().isCancelled())
 						return;
 				}

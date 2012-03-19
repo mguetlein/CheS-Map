@@ -6,8 +6,6 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
 import main.Settings;
 import main.TaskProvider;
 import util.SequentialWorkerThread;
@@ -77,7 +75,8 @@ public class FeatureLoader
 					Thread.sleep(250);
 					TaskProvider.task().getDialog().setVisible(false);
 					if (TaskProvider.task().containsWarnings())
-						TaskProvider.task().showWarningDialog(Settings.TOP_LEVEL_FRAME, "Could not compute feature/s", "Could not compute feature/s");
+						TaskProvider.task().showWarningDialog(Settings.TOP_LEVEL_FRAME, "Could not compute feature/s",
+								"Could not compute feature/s");
 				}
 				catch (Throwable e)
 				{

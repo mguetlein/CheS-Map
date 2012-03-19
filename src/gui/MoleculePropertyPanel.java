@@ -12,7 +12,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,8 +32,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-
-import opentox.DatasetUtil;
 
 import main.BinHandler;
 import main.ScreenSetup;
@@ -437,14 +434,14 @@ public class MoleculePropertyPanel extends JPanel
 	}
 
 	Set<DatasetFile> loading = new HashSet<DatasetFile>();
-	
+
 	private void loadComputedOrCachedProperty()
 	{
 		if (selectedPropertySet == null
 				|| (!selectedPropertySet.isComputed(dataset) && !(Settings.CACHING_ENABLED && selectedPropertySet
 						.isCached(dataset))))
 			throw new Error("WTF");
-		
+
 		if (loading.contains(dataset))
 			return;
 		loading.add(dataset);
@@ -453,7 +450,7 @@ public class MoleculePropertyPanel extends JPanel
 		final int propIndex = selectedPropertyIndex;
 
 		Thread th = new Thread(new Runnable()
-		{	
+		{
 			@Override
 			public void run()
 			{
