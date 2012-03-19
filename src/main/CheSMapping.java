@@ -283,21 +283,21 @@ public class CheSMapping
 			String formRSquare = StringUtil.formatDouble(rSquare, 3);
 
 			if (rSquare >= 0.9)
-				clustering.setEmbedQuality("excellent (r²: " + formRSquare + ")");
+				clustering.setEmbedQuality("excellent (r^2: " + formRSquare + ")");
 			else if (rSquare >= 0.7)
-				clustering.setEmbedQuality("good (r²: " + formRSquare + ")");
+				clustering.setEmbedQuality("good (r^2: " + formRSquare + ")");
 			else if (rSquare >= 0.5)
 			{
-				TaskProvider.task().warning("The embedding quality is moderate (r²:" + formRSquare + ")",
+				TaskProvider.task().warning("The embedding quality is moderate (r^2:" + formRSquare + ")",
 						Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
-				clustering.setEmbedQuality("moderate (r²: " + formRSquare + ")");
+				clustering.setEmbedQuality("moderate (r^2: " + formRSquare + ")");
 			}
 			else
 			// < 0.5 
 			{
-				TaskProvider.task().warning("The embedding quality is poor (r²:" + formRSquare + ")",
+				TaskProvider.task().warning("The embedding quality is poor (r^2:" + formRSquare + ")",
 						Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
-				clustering.setEmbedQuality("poor (r²: " + formRSquare + ")");
+				clustering.setEmbedQuality("poor (r^2: " + formRSquare + ")");
 			}
 		}
 		else
