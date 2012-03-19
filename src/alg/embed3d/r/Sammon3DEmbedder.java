@@ -129,11 +129,20 @@ public class Sammon3DEmbedder extends AbstractRTo3DEmbedder
 			+ "  di <- duplicate_indices(data)\n"
 			+ "  u <- unique(data)\n"// 
 			+ "  print(paste('unique data points',nrow(u),'of',nrow(data)))\n"
-			+ "  if(nrow(u) <= 4) stop(\""
-			+ TOO_FEW_UNIQUE_DATA_POINTS + "\")\n"
-			+ "  points_unique <- sammon(dist(u), ...)$points\n"
-			+ "  points <- add_duplicates(points_unique, di)\n"// 
+			+ "  if(nrow(u) <= 4) stop(\"number of unqiue datapoints <= 4\")\n"
+			+ "  points_unique <- sammon(dist(u), ...)$points\n" + "  points <- add_duplicates(points_unique, di)\n"// 
 			+ "  points\n"// 
 			+ "}\n"// 
 			+ "";
+
+	@Override
+	protected String getErrorDescription(String errorOut)
+	{
+		if (errorOut.contains("only 2 of the first 3 eigenvalues are > 0"))
+			return TOO_FEW_UNIQUE_DATA_POINTS;
+		if (errorOut.contains("number of unqiue datapoints <= 4"))
+			return TOO_FEW_UNIQUE_DATA_POINTS;
+		else
+			return null;
+	}
 }

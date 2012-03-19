@@ -76,9 +76,14 @@ public class TSNEFeature3DEmbedder extends AbstractRTo3DEmbedder
 	}
 
 	@Override
-	protected String getDefaultError()
+	protected String getErrorDescription(String errorOut)
 	{
-		return "t-SNE tends to fail with improper input data (especially on small datasets). Try a different embedding algorithm.";
+		if (errorOut.contains("number of unique data points < 3"))
+			return TOO_FEW_UNIQUE_DATA_POINTS;
+		if (errorOut.contains("while (abs(Hdiff) > tol && tries < 50)"))
+			return "t-SNE tends to fail with improper input data (especially on small datasets). Try a different embedding algorithm.";
+		else
+			return null;
 	}
 
 	@Override
@@ -90,13 +95,13 @@ public class TSNEFeature3DEmbedder extends AbstractRTo3DEmbedder
 		s += "set.seed(" + randomSeed.getValue() + ")\n";
 		s += "inst <- nrow(unique(df))\n";
 		s += "print(paste('unique instances ',inst))\n";
-		s += "if(inst < 3) stop(\"" + TOO_FEW_UNIQUE_DATA_POINTS + "\")\n";
+		s += "if(inst < 3) stop(\"number of unique data points < 3\")\n";
 		s += "perp <- min(" + perplexity.getValue() + ",inst)\n";
 		s += "feats <- ncol(df)\n";
 		s += "print(paste('features ',feats))\n";
 		s += "dims <- min(" + initial_dims.getValue() + ",feats)\n";
-		s += "res <- tryCatch(tsne(df, k = 3, perplexity=perp, max_iter=" + maxNumIterations.getValue()
-				+ ", initial_dims=dims),error=function(e) stop(\"" + getDefaultError() + "\"))\n";
+		s += "res <- tsne(df, k = 3, perplexity=perp, max_iter=" + maxNumIterations.getValue()
+				+ ", initial_dims=dims)\n";
 		s += "print(head(res$ydata))\n";
 		//+ "##res <- smacofSphere.dual(df, ndim = 3)\n" + "#print(res$conf)\n" + "#print(class(res$conf))\n"
 		s += "write.table(res$ydata,args[2]) \n";

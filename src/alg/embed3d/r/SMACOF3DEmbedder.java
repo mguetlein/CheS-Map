@@ -90,4 +90,10 @@ public class SMACOF3DEmbedder extends AbstractRTo3DEmbedder
 	{
 		return false;
 	}
+
+	@Override
+	protected String getErrorDescription(String errorOut)
+	{
+		return null;
+	}
 }

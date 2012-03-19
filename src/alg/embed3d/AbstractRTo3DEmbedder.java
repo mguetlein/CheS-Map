@@ -29,17 +29,13 @@ import dataInterface.MoleculePropertyUtil;
 
 public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 {
-
 	protected abstract String getRScriptCode();
 
 	protected abstract String getShortName();
 
-	protected String getDefaultError()
-	{
-		return null;
-	}
+	protected static String TOO_FEW_UNIQUE_DATA_POINTS = "Too few unique data points, add features or choose a different embedder.";
 
-	public static String TOO_FEW_UNIQUE_DATA_POINTS = "Too few unique data points, add features or choose a different embedder.";
+	protected abstract String getErrorDescription(String errorOut);
 
 	@Override
 	public List<Vector3f> embed(DatasetFile dataset, final List<MolecularPropertyOwner> instances,
@@ -83,13 +79,11 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			List<Vector3D> v3d = RUtil.readRVectorMatrix(tmp.getAbsolutePath());
 			if (v3d.size() != instances.size())
 			{
-				if (errorOut.contains(TOO_FEW_UNIQUE_DATA_POINTS))
-					throw new EmbedException(this, getShortName() + " failed: " + TOO_FEW_UNIQUE_DATA_POINTS);
-				else if (getDefaultError() != null && errorOut.contains(getDefaultError()))
-					throw new EmbedException(this, getShortName() + " failed: " + getDefaultError());
+				String desc = getErrorDescription(errorOut);
+				if (desc != null)
+					throw new EmbedException(this, desc);
 				else
-					throw new IllegalStateException("error using '" + getShortName() + "' num results is '"
-							+ v3d.size() + "' instead of '" + instances.size() + "'");
+					throw new IllegalStateException(errorOut);
 			}
 			boolean nonZero = false;
 			double d[][] = new double[v3d.size()][3];
