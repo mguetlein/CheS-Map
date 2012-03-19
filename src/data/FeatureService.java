@@ -49,6 +49,7 @@ import util.ArrayUtil;
 import util.StringUtil;
 import util.ToStringComparator;
 import util.ValueFileCache;
+import dataInterface.MoleculeProperty;
 import dataInterface.MoleculeProperty.Type;
 
 public class FeatureService
@@ -122,7 +123,7 @@ public class FeatureService
 						sss = StringUtil.trimQuotes(sss);
 						if (i == 0)
 						{
-							if (!sss.matches("(?i)smiles"))
+							if (!sss.matches(".*(?i)smiles.*"))
 								throw new IllegalArgumentException("first argument in csv must be smiles (is: " + sss
 										+ ")");
 						}
@@ -132,7 +133,7 @@ public class FeatureService
 					}
 					firstLine = false;
 				}
-				else if (!ss.startsWith("#"))
+				else if (!ss.startsWith("#") && ss.trim().length() > 0)
 				{
 					int i = 0;
 					for (String sss : ss.split(","))
@@ -141,6 +142,11 @@ public class FeatureService
 						if (i == 0)
 							s.append(sss + " ");
 						props.get(propNames.get(i)).add(sss);
+						i++;
+					}
+					while (i < props.size())
+					{
+						props.get(propNames.get(i)).add(null);
 						i++;
 					}
 					s.append("\n");
@@ -154,9 +160,23 @@ public class FeatureService
 			for (IAtomContainer mol : list)
 			{
 				for (String p : propNames)
+				{
+					if (props.get(p).size() != list.size())
+						throw new IllegalStateException("num molecules: " + list.size() + ", num values for '" + p
+								+ "': " + props.get(p).size());
 					mol.setProperty(p, props.get(p).get(molCount));
+				}
 				molCount++;
 			}
+			boolean removeSMIdbName = true;
+			for (IAtomContainer mol : list)
+				if (mol.getProperties().containsKey("SMIdbNAME") && mol.getProperty("SMIdbNAME") != null
+						&& mol.getProperty("SMIdbNAME").toString().trim().length() > 0)
+					removeSMIdbName = false;
+			if (removeSMIdbName)
+				for (IAtomContainer mol : list)
+					if (mol.getProperties().containsKey("SMIdbNAME"))
+						mol.removeProperty("SMIdbNAME");
 			return list;
 		}
 		catch (Exception e)
@@ -339,14 +359,9 @@ public class FeatureService
 					else
 						p.setType(null);
 				}
-				if (p.getType() == Type.NUMERIC)
+				p.setStringValues(dataset, stringValues);
+				if (p.getType() == Type.NUMERIC || p.isTypeAllowed(Type.NUMERIC))
 					p.setDoubleValues(dataset, doubleValues);
-				else
-				{
-					p.setStringValues(dataset, stringValues);
-					if (p.isTypeAllowed(Type.NUMERIC))
-						p.setDoubleValues(dataset, doubleValues);
-				}
 			}
 
 			IMolecule res[] = new IMolecule[mols.size()];
@@ -488,6 +503,8 @@ public class FeatureService
 				SDFWriter writer = new SDFWriter(new FileOutputStream(tmpFile));
 				// ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), "mm2");
 				StructureDiagramGenerator sdg = new StructureDiagramGenerator();
+
+				int mCount = 0;
 				for (IMolecule iMolecule : dataset.getMolecules())
 				{
 					IMolecule molecule = iMolecule;
@@ -510,8 +527,16 @@ public class FeatureService
 						if (TaskProvider.task().isCancelled())
 							return;
 					}
-
+					for (MoleculeProperty p : dataset.getIntegratedProperties(true))
+						if (p.getType() == Type.NUMERIC)
+						{
+							if (p.getDoubleValues(dataset)[mCount] != null)
+								newSet.setProperty(p.getName(), p.getDoubleValues(dataset)[mCount]);
+						}
+						else if (!p.getName().matches(".*(?i)smiles.*") && p.getStringValues(dataset)[mCount] != null)
+							newSet.setProperty(p.getName(), p.getStringValues(dataset)[mCount]);
 					writer.write(newSet);
+					mCount++;
 					if (TaskProvider.task().isCancelled())
 						return;
 				}

@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.border.EmptyBorder;
 
+import main.PropHandler;
 import main.Settings;
 import weka.CascadeSimpleKMeans;
 import alg.Algorithm;
@@ -83,8 +84,8 @@ public class ClusterWizardPanel extends GenericWizardPanel
 	{
 		JRadioButton buttonYes = new JRadioButton("Yes (recommended)", true);
 		JRadioButton buttonNo = new JRadioButton("No");
-		PropertyPanel propertyPanel = new PropertyPanel(new Property[] { min, max }, Settings.PROPS,
-				Settings.PROPERTIES_FILE);
+		PropertyPanel propertyPanel = new PropertyPanel(new Property[] { min, max }, PropHandler.getProperties(),
+				PropHandler.getPropertiesFile());
 
 		public SimpleClusterPanel()
 		{
@@ -118,7 +119,7 @@ public class ClusterWizardPanel extends GenericWizardPanel
 			setLayout(new BorderLayout());
 			add(b.getPanel());
 
-			String simpleSelected = (String) Settings.PROPS.get(getTitle() + "-simple-yes");
+			String simpleSelected = PropHandler.get(getTitle() + "-simple-yes");
 			if (simpleSelected != null && simpleSelected.equals("false"))
 			{
 				buttonNo.setSelected(true);
@@ -145,7 +146,7 @@ public class ClusterWizardPanel extends GenericWizardPanel
 		protected void store()
 		{
 			propertyPanel.store();
-			Settings.PROPS.put(getTitle() + "-simple-yes", buttonYes.isSelected() ? "true" : "false");
+			PropHandler.put(getTitle() + "-simple-yes", buttonYes.isSelected() ? "true" : "false");
 		}
 	}
 

@@ -27,6 +27,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import main.PropHandler;
 import main.Settings;
 import main.TaskProvider;
 import opentox.DatasetUtil;
@@ -73,7 +74,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 				"pref,5dlu,pref:grow(0.99),5dlu,right:p:grow(0.01)"));
 
 		builder.append(new JLabel(
-				"Select dataset file (Copy a http link into the textfield to load a dataset from the internet):"), 3);
+				"Select dataset file (Copy a http link into the textfield to load a dataset from the internet):"), 5);
 		builder.nextLine();
 
 		textField = new JTextField(45);
@@ -113,7 +114,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 			{
 				if (chooser == null)
 				{
-					String dir = (String) Settings.PROPS.get("dataset-current-dir");
+					String dir = PropHandler.get("dataset-current-dir");
 					if (dir == null)
 						dir = System.getProperty("user.home");
 					chooser = new JFileChooser(new File(dir));
@@ -122,8 +123,8 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 				File f = chooser.getSelectedFile();
 				if (f != null)
 				{
-					Settings.PROPS.put("dataset-current-dir", f.getParent());
-					Settings.storeProps();
+					PropHandler.put("dataset-current-dir", f.getParent());
+					PropHandler.storeProperties();
 					//textField.setText(f.getPath());
 					load(f.getPath());
 				}
@@ -132,7 +133,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		builder.append(search);
 		builder.nextLine();
 
-		String dir = (String) Settings.PROPS.get("dataset-recently-used");
+		String dir = PropHandler.get("dataset-recently-used");
 		oldDatasets = new Vector<DatasetFile>();
 		if (dir != null)
 		{
@@ -194,6 +195,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		builder.nextLine();
 
 		buttonLoad = new JButton("Load Dataset");
+		buttonLoad.setEnabled(false);
 		buttonLoad.addActionListener(new ActionListener()
 		{
 			@Override
@@ -239,8 +241,12 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 
 		// auto load last selected dataset
 		if (wizard != null && oldDatasets.size() > 0)
-			load(oldDatasets.get(0).getPath());
-		//textField.setText(oldDatasets.get(0).getPath());
+		{
+			if (oldDatasets.get(0).isLocal())
+				load(oldDatasets.get(0).getPath()); // auto-load local files
+			else
+				textField.setText(oldDatasets.get(0).getPath()); //remote file, do not auto-load
+		}
 	}
 
 	private void updateDataset()
@@ -336,6 +342,8 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 									throw new Exception("No compounds in file");
 								dataset = d;
 							}
+							else
+								throw new Exception("file not found");
 						}
 						catch (IllegalCompoundsException e)
 						{
@@ -389,8 +397,8 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		Vector<String> strings = new Vector<String>();
 		for (DatasetFile d : oldDatasets)
 			strings.add(d.toString());
-		Settings.PROPS.put("dataset-recently-used", VectorUtil.toCSVString(strings));
-		Settings.storeProps();
+		PropHandler.put("dataset-recently-used", VectorUtil.toCSVString(strings));
+		PropHandler.storeProperties();
 	}
 
 	@Override
@@ -429,4 +437,5 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 	{
 		return Settings.text("dataset.desc");
 	}
+
 }

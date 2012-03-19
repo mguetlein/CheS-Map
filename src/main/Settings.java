@@ -1,23 +1,9 @@
 package main;
 
-import gui.LinkButton;
-import gui.binloc.Binary;
-import gui.binloc.BinaryLocator;
-import gui.binloc.BinaryLocatorDialog;
-import io.ExternalTool;
-
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.InputStreamReader;
@@ -25,16 +11,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 import java.util.Random;
 import java.util.ResourceBundle;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.ImageIcon;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
@@ -294,200 +274,6 @@ public class Settings
 		return BASE_DIR + File.separator + destinationFilename;
 	}
 
-	// ------------- LOAD AND STORE PROPS ----------------------------------
-
-	public static Properties PROPS;
-	public static final String PROPERTIES_FILE = BASE_DIR + File.separator + "ches.mapper." + MAJOR_MINOR_VERSION
-			+ ".props";
-
-	static
-	{
-		// try loading props
-		PROPS = new Properties();
-		try
-		{
-			FileInputStream in = new FileInputStream(PROPERTIES_FILE);
-			PROPS.load(in);
-			in.close();
-			// System.out.println("property-keys: " + CollectionUtil.toString(PROPS.keySet()));
-			// System.out.println("property-values: " + CollectionUtil.toString(PROPS.values()));
-			System.out.println("Read properties from: " + PROPERTIES_FILE);
-		}
-		catch (Exception e)
-		{
-			Status.WARN.println("Could not load properties: " + PROPERTIES_FILE);
-		}
-	}
-
-	public static void storeProps()
-	{
-		try
-		{
-			FileOutputStream out = new FileOutputStream(PROPERTIES_FILE);
-			PROPS.store(out, "---No Comment---");
-			out.close();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-
 	// ------------------------ EXTERNAL PROGRAMMS -----------------------
 
-	public static Binary BABEL_BINARY = new Binary("babel", "CM_BABEL_PATH", OPENBABEL_STRING);
-	public static Binary RSCRIPT_BINARY = new Binary("Rscript", "CM_RSCRIPT_PATH", R_STRING);
-
-	private static String babelVersion = null;
-
-	public static String getOpenBabelVersion()
-	{
-		if (!BABEL_BINARY.isFound())
-			throw new IllegalStateException();
-		if (babelVersion == null)
-		{
-			File bVersion = null;
-			try
-			{
-				bVersion = File.createTempFile("babel", "version");
-				ExternalTool ext = new ExternalTool();
-				ext.run("babel", BABEL_BINARY.getLocation() + " -V", bVersion, true);
-				BufferedReader b = new BufferedReader(new FileReader(bVersion));
-				String s;
-				Pattern pattern = Pattern.compile("^.*([0-9]+\\.[0-9]+\\.[0-9]+).*$");
-				while ((s = b.readLine()) != null)
-				{
-					Matcher matcher = pattern.matcher(s);
-					if (matcher.matches())
-					{
-						babelVersion = matcher.group(1);
-						break;
-					}
-				}
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-			}
-			finally
-			{
-				bVersion.delete();
-			}
-		}
-		return babelVersion;
-	}
-
-	public static String getOBFileModified(String destinationFilename)
-	{
-		return MODIFIED_BABEL_DATA_DIR + File.separator + destinationFilename;
-	}
-
-	public static String getOBFileOrig(String s)
-	{
-		if (!BABEL_BINARY.isFound())
-			throw new IllegalStateException();
-		String p = FileUtil.getParent(BABEL_BINARY.getLocation());
-		if (OSUtil.isWindows())
-		{
-			String f = p + "\\data\\" + s;
-			if (new File(f).exists())
-				return f;
-			throw new Error("not found: " + f);
-		}
-		else
-		{
-			// default dir
-			String f = "/usr/local/share/openbabel/" + getOpenBabelVersion() + "/" + s;
-			if (new File(f).exists())
-				return f;
-			// hack
-			while (p.length() > 1)
-			{
-				f = p + "/share/openbabel/" + getOpenBabelVersion() + "/" + s;
-				if (new File(f).exists())
-					return f;
-				f = p + "/install/share/openbabel/" + getOpenBabelVersion() + "/" + s;
-				if (new File(f).exists())
-					return f;
-				p = FileUtil.getParent(p);
-			}
-			throw new Error("not found: " + s);
-		}
-	}
-
-	private static List<Binary> bins = new ArrayList<Binary>();
-	static
-	{
-		bins.add(BABEL_BINARY);
-		BABEL_BINARY.addPropertyChangeListener(new PropertyChangeListener()
-		{
-			@Override
-			public void propertyChange(PropertyChangeEvent evt)
-			{
-				babelVersion = null;
-			}
-		});
-		bins.add(RSCRIPT_BINARY);
-		for (Binary binary : bins)
-		{
-			String path = (String) Settings.PROPS.get("bin-path-" + binary.getCommand());
-			if (path != null)
-				binary.setLocation(path);
-		}
-		locateBinarys();
-		for (Binary binary : bins)
-		{
-			if (binary.isFound())
-				System.err.println("external program " + binary.getCommand() + " found at " + binary.getLocation());
-			else
-				System.err.println("external program " + binary.getCommand() + " not found");
-		}
-	}
-
-	public static void locateBinarys()
-	{
-		BinaryLocator.locate(bins);
-	}
-
-	public static void showBinaryDialog(Binary select)
-	{
-		locateBinarys();
-		new BinaryLocatorDialog((Window) Settings.TOP_LEVEL_FRAME, "External Programs", TITLE, bins, select);
-		for (Binary binary : bins)
-			if (binary.getLocation() != null)
-				Settings.PROPS.put("bin-path-" + binary.getCommand(), binary.getLocation());
-			else
-				Settings.PROPS.remove("bin-path-" + binary.getCommand());
-		storeProps();
-	}
-
-	public static JComponent getBinaryComponent(final Binary bin)
-	{
-		final LinkButton l = new LinkButton("Configure external program: " + bin.getDescription());
-		l.setForegroundFont(l.getFont().deriveFont(Font.PLAIN));
-		l.setSelectedForegroundFont(l.getFont().deriveFont(Font.PLAIN));
-		l.setSelectedForegroundColor(Color.BLUE);
-		bin.addPropertyChangeListener(new PropertyChangeListener()
-		{
-			@Override
-			public void propertyChange(PropertyChangeEvent evt)
-			{
-				if (bin.isFound())
-					l.setIcon(ImageLoader.TOOL);
-			}
-		});
-		if (!bin.isFound())
-			l.setIcon(ImageLoader.ERROR);
-		else
-			l.setIcon(ImageLoader.TOOL);
-		l.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				Settings.showBinaryDialog(bin);
-			}
-		});
-		return l;
-	}
 }

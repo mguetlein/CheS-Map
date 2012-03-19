@@ -1,6 +1,6 @@
 package alg;
 
-import main.Settings;
+import main.BinHandler;
 import weka.clusterers.EM;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
@@ -51,7 +51,7 @@ public class AlgorithmUtil
 			if (!(a instanceof ThreeDEmbedder))
 				s.setResultValue(r, "Random restarts", a.getRandomRestartProperty() != null ? "Yes" : "");
 
-			s.setResultValue(r, "Runs without R", a.getBinary() == Settings.RSCRIPT_BINARY ? "" : "Yes");
+			s.setResultValue(r, "Runs without R", a.getBinary() == BinHandler.RSCRIPT_BINARY ? "" : "Yes");
 		}
 		System.out.println(s.toNiceString());
 		System.out.println();

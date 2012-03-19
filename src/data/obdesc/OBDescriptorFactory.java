@@ -5,7 +5,7 @@ import java.nio.channels.IllegalSelectorException;
 import java.util.LinkedHashMap;
 import java.util.Set;
 
-import main.Settings;
+import main.BinHandler;
 import util.ArrayUtil;
 import util.ExternalToolUtil;
 import util.FileUtil;
@@ -33,14 +33,14 @@ public class OBDescriptorFactory
 	{
 		if (descriptors == null || forceReload)
 		{
-			if (!Settings.BABEL_BINARY.isFound())
+			if (!BinHandler.BABEL_BINARY.isFound())
 				return null;
 			descriptors = new LinkedHashMap<String, String>();
 			File descFile = null;
 			try
 			{
 				descFile = File.createTempFile("babel", "desc");
-				ExternalToolUtil.run("babel", Settings.BABEL_BINARY.getLocation() + " -L descriptors", descFile);
+				ExternalToolUtil.run("babel", BinHandler.BABEL_BINARY.getLocation() + " -L descriptors", descFile);
 				String s = FileUtil.readStringFromFile(descFile.getAbsolutePath());
 
 				for (String s2 : s.split("\n"))
@@ -73,15 +73,15 @@ public class OBDescriptorFactory
 
 	public static String[] compute(String sdfFile, String id)
 	{
-		if (!Settings.BABEL_BINARY.isFound())
+		if (!BinHandler.BABEL_BINARY.isFound())
 			return null;
 		descriptors = new LinkedHashMap<String, String>();
 		File descFile = null;
 		try
 		{
 			descFile = File.createTempFile("babel", "desc");
-			ExternalToolUtil.run("babel", Settings.BABEL_BINARY.getLocation() + " -isdf " + sdfFile + " --append " + id
-					+ " -osmi", descFile);
+			ExternalToolUtil.run("babel", BinHandler.BABEL_BINARY.getLocation() + " -isdf " + sdfFile + " --append "
+					+ id + " -osmi", descFile);
 			String s = FileUtil.readStringFromFile(descFile.getAbsolutePath());
 			String lines[] = s.split("\n");
 			String vals[] = new String[lines.length];

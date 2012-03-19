@@ -6,6 +6,7 @@ import gui.binloc.Binary;
 
 import java.util.List;
 
+import main.BinHandler;
 import main.Settings;
 import main.TaskProvider;
 import util.ExternalToolUtil;
@@ -62,7 +63,7 @@ public class MCSAligner extends OBFitAligner
 	@Override
 	public Binary getBinary()
 	{
-		return Settings.BABEL_BINARY;
+		return BinHandler.BABEL_BINARY;
 	}
 
 	@Override

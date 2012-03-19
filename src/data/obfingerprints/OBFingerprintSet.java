@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import main.BinHandler;
 import main.Settings;
 import main.TaskProvider;
 import util.ArrayUtil;
@@ -104,7 +105,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 	@Override
 	public Binary getBinary()
 	{
-		return Settings.BABEL_BINARY;
+		return BinHandler.BABEL_BINARY;
 	}
 
 	@Override
@@ -261,7 +262,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 			if (fp3Fragments.size() == 0)
 			{
 				BufferedReader buffy = new BufferedReader(new FileReader(new File(
-						Settings.getOBFileOrig("patterns.txt"))));
+						BinHandler.getOBFileOrig("patterns.txt"))));
 				String s = "";
 				while ((s = buffy.readLine()) != null)
 				{
@@ -299,7 +300,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 			if (fp4Fragments.size() == 0)
 			{
 				BufferedReader buffy = new BufferedReader(new FileReader(
-						Settings.getOBFileOrig("SMARTS_InteLigand.txt")));
+						BinHandler.getOBFileOrig("SMARTS_InteLigand.txt")));
 				String s = "";
 				while ((s = buffy.readLine()) != null)
 				{
@@ -336,7 +337,8 @@ public class OBFingerprintSet extends FragmentPropertySet
 			if (maccsFragments.size() == 0)
 			{
 				// 155:('*!@[CH2]!@*',0), # A!CH2!A
-				BufferedReader buffy = new BufferedReader(new FileReader(new File(Settings.getOBFileOrig("MACCS.txt"))));
+				BufferedReader buffy = new BufferedReader(new FileReader(
+						new File(BinHandler.getOBFileOrig("MACCS.txt"))));
 				String s = "";
 				while ((s = buffy.readLine()) != null)
 				{
@@ -360,9 +362,9 @@ public class OBFingerprintSet extends FragmentPropertySet
 						if (i != -1)
 							name = name.substring(0, i);
 						String space = name.startsWith(" ") ? "" : " ";
-						// System.err.println("name: " + name);
 						f.name = name.trim();
-						maccsFragments.put(matcher.group(1) + space + name, f);
+						String key = (matcher.group(1) + space + name).trim();
+						maccsFragments.put(key, f);
 					}
 				}
 			}
@@ -370,13 +372,14 @@ public class OBFingerprintSet extends FragmentPropertySet
 			boolean minFreq = false;
 			for (String s : line.split("\\t"))
 			{
+				s = s.trim();
 				if (minFreq && s.matches("^\\*[2-4].*"))
-					s = s.substring(2);
+					s = s.substring(2).trim();
 				if (s.matches(".*\\*[2-4]$"))
-					s = s.substring(0, s.length() - 2);
+					s = s.substring(0, s.length() - 2).trim();
 				// System.err.println("key: " + s);
 				if (!maccsFragments.containsKey(s))
-					throw new Error("key not found: " + s + ", keys: "
+					throw new Error("key not found: '" + s + "', keys: "
 							+ ListUtil.toString(new ArrayList<String>(maccsFragments.keySet()), "\n"));
 				minFreq = s.matches(".*>(\\s)*[1-3].*");
 				l.add(maccsFragments.get(s));
@@ -456,7 +459,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 	{
 		if (type == FingerprintType.FP2)
 		{
-			String version = Settings.getOpenBabelVersion();
+			String version = BinHandler.getOpenBabelVersion();
 			int index = version.indexOf('.');
 			int major = Integer.parseInt(version.substring(0, index));
 			int nIndex = version.indexOf('.', index + 1);
@@ -504,7 +507,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 			LinkedHashMap<OBFingerprintProperty, List<Integer>> occurences = new LinkedHashMap<OBFingerprintProperty, List<Integer>>();
 
 			tmp = File.createTempFile(dataset.getShortName(), "OBfingerprint");
-			String cmd[] = { Settings.BABEL_BINARY.getLocation(), "-isdf", dataset.getSDFPath(false), "-ofpt", "-xf",
+			String cmd[] = { BinHandler.BABEL_BINARY.getLocation(), "-isdf", dataset.getSDFPath(false), "-ofpt", "-xf",
 					type.toString(), "-xs" };
 			TaskProvider.task().verbose("Running babel: " + ArrayUtil.toString(cmd, " ", "", ""));
 			ExternalToolUtil.run("ob-fingerprints", cmd, tmp);

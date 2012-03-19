@@ -13,6 +13,8 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
+import main.BinHandler;
+import main.PropHandler;
 import main.Settings;
 import util.ImageLoader;
 import util.SwingUtil;
@@ -30,9 +32,9 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 
 	public StructuralFragmentPropertiesPanel()
 	{
-		propPanel = new PropertyPanel(StructuralFragmentProperties.getProperties(), Settings.PROPS,
-				Settings.PROPERTIES_FILE);
-		babelPanel = Settings.getBinaryComponent(Settings.BABEL_BINARY);
+		propPanel = new PropertyPanel(StructuralFragmentProperties.getProperties(), PropHandler.getProperties(),
+				PropHandler.getPropertiesFile());
+		babelPanel = BinHandler.getBinaryComponent(BinHandler.BABEL_BINARY);
 
 		DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("p,fill:p:grow"));
 		b.append(propPanel);
@@ -41,7 +43,7 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 		setLayout(new BorderLayout());
 		add(b.getPanel(), BorderLayout.WEST);
 
-		if (!Settings.BABEL_BINARY.isFound())
+		if (!BinHandler.BABEL_BINARY.isFound())
 			StructuralFragmentProperties.setMatchEngine(MatchEngine.CDK);
 
 		StructuralFragmentProperties.addMatchEngingePropertyChangeListenerToProperties(new PropertyChangeListener()

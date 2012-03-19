@@ -129,7 +129,10 @@ public class Sammon3DEmbedder extends AbstractRTo3DEmbedder
 			+ "  di <- duplicate_indices(data)\n"
 			+ "  u <- unique(data)\n"// 
 			+ "  print(paste('unique data points',nrow(u),'of',nrow(data)))\n"
-			+ "  points_unique <- sammon(dist(u), ...)$points\n" + "  points <- add_duplicates(points_unique, di)\n"// 
+			+ "  if(nrow(u) <= 4) stop(\""
+			+ TOO_FEW_UNIQUE_DATA_POINTS + "\")\n"
+			+ "  points_unique <- sammon(dist(u), ...)$points\n"
+			+ "  points <- add_duplicates(points_unique, di)\n"// 
 			+ "  points\n"// 
 			+ "}\n"// 
 			+ "";

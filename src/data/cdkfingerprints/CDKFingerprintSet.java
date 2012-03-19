@@ -17,6 +17,7 @@ import org.openscience.cdk.fingerprint.StandardSubstructureSets;
 import org.openscience.cdk.fingerprint.SubstructureFingerprinter;
 import org.openscience.cdk.interfaces.IMolecule;
 
+import util.ArrayUtil;
 import util.CountedSet;
 import data.DatasetFile;
 import data.cdk.CDKDescriptor;
@@ -176,7 +177,10 @@ public class CDKFingerprintSet extends FragmentPropertySet
 						Arrays.fill(values, "0");
 						hash.put(prop, values);
 					}
-					values[i] = "1";
+					if (m > values.length - 1)
+						throw new IllegalStateException("illegal index: " + m + ", length: " + values.length + ", "
+								+ ArrayUtil.toString(values));
+					values[m] = "1";
 				}
 			}
 			catch (CDKException e)

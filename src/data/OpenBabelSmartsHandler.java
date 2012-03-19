@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import main.BinHandler;
 import main.Settings;
 import main.TaskProvider;
 import util.ArrayUtil;
@@ -32,12 +33,12 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 
 	private String getFPFile()
 	{
-		return Settings.getOBFileModified(FP + ".txt");
+		return BinHandler.getOBFileModified(FP + ".txt");
 	}
 
 	private void registerFP()
 	{
-		String file = Settings.getOBFileModified("plugindefines.txt");
+		String file = BinHandler.getOBFileModified("plugindefines.txt");
 		try
 		{
 			boolean found = false;
@@ -97,7 +98,7 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 		try
 		{
 			tmp = File.createTempFile(dataset.getShortName(), "OBsmarts");
-			String cmd[] = { Settings.BABEL_BINARY.getLocation(), "-isdf", dataset.getSDFPath(false), "-ofpt", "-xf",
+			String cmd[] = { BinHandler.BABEL_BINARY.getLocation(), "-isdf", dataset.getSDFPath(false), "-ofpt", "-xf",
 					FP, "-xs" };
 			TaskProvider.task().verbose("Running babel: " + ArrayUtil.toString(cmd, " ", "", ""));
 			ExternalToolUtil.run("ob-fingerprints", cmd, tmp, new String[] { "BABEL_DATADIR="

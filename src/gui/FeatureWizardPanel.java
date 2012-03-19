@@ -8,6 +8,8 @@ import java.awt.GridLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -27,6 +29,8 @@ import javax.swing.JScrollPane;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
+import main.BinHandler;
+import main.PropHandler;
 import main.ScreenSetup;
 import main.Settings;
 import util.ArrayUtil;
@@ -201,7 +205,7 @@ public class FeatureWizardPanel extends WizardPanel
 			@Override
 			public ImageIcon getCategoryIcon(String name)
 			{
-				if (!Settings.BABEL_BINARY.isFound()
+				if (!BinHandler.BABEL_BINARY.isFound()
 						&& ((STRUCTURAL_FRAGMENTS.equals(name) && StructuralFragmentProperties.getMatchEngine() == MatchEngine.OpenBabel) || OB_FEATURES
 								.equals(name)))
 					return ImageLoader.ERROR;
@@ -224,12 +228,12 @@ public class FeatureWizardPanel extends WizardPanel
 
 	private void addListeners()
 	{
-		Settings.BABEL_BINARY.addPropertyChangeListener(new PropertyChangeListener()
+		BinHandler.BABEL_BINARY.addPropertyChangeListener(new PropertyChangeListener()
 		{
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
-				if (Settings.BABEL_BINARY.isFound())
+				if (BinHandler.BABEL_BINARY.isFound())
 				{
 					selector.addElementList(OB_FEATURES, OBDescriptorProperty.getDescriptors(true));
 					update();
@@ -276,7 +280,7 @@ public class FeatureWizardPanel extends WizardPanel
 					b.append("* " + o);
 				List<MoleculePropertySet> set = (List<MoleculePropertySet>) evt.getNewValue();
 				if (set.get(0).getBinary() != null && !set.get(0).getBinary().isFound())
-					b.append(Settings.getBinaryComponent(set.get(0).getBinary()));
+					b.append(BinHandler.getBinaryComponent(set.get(0).getBinary()));
 				else
 					b.append("The feature(s) is/are most likely not suited for clustering and embedding.\nYou have to asign the feature type manually (by clicking on 'Nominal') before adding the feature/s.");
 
@@ -304,6 +308,18 @@ public class FeatureWizardPanel extends WizardPanel
 						"You have no feature/s selected. Please select (a group of) feature/s in the right panel before clicking '"
 								+ remFeaturesText + "'.", "Warning - No feature/s selected",
 						JOptionPane.WARNING_MESSAGE);
+			}
+		});
+		selector.addKeyListener(new KeyAdapter()
+		{
+			public void keyTyped(KeyEvent e)
+			{
+				if (e.getKeyChar() == '#')
+				{
+					MoleculePropertySet p = (MoleculePropertySet) selector.getHighlightedElement();
+					System.err.println("toggle type for " + p);
+					moleculePropertyPanel.toggleType();
+				}
 			}
 		});
 
@@ -396,7 +412,7 @@ public class FeatureWizardPanel extends WizardPanel
 		else if (highlightedCategory.equals(OB_FEATURES))
 		{
 			info = Settings.text("features.ob.desc", Settings.OPENBABEL_STRING);
-			JComponent pp = Settings.getBinaryComponent(Settings.BABEL_BINARY);
+			JComponent pp = BinHandler.getBinaryComponent(BinHandler.BABEL_BINARY);
 			JPanel p = new JPanel();
 			p.add(pp);
 			props = p;
@@ -541,7 +557,7 @@ public class FeatureWizardPanel extends WizardPanel
 		selector.addElements(STRUCTURAL_FRAGMENTS);
 		selector.addElementList(STRUCTURAL_FRAGMENTS, StructuralFragments.instance.getSets());
 
-		String integratedFeatures = (String) Settings.PROPS.get("features-integrated");
+		String integratedFeatures = PropHandler.get("features-integrated");
 		Vector<String> selection = VectorUtil.fromCSVString(integratedFeatures);
 		for (String string : selection)
 		{
@@ -555,7 +571,7 @@ public class FeatureWizardPanel extends WizardPanel
 			selector.setSelected(p);
 		}
 
-		String cdkFeatures = (String) Settings.PROPS.get("features-cdk");
+		String cdkFeatures = PropHandler.get("features-cdk");
 		selection = VectorUtil.fromCSVString(cdkFeatures);
 		for (String string : selection)
 		{
@@ -563,7 +579,7 @@ public class FeatureWizardPanel extends WizardPanel
 			selector.setSelected(d);
 		}
 
-		String obFeatures = (String) Settings.PROPS.get("features-ob");
+		String obFeatures = PropHandler.get("features-ob");
 		selection = VectorUtil.fromCSVString(obFeatures);
 		for (String string : selection)
 		{
@@ -576,7 +592,7 @@ public class FeatureWizardPanel extends WizardPanel
 			selector.setSelected(p);
 		}
 
-		String fragmentFeatures = (String) Settings.PROPS.get("features-fragments");
+		String fragmentFeatures = PropHandler.get("features-fragments");
 		selection = VectorUtil.fromCSVString(fragmentFeatures);
 		for (String string : selection)
 		{
@@ -598,19 +614,18 @@ public class FeatureWizardPanel extends WizardPanel
 		String[] serilizedProps = new String[integratedProps.length];
 		for (int i = 0; i < serilizedProps.length; i++)
 			serilizedProps[i] = integratedProps[i] + "#" + integratedProps[i].getType();
-		Settings.PROPS.put("features-integrated", ArrayUtil.toCSVString(serilizedProps, true));
+		PropHandler.put("features-integrated", ArrayUtil.toCSVString(serilizedProps, true));
 		if (CDKPropertySet.NUMERIC_DESCRIPTORS.length > 0)
-			Settings.PROPS.put("features-cdk", ArrayUtil.toCSVString(selector.getSelected(CDK_FEATURES), true));
+			PropHandler.put("features-cdk", ArrayUtil.toCSVString(selector.getSelected(CDK_FEATURES), true));
 
 		MoleculePropertySet[] obFeats = selector.getSelected(OB_FEATURES);
 		String[] serilizedOBFeats = new String[obFeats.length];
 		for (int i = 0; i < serilizedOBFeats.length; i++)
 			serilizedOBFeats[i] = obFeats[i] + "#" + obFeats[i].getType();
-		Settings.PROPS.put("features-ob", ArrayUtil.toCSVString(serilizedOBFeats, true));
+		PropHandler.put("features-ob", ArrayUtil.toCSVString(serilizedOBFeats, true));
 
-		Settings.PROPS.put("features-fragments",
-				ArrayUtil.toCSVString(selector.getSelected(STRUCTURAL_FRAGMENTS), true));
-		Settings.storeProps();
+		PropHandler.put("features-fragments", ArrayUtil.toCSVString(selector.getSelected(STRUCTURAL_FRAGMENTS), true));
+		PropHandler.storeProperties();
 
 		if (fragmentProperties != null)
 			fragmentProperties.store();

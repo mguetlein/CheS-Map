@@ -31,6 +31,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import main.BinHandler;
 import main.ScreenSetup;
 import main.Settings;
 import util.ArrayUtil;
@@ -145,7 +146,7 @@ public class MoleculePropertyPanel extends JPanel
 		cardPanel.add(loadButtonPanel, "loadButton");
 
 		DefaultFormBuilder b3 = new DefaultFormBuilder(new FormLayout("p"));
-		b3.append(Settings.getBinaryComponent(Settings.BABEL_BINARY));
+		b3.append(BinHandler.getBinaryComponent(BinHandler.BABEL_BINARY));
 		babelBinaryPanel = b3.getPanel();
 		cardPanel.add(babelBinaryPanel, "babel-binary");
 
@@ -154,6 +155,27 @@ public class MoleculePropertyPanel extends JPanel
 		//		SwingUtil.setDebugBorder(fragmentProps, Color.YELLOW);
 		//		SwingUtil.setDebugBorder(cardPanel, Color.BLUE);
 
+	}
+
+	public void toggleType()
+	{
+		MoleculeProperty p = selectedPropertySet.get(dataset, selectedPropertyIndex);
+		if (p.getType() == Type.NOMINAL)
+			setType(Type.NUMERIC);
+		else
+			setType(Type.NOMINAL);
+	}
+
+	public void setType(Type type)
+	{
+		if (selectedPropertySet != null && selectedPropertySet.get(dataset, selectedPropertyIndex).getType() != type
+				&& selectedPropertySet.get(dataset, selectedPropertyIndex).isTypeAllowed(type))
+		{
+			MoleculeProperty p = selectedPropertySet.get(dataset, selectedPropertyIndex);
+			p.setType(type);
+			firePropertyChange(PROPERTY_TYPE_CHANGED, false, true);
+			loadComputedOrCachedProperty();
+		}
 	}
 
 	private void addListeners()
@@ -170,16 +192,7 @@ public class MoleculePropertyPanel extends JPanel
 					type = Type.NOMINAL;
 				else if (e.getSource() == numericFeatureButton)
 					type = Type.NUMERIC;
-
-				if (selectedPropertySet != null
-						&& selectedPropertySet.get(dataset, selectedPropertyIndex).getType() != type
-						&& selectedPropertySet.get(dataset, selectedPropertyIndex).isTypeAllowed(type))
-				{
-					MoleculeProperty p = selectedPropertySet.get(dataset, selectedPropertyIndex);
-					p.setType(type);
-					firePropertyChange(PROPERTY_TYPE_CHANGED, false, true);
-					loadComputedOrCachedProperty();
-				}
+				setType(type);
 			}
 		};
 		nominalFeatureButton.addActionListener(radioListener);
@@ -491,7 +504,7 @@ public class MoleculePropertyPanel extends JPanel
 
 			if (prop.getBinary() != null && !prop.getBinary().isFound())
 			{
-				if (prop.getBinary() != Settings.BABEL_BINARY)
+				if (prop.getBinary() != BinHandler.BABEL_BINARY)
 					throw new Error("implement properly");
 				showCard("babel-binary", babelBinaryPanel);
 				fragmentProps.setVisible(false);

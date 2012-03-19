@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import main.BinHandler;
 import main.Settings;
 import main.TaskProvider;
 import util.ExternalToolUtil;
@@ -24,7 +25,7 @@ public abstract class OBFitAligner extends Abstract3DAligner
 	@Override
 	public Binary getBinary()
 	{
-		return Settings.BABEL_BINARY;
+		return BinHandler.BABEL_BINARY;
 	}
 
 	List<String> alignedFiles;
@@ -80,7 +81,7 @@ public abstract class OBFitAligner extends Abstract3DAligner
 
 					ExternalToolUtil.run(
 							"obfit",
-							new String[] { Settings.BABEL_BINARY.getSisterCommandLocation("obfit"),
+							new String[] { BinHandler.BABEL_BINARY.getSisterCommandLocation("obfit"),
 									cluster.getSubstructureSmarts(type), tmpFirst.getAbsolutePath(),
 									tmpRemainder.getAbsolutePath() }, tmpAligned);
 
@@ -109,10 +110,10 @@ public abstract class OBFitAligner extends Abstract3DAligner
 					e.printStackTrace();
 					System.err.println("error occured, checking if smarts are matching in openbabel for debugging");
 					ExternalToolUtil.run("match-ref",
-							new String[] { Settings.BABEL_BINARY.getLocation(), tmpFirst.getAbsolutePath(), "-osmi",
+							new String[] { BinHandler.BABEL_BINARY.getLocation(), tmpFirst.getAbsolutePath(), "-osmi",
 									"--filter", "\"s='" + cluster.getSubstructureSmarts(type) + "'\"" });
 					ExternalToolUtil.run("match-mve",
-							new String[] { Settings.BABEL_BINARY.getLocation(), tmpRemainder.getAbsolutePath(),
+							new String[] { BinHandler.BABEL_BINARY.getLocation(), tmpRemainder.getAbsolutePath(),
 									"-osmi", "--filter", "\"s='" + cluster.getSubstructureSmarts(type) + "'\"" });
 					//						//convert error to runtime-exception, to not abort the mapping
 					//						throw new RuntimeException(e.getMessage(), e.getCause());

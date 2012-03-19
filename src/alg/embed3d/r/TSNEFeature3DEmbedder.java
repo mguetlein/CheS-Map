@@ -27,7 +27,7 @@ public class TSNEFeature3DEmbedder extends AbstractRTo3DEmbedder
 	@Override
 	public int getMinNumInstances()
 	{
-		return 2;
+		return 3;
 	}
 
 	@Override
@@ -46,20 +46,6 @@ public class TSNEFeature3DEmbedder extends AbstractRTo3DEmbedder
 	public String getDescription()
 	{
 		return Settings.text("embed.r.tsne.desc", Settings.R_STRING);
-	}
-
-	private int getPerplexity()
-	{
-		if (numInstances == -1)
-			throw new IllegalStateException("num instances not set before");
-		return Math.max(2, Math.min(perplexity.getValue(), (int) numInstances));
-	}
-
-	private int getInitialDims()
-	{
-		if (numFeatures == -1)
-			throw new IllegalStateException("num features not set before");
-		return Math.max(2, Math.min(initial_dims.getValue(), (int) numFeatures));
 	}
 
 	@Override
@@ -90,22 +76,31 @@ public class TSNEFeature3DEmbedder extends AbstractRTo3DEmbedder
 	}
 
 	@Override
+	protected String getDefaultError()
+	{
+		return "t-SNE tends to fail with improper input data (especially on small datasets). Try a different embedding algorithm.";
+	}
+
+	@Override
 	protected String getRScriptCode()
 	{
-		return "args <- commandArgs(TRUE)\n" //
-				+ "\n" + RScriptUtil.installAndLoadPackage("tsne")
-				+ "\n"
-				+ "df = read.table(args[1])\n"
-				+ "set.seed("
-				+ randomSeed.getValue()
-				+ ")\n" //
-				+ "res <- tsne(df, k = 3, perplexity=" + getPerplexity() + ", max_iter="
-				+ maxNumIterations.getValue()
-				+ ", initial_dims=" + getInitialDims() + ")\n" + "print(head(res$ydata))\n"
-				+ "\n"
-				+ "##res <- smacofSphere.dual(df, ndim = 3)\n" + "#print(res$conf)\n"
-				+ "#print(class(res$conf))\n"
-				+ "\n" + "write.table(res$ydata,args[2]) \n" + "";
+		String s = "args <- commandArgs(TRUE)\n";
+		s += RScriptUtil.installAndLoadPackage("tsne") + "\n";
+		s += "df = read.table(args[1])\n";
+		s += "set.seed(" + randomSeed.getValue() + ")\n";
+		s += "inst <- nrow(unique(df))\n";
+		s += "print(paste('unique instances ',inst))\n";
+		s += "if(inst < 3) stop(\"" + TOO_FEW_UNIQUE_DATA_POINTS + "\")\n";
+		s += "perp <- min(" + perplexity.getValue() + ",inst)\n";
+		s += "feats <- ncol(df)\n";
+		s += "print(paste('features ',feats))\n";
+		s += "dims <- min(" + initial_dims.getValue() + ",feats)\n";
+		s += "res <- tryCatch(tsne(df, k = 3, perplexity=perp, max_iter=" + maxNumIterations.getValue()
+				+ ", initial_dims=dims),error=function(e) stop(\"" + getDefaultError() + "\"))\n";
+		s += "print(head(res$ydata))\n";
+		//+ "##res <- smacofSphere.dual(df, ndim = 3)\n" + "#print(res$conf)\n" + "#print(class(res$conf))\n"
+		s += "write.table(res$ydata,args[2]) \n";
+		return s;
 	}
 
 	@Override

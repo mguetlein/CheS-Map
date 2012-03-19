@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import main.BinHandler;
 import main.Settings;
 import rscript.ExportRUtil;
 import rscript.RScriptUtil;
@@ -33,7 +34,7 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 	@Override
 	public Binary getBinary()
 	{
-		return Settings.RSCRIPT_BINARY;
+		return BinHandler.RSCRIPT_BINARY;
 	}
 
 	protected abstract String getRScriptCode();
@@ -45,6 +46,7 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 			throws IOException
 	{
 		File tmp = File.createTempFile(dataset.getShortName(), "cluster");
+		File rScript = null;
 		try
 		{
 			String propsMD5 = PropertyUtil.getPropertyMD5(getProperties());
@@ -63,12 +65,10 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 			System.out.println("Using r-clusterer " + getName() + " with properties: "
 					+ PropertyUtil.toString(getProperties()));
 
+			rScript = new File(RScriptUtil.getScriptPath(getShortName() + propsMD5, getRScriptCode()));
 			String errorOut = ExternalToolUtil.run(
 					getShortName(),
-					new String[] {
-							Settings.RSCRIPT_BINARY.getLocation(),
-							FileUtil.getAbsolutePathEscaped(new File(RScriptUtil.getScriptPath(getShortName()
-									+ propsMD5, getRScriptCode()))),
+					new String[] { BinHandler.RSCRIPT_BINARY.getLocation(), FileUtil.getAbsolutePathEscaped(rScript),
 							FileUtil.getAbsolutePathEscaped(new File(featureTableFile)),
 							FileUtil.getAbsolutePathEscaped(tmp) });
 
@@ -87,6 +87,8 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 		finally
 		{
 			tmp.delete();
+			if (rScript != null)
+				rScript.delete();
 		}
 	}
 }

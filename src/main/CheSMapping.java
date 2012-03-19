@@ -249,7 +249,7 @@ public class CheSMapping
 			TaskProvider
 					.task()
 					.warning(
-							"Could not embedd dataset, as every compound has equal feature values, using random positions",
+							"Could not embedd dataset, as every compound has equal feature values, CheS-Mapper uses random positions",
 							"3D Embedding uses feature values to embedd compounds in 3D space, with similar compounds close to each other. "
 									+ "The compounds have equal feature values for each feature, and cannot be distinguished by the embedder.");
 			emb = randomEmbedder;
@@ -265,8 +265,8 @@ public class CheSMapping
 			e.printStackTrace();
 			if (emb == randomEmbedder)
 				throw new Error("internal error: random embedder should not fail!", e);
-			TaskProvider.task().warning(emb.getName() + " failed on embedding dataset, using random positions",
-					e.getMessage());
+			TaskProvider.task().warning(
+					emb.getName() + " failed on embedding dataset, CheS-Mapper uses random positions", e.getMessage());
 			emb = randomEmbedder;
 			randomEmbedder.embedDataset(dataset,
 					ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), null);

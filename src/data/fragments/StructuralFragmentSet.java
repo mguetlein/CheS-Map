@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import main.BinHandler;
 import main.Settings;
 import main.TaskProvider;
 import util.ArrayUtil;
@@ -81,7 +82,7 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	public Binary getBinary()
 	{
 		if (StructuralFragmentProperties.getMatchEngine() == MatchEngine.OpenBabel)
-			return Settings.BABEL_BINARY;
+			return BinHandler.BABEL_BINARY;
 		else
 			return null;
 	}

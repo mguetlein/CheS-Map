@@ -30,7 +30,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import main.Settings;
+import main.BinHandler;
+import main.PropHandler;
 import util.WizardComponentFactory;
 import alg.Algorithm;
 import alg.cluster.DatasetClusterer;
@@ -74,7 +75,7 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 		buildLayout();
 		addListeners();
 
-		String method = (String) Settings.PROPS.get(getTitle() + "-method");
+		String method = PropHandler.get(getTitle() + "-method");
 		boolean selected = false;
 		if (method != null)
 		{
@@ -107,7 +108,7 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 		{
 			simpleView = createSimpleView();
 			simple().add(simpleView);
-			String simpleSelected = (String) Settings.PROPS.get(getTitle() + "-simple-selected");
+			String simpleSelected = PropHandler.get(getTitle() + "-simple-selected");
 			if (simpleSelected == null || simpleSelected.equals("true"))
 				toggle(true);
 		}
@@ -242,13 +243,13 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 
 			if (selectedAlgorithm.getBinary() != null)
 			{
-				JComponent pp = Settings.getBinaryComponent(selectedAlgorithm.getBinary());
+				JComponent pp = BinHandler.getBinaryComponent(selectedAlgorithm.getBinary());
 				pp.setBorder(new EmptyBorder(0, 0, 5, 0));
 				builder.append(pp);
 			}
 
-			PropertyPanel clusterPropertyPanel = new PropertyPanel(selectedAlgorithm.getProperties(), Settings.PROPS,
-					Settings.PROPERTIES_FILE);
+			PropertyPanel clusterPropertyPanel = new PropertyPanel(selectedAlgorithm.getProperties(),
+					PropHandler.getProperties(), PropHandler.getPropertiesFile());
 			if (selectedAlgorithm.getProperties() != null)
 			{
 				if (selectedAlgorithm.getBinary() != null)
@@ -281,15 +282,15 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 	@Override
 	public void proceed()
 	{
-		Settings.PROPS.put(getTitle() + "-simple-selected", isSimpleSelected() ? "true" : "false");
+		PropHandler.put(getTitle() + "-simple-selected", isSimpleSelected() ? "true" : "false");
 		if (isSimpleSelected())
 			simpleView.store();
 		else
 		{
-			Settings.PROPS.put(getTitle() + "-method", selectedAlgorithm.getName());
+			PropHandler.put(getTitle() + "-method", selectedAlgorithm.getName());
 			cards.get(selectedAlgorithm.toString()).store();
 		}
-		Settings.storeProps();
+		PropHandler.storeProperties();
 
 	}
 

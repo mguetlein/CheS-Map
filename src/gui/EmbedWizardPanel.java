@@ -11,6 +11,7 @@ import javax.swing.JLabel;
 import javax.swing.JRadioButton;
 import javax.swing.border.EmptyBorder;
 
+import main.PropHandler;
 import main.Settings;
 import alg.Algorithm;
 import alg.embed3d.Random3DEmbedder;
@@ -102,7 +103,7 @@ public class EmbedWizardPanel extends GenericWizardPanel
 			setLayout(new BorderLayout());
 			add(b.getPanel());
 
-			String simpleSelected = (String) Settings.PROPS.get(getTitle() + "-simple-yes");
+			String simpleSelected = PropHandler.get(getTitle() + "-simple-yes");
 			if (simpleSelected != null && simpleSelected.equals("false"))
 				buttonNo.setSelected(true);
 		}
@@ -124,7 +125,7 @@ public class EmbedWizardPanel extends GenericWizardPanel
 		@Override
 		protected void store()
 		{
-			Settings.PROPS.put(getTitle() + "-simple-yes", buttonYes.isSelected() ? "true" : "false");
+			PropHandler.put(getTitle() + "-simple-yes", buttonYes.isSelected() ? "true" : "false");
 		}
 	}
 

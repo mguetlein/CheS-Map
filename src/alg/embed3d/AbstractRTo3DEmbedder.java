@@ -11,6 +11,7 @@ import java.util.List;
 
 import javax.vecmath.Vector3f;
 
+import main.BinHandler;
 import main.Settings;
 
 import org.apache.commons.math.geometry.Vector3D;
@@ -28,20 +29,22 @@ import dataInterface.MoleculePropertyUtil;
 
 public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 {
-	protected int numInstances = -1;
-	protected int numFeatures = -1;
 
 	protected abstract String getRScriptCode();
 
 	protected abstract String getShortName();
 
+	protected String getDefaultError()
+	{
+		return null;
+	}
+
+	public static String TOO_FEW_UNIQUE_DATA_POINTS = "Too few unique data points, add features or choose a different embedder.";
+
 	@Override
 	public List<Vector3f> embed(DatasetFile dataset, final List<MolecularPropertyOwner> instances,
 			final List<MoleculeProperty> features) throws IOException
 	{
-		this.numInstances = instances.size();
-		this.numFeatures = features.size();
-
 		if (features.size() < getMinNumFeatures())
 			throw new EmbedException(this, getShortName() + " requires for embedding at least " + getMinNumFeatures()
 					+ " features with non-unique values (num features is '" + features.size() + "')");
@@ -50,6 +53,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 					+ " compounds (num compounds is '" + instances.size() + "')");
 
 		File tmp = File.createTempFile(dataset.getShortName(), "emb");
+		File rScript = null;
 		try
 		{
 			String propsMD5 = PropertyUtil.getPropertyMD5(getProperties());
@@ -67,12 +71,10 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			System.out.println("Using r-embedder " + getName() + " with properties: "
 					+ PropertyUtil.toString(getProperties()));
 
+			rScript = new File(RScriptUtil.getScriptPath(getShortName() + "." + propsMD5, getRScriptCode()));
 			String errorOut = ExternalToolUtil.run(
 					getShortName(),
-					new String[] {
-							Settings.RSCRIPT_BINARY.getLocation(),
-							FileUtil.getAbsolutePathEscaped(new File(RScriptUtil.getScriptPath(getShortName() + "."
-									+ propsMD5, getRScriptCode()))),
+					new String[] { BinHandler.RSCRIPT_BINARY.getLocation(), FileUtil.getAbsolutePathEscaped(rScript),
 							FileUtil.getAbsolutePathEscaped(new File(featureTableFile)),
 							FileUtil.getAbsolutePathEscaped(tmp) });
 			if (!tmp.exists())
@@ -80,9 +82,15 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 
 			List<Vector3D> v3d = RUtil.readRVectorMatrix(tmp.getAbsolutePath());
 			if (v3d.size() != instances.size())
-				throw new IllegalStateException("error using '" + getShortName() + "' num results is '" + v3d.size()
-						+ "' instead of '" + instances.size() + "'");
-
+			{
+				if (errorOut.contains(TOO_FEW_UNIQUE_DATA_POINTS))
+					throw new EmbedException(this, getShortName() + " failed: " + TOO_FEW_UNIQUE_DATA_POINTS);
+				else if (getDefaultError() != null && errorOut.contains(getDefaultError()))
+					throw new EmbedException(this, getShortName() + " failed: " + getDefaultError());
+				else
+					throw new IllegalStateException("error using '" + getShortName() + "' num results is '"
+							+ v3d.size() + "' instead of '" + instances.size() + "'");
+			}
 			boolean nonZero = false;
 			double d[][] = new double[v3d.size()][3];
 			for (int i = 0; i < v3d.size(); i++)
@@ -108,13 +116,15 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		finally
 		{
 			tmp.delete();
+			if (rScript != null)
+				rScript.delete();
 		}
 	}
 
 	@Override
 	public Binary getBinary()
 	{
-		return Settings.RSCRIPT_BINARY;
+		return BinHandler.RSCRIPT_BINARY;
 	}
 
 	public abstract int getMinNumFeatures();

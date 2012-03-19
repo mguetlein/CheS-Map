@@ -68,7 +68,7 @@ public class CheSMapperWizard extends WizardDialog
 		addPanel(embed);
 		addPanel(align);
 
-		getRootPane().setDefaultButton(finish);
+		getRootPane().setDefaultButton(buttonFinish);
 
 		setSize(ScreenSetup.SETUP.getWizardSize());
 		if (owner != null && owner.getRootPane().isShowing())

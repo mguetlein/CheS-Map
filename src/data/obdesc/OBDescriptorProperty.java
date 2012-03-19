@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import main.BinHandler;
 import main.Settings;
 import util.ArrayUtil;
 import util.ListUtil;
@@ -198,7 +199,7 @@ public class OBDescriptorProperty extends AbstractMoleculeProperty implements Mo
 	@Override
 	public Binary getBinary()
 	{
-		return Settings.BABEL_BINARY;
+		return BinHandler.BABEL_BINARY;
 	}
 
 	@Override
