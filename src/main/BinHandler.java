@@ -115,6 +115,17 @@ public class BinHandler
 		if (!BABEL_BINARY.isFound())
 			throw new IllegalStateException();
 		String p = FileUtil.getParent(BABEL_BINARY.getLocation());
+		String babelDatadir;
+		if (OSUtil.isWindows())
+			babelDatadir = System.getenv("BABEL_DATADIR");
+		else
+			babelDatadir = System.getenv().get("BABEL_DATADIR");
+		if (babelDatadir != null)
+		{
+			String f = System.getenv("BABEL_DATADIR") + File.separator + s;
+			if (new File(f).exists())
+				return f;
+		}
 		if (OSUtil.isWindows())
 		{
 			String f = p + "\\data\\" + s;
