@@ -49,17 +49,23 @@ public class DefaultFeatureComputer implements FeatureComputer
 			if (propSet instanceof IntegratedProperty)
 				((IntegratedProperty) propSet).setUsedForMapping(true);
 
+			boolean computed = true;
 			if (!propSet.isComputed(dataset))
-				propSet.compute(dataset);
-
-			for (int i = 0; i < propSet.getSize(dataset); i++)
+				computed = propSet.compute(dataset);
+			
+			if (computed)
 			{
-				props.add(propSet.get(dataset, i));
-				features.add(propSet.get(dataset, i));
-
-				if (TaskProvider.task().isCancelled())
-					return;
+				for (int i = 0; i < propSet.getSize(dataset); i++)
+				{
+					props.add(propSet.get(dataset, i));
+					features.add(propSet.get(dataset, i));
+	
+					if (TaskProvider.task().isCancelled())
+						return;
+				}
 			}
+			if (TaskProvider.task().isCancelled())
+				return;
 			count++;
 		}
 

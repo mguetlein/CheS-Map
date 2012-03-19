@@ -10,6 +10,7 @@ import java.util.Set;
 
 import main.BinHandler;
 import main.Settings;
+import main.TaskProvider;
 import util.ArrayUtil;
 import util.ListUtil;
 import util.ToStringComparator;
@@ -153,7 +154,11 @@ public class OBDescriptorProperty extends AbstractMoleculeProperty implements Mo
 			if (dVals == null)
 			{
 				if (getType() == Type.NUMERIC)
-					throw new IllegalStateException("numeric features cannot be parsed");
+				{
+					TaskProvider.task().warning("Cannot compute feature: "+getName(),"Numeric features cannot be parsed. Values returned from OpenBabel:\n"+ArrayUtil.toString(vals));
+					new File(cache).delete();
+					return false;
+				}
 				else
 					setTypeAllowed(Type.NUMERIC, false);
 			}

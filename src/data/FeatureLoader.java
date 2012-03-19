@@ -6,6 +6,9 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
+import main.Settings;
 import main.TaskProvider;
 import util.SequentialWorkerThread;
 import util.SwingUtil;
@@ -65,14 +68,16 @@ public class FeatureLoader
 						{
 							TaskProvider.task().update(p, " Compute feature: " + set);
 							p += step;
+							//ignoring boolean return values, if error occured, a warning should be given in compute
 							set.compute(dataset);
 							if (TaskProvider.task().isCancelled())
 								break;
 						}
-
 					//HACK: wait a tiny bit, cannot close dialog if the computation was too fast
 					Thread.sleep(250);
 					TaskProvider.task().getDialog().setVisible(false);
+					if (TaskProvider.task().containsWarnings())
+						TaskProvider.task().showWarningDialog(Settings.TOP_LEVEL_FRAME, "Could not compute feature/s", "Could not compute feature/s");
 				}
 				catch (Throwable e)
 				{
