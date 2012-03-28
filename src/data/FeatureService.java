@@ -211,17 +211,17 @@ public class FeatureService
 		}
 	}
 
-	public synchronized void updateMolecules3D(DatasetFile dataset)
+	public synchronized void updateMoleculesStructure(DatasetFile dataset, boolean threeD)
 	{
 		if (fileToMolecules.get(dataset) == null)
 			throw new IllegalStateException();
 
-		System.out.print("read 3d compounds fom file '" + dataset.getSDFPath(true) + "' ");
+		System.out.print("read compounds structures fom file '" + dataset.getSDFPath(threeD) + "' ");
 
 		try
 		{
 			ISimpleChemObjectReader reader = new ReaderFactory().createReader(new InputStreamReader(
-					new FileInputStream(dataset.getSDFPath(true))));
+					new FileInputStream(dataset.getSDFPath(threeD))));
 			IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
 			List<IAtomContainer> list = ChemFileManipulator.getAllAtomContainers(content);
 			reader.close();
@@ -247,7 +247,7 @@ public class FeatureService
 		}
 		catch (Exception e)
 		{
-			throw new Error("could not load 3d compounds " + e);
+			throw new Error("could not load molecule strcutures " + e, e);
 		}
 	}
 

@@ -205,6 +205,7 @@ public class DatasetFile
 		{
 			FeatureService.writeSDFFile(this, Settings.destinationSDFFile(this));
 			this.setSDFPath(Settings.destinationSDFFile(this), false);
+			this.updateMoleculesStructure(false);
 		}
 	}
 
@@ -213,9 +214,9 @@ public class DatasetFile
 		return featureService.numCompounds(this);
 	}
 
-	public void updateMolecules3D()
+	public void updateMoleculesStructure(boolean threeD)
 	{
-		featureService.updateMolecules3D(this);
+		featureService.updateMoleculesStructure(this, threeD);
 	}
 
 	public IMolecule[] getMolecules()

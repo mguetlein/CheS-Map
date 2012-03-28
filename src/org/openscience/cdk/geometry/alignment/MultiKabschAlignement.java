@@ -88,6 +88,20 @@ public class MultiKabschAlignement
 			if (!queryTool.matches(molecules[m]))
 				throw new Error(g.createSMILES(molecules[m]) + " does not match " + smarts);
 
+			boolean warning = false;
+			for (IAtom a : molecules[m].atoms())
+			{
+				if (a.getPoint3d() == null && !warning)
+				{
+					if (a.getPoint2d() == null)
+						throw new Error("no 2d coordinates");
+					System.err.println("no 3d coordinates available for " + g.createSMILES(molecules[m]));
+					warning = true;
+				}
+				if (a.getPoint3d() == null)
+					a.setPoint3d(new Point3d(a.getPoint2d().x, a.getPoint2d().y, 0));
+			}
+
 			List<List<Integer>> matchingAtoms = queryTool.getMatchingAtoms();
 			for (List<Integer> tmpMatchingAtoms : matchingAtoms)
 			{
@@ -212,12 +226,8 @@ public class MultiKabschAlignement
 						Atom[] a2 = atoms2.get(mappingIndex);
 
 						for (int i = 0; i < a2.length; i++)
-						{
-							if (a1[i].getPoint3d() == null || a2[i].getPoint3d() == null)
-								throw new IllegalArgumentException("no 3d coordinates available");
 							if (isomorph && a1[i].getAtomicNumber() != a2[i].getAtomicNumber())
 								throw new IllegalArgumentException("isomorph but not the same atom number");
-						}
 
 						KabschAlignment tmpKa = new KabschAlignment(a1, a2);
 						tmpKa.align();

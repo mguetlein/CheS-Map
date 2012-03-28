@@ -102,7 +102,7 @@ public class CheSMapping
 					threeDGenerator.build3D(dataset);
 					dataset.setSDFPath(threeDGenerator.get3DSDFFile(), true);
 					if (!dataset.getSDFPath(true).equals(dataset.getSDFPath(false)))
-						dataset.updateMolecules3D();
+						dataset.updateMoleculesStructure(true);
 
 					ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getFullName(), dataset
 							.getSDFPath(true));
