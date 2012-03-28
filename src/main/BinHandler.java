@@ -159,19 +159,21 @@ public class BinHandler
 		BinaryLocator.locate(bins);
 	}
 
-	public static void showBinaryDialog(Binary select)
+	public static void showBinaryDialog(Binary select, Window owner)
 	{
 		locateBinarys();
-		new BinaryLocatorDialog((Window) Settings.TOP_LEVEL_FRAME, "External Programs", Settings.TITLE, bins, select);
+		new BinaryLocatorDialog(owner, "External Programs", Settings.TITLE, bins, select);
 		for (Binary binary : bins)
 			if (binary.getLocation() != null)
 				PropHandler.put("bin-path-" + binary.getCommand(), binary.getLocation());
 			else
 				PropHandler.remove("bin-path-" + binary.getCommand());
 		PropHandler.storeProperties();
+		if (owner != null)
+			owner.setVisible(true);
 	}
 
-	public static JComponent getBinaryComponent(final Binary bin)
+	public static JComponent getBinaryComponent(final Binary bin, final Window owner)
 	{
 		final LinkButton l = new LinkButton("Configure external program: " + bin.getDescription());
 		l.setForegroundFont(l.getFont().deriveFont(Font.PLAIN));
@@ -195,7 +197,7 @@ public class BinHandler
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				showBinaryDialog(bin);
+				showBinaryDialog(bin, owner);
 			}
 		});
 		return l;

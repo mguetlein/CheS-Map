@@ -1,0 +1,430 @@
+package org.openscience.cdk.geometry.alignment;
+
+import gui.TaskPanel;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
+import javax.vecmath.Point3d;
+
+import main.TaskProvider;
+
+import org.openscience.cdk.Atom;
+import org.openscience.cdk.AtomContainer;
+import org.openscience.cdk.DefaultChemObjectBuilder;
+import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.geometry.GeometryTools;
+import org.openscience.cdk.graph.ConnectivityChecker;
+import org.openscience.cdk.interfaces.IAtom;
+import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IBond;
+import org.openscience.cdk.interfaces.IMolecule;
+import org.openscience.cdk.interfaces.IMoleculeSet;
+import org.openscience.cdk.io.SDFWriter;
+import org.openscience.cdk.isomorphism.MyUniversalIsomorphismTester;
+import org.openscience.cdk.isomorphism.UniversalIsomorphismTester;
+import org.openscience.cdk.isomorphism.mcss.RMap;
+import org.openscience.cdk.layout.StructureDiagramGenerator;
+import org.openscience.cdk.modeling.builder3d.ModelBuilder3D;
+import org.openscience.cdk.modeling.builder3d.TemplateHandler3D;
+import org.openscience.cdk.smiles.SmilesGenerator;
+import org.openscience.cdk.smiles.SmilesParser;
+import org.openscience.cdk.smiles.smarts.SMARTSQueryTool;
+import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
+
+import util.ArrayUtil;
+import util.StringUtil;
+
+public class MultiKabschAlignement
+{
+	public static boolean DEBUG = false;
+
+	private static SMARTSQueryTool queryTool;
+	static
+	{
+		try
+		{
+			queryTool = new SMARTSQueryTool("C");
+		}
+		catch (CDKException e)
+		{
+		}
+	}
+	private static SmilesGenerator g;
+	static
+	{
+		g = new SmilesGenerator(true, true);
+		g.setUseAromaticityFlag(true);
+	}
+
+	static class MoleculeInfo
+	{
+		List<Atom[]> smartsMatchAtoms = new ArrayList<Atom[]>();
+		List<Set<IBond>> smartsMatchBonds = new ArrayList<Set<IBond>>();
+
+		public int numSmartsMatches()
+		{
+			return smartsMatchAtoms.size();
+		}
+	}
+
+	Random r = new Random();
+
+	public static void align(IMolecule[] molecules, String smarts) throws CDKException, CloneNotSupportedException
+	{
+		MoleculeInfo molInfos[] = new MoleculeInfo[molecules.length];
+
+		for (int m = 0; m < molecules.length; m++)
+		{
+			molInfos[m] = new MoleculeInfo();
+			queryTool.setSmarts(smarts);
+			if (!queryTool.matches(molecules[m]))
+				throw new Error(g.createSMILES(molecules[m]) + " does not match " + smarts);
+
+			List<List<Integer>> matchingAtoms = queryTool.getMatchingAtoms();
+			for (List<Integer> tmpMatchingAtoms : matchingAtoms)
+			{
+				Atom[] tmpAtoms = new Atom[tmpMatchingAtoms.size()];
+				for (int i = 0; i < tmpAtoms.length; i++)
+					tmpAtoms[i] = (Atom) molecules[m].getAtom(tmpMatchingAtoms.get(i));
+				if (tmpAtoms.length == 0)
+					throw new IllegalStateException();
+				if (molInfos[m].smartsMatchAtoms.size() > 0
+						&& tmpAtoms.length != molInfos[m].smartsMatchAtoms.get(0).length)
+					throw new IllegalStateException();
+				molInfos[m].smartsMatchAtoms.add(tmpAtoms);
+
+				Set<IBond> tmpBonds = new HashSet<IBond>();
+				for (int i = 0; i < tmpAtoms.length; i++)
+					for (int j = 0; j < tmpAtoms.length; j++)
+						if (molecules[m].getBond(tmpAtoms[i], tmpAtoms[j]) != null)
+							tmpBonds.add(molecules[m].getBond(tmpAtoms[i], tmpAtoms[j]));
+				molInfos[m].smartsMatchBonds.add(tmpBonds);
+			}
+		}
+
+		int selectedMatchIndex1 = -1;
+		Point3d centerOfMass = null;
+
+		IMolecule mol1 = molecules[0];
+		MoleculeInfo molInfo1 = molInfos[0];
+
+		if (DEBUG)
+			System.out.println("Num matches in compound 1: " + molInfo1.numSmartsMatches());
+
+		for (int m = 1; m < molecules.length; m++)
+		{
+			IMolecule mol2 = molecules[m];
+			MoleculeInfo molInfo2 = molInfos[m];
+
+			double rmsd = Double.MAX_VALUE;
+			double completeRMSD = Double.MAX_VALUE;
+			Atom bestAtoms1[] = null;
+			Atom bestAtoms2[] = null;
+			int bestMol1Index = -1;
+
+			String msg = "Align compound " + (m + 1) + "/" + molInfos.length + " to first compound";
+			if (TaskProvider.exists())
+			{
+				TaskProvider.task().verbose(msg);
+				if (!TaskPanel.PRINT_VERBOSE_MESSAGES)
+					System.out.println(msg);
+			}
+			else
+				System.out.println(msg);
+
+			if (DEBUG)
+			{
+				System.out.println("Num matches in compound " + (m + 1) + ": " + molInfo2.numSmartsMatches());
+				System.out.print("Aligning:");
+			}
+
+			for (int matchIndex1 = 0; matchIndex1 < molInfo1.numSmartsMatches(); matchIndex1++)
+			{
+				if (selectedMatchIndex1 != -1 && selectedMatchIndex1 != matchIndex1)
+					continue;
+
+				Set<IBond> bonds1 = molInfo1.smartsMatchBonds.get(matchIndex1);
+
+				for (int matchIndex2 = 0; matchIndex2 < molInfo2.numSmartsMatches(); matchIndex2++)
+				{
+					Set<IBond> bonds2 = molInfo2.smartsMatchBonds.get(matchIndex2);
+					List<Atom[]> atoms2 = new ArrayList<Atom[]>();
+					List<Atom[]> atoms1 = new ArrayList<Atom[]>();
+					boolean isomorph = true;
+
+					List<List<RMap>> bMaps = null;
+					if (bonds1.size() > 1) // makeAtomsOfBonds does fail for single bonds
+						bMaps = MyUniversalIsomorphismTester.getIsomorphMaps(mol1, ArrayUtil.toArray(bonds1), mol2,
+								ArrayUtil.toArray(bonds2));
+
+					if (bMaps == null || bMaps.size() == 0 || bMaps.get(0).size() == 0)
+					{
+						isomorph = false;
+						atoms1.add(molInfo1.smartsMatchAtoms.get(matchIndex1));
+						atoms2.add(molInfo2.smartsMatchAtoms.get(matchIndex2));
+						if (bonds1.size() == 1)
+						{
+							// if its only 2 atoms, add the reverse mapping
+							Atom[] a1 = new Atom[] { atoms1.get(0)[1], atoms1.get(0)[0] };
+							Atom[] a2 = atoms2.get(0);
+							atoms1.add(a1);
+							atoms2.add(a2);
+						}
+					}
+					else
+					{
+						for (List<RMap> bMap : bMaps)
+						{
+							if (bonds1.size() != bMap.size())
+								throw new IllegalStateException();
+							//matches are isomorph, convert to atom matches
+							List<RMap> aMap = UniversalIsomorphismTester.makeAtomsMapOfBondsMap(bMap, mol1, mol2);
+
+							Atom[] a1 = new Atom[aMap.size()];
+							Atom[] a2 = new Atom[aMap.size()];
+							for (int i = 0; i < a1.length; i++)
+							{
+								a1[i] = (Atom) mol1.getAtom(aMap.get(i).getId1());
+								a2[i] = (Atom) mol2.getAtom(aMap.get(i).getId2());
+							}
+							atoms1.add(a1);
+							atoms2.add(a2);
+							if (a1.length != molInfo1.smartsMatchAtoms.get(0).length)
+								throw new IllegalStateException("isomorph " + a1.length + " != matching: "
+										+ molInfo1.smartsMatchAtoms.get(0).length);
+						}
+					}
+
+					if (atoms1.size() == 0)
+						throw new IllegalStateException();
+
+					for (int mappingIndex = 0; mappingIndex < atoms1.size(); mappingIndex++)
+					{
+						Atom[] a1 = atoms1.get(mappingIndex);
+						Atom[] a2 = atoms2.get(mappingIndex);
+
+						for (int i = 0; i < a2.length; i++)
+						{
+							if (a1[i].getPoint3d() == null || a2[i].getPoint3d() == null)
+								throw new IllegalArgumentException("no 3d coordinates available");
+							if (isomorph && a1[i].getAtomicNumber() != a2[i].getAtomicNumber())
+								throw new IllegalArgumentException("isomorph but not the same atom number");
+						}
+
+						KabschAlignment tmpKa = new KabschAlignment(a1, a2);
+						tmpKa.align();
+						double tmpRMSD = tmpKa.getRMSD();
+						//						if (Double.isNaN(tmpRMSD) || Double.isInfinite(tmpRMSD))
+						//							throw new IllegalStateException("rmsd is not valid " + a1.length);
+						double tmpCompleteRMSD = Double.MAX_VALUE;
+						if (DEBUG)
+							System.out.print(". " + StringUtil.formatDouble(tmpRMSD));
+
+						if (tmpRMSD - 0.1 < rmsd)
+						{
+							//compute complete rmsd
+							IMolecule mol1clone = (IMolecule) mol1.clone();
+							IMolecule mol2clone = (IMolecule) mol2.clone();
+							Point3d cm1 = tmpKa.getCenterOfMass();
+							for (int i = 0; i < mol1clone.getAtomCount(); i++)
+							{
+								Atom a = (Atom) mol1clone.getAtom(i);
+								a.setPoint3d(new Point3d(a.getPoint3d().x - cm1.x, a.getPoint3d().y - cm1.y, a
+										.getPoint3d().z - cm1.z));
+							}
+							tmpKa.rotateAtomContainer(mol2clone);
+							tmpCompleteRMSD = getAllAtomRMSD(mol1clone, mol2clone);
+							//compute complete rmsd done
+
+							boolean improvement = (tmpRMSD + 0.1 < rmsd) || (tmpCompleteRMSD + 0.1 < completeRMSD);
+							if (improvement)
+							{
+								rmsd = tmpRMSD;
+								completeRMSD = tmpCompleteRMSD;
+								bestAtoms1 = a1;
+								bestAtoms2 = a2;
+								bestMol1Index = matchIndex1;
+							}
+						}
+					}
+				}
+			}
+			if (DEBUG)
+				System.out.println();
+
+			if (bestAtoms1 == null)
+				throw new IllegalStateException("Kabsch Alignement failed");
+
+			selectedMatchIndex1 = bestMol1Index;
+
+			KabschAlignment ka = new KabschAlignment(bestAtoms1, bestAtoms2);
+			ka.align();
+			if (centerOfMass != null && !centerOfMass.equals(ka.getCenterOfMass()))
+				System.err.println("Center of mol1 is not equal for all alignments:\n" + centerOfMass + " != "
+						+ ka.getCenterOfMass());
+			centerOfMass = ka.getCenterOfMass();
+
+			//translate only once
+			if (m == 1)
+			{
+				Point3d cm1 = centerOfMass;
+				for (int i = 0; i < mol1.getAtomCount(); i++)
+				{
+					Atom a = (Atom) mol1.getAtom(i);
+					a.setPoint3d(new Point3d(a.getPoint3d().x - cm1.x, a.getPoint3d().y - cm1.y, a.getPoint3d().z
+							- cm1.z));
+				}
+			}
+
+			HashMap<Integer, Integer> mappedAtoms = null;
+			if (DEBUG)
+			{
+				mappedAtoms = new HashMap<Integer, Integer>();
+				for (int atomIndex = 0; atomIndex < bestAtoms1.length; atomIndex++)
+					mappedAtoms.put(mol1.getAtomNumber(bestAtoms1[atomIndex]),
+							mol2.getAtomNumber(bestAtoms2[atomIndex]));
+				System.out.println("RMSD between matched subgraphs BEFORE aligning "
+						+ GeometryTools.getAllAtomRMSD(mol1, mol2, mappedAtoms, true));
+				System.out.println("RMSD between whole compounds   BEFORE aligning " + getAllAtomRMSD(mol1, mol2));
+
+			}
+			ka.rotateAtomContainer(mol2);
+			double rmsdFinal = ka.getRMSD();
+			if (rmsd != rmsdFinal)
+				throw new IllegalStateException();
+			if (DEBUG)
+			{
+				double rmsdAfter = GeometryTools.getAllAtomRMSD(mol1, mol2, mappedAtoms, true);
+				System.out.println("RMSD between matched subgraphs AFTER  aligning " + rmsdAfter);
+				System.out.println("RMSD between whole compounds   AFTER  aligning " + getAllAtomRMSD(mol1, mol2));
+			}
+		}
+
+	}
+
+	public static double getAllAtomRMSD(IAtomContainer mol1, IAtomContainer mol2) throws CDKException
+	{
+		double sum = 0;
+		double RMSD;
+		int n = 0;
+		for (IAtom a : mol1.atoms())
+		{
+			double min = Double.MAX_VALUE;
+			for (IAtom b : mol2.atoms())
+			{
+				double dist = Math.pow(a.getPoint3d().distance(b.getPoint3d()), 2);
+				if (dist < min)
+					min = dist;
+			}
+			sum += min;
+			n++;
+		}
+		for (IAtom b : mol2.atoms())
+		{
+			double min = Double.MAX_VALUE;
+			for (IAtom a : mol1.atoms())
+			{
+				double dist = Math.pow(a.getPoint3d().distance(b.getPoint3d()), 2);
+				if (dist < min)
+					min = dist;
+			}
+			sum += min;
+			n++;
+		}
+		RMSD = Math.sqrt(sum / n);
+		return RMSD;
+	}
+
+	public static void main(String args[])
+	{
+		DEBUG = true;
+
+		try
+		{
+			//			String s[] = { "c1cc(ccc1Oc2cc(cc(c2)Br)Br)Br", "c2cc(Oc1ccc(cc1Br)Br)c(cc2Br)Br" };
+			//			String smarts = "c1ccc(cc1)Oc2ccc(cc2)Br";
+			//			MultiKabschAlignement.align("pbde", s, smarts);
+			//			System.out.println();
+
+			//			String s2[] = { "CCCC1CCNC(=O)C1", "O=C1CCC2CCCCC2(N1)" };
+			//			String smarts2 = "CCCCCCNC(C)=O";
+			//			MultiKabschAlignement.align("not-isomorph", s2, smarts2);
+			//			System.out.println();
+			//
+			//			String s3[] = { "O=S(=O)(N)c1ccc(cc1)n3ncc(c3(c2ccccc2))Cl",
+			//					"O=Cc3cc(c1ccc(cc1)S(=O)(=O)C)n(c2ccc(F)cc2)c3C",
+			//					"O=S(=O)(N)c1ccc(cc1)n3nc(cc3(c2ccc(cc2)C))C(F)(F)F",
+			//					"O=S(=O)(N)c1ccc(cc1)n3nc(cc3(c2cc(F)c(OC)c(F)c2))C(F)F" };
+			//			String smarts3 = "ccc(nc1ccccc1)c2ccccc2";
+			//			MultiKabschAlignement.align("cox", s3, smarts3);
+			//			System.out.println();
+			//			
+			//			String s4[] = { "O=S(=O)(c1ccc(cc1)C3=C(c2ccc(F)c(F)c2)CCC3)C",
+			//					"O=S(=O)(c1ccc(cc1)c3ccccc3(c2ccc(cc2)Cl))C" };
+			//			String smarts4 = "O=S";// "c1ccccc1";
+			//			MultiKabschAlignement.align("cox2", s4, smarts4);
+			//			System.out.println();
+
+			String s5[] = { "O=C2NC(=Nc1c2(ncn1COCCO))N", "O=C2NC(=Nc1c2(ncn1COC(CO)CO))N" };
+			String smarts5 = "OC";
+			MultiKabschAlignement.align("basic", s5, smarts5);
+			System.out.println();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	private static void align(String name, String[] smiles, String smarts) throws IOException, CDKException,
+			CloneNotSupportedException
+	{
+		SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+		IMolecule mol[] = new IMolecule[smiles.length];
+		ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), "mm2");
+		for (int i = 0; i < mol.length; i++)
+		{
+			System.out.println("build molecule " + (i + 1) + "/" + mol.length);
+			mol[i] = mb3d.generate3DCoordinates(sp.parseSmiles(smiles[i]), true);
+		}
+		toSDF(mol, "/tmp/" + name + ".before.sdf");
+		MultiKabschAlignement.align(mol, smarts);
+		toSDF(mol, "/tmp/" + name + ".after.sdf");
+	}
+
+	private static void toSDF(IMolecule mols[], String file) throws FileNotFoundException, IOException, CDKException
+	{
+		SDFWriter writer = new SDFWriter(new FileOutputStream(file));
+		StructureDiagramGenerator sdg = new StructureDiagramGenerator();
+		for (IMolecule mol : mols)
+		{
+			IMoleculeSet oldSet = ConnectivityChecker.partitionIntoMolecules(mol);
+			AtomContainer newSet = new AtomContainer();
+			for (int i = 0; i < oldSet.getMoleculeCount(); i++)
+			{
+				try
+				{
+					sdg.setMolecule(oldSet.getMolecule(i));
+					sdg.generateCoordinates();
+					newSet.add(AtomContainerManipulator.removeHydrogens(sdg.getMolecule()));
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+					newSet.add(AtomContainerManipulator.removeHydrogens(oldSet.getMolecule(i)));
+				}
+			}
+			writer.write(newSet);
+		}
+		writer.close();
+		System.out.println("written to " + file);
+	}
+}

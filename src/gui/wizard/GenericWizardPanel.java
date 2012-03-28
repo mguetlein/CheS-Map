@@ -243,7 +243,7 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 
 			if (selectedAlgorithm.getBinary() != null)
 			{
-				JComponent pp = BinHandler.getBinaryComponent(selectedAlgorithm.getBinary());
+				JComponent pp = BinHandler.getBinaryComponent(selectedAlgorithm.getBinary(), wizard);
 				pp.setBorder(new EmptyBorder(0, 0, 5, 0));
 				builder.append(pp);
 			}

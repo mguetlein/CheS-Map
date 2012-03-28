@@ -3,18 +3,21 @@ package dataInterface;
 import java.util.HashMap;
 
 import data.DatasetFile;
+import data.fragments.MatchEngine;
 
 public abstract class AbstractFragmentProperty extends AbstractMoleculeProperty
 {
-	public AbstractFragmentProperty(String name, String description, String smarts)
+	public AbstractFragmentProperty(String name, String description, String smarts, MatchEngine matchEngine)
 	{
-		this(name, name, description, smarts);
+		this(name, name, description, smarts, matchEngine);
 	}
 
-	public AbstractFragmentProperty(String name, String uniqueName, String description, String smarts)
+	public AbstractFragmentProperty(String name, String uniqueName, String description, String smarts,
+			MatchEngine matchEngine)
 	{
 		super(name, uniqueName, description);
 		setSmarts(smarts);
+		setSmartsMatchEngine(matchEngine);
 		setTypeAllowed(Type.NUMERIC, false);
 		setType(Type.NOMINAL);
 		setNominalDomain(new String[] { "0", "1" });

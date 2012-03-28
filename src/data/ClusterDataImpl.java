@@ -11,6 +11,7 @@ import util.DistanceMatrix;
 import util.DoubleArraySummary;
 import util.HashMapUtil;
 import util.ListUtil;
+import data.fragments.MatchEngine;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MolecularPropertyOwner;
@@ -23,12 +24,13 @@ public class ClusterDataImpl implements ClusterData
 	private String name;
 	private String alignAlgorithm;
 	private String filename;
+	private String alignedFilename;
 	private List<CompoundData> compounds = new ArrayList<CompoundData>();
 	private DistanceMatrix<CompoundData> compoundDistances;
 	private HashMap<SubstructureSmartsType, String> substructureSmarts = new HashMap<SubstructureSmartsType, String>();
+	private HashMap<SubstructureSmartsType, MatchEngine> substructureSmartsEngine = new HashMap<SubstructureSmartsType, MatchEngine>();
 	private HashMap<MoleculeProperty, ArraySummary> values = new HashMap<MoleculeProperty, ArraySummary>();
 	private HashMap<MoleculeProperty, ArraySummary> normalizedValues = new HashMap<MoleculeProperty, ArraySummary>();
-	private boolean aligned = false;
 
 	public String getName()
 	{
@@ -42,12 +44,37 @@ public class ClusterDataImpl implements ClusterData
 
 	public String getFilename()
 	{
-		return filename;
+		if (isAligned())
+			return alignedFilename;
+		else
+			return filename;
 	}
 
 	public void setFilename(String filename)
 	{
 		this.filename = filename;
+	}
+
+	public void setAlignedFilename(String alignedFilename)
+	{
+		this.alignedFilename = alignedFilename;
+	}
+
+	@Override
+	public boolean isAligned()
+	{
+		return alignedFilename != null;
+	}
+
+	public void setAlignAlgorithm(String alignAlgorithm)
+	{
+		this.alignAlgorithm = alignAlgorithm;
+	}
+
+	@Override
+	public String getAlignAlgorithm()
+	{
+		return alignAlgorithm;
 	}
 
 	public List<CompoundData> getCompounds()
@@ -77,6 +104,17 @@ public class ClusterDataImpl implements ClusterData
 	public void setSubstructureSmarts(SubstructureSmartsType type, String smarts)
 	{
 		substructureSmarts.put(type, smarts);
+	}
+
+	@Override
+	public MatchEngine getSubstructureSmartsMatchEngine(SubstructureSmartsType type)
+	{
+		return substructureSmartsEngine.get(type);
+	}
+
+	public void setSubstructureSmartsMatchEngine(SubstructureSmartsType type, MatchEngine engine)
+	{
+		substructureSmartsEngine.put(type, engine);
 	}
 
 	private ArraySummary getSummaryValue(MoleculeProperty p, boolean normalized)
@@ -164,28 +202,6 @@ public class ClusterDataImpl implements ClusterData
 	public int getSize()
 	{
 		return compounds.size();
-	}
-
-	public void setAligned(boolean b)
-	{
-		this.aligned = b;
-	}
-
-	@Override
-	public boolean isAligned()
-	{
-		return aligned;
-	}
-
-	public void setAlignAlgorithm(String alignAlgorithm)
-	{
-		this.alignAlgorithm = alignAlgorithm;
-	}
-
-	@Override
-	public String getAlignAlgorithm()
-	{
-		return alignAlgorithm;
 	}
 
 }

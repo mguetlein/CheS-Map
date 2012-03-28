@@ -211,6 +211,74 @@ public class FeatureService
 		}
 	}
 
+	public synchronized void updateMolecules3D(DatasetFile dataset)
+	{
+		if (fileToMolecules.get(dataset) == null)
+			throw new IllegalStateException();
+
+		System.out.print("read 3d compounds fom file '" + dataset.getSDFPath(true) + "' ");
+
+		try
+		{
+			ISimpleChemObjectReader reader = new ReaderFactory().createReader(new InputStreamReader(
+					new FileInputStream(dataset.getSDFPath(true))));
+			IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
+			List<IAtomContainer> list = ChemFileManipulator.getAllAtomContainers(content);
+			reader.close();
+			Vector<IMolecule> mols = new Vector<IMolecule>();
+			for (IAtomContainer iAtomContainer : list)
+			{
+				IMolecule mol = (IMolecule) iAtomContainer;
+				mol = (IMolecule) AtomContainerManipulator.removeHydrogens(mol);
+				try
+				{
+					AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
+				}
+				catch (NoSuchAtomTypeException e)
+				{
+					e.printStackTrace();
+				}
+				CDKHueckelAromaticityDetector.detectAromaticity(mol);
+				mols.add(mol);
+			}
+			IMolecule res[] = new IMolecule[mols.size()];
+			mols.toArray(res);
+			fileToMolecules.put(dataset, res);
+		}
+		catch (Exception e)
+		{
+			throw new Error("could not load 3d compounds " + e);
+		}
+	}
+
+	/**
+	 * CDK does not like empty lines between "M END" and the first property
+	 */
+	public static class SDFReader extends BufferedReader
+	{
+		public SDFReader(FileInputStream fileInputStream)
+		{
+			super(new InputStreamReader(fileInputStream));
+		}
+
+		private String oldLine = "";
+
+		public String readLine() throws IOException
+		{
+			String s = super.readLine();
+			if (s != null && oldLine != null && oldLine.trim().equals("M  END") && s.trim().length() == 0)
+			{
+				oldLine = "";
+				return readLine();
+			}
+			else
+			{
+				oldLine = s;
+				return s;
+			}
+		}
+	}
+
 	public synchronized void loadDataset(DatasetFile dataset, boolean loadHydrogen) throws Exception
 	{
 		if (fileToMolecules.get(dataset) == null)
@@ -237,7 +305,10 @@ public class FeatureService
 				ISimpleChemObjectReader reader;
 				if (dataset.getLocalPath().endsWith(".smi"))
 					reader = new SMILESReader(new FileInputStream(file));
-				reader = new ReaderFactory().createReader(new InputStreamReader(new FileInputStream(file)));
+				else if (dataset.getLocalPath().endsWith(".sdf"))
+					reader = new ReaderFactory().createReader(new SDFReader(new FileInputStream(file)));
+				else
+					reader = new ReaderFactory().createReader(new InputStreamReader(new FileInputStream(file)));
 				if (reader == null)
 					throw new IllegalArgumentException("Could not determine input file type");
 				else if (reader instanceof MDLReader || reader instanceof MDLV2000Reader)
@@ -494,9 +565,23 @@ public class FeatureService
 
 	public static void writeSDFFile(DatasetFile dataset, String sdfFile)
 	{
+		int compoundIndices[] = new int[dataset.numCompounds()];
+		//		IMolecule molecules[] = new IMolecule[dataset.numCompounds()];
+		for (int i = 0; i < compoundIndices.length; i++)
+		{
+			compoundIndices[i] = i;
+			//			molecules[i] = dataset.getMolecules()[i];
+		}
+		writeSDFFile(dataset, sdfFile, compoundIndices, false); //, molecules);
+	}
+
+	public static void writeSDFFile(DatasetFile dataset, String sdfFile, int compoundIndices[], boolean overwrite)//, IMolecule molecules[])
+	{
+		if (dataset.numCompounds() < compoundIndices.length)// || compoundIndices.length != molecules.length)
+			throw new IllegalArgumentException();
 		try
 		{
-			if (!new File(sdfFile).exists())
+			if (!new File(sdfFile).exists() || overwrite)
 			{
 				File tmpFile = File.createTempFile(dataset.getShortName(), "build.sdf");
 
@@ -504,10 +589,9 @@ public class FeatureService
 				// ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), "mm2");
 				StructureDiagramGenerator sdg = new StructureDiagramGenerator();
 
-				int mCount = 0;
-				for (IMolecule iMolecule : dataset.getMolecules())
+				for (int cIndex : compoundIndices)
 				{
-					IMolecule molecule = iMolecule;
+					IMolecule molecule = dataset.getMolecules()[cIndex];
 
 					IMoleculeSet oldSet = ConnectivityChecker.partitionIntoMolecules(molecule);
 					AtomContainer newSet = new AtomContainer();
@@ -530,13 +614,12 @@ public class FeatureService
 					for (MoleculeProperty p : dataset.getIntegratedProperties(true))
 						if (p.getType() == Type.NUMERIC)
 						{
-							if (p.getDoubleValues(dataset)[mCount] != null)
-								newSet.setProperty(p.getName(), p.getDoubleValues(dataset)[mCount]);
+							if (p.getDoubleValues(dataset)[cIndex] != null)
+								newSet.setProperty(p.getName(), p.getDoubleValues(dataset)[cIndex]);
 						}
-						else if (!p.getName().matches(".*(?i)smiles.*") && p.getStringValues(dataset)[mCount] != null)
-							newSet.setProperty(p.getName(), p.getStringValues(dataset)[mCount]);
+						else if (!p.getName().matches(".*(?i)smiles.*") && p.getStringValues(dataset)[cIndex] != null)
+							newSet.setProperty(p.getName(), p.getStringValues(dataset)[cIndex]);
 					writer.write(newSet);
-					mCount++;
 					if (TaskProvider.task().isCancelled())
 						return;
 				}
@@ -550,7 +633,6 @@ public class FeatureService
 			}
 			else
 				System.out.println("sdf 2d file already exists: " + sdfFile);
-			dataset.setSDFPath(sdfFile, false);
 		}
 		catch (CDKException e)
 		{

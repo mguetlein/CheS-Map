@@ -91,9 +91,9 @@ public class MoleculePropertyPanel extends JPanel
 
 	JPanel fragmentProps;
 
-	public MoleculePropertyPanel(FeatureWizardPanel featurePanel)
+	public MoleculePropertyPanel(FeatureWizardPanel featurePanel, Window owner)
 	{
-		fragmentProps = featurePanel.getFragmentPropPanel().getSummaryPanel();
+		fragmentProps = featurePanel.getFragmentPropPanel().getSummaryPanel(owner);
 		buildLayout();
 		addListeners();
 	}
@@ -148,7 +148,7 @@ public class MoleculePropertyPanel extends JPanel
 		cardPanel.add(loadButtonPanel, "loadButton");
 
 		DefaultFormBuilder b3 = new DefaultFormBuilder(new FormLayout("p"));
-		b3.append(BinHandler.getBinaryComponent(BinHandler.BABEL_BINARY));
+		b3.append(BinHandler.getBinaryComponent(BinHandler.BABEL_BINARY, (Window) getTopLevelAncestor()));
 		babelBinaryPanel = b3.getPanel();
 		cardPanel.add(babelBinaryPanel, "babel-binary");
 

@@ -457,21 +457,18 @@ public class OBFingerprintSet extends FragmentPropertySet
 	@Override
 	public boolean compute(DatasetFile dataset)
 	{
-		if (type == FingerprintType.FP2)
+		String version = BinHandler.getOpenBabelVersion();
+		int index = version.indexOf('.');
+		int major = Integer.parseInt(version.substring(0, index));
+		int nIndex = version.indexOf('.', index + 1);
+		int minor = Integer.parseInt(version.substring(index + 1, nIndex));
+		if (major < 2 || (major == 2 && minor < 3))
 		{
-			String version = BinHandler.getOpenBabelVersion();
-			int index = version.indexOf('.');
-			int major = Integer.parseInt(version.substring(0, index));
-			int nIndex = version.indexOf('.', index + 1);
-			int minor = Integer.parseInt(version.substring(index + 1, nIndex));
-			if (major < 2 || (major == 2 && minor < 3))
-			{
-				TaskProvider.task().warning(
-						"OpenBabel fingerprint " + this + " requires OpenBabel version >= 2.3, your version '"
-								+ version + "'", "");
-				return false;
-			}
+			TaskProvider.task().warning(
+					"OpenBabel fingerprints require OpenBabel version >= 2.3, your version '" + version + "'", "");
+			return false;
 		}
+
 		File tmp = null;
 		try
 		{
@@ -525,7 +522,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 				if (s.startsWith(">"))
 				{
 					count++;
-					s = s.replaceAll("^>[^\\s]*", "").trim();
+					s = ""; //s.replaceAll("^>[^\\s]*", "").trim();
 				}
 				// System.err.println(s);
 				if (s.length() > 0)

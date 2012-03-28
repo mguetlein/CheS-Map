@@ -242,10 +242,10 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		// auto load last selected dataset
 		if (wizard != null && oldDatasets.size() > 0)
 		{
-			if (oldDatasets.get(0).isLocal())
-				load(oldDatasets.get(0).getPath()); // auto-load local files
-			else
-				textField.setText(oldDatasets.get(0).getPath()); //remote file, do not auto-load
+			//			if (oldDatasets.get(0).isLocal())
+			load(oldDatasets.get(0).getPath()); // auto-load local files
+			//			else
+			//				textField.setText(oldDatasets.get(0).getPath()); //remote file, do not auto-load
 		}
 	}
 

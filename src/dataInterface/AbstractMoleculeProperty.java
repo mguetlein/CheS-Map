@@ -8,6 +8,7 @@ import java.util.List;
 import util.ArrayUtil;
 import util.DoubleArraySummary;
 import data.DatasetFile;
+import data.fragments.MatchEngine;
 
 public abstract class AbstractMoleculeProperty implements MoleculeProperty
 {
@@ -19,6 +20,7 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	HashSet<Type> types = new HashSet<Type>(ArrayUtil.toList(Type.values()));
 	String[] domain;
 	protected String smarts;
+	protected MatchEngine matchEngine;
 
 	private static HashMap<String, AbstractMoleculeProperty> uniqueNames = new HashMap<String, AbstractMoleculeProperty>();
 
@@ -133,6 +135,17 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	public void setSmarts(String smarts)
 	{
 		this.smarts = smarts;
+	}
+
+	@Override
+	public MatchEngine getSmartsMatchEngine()
+	{
+		return matchEngine;
+	}
+
+	public void setSmartsMatchEngine(MatchEngine matchEngine)
+	{
+		this.matchEngine = matchEngine;
 	}
 
 	private HashMap<DatasetFile, String[]> stringValues = new HashMap<DatasetFile, String[]>();

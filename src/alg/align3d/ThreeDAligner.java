@@ -15,7 +15,7 @@ public interface ThreeDAligner extends Algorithm
 
 	public void algin(DatasetFile dataset, List<ClusterData> clusters, List<MoleculeProperty> features);
 
-	public List<String> getAlginedClusterFiles();
+	public String getAlginedClusterFile(int clusterIndex);
 
 	public boolean requiresStructuralFragments();
 

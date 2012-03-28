@@ -5,13 +5,14 @@ import java.util.List;
 import main.Settings;
 import data.ClusterDataImpl;
 import data.DatasetFile;
+import data.fragments.MatchEngine;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MoleculeProperty;
 import dataInterface.SmartsUtil;
 import dataInterface.SubstructureSmartsType;
 
-public class MaxFragAligner extends OBFitAligner
+public class MaxFragAligner extends Abstract3DAligner
 {
 	public static final MaxFragAligner INSTANCE = new MaxFragAligner();
 
@@ -33,7 +34,7 @@ public class MaxFragAligner extends OBFitAligner
 	@Override
 	public String getDescription()
 	{
-		return Settings.text("align.max-frag.desc", Settings.OPENBABEL_STRING);
+		return Settings.text("align.max-frag.desc", Settings.OPENBABEL_STRING, Settings.CDK_STRING);
 	}
 
 	@Override
@@ -43,6 +44,7 @@ public class MaxFragAligner extends OBFitAligner
 		{
 			MoleculeProperty maxFrag = null;
 			int maxFragLength = -1;
+			MatchEngine maxMatchEngine = null;
 			for (MoleculeProperty feat : features)
 			{
 				if (!feat.isSmartsProperty())
@@ -61,13 +63,18 @@ public class MaxFragAligner extends OBFitAligner
 				{
 					maxFrag = feat;
 					maxFragLength = featLength;
+					maxMatchEngine = feat.getSmartsMatchEngine();
 				}
 			}
 			if (maxFrag != null)
+			{
 				((ClusterDataImpl) clusterData).setSubstructureSmarts(SubstructureSmartsType.MAX_FRAG,
 						maxFrag.getSmarts());
+				((ClusterDataImpl) clusterData).setSubstructureSmartsMatchEngine(SubstructureSmartsType.MAX_FRAG,
+						maxMatchEngine);
+			}
 		}
-		algin(dataset, clusters, SubstructureSmartsType.MAX_FRAG);
+		alignToSmarts(dataset, clusters, SubstructureSmartsType.MAX_FRAG);
 	}
 
 	@Override

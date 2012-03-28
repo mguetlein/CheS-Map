@@ -2,6 +2,7 @@ package data.cdkfingerprints;
 
 import java.util.HashMap;
 
+import data.fragments.MatchEngine;
 import dataInterface.AbstractFragmentProperty;
 
 public class CDKFingerprintProperty extends AbstractFragmentProperty
@@ -10,7 +11,7 @@ public class CDKFingerprintProperty extends AbstractFragmentProperty
 
 	private CDKFingerprintProperty(CDKFingerprintSet set, String name, String smarts)
 	{
-		super(name, set + "_" + name + "_" + smarts, "Structural Fragment", smarts);
+		super(name, set + "_" + name + "_" + smarts, "Structural Fragment", smarts, MatchEngine.CDK);
 		this.set = set;
 	}
 

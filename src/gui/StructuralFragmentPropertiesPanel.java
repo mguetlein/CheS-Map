@@ -5,6 +5,7 @@ import gui.property.PropertyPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -34,7 +35,7 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 	{
 		propPanel = new PropertyPanel(StructuralFragmentProperties.getProperties(), PropHandler.getProperties(),
 				PropHandler.getPropertiesFile());
-		babelPanel = BinHandler.getBinaryComponent(BinHandler.BABEL_BINARY);
+		babelPanel = BinHandler.getBinaryComponent(BinHandler.BABEL_BINARY, (Window) getTopLevelAncestor());
 
 		DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("p,fill:p:grow"));
 		b.append(propPanel);
@@ -63,16 +64,16 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 		propPanel.store();
 	}
 
-	public JPanel getSummaryPanel()
+	public JPanel getSummaryPanel(Window owner)
 	{
-		return new SummaryPanel();
+		return new SummaryPanel(owner);
 	}
 
 	class SummaryPanel extends JPanel
 	{
 		LinkButton l;
 
-		public SummaryPanel()
+		public SummaryPanel(final Window owner)
 		{
 			l = new LinkButton("");
 			l.setForegroundFont(l.getFont().deriveFont(Font.PLAIN));
@@ -94,6 +95,8 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 									babelPanel.setVisible(StructuralFragmentProperties.getMatchEngine() == MatchEngine.OpenBabel);
 								}
 							}, Settings.TOP_LEVEL_FRAME);
+					if (owner != null)
+						owner.setVisible(true);
 				}
 			});
 

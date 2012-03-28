@@ -2,11 +2,9 @@ package alg.align3d;
 
 import gui.FeatureWizardPanel.FeatureInfo;
 import gui.Messages;
-import gui.binloc.Binary;
 
 import java.util.List;
 
-import main.BinHandler;
 import main.Settings;
 import main.TaskProvider;
 import util.ExternalToolUtil;
@@ -18,7 +16,7 @@ import dataInterface.ClusterData;
 import dataInterface.MoleculeProperty;
 import dataInterface.SubstructureSmartsType;
 
-public class MCSAligner extends OBFitAligner
+public class MCSAligner extends Abstract3DAligner
 {
 	public static final MCSAligner INSTANCE = new MCSAligner();
 
@@ -35,7 +33,7 @@ public class MCSAligner extends OBFitAligner
 	@Override
 	public String getDescription()
 	{
-		return Settings.text("align.mcs.desc", Settings.CDK_STRING, Settings.OPENBABEL_STRING);
+		return Settings.text("align.mcs.desc", Settings.CDK_STRING);
 	}
 
 	@Override
@@ -44,7 +42,7 @@ public class MCSAligner extends OBFitAligner
 		ComputeMCS.computeMCS(dataset, clusters);
 		if (TaskProvider.task().isCancelled())
 			return;
-		algin(dataset, clusters, SubstructureSmartsType.MCS);
+		alignToSmarts(dataset, clusters, SubstructureSmartsType.MCS);
 	}
 
 	@Override
@@ -58,12 +56,6 @@ public class MCSAligner extends OBFitAligner
 		ExternalToolUtil
 				.run("obfit",
 						"obfit Oc1ccc(cc1)-c1cocc(:c:c)c1=O /tmp/first4154035072070520801sdf /tmp/remainder4312806650036993699sdf > /tmp/structural_cluster_3.aligned.sdf");
-	}
-
-	@Override
-	public Binary getBinary()
-	{
-		return BinHandler.BABEL_BINARY;
 	}
 
 	@Override

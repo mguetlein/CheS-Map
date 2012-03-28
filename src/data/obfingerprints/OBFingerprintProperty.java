@@ -2,6 +2,7 @@ package data.obfingerprints;
 
 import java.util.HashMap;
 
+import data.fragments.MatchEngine;
 import dataInterface.AbstractFragmentProperty;
 
 public class OBFingerprintProperty extends AbstractFragmentProperty
@@ -10,7 +11,7 @@ public class OBFingerprintProperty extends AbstractFragmentProperty
 
 	private OBFingerprintProperty(FingerprintType obType, String name, String smarts)
 	{
-		super(name, obType + "_" + name + "_" + smarts, "Structural Fragment", smarts);
+		super(name, obType + "_" + name + "_" + smarts, "Structural Fragment", smarts, MatchEngine.OpenBabel);
 		this.type = obType;
 	}
 

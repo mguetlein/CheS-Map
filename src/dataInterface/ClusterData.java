@@ -2,6 +2,8 @@ package dataInterface;
 
 import java.util.List;
 
+import data.fragments.MatchEngine;
+
 public interface ClusterData extends MolecularPropertyOwner
 {
 	public String getName();
@@ -13,6 +15,8 @@ public interface ClusterData extends MolecularPropertyOwner
 	public List<CompoundData> getCompounds();
 
 	public String getSubstructureSmarts(SubstructureSmartsType type);
+
+	public MatchEngine getSubstructureSmartsMatchEngine(SubstructureSmartsType type);
 
 	public boolean isAligned();
 

@@ -204,12 +204,18 @@ public class DatasetFile
 		if (getSDFPath(false) == null)
 		{
 			FeatureService.writeSDFFile(this, Settings.destinationSDFFile(this));
+			this.setSDFPath(Settings.destinationSDFFile(this), false);
 		}
 	}
 
 	public int numCompounds()
 	{
 		return featureService.numCompounds(this);
+	}
+
+	public void updateMolecules3D()
+	{
+		featureService.updateMolecules3D(this);
 	}
 
 	public IMolecule[] getMolecules()

@@ -101,6 +101,8 @@ public class CheSMapping
 					TaskProvider.task().update(10, "Compute 3d compound structures");
 					threeDGenerator.build3D(dataset);
 					dataset.setSDFPath(threeDGenerator.get3DSDFFile(), true);
+					if (!dataset.getSDFPath(true).equals(dataset.getSDFPath(false)))
+						dataset.updateMolecules3D();
 
 					ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getFullName(), dataset
 							.getSDFPath(true));
@@ -331,8 +333,7 @@ public class CheSMapping
 		if (align.getSubstructureSmartsType() != null)
 			clustering.addSubstructureSmartsTypes(align.getSubstructureSmartsType());
 		for (int i = 0; i < clustering.getSize(); i++)
-			if (((ClusterDataImpl) clustering.getCluster(i)).isAligned())
-				((ClusterDataImpl) clustering.getCluster(i)).setFilename(align.getAlginedClusterFiles().get(i));
+			((ClusterDataImpl) clustering.getCluster(i)).setAlignedFilename(align.getAlginedClusterFile(i));
 	}
 
 }

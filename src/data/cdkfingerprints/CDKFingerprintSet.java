@@ -164,23 +164,26 @@ public class CDKFingerprintSet extends FragmentPropertySet
 			try
 			{
 				BitSet bs = fingerprinter.getFingerprint(mol);
-				for (int i = 0; i < bs.cardinality(); i++)
+				for (int i = 0; i < bs.size(); i++)
 				{
-					String smarts = fingerprinter.getSubstructure(i);
-					CDKFingerprintProperty prop = CDKFingerprintProperty.create(this, smarts, smarts);
-					if (ps.indexOf(prop) == -1)
-						ps.add(prop);
-					String values[] = hash.get(prop);
-					if (values == null)
+					if (bs.get(i))
 					{
-						values = new String[dataset.numCompounds()];
-						Arrays.fill(values, "0");
-						hash.put(prop, values);
+						String smarts = fingerprinter.getSubstructure(i);
+						CDKFingerprintProperty prop = CDKFingerprintProperty.create(this, smarts, smarts);
+						if (ps.indexOf(prop) == -1)
+							ps.add(prop);
+						String values[] = hash.get(prop);
+						if (values == null)
+						{
+							values = new String[dataset.numCompounds()];
+							Arrays.fill(values, "0");
+							hash.put(prop, values);
+						}
+						if (m > values.length - 1)
+							throw new IllegalStateException("illegal index: " + m + ", length: " + values.length + ", "
+									+ ArrayUtil.toString(values));
+						values[m] = "1";
 					}
-					if (m > values.length - 1)
-						throw new IllegalStateException("illegal index: " + m + ", length: " + values.length + ", "
-								+ ArrayUtil.toString(values));
-					values[m] = "1";
 				}
 			}
 			catch (CDKException e)

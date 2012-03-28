@@ -9,7 +9,8 @@ public class StructuralFragment extends AbstractFragmentProperty
 
 	public StructuralFragment(String name, MatchEngine matchEngine, String file, String smarts)
 	{
-		super(name, name + "_" + matchEngine + "_" + file, "Structural Fragment, matched with " + matchEngine, smarts);
+		super(name, name + "_" + matchEngine + "_" + file, "Structural Fragment, matched with " + matchEngine, smarts,
+				matchEngine);
 	}
 
 	@Override

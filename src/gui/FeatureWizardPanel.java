@@ -138,10 +138,10 @@ public class FeatureWizardPanel extends WizardPanel
 		builder.nextLine();
 		builder.appendParagraphGapRow();
 		builder.nextLine();
-		builder.append(fragmentProperties.getSummaryPanel(), 2);
+		builder.append(fragmentProperties.getSummaryPanel(wizard), 2);
 		propsPanel = builder.getPanel();
 
-		moleculePropertyPanel = new MoleculePropertyPanel(this);
+		moleculePropertyPanel = new MoleculePropertyPanel(this, wizard);
 		structuralFragmentPropsContainer = new JPanel(new BorderLayout());
 		JPanel combinedPropertyPanel = new JPanel(new BorderLayout());
 		combinedPropertyPanel.add(moleculePropertyPanel, BorderLayout.NORTH);
@@ -280,7 +280,7 @@ public class FeatureWizardPanel extends WizardPanel
 					b.append("* " + o);
 				List<MoleculePropertySet> set = (List<MoleculePropertySet>) evt.getNewValue();
 				if (set.get(0).getBinary() != null && !set.get(0).getBinary().isFound())
-					b.append(BinHandler.getBinaryComponent(set.get(0).getBinary()));
+					b.append(BinHandler.getBinaryComponent(set.get(0).getBinary(), wizard));
 				else
 					b.append("The feature(s) is/are most likely not suited for clustering and embedding.\nYou have to asign the feature type manually (by clicking on 'Nominal') before adding the feature/s.");
 
@@ -412,7 +412,7 @@ public class FeatureWizardPanel extends WizardPanel
 		else if (highlightedCategory.equals(OB_FEATURES))
 		{
 			info = Settings.text("features.ob.desc", Settings.OPENBABEL_STRING);
-			JComponent pp = BinHandler.getBinaryComponent(BinHandler.BABEL_BINARY);
+			JComponent pp = BinHandler.getBinaryComponent(BinHandler.BABEL_BINARY, wizard);
 			JPanel p = new JPanel();
 			p.add(pp);
 			props = p;

@@ -9,6 +9,7 @@ import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.isomorphism.MCSComputer;
 import org.openscience.cdk.smiles.SmilesGenerator;
 
+import data.fragments.MatchEngine;
 import dataInterface.ClusterData;
 import dataInterface.SubstructureSmartsType;
 
@@ -42,7 +43,12 @@ public class ComputeMCS
 			if (mcsMolecule != null)
 			{
 				SmilesGenerator g = new SmilesGenerator(true, true);
-				((ClusterDataImpl) c).setSubstructureSmarts(SubstructureSmartsType.MCS, g.createSMILES(mcsMolecule));
+				String smiles = g.createSMILES(mcsMolecule);
+				//HACK: otherwhise CDK cannot rematch the smarts 
+				smiles = smiles.replaceAll("\\[nH\\]", "n");
+				((ClusterDataImpl) c).setSubstructureSmarts(SubstructureSmartsType.MCS, smiles);
+				((ClusterDataImpl) c).setSubstructureSmartsMatchEngine(SubstructureSmartsType.MCS, MatchEngine.CDK);
+
 				System.out.println("MCSMolecule: " + c.getSubstructureSmarts(SubstructureSmartsType.MCS));
 
 				//				System.out.println("non aromatic");
@@ -54,5 +60,4 @@ public class ComputeMCS
 		}
 
 	}
-
 }

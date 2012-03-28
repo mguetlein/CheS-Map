@@ -1,6 +1,7 @@
 package dataInterface;
 
 import data.DatasetFile;
+import data.fragments.MatchEngine;
 
 public interface MoleculeProperty
 {
@@ -29,6 +30,8 @@ public interface MoleculeProperty
 
 	public String getSmarts();
 
+	public MatchEngine getSmartsMatchEngine();
+
 	public MoleculePropertySet getMoleculePropertySet();
 
 	public String[] getStringValues(DatasetFile dataset);
@@ -42,4 +45,5 @@ public interface MoleculeProperty
 	public String getUniqueName();
 
 	public int numMissingValues(DatasetFile dataset);
+
 }
