@@ -114,14 +114,14 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 			String clusterFile = cluster.getFilename();
 			String alignedStructures = Settings.destinationFile(dataset, FileUtil.getFilename(clusterFile, false)
 					+ ".cdk.aligned.sdf");
-			FeatureService.writeSDFFile(dataset, alignedStructures, compoundIndices, true);
+			FeatureService.writeMoleculesToSDFFile(dataset, alignedStructures, compoundIndices, true);
 			alignedFiles[index] = alignedStructures;
 			return true;
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			TaskProvider.task().warning("cdk alignment failed on aligning cluster " + (index + 1), e.getMessage());
+			TaskProvider.task().warning(getName() + " failed on cluster " + (index + 1), e.getMessage());
 			return false;
 		}
 	}

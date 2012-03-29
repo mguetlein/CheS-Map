@@ -49,7 +49,6 @@ import util.ArrayUtil;
 import util.StringUtil;
 import util.ToStringComparator;
 import util.ValueFileCache;
-import dataInterface.MoleculeProperty;
 import dataInterface.MoleculeProperty.Type;
 
 public class FeatureService
@@ -563,85 +562,81 @@ public class FeatureService
 		}
 	}
 
-	public static void writeSDFFile(DatasetFile dataset, String sdfFile)
+	/**
+	 * does not store properties
+	 * 
+	 * @param dataset
+	 * @param sdfFile
+	 * @throws CDKException
+	 * @throws IOException
+	 */
+	public static void writeMoleculesToSDFFile(DatasetFile dataset, String sdfFile) throws CDKException, IOException
 	{
 		int compoundIndices[] = new int[dataset.numCompounds()];
-		//		IMolecule molecules[] = new IMolecule[dataset.numCompounds()];
 		for (int i = 0; i < compoundIndices.length; i++)
-		{
 			compoundIndices[i] = i;
-			//			molecules[i] = dataset.getMolecules()[i];
-		}
-		writeSDFFile(dataset, sdfFile, compoundIndices, false); //, molecules);
+		writeMoleculesToSDFFile(dataset, sdfFile, compoundIndices, false);
 	}
 
-	public static void writeSDFFile(DatasetFile dataset, String sdfFile, int compoundIndices[], boolean overwrite)//, IMolecule molecules[])
+	/**
+	 * does not store properties
+	 * 
+	 * @param dataset
+	 * @param sdfFile
+	 * @param compoundIndices
+	 * @param overwrite
+	 * @throws CDKException
+	 * @throws IOException
+	 */
+	public static void writeMoleculesToSDFFile(DatasetFile dataset, String sdfFile, int compoundIndices[],
+			boolean overwrite) throws CDKException, IOException
 	{
-		if (dataset.numCompounds() < compoundIndices.length)// || compoundIndices.length != molecules.length)
+		if (dataset.numCompounds() < compoundIndices.length)
 			throw new IllegalArgumentException();
-		try
+
+		if (!new File(sdfFile).exists() || overwrite)
 		{
-			if (!new File(sdfFile).exists() || overwrite)
+			File tmpFile = File.createTempFile(dataset.getShortName(), "build.sdf");
+
+			SDFWriter writer = new SDFWriter(new FileOutputStream(tmpFile));
+			StructureDiagramGenerator sdg = new StructureDiagramGenerator();
+
+			for (int cIndex : compoundIndices)
 			{
-				File tmpFile = File.createTempFile(dataset.getShortName(), "build.sdf");
+				IMolecule molecule = dataset.getMolecules()[cIndex];
 
-				SDFWriter writer = new SDFWriter(new FileOutputStream(tmpFile));
-				// ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), "mm2");
-				StructureDiagramGenerator sdg = new StructureDiagramGenerator();
-
-				for (int cIndex : compoundIndices)
+				IMoleculeSet oldSet = ConnectivityChecker.partitionIntoMolecules(molecule);
+				AtomContainer newSet = new AtomContainer();
+				for (int i = 0; i < oldSet.getMoleculeCount(); i++)
 				{
-					IMolecule molecule = dataset.getMolecules()[cIndex];
-
-					IMoleculeSet oldSet = ConnectivityChecker.partitionIntoMolecules(molecule);
-					AtomContainer newSet = new AtomContainer();
-					for (int i = 0; i < oldSet.getMoleculeCount(); i++)
+					try
 					{
-						try
-						{
-							sdg.setMolecule(oldSet.getMolecule(i));
-							sdg.generateCoordinates();
-							newSet.add(AtomContainerManipulator.removeHydrogens(sdg.getMolecule()));
-						}
-						catch (Exception e)
-						{
-							e.printStackTrace();
-							newSet.add(AtomContainerManipulator.removeHydrogens(oldSet.getMolecule(i)));
-						}
-						if (TaskProvider.task().isCancelled())
-							return;
+						sdg.setMolecule(oldSet.getMolecule(i));
+						sdg.generateCoordinates();
+						newSet.add(AtomContainerManipulator.removeHydrogens(sdg.getMolecule()));
 					}
-					for (MoleculeProperty p : dataset.getIntegratedProperties(true))
-						if (p.getType() == Type.NUMERIC)
-						{
-							if (p.getDoubleValues(dataset)[cIndex] != null)
-								newSet.setProperty(p.getName(), p.getDoubleValues(dataset)[cIndex]);
-						}
-						else if (!p.getName().matches(".*(?i)smiles.*") && p.getStringValues(dataset)[cIndex] != null)
-							newSet.setProperty(p.getName(), p.getStringValues(dataset)[cIndex]);
-					writer.write(newSet);
+					catch (Exception e)
+					{
+						e.printStackTrace();
+						newSet.add(AtomContainerManipulator.removeHydrogens(oldSet.getMolecule(i)));
+					}
 					if (TaskProvider.task().isCancelled())
 						return;
 				}
-				writer.close();
-
-				boolean res = tmpFile.renameTo(new File(sdfFile));
-				res |= tmpFile.delete();
-				if (!res)
-					throw new Error("renaming or delete file error");
-				System.out.println("created 2d sdf file: " + sdfFile);
+				writer.write(newSet);
+				if (TaskProvider.task().isCancelled())
+					return;
 			}
-			else
-				System.out.println("sdf 2d file already exists: " + sdfFile);
+			writer.close();
+
+			boolean res = tmpFile.renameTo(new File(sdfFile));
+			res |= tmpFile.delete();
+			if (!res)
+				throw new Error("renaming or delete file error");
+			System.out.println("created 2d sdf file: " + sdfFile);
 		}
-		catch (CDKException e)
-		{
-			e.printStackTrace();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		else
+			System.out.println("sdf 2d file already exists: " + sdfFile);
 	}
 
 }

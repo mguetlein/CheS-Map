@@ -75,7 +75,15 @@ public class CheSMapperWizard extends WizardDialog
 			setLocationRelativeTo(owner);
 		else
 			ScreenSetup.SETUP.centerOnScreen(this);
-		setUndecorated(ScreenSetup.SETUP.isWizardUndecorated());
+
+		try
+		{
+			setUndecorated(ScreenSetup.SETUP.isWizardUndecorated());
+		}
+		catch (Exception e1)
+		{
+			e1.printStackTrace();
+		}
 
 		addComponentListener(new ComponentAdapter()
 		{

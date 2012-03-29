@@ -86,7 +86,7 @@ public class MultiKabschAlignement
 			molInfos[m] = new MoleculeInfo();
 			queryTool.setSmarts(smarts);
 			if (!queryTool.matches(molecules[m]))
-				throw new Error(g.createSMILES(molecules[m]) + " does not match " + smarts);
+				throw new IllegalStateException(g.createSMILES(molecules[m]) + " does not match " + smarts);
 
 			boolean warning = false;
 			for (IAtom a : molecules[m].atoms())

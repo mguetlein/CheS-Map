@@ -203,7 +203,7 @@ public class DatasetFile
 		featureService.loadDataset(this, loadHydrogen);
 		if (getSDFPath(false) == null)
 		{
-			FeatureService.writeSDFFile(this, Settings.destinationSDFFile(this));
+			FeatureService.writeMoleculesToSDFFile(this, Settings.destinationSDFFile(this));
 			this.setSDFPath(Settings.destinationSDFFile(this), false);
 			this.updateMoleculesStructure(false);
 		}
