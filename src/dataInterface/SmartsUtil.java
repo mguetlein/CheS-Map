@@ -25,5 +25,6 @@ public class SmartsUtil
 	public static void main(String args[])
 	{
 		System.out.println(getLength("[#7]-[#6]-[#6]-[#7]:[#7]:[#6]:[#6]"));
+		System.out.println(getLength("[a]"));
 	}
 }

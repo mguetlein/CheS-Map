@@ -44,7 +44,7 @@ import util.StringUtil;
 
 public class MultiKabschAlignement
 {
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 
 	private static SMARTSQueryTool queryTool;
 	static
@@ -170,28 +170,18 @@ public class MultiKabschAlignement
 				for (int matchIndex2 = 0; matchIndex2 < molInfo2.numSmartsMatches(); matchIndex2++)
 				{
 					Set<IBond> bonds2 = molInfo2.smartsMatchBonds.get(matchIndex2);
-					List<Atom[]> atoms2 = new ArrayList<Atom[]>();
 					List<Atom[]> atoms1 = new ArrayList<Atom[]>();
+					List<Atom[]> atoms2 = new ArrayList<Atom[]>();
 					boolean isomorph = true;
 
-					List<List<RMap>> bMaps = null;
-					if (bonds1.size() > 1) // makeAtomsOfBonds does fail for single bonds
-						bMaps = MyUniversalIsomorphismTester.getIsomorphMaps(mol1, ArrayUtil.toArray(bonds1), mol2,
-								ArrayUtil.toArray(bonds2));
+					List<List<RMap>> bMaps = MyUniversalIsomorphismTester.getIsomorphMaps(mol1,
+							ArrayUtil.toArray(bonds1), mol2, ArrayUtil.toArray(bonds2));
 
 					if (bMaps == null || bMaps.size() == 0 || bMaps.get(0).size() == 0)
 					{
 						isomorph = false;
 						atoms1.add(molInfo1.smartsMatchAtoms.get(matchIndex1));
 						atoms2.add(molInfo2.smartsMatchAtoms.get(matchIndex2));
-						if (bonds1.size() == 1)
-						{
-							// if its only 2 atoms, add the reverse mapping
-							Atom[] a1 = new Atom[] { atoms1.get(0)[1], atoms1.get(0)[0] };
-							Atom[] a2 = atoms2.get(0);
-							atoms1.add(a1);
-							atoms2.add(a2);
-						}
 					}
 					else
 					{
@@ -236,7 +226,7 @@ public class MultiKabschAlignement
 						//							throw new IllegalStateException("rmsd is not valid " + a1.length);
 						double tmpCompleteRMSD = Double.MAX_VALUE;
 						if (DEBUG)
-							System.out.print(". " + StringUtil.formatDouble(tmpRMSD));
+							System.out.print(StringUtil.formatDouble(tmpRMSD) + " ");
 
 						if (tmpRMSD - 0.1 < rmsd)
 						{
@@ -271,7 +261,8 @@ public class MultiKabschAlignement
 				System.out.println();
 
 			if (bestAtoms1 == null)
-				throw new IllegalStateException("Kabsch Alignement failed");
+				throw new IllegalStateException("Kabsch Alignement failed to align according to smarts '" + smarts
+						+ "'");
 
 			selectedMatchIndex1 = bestMol1Index;
 
@@ -364,10 +355,10 @@ public class MultiKabschAlignement
 			//			MultiKabschAlignement.align("pbde", s, smarts);
 			//			System.out.println();
 
-			//			String s2[] = { "CCCC1CCNC(=O)C1", "O=C1CCC2CCCCC2(N1)" };
-			//			String smarts2 = "CCCCCCNC(C)=O";
-			//			MultiKabschAlignement.align("not-isomorph", s2, smarts2);
-			//			System.out.println();
+			String s2[] = { "CCCC1CCNC(=O)C1", "O=C1CCC2CCCCC2(N1)" };
+			String smarts2 = "CCCCCCNC(C)=O";
+			MultiKabschAlignement.align("not-isomorph", s2, smarts2);
+			System.out.println();
 			//
 			//			String s3[] = { "O=S(=O)(N)c1ccc(cc1)n3ncc(c3(c2ccccc2))Cl",
 			//					"O=Cc3cc(c1ccc(cc1)S(=O)(=O)C)n(c2ccc(F)cc2)c3C",
@@ -383,10 +374,10 @@ public class MultiKabschAlignement
 			//			MultiKabschAlignement.align("cox2", s4, smarts4);
 			//			System.out.println();
 
-			String s5[] = { "O=C2NC(=Nc1c2(ncn1COCCO))N", "O=C2NC(=Nc1c2(ncn1COC(CO)CO))N" };
-			String smarts5 = "OC";
-			MultiKabschAlignement.align("basic", s5, smarts5);
-			System.out.println();
+			//			String s5[] = { "O=C2NC(=Nc1c2(ncn1COCCO))N", "O=C2NC(=Nc1c2(ncn1COC(CO)CO))N" };
+			//			String smarts5 = "OC";
+			//			MultiKabschAlignement.align("basic", s5, smarts5);
+			//			System.out.println();
 		}
 		catch (Exception e)
 		{

@@ -3,6 +3,7 @@ package alg.align3d;
 import java.util.List;
 
 import main.Settings;
+import main.TaskProvider;
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import data.fragments.MatchEngine;
@@ -59,7 +60,7 @@ public class MaxFragAligner extends Abstract3DAligner
 				if (!matchesAll)
 					continue;
 				int featLength = SmartsUtil.getLength(feat.getSmarts());
-				if (maxFrag == null || maxFragLength < featLength)
+				if (featLength >= MIN_NUM_ATOMS && (maxFrag == null || maxFragLength < featLength))
 				{
 					maxFrag = feat;
 					maxFragLength = featLength;
@@ -87,6 +88,17 @@ public class MaxFragAligner extends Abstract3DAligner
 	public boolean requiresStructuralFragments()
 	{
 		return true;
+	}
+
+	@Override
+	public void giveNoSmartsWarning(int clusterIndex)
+	{
+		TaskProvider.task().warning(
+				"Could not align cluster " + (clusterIndex + 1) + ", no common fragment found.",
+				getName() + " could not align the cluster, as there is no structural fragment (of size >="
+						+ MIN_NUM_ATOMS + ") that matches all compounds of the cluster. "
+						+ "The reason maybe that the cluster is too structurally diverse. "
+						+ "You could try to increase the number of structural fragments.");
 	}
 
 }

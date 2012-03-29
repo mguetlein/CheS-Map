@@ -98,6 +98,11 @@ public class MCSComputer
 
 	public static IAtomContainer computeMCS(IAtomContainer mols[]) throws CDKException
 	{
+		return computeMCS(mols, 2);
+	}
+
+	public static IAtomContainer computeMCS(IAtomContainer mols[], int minNumAtoms) throws CDKException
+	{
 		// sort according to number of atoms in ascending order to reduce computational effort
 		Arrays.sort(mols, new Comparator<IAtomContainer>()
 		{
@@ -150,7 +155,7 @@ public class MCSComputer
 					if (DEBUG)
 						printCandidates("tmp", canMCS);
 					for (IAtomContainer m : canMCS)
-						if (m.getAtomCount() > 0)
+						if (m.getAtomCount() >= minNumAtoms)
 							newCandiates.add(m);
 				}
 				candidates = newCandiates;

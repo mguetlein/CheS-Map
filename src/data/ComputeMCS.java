@@ -9,6 +9,7 @@ import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.isomorphism.MCSComputer;
 import org.openscience.cdk.smiles.SmilesGenerator;
 
+import alg.align3d.ThreeDAligner;
 import data.fragments.MatchEngine;
 import dataInterface.ClusterData;
 import dataInterface.SubstructureSmartsType;
@@ -34,7 +35,7 @@ public class ComputeMCS
 			IAtomContainer mcsMolecule = null;
 			try
 			{
-				mcsMolecule = MCSComputer.computeMCS(mols);
+				mcsMolecule = MCSComputer.computeMCS(mols, ThreeDAligner.MIN_NUM_ATOMS);
 			}
 			catch (Exception e)
 			{

@@ -48,6 +48,8 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 		return m;
 	}
 
+	public abstract void giveNoSmartsWarning(int clusterIndex);
+
 	public void alignToSmarts(DatasetFile dataset, List<ClusterData> clusters, SubstructureSmartsType type)
 	{
 		alignedFiles = new String[clusters.size()];
@@ -56,11 +58,14 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 		for (ClusterData cluster : clusters)
 		{
 			boolean aligned = false;
-			if (cluster.getCompounds().size() < 2 || cluster.getSubstructureSmarts(type) == null
+			if (cluster.getCompounds().size() < 2)
+			{
+				// dont give a warning, single compound clusters cannot be aligned
+			}
+			else if (cluster.getSubstructureSmarts(type) == null
 					|| cluster.getSubstructureSmarts(type).trim().length() == 0)
 			{
-				TaskProvider.task().warning("Cannot align cluster " + (count + 1) + ", no common substructure found",
-						"Common substructure: '" + cluster.getSubstructureSmarts(type) + "'");
+				giveNoSmartsWarning(count);
 			}
 			else
 			{
