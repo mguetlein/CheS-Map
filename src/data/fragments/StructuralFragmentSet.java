@@ -199,7 +199,7 @@ public class StructuralFragmentSet extends FragmentPropertySet
 				matches = new OpenBabelSmartsHandler().match(smarts, dataset);
 			else
 				throw new Error("illegal match engine");
-			if (TaskProvider.task().isCancelled())
+			if (!TaskProvider.isRunning())
 				return false;
 			System.out.println("store matches in file: " + smartsMatchFile);
 			writeToFile(smartsMatchFile, matches);

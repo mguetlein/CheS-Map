@@ -282,7 +282,8 @@ public class FeatureService
 	{
 		if (fileToMolecules.get(dataset) == null)
 		{
-			System.out.print("read dataset file '" + dataset.getLocalPath() + "' ");
+			System.out.print("read dataset file '" + dataset.getLocalPath() + "' with cdk");
+			TaskProvider.verbose("Parsing file with CDK");
 
 			Vector<IMolecule> mols = new Vector<IMolecule>();
 			integratedProperties.put(dataset, new HashSet<IntegratedProperty>());
@@ -323,8 +324,9 @@ public class FeatureService
 			for (IAtomContainer iAtomContainer : list)
 			{
 				IMolecule mol = (IMolecule) iAtomContainer;
-				if (TaskProvider.exists())
-					TaskProvider.task().verbose("Loaded " + (mCount + 1) + " molecules");
+				if (!TaskProvider.isRunning())
+					return;
+				TaskProvider.verbose("Loaded " + (mCount + 1) + "/" + list.size() + " molecules");
 
 				Map<Object, Object> props = mol.getProperties();
 				for (Object key : props.keySet())
@@ -380,12 +382,15 @@ public class FeatureService
 				mols.add(mol);
 				mCount++;
 			}
+
 			if (illegalMolecules.size() > 0)
+			{
+				System.err.println("Could not read " + illegalMolecules.size() + "/" + mols.size() + " molecules");
 				if (mols.size() > illegalMolecules.size())
 					throw new IllegalCompoundsException(illegalMolecules);
 				else
 					throw new IllegalStateException("Could not read any compounds");
-
+			}
 			System.out.println(" done (" + mols.size() + " compounds found)");
 
 			// convert string to double
@@ -542,12 +547,12 @@ public class FeatureService
 				}
 				catch (Exception e)
 				{
-					TaskProvider.task().warning("Could not build 3D for molecule", e);
+					TaskProvider.warning("Could not build 3D for molecule", e);
 				}
 				molecule = (IMolecule) AtomContainerManipulator.removeHydrogens(molecule);
 				writer.write(molecule);
 
-				if (TaskProvider.task().isCancelled())
+				if (!TaskProvider.isRunning())
 					return;
 			}
 			writer.close();
@@ -620,11 +625,11 @@ public class FeatureService
 						e.printStackTrace();
 						newSet.add(AtomContainerManipulator.removeHydrogens(oldSet.getMolecule(i)));
 					}
-					if (TaskProvider.task().isCancelled())
+					if (!TaskProvider.isRunning())
 						return;
 				}
 				writer.write(newSet);
-				if (TaskProvider.task().isCancelled())
+				if (!TaskProvider.isRunning())
 					return;
 			}
 			writer.close();

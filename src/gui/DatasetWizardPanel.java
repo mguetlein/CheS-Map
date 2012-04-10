@@ -31,8 +31,10 @@ import main.PropHandler;
 import main.Settings;
 import main.TaskProvider;
 import opentox.DatasetUtil;
+import task.Task;
+import task.TaskDialog;
 import util.ListUtil;
-import util.SwingUtil;
+import util.ThreadUtil;
 import util.VectorUtil;
 import alg.DatasetProvider;
 
@@ -314,7 +316,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		}
 		else
 		{
-			SwingUtil.loadingLabel(labelFile);
+			labelFile.setText("-");
 			labelProps.setText("-");
 			labelNumericProps.setText("-");
 			labelSize.setText("-");
@@ -324,63 +326,98 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 			{
 				public void run()
 				{
-					TaskProvider.registerThread("Load-dataset-thread");
-
-					boolean urlDatasetDownloadFailed = false;
-					if (!d.isLocal())
-						urlDatasetDownloadFailed = !DatasetUtil.downloadDataset(d.getURI());
-
-					if (!urlDatasetDownloadFailed)
+					final Task task = TaskProvider.initTask("Loading dataset file");
+					if (!wizard.isVisible())
 					{
-						File datasetFile = new File(d.getLocalPath());
-						try
+						Thread th = new Thread(new Runnable()
 						{
+							@Override
+							public void run()
+							{
+								while (!wizard.isVisible())
+									ThreadUtil.sleep(100);
+								if (task.isRunning())
+									new TaskDialog(task, wizard);
+							}
+						});
+						th.start();
+					}
+					else
+						new TaskDialog(task, wizard);
+
+					TaskProvider.update("Loading dataset: " + d.getName());
+					try
+					{
+						if (!d.isLocal())
+						{
+							TaskProvider.verbose("Downloading external dataset: " + d.getName());
+							DatasetUtil.downloadDataset(d.getURI());
+						}
+						if (TaskProvider.isRunning())
+						{
+							File datasetFile = new File(d.getLocalPath());
 							if (datasetFile != null && datasetFile.exists())
 							{
 								d.loadDataset();
-								if (d.numCompounds() == 0)
-									throw new Exception("No compounds in file");
-								dataset = d;
+								if (TaskProvider.isRunning())
+								{
+									if (d.numCompounds() == 0)
+										throw new Exception("No compounds in file");
+									dataset = d;
+								}
 							}
 							else
 								throw new Exception("file not found");
 						}
-						catch (IllegalCompoundsException e)
-						{
-							String cleanedSdf = Settings.destinationFile(d, d.getShortName() + ".cleaned.sdf");
-							int res = JOptionPane.showConfirmDialog(
-									Settings.TOP_LEVEL_FRAME,
-									"Could not read " + e.illegalCompounds.size() + " compound/s in dataset: "
-											+ d.getPath() + "\nIndices of compounds that could not be loaded: "
-											+ ListUtil.toString(e.illegalCompounds)
-											+ "\n\nDo you want to remove the faulty compounds and reload the dataset?"
-											+ "\n(New dataset would be stored at: " + cleanedSdf + ")",
-									"Dataset faulty", JOptionPane.YES_NO_OPTION);
-							if (res == JOptionPane.YES_OPTION)
-							{
-								SDFUtil.filter_exclude(d.getSDFPath(false), cleanedSdf, e.illegalCompounds);
-								block.unblock(f);
-								load(cleanedSdf);
-								return;
-							}
-						}
-						catch (Exception e)
-						{
-							e.printStackTrace();
-							JOptionPane.showMessageDialog(
-									Settings.TOP_LEVEL_FRAME,
-									"Could not load local dataset:\n"
-											+ d.getPath()
-											+ "\nError: '"
-											+ e.getMessage()
-											+ "'\n\n(Make sure to start the dataset URL with 'http' if you want to load an external dataset.)",
-									"Dataset could not be loaded", JOptionPane.ERROR_MESSAGE);
-						}
+
+						task.finish();
+						TaskProvider.removeTask();
+						if (dataset == null)
+							buttonLoad.setEnabled(true);
+						updateDataset();
+						block.unblock(f);
 					}
-					if (dataset == null)
-						buttonLoad.setEnabled(true);
-					updateDataset();
-					block.unblock(f);
+					catch (IllegalCompoundsException e)
+					{
+						e.printStackTrace();
+						task.cancel();
+						TaskProvider.removeTask();
+						String cleanedSdf = Settings.destinationFile(d, d.getShortName() + ".cleaned.sdf");
+						int res = JOptionPane.showConfirmDialog(
+								Settings.TOP_LEVEL_FRAME,
+								"Could not read " + e.illegalCompounds.size() + " compound/s in dataset: "
+										+ d.getPath() + "\nIndices of compounds that could not be loaded: "
+										+ ListUtil.toString(e.illegalCompounds)
+										+ "\n\nDo you want to remove the faulty compounds and reload the dataset?"
+										+ "\n(New dataset would be stored at: " + cleanedSdf + ")", "Dataset faulty",
+								JOptionPane.YES_NO_OPTION);
+						block.unblock(f);
+						if (res == JOptionPane.YES_OPTION)
+						{
+							SDFUtil.filter_exclude(d.getSDFPath(false), cleanedSdf, e.illegalCompounds);
+							load(cleanedSdf);
+						}
+						else if (dataset == null)
+							buttonLoad.setEnabled(true);
+					}
+					catch (Throwable e)
+					{
+						e.printStackTrace();
+						TaskProvider.failed(
+								"Could not load dataset: " + d.getPath(),
+								"<html>"
+										+ e.getClass().getSimpleName()
+										+ ": '"
+										+ e.getMessage()
+										+ "'"
+										+ (f.startsWith("http") ? ""
+												: "<br>(Make sure to start the dataset URL with 'http' if you want to load an external dataset.)")
+										+ "</html>");
+						TaskProvider.removeTask();
+						if (dataset == null)
+							buttonLoad.setEnabled(true);
+						block.unblock(f);
+					}
 				}
 			});
 			th.start();

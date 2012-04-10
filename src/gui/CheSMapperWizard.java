@@ -78,7 +78,8 @@ public class CheSMapperWizard extends WizardDialog
 
 		try
 		{
-			setUndecorated(ScreenSetup.SETUP.isWizardUndecorated());
+			if (ScreenSetup.SETUP.isWizardUndecorated())
+				setUndecorated(ScreenSetup.SETUP.isWizardUndecorated());
 		}
 		catch (Exception e1)
 		{
@@ -140,7 +141,7 @@ public class CheSMapperWizard extends WizardDialog
 		return chesMapping != null;
 	}
 
-	public ClusteringData loadDataset()
+	public ClusteringData doMapping()
 	{
 		return chesMapping.doMapping();
 	}
@@ -149,7 +150,7 @@ public class CheSMapperWizard extends WizardDialog
 	{
 		CheSMapperWizard wwd = new CheSMapperWizard(null);
 		SwingUtil.waitWhileVisible(wwd);
-		wwd.loadDataset();
+		wwd.doMapping();
 		System.exit(0);
 	}
 }

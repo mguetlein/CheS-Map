@@ -70,8 +70,6 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 					@Override
 					public void run()
 					{
-						if (!TaskProvider.exists())
-							TaskProvider.registerThread("Ches-Mapper-Task");
 						while (running)
 						{
 							try
@@ -85,9 +83,9 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 							if (tmpFile.exists())
 							{
 								int i = SDFUtil.countCompounds(tmpFile.getAbsolutePath());
-								TaskProvider.task().update("Building 3D structure for compound " + (i + 1) + "/" + max);
-								TaskProvider.task().verbose(
-										"This may take some time. The result is cached, you have to do it only once.");
+								TaskProvider.update("Building 3D structure for compound " + (i + 1) + "/" + max);
+								TaskProvider
+										.verbose("This may take some time. The result is cached, you have to do it only once.");
 							}
 						}
 					}
@@ -96,7 +94,7 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 				build3D(dataset, tmpFile.getAbsolutePath());
 				running = false;
 
-				if (TaskProvider.task().isCancelled())
+				if (!TaskProvider.isRunning())
 					return;
 				boolean res = tmpFile.renameTo(new File(finalFile));
 				res |= tmpFile.delete();

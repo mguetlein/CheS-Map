@@ -93,12 +93,11 @@ public class MaxFragAligner extends Abstract3DAligner
 	@Override
 	public void giveNoSmartsWarning(int clusterIndex)
 	{
-		TaskProvider.task().warning(
-				"Could not align cluster " + (clusterIndex + 1) + ", no common fragment found.",
-				getName() + " could not align the cluster, as there is no structural fragment (of size >="
-						+ MIN_NUM_ATOMS + ") that matches all compounds of the cluster. "
-						+ "The reason maybe that the cluster is too structurally diverse. "
-						+ "You could try to increase the number of structural fragments.");
+		TaskProvider.warning("Could not align cluster " + (clusterIndex + 1) + ", no common fragment found.", getName()
+				+ " could not align the cluster, as there is no structural fragment (of size >=" + MIN_NUM_ATOMS
+				+ ") that matches all compounds of the cluster. "
+				+ "The reason maybe that the cluster is too structurally diverse. "
+				+ "You could try to increase the number of structural fragments.");
 	}
 
 }

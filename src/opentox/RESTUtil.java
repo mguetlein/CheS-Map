@@ -71,7 +71,7 @@ public class RESTUtil
 			{
 				e.printStackTrace();
 			}
-			if (TaskProvider.task().isCancelled())
+			if (!TaskProvider.isRunning())
 				return null;
 
 			HashMap<String, String> params = new HashMap<String, String>();

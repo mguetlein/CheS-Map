@@ -34,17 +34,13 @@ public class ExternalToolUtil
 		{
 			protected void stdout(String s)
 			{
-				if (!TaskProvider.exists())
-					TaskProvider.registerThread("Ches-Mapper-Task");
-				TaskProvider.task().verbose(s);
+				TaskProvider.verbose(s);
 				System.out.println(s);
 			}
 
 			protected void stderr(String s)
 			{
-				if (!TaskProvider.exists())
-					TaskProvider.registerThread("Ches-Mapper-Task");
-				TaskProvider.task().verbose(s);
+				TaskProvider.verbose(s);
 				System.err.println(s);
 			}
 		};
@@ -64,7 +60,7 @@ public class ExternalToolUtil
 				e.printStackTrace();
 			}
 			// check if this process should be aborted (via abort dialog)
-			if (TaskProvider.exists() && TaskProvider.task().isCancelled())
+			if (!TaskProvider.isRunning())
 			{
 				p.destroy();
 				break;

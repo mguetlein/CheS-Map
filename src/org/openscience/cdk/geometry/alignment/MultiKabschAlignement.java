@@ -1,7 +1,5 @@
 package org.openscience.cdk.geometry.alignment;
 
-import gui.TaskPanel;
-
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,6 +37,7 @@ import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.smiles.smarts.SMARTSQueryTool;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
+import task.TaskImpl;
 import util.ArrayUtil;
 import util.StringUtil;
 
@@ -145,12 +144,9 @@ public class MultiKabschAlignement
 			int bestMol1Index = -1;
 
 			String msg = "Align compound " + (m + 1) + "/" + molInfos.length + " to first compound";
-			if (TaskProvider.exists())
-			{
-				TaskProvider.task().verbose(msg);
-				if (!TaskPanel.PRINT_VERBOSE_MESSAGES)
-					System.out.println(msg);
-			}
+			TaskProvider.verbose(msg);
+			if (!TaskImpl.PRINT_VERBOSE)
+				System.out.println(msg);
 			else
 				System.out.println(msg);
 

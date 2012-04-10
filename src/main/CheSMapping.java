@@ -7,7 +7,6 @@ import javax.vecmath.Vector3f;
 
 import util.ListUtil;
 import util.StringUtil;
-import util.SwingUtil;
 import alg.DatasetProvider;
 import alg.FeatureComputer;
 import alg.align3d.NoAligner;
@@ -94,22 +93,20 @@ public class CheSMapping
 			{
 				try
 				{
-					TaskProvider.registerThread("Ches-Mapper-Task");
-
 					DatasetFile dataset = datasetProvider.getDatasetFile();
 
-					TaskProvider.task().update(10, "Compute 3d compound structures");
+					TaskProvider.update(10, "Compute 3d compound structures");
 					threeDGenerator.build3D(dataset);
 					dataset.setSDFPath(threeDGenerator.get3DSDFFile(), true);
 					if (!dataset.getSDFPath(true).equals(dataset.getSDFPath(false)))
 						dataset.updateMoleculesStructure(true);
 
-					ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getFullName(), dataset
-							.getSDFPath(true));
+					ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getFullName(),
+							dataset.getSDFPath(true));
 
-					if (TaskProvider.task().isCancelled())
+					if (!TaskProvider.isRunning())
 						return;
-					TaskProvider.task().update(20, "Compute features");
+					TaskProvider.update(20, "Compute features");
 					featureComputer.computeFeatures(dataset);
 					for (MoleculeProperty f : featureComputer.getFeatures())
 						clustering.addFeature(f);
@@ -123,20 +120,20 @@ public class CheSMapping
 						if (!MoleculePropertyUtil.hasUniqueValue(p, dataset))
 							featuresWithInfo.add(p);
 
-					if (TaskProvider.task().isCancelled())
+					if (!TaskProvider.isRunning())
 						return;
-					TaskProvider.task().update(30, "Compute clusters");
+					TaskProvider.update(30, "Compute clusters");
 					clusterDataset(dataset, clustering, featuresWithInfo);
 
-					if (TaskProvider.task().isCancelled())
+					if (!TaskProvider.isRunning())
 						return;
-					TaskProvider.task().update(40,
-							"Embedding clusters into 3D space (num clusters: " + clustering.getClusters().size() + ")");
+					TaskProvider.update(40, "Embedding clusters into 3D space (num clusters: "
+							+ clustering.getClusters().size() + ")");
 					embedDataset(dataset, clustering, featuresWithInfo);
 
-					if (TaskProvider.task().isCancelled())
+					if (!TaskProvider.isRunning())
 						return;
-					TaskProvider.task().update(50, "3D align compounds");
+					TaskProvider.update(50, "3D align compounds");
 					alignDataset(dataset, clustering);
 
 					//		// make sure the files contain appropriate number of compounds 
@@ -145,7 +142,7 @@ public class CheSMapping
 					//			if (SDFUtil.countCompounds(threeDAligner.getAlginedClusterFiles()[cCount++]) != indices.length)
 					//				throw new IllegalStateException();
 
-					TaskProvider.task().update(60, "Mapping complete - Loading 3D library");
+					TaskProvider.update(60, "Mapping complete - Loading 3D library");
 
 					clusteringData = clustering;
 				}
@@ -153,10 +150,7 @@ public class CheSMapping
 				{
 					mappingError = e;
 					e.printStackTrace();
-					TaskProvider.task().error(e.getMessage(), e);
-					if (TaskProvider.task().getDialog() != null)
-						SwingUtil.waitWhileVisible(TaskProvider.task().getDialog());
-					TaskProvider.clear();
+					TaskProvider.failed("Mapping process failed", e);
 				}
 			}
 		});
@@ -199,7 +193,7 @@ public class CheSMapping
 		if (dataset.numCompounds() == 1 && !(clusterer instanceof NoClusterer))
 		{
 			TaskProvider
-					.task()
+
 					.warning(
 							"Could not cluster dataset, dataset has only one compound",
 							"Clustering divides a dataset into clusters (i.e. into subsets of compounds). There is only one compound in the dataset.");
@@ -208,7 +202,7 @@ public class CheSMapping
 		else if (datasetClusterer.requiresFeatures() && featuresWithInfo.size() == 0)
 		{
 			TaskProvider
-					.task()
+
 					.warning(
 							"Could not cluster dataset, as every compound has equal feature values",
 							"Clustering divides a dataset into clusters (i.e. into subsets of compounds), according to the feature values of the compounds. "
@@ -225,7 +219,7 @@ public class CheSMapping
 			e.printStackTrace();
 			if (clusterer == noClusterer)
 				throw new Error("internal error: no clusterer should not fail!", e);
-			TaskProvider.task().warning(clusterer.getName() + " failed on clustering dataset", e.getMessage());
+			TaskProvider.warning(clusterer.getName() + " failed on clustering dataset", e.getMessage());
 			clusterer = noClusterer;
 			noClusterer.clusterDataset(dataset, clustering.getCompounds(), featuresWithInfo);
 		}
@@ -240,8 +234,7 @@ public class CheSMapping
 		ThreeDEmbedder emb = threeDEmbedder;
 		if (dataset.numCompounds() == 1 && !(emb instanceof Random3DEmbedder))
 		{
-			TaskProvider.task().warning(
-					"Could not embedd dataset, dataset has only one compound",
+			TaskProvider.warning("Could not embedd dataset, dataset has only one compound",
 					"3D Embedding uses feature values to embedd compounds in 3D space, with similar compounds close to each other. "
 							+ "There is only one compound in the dataset.");
 			emb = randomEmbedder;
@@ -249,7 +242,7 @@ public class CheSMapping
 		else if (threeDEmbedder.requiresFeatures() && featuresWithInfo.size() == 0)
 		{
 			TaskProvider
-					.task()
+
 					.warning(
 							"Could not embedd dataset, as every compound has equal feature values, CheS-Mapper uses random positions",
 							"3D Embedding uses feature values to embedd compounds in 3D space, with similar compounds close to each other. "
@@ -267,8 +260,8 @@ public class CheSMapping
 			e.printStackTrace();
 			if (emb == randomEmbedder)
 				throw new Error("internal error: random embedder should not fail!", e);
-			TaskProvider.task().warning(
-					emb.getName() + " failed on embedding dataset, CheS-Mapper uses random positions", e.getMessage());
+			TaskProvider.warning(emb.getName() + " failed on embedding dataset, CheS-Mapper uses random positions",
+					e.getMessage());
 			emb = randomEmbedder;
 			randomEmbedder.embedDataset(dataset,
 					ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), null);
@@ -290,15 +283,18 @@ public class CheSMapping
 				clustering.setEmbedQuality("good (r^2: " + formRSquare + ")");
 			else if (rSquare >= 0.5)
 			{
-				TaskProvider.task().warning("The embedding quality is moderate (r^2:" + formRSquare + ")",
+				TaskProvider.warning("The embedding quality is moderate (r^2:" + formRSquare + ")",
 						Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
 				clustering.setEmbedQuality("moderate (r^2: " + formRSquare + ")");
 			}
 			else
 			// < 0.5 
 			{
-				TaskProvider.task().warning("The embedding quality is poor (r^2:" + formRSquare + ")",
-						Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
+				String msg = "The embedding quality is poor (r^2:" + formRSquare + ")";
+				if (emb instanceof Random3DEmbedder)
+					msg = "Random embedding applied, 3D positions do not reflect feature values (r^2:" + formRSquare
+							+ ").";
+				TaskProvider.warning(msg, Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
 				clustering.setEmbedQuality("poor (r^2: " + formRSquare + ")");
 			}
 		}
@@ -326,7 +322,7 @@ public class CheSMapping
 		{
 			alignException = e;
 			e.printStackTrace();
-			TaskProvider.task().warning(align.getName() + " failed on aligning dataset", e.getMessage());
+			TaskProvider.warning(align.getName() + " failed on aligning dataset", e.getMessage());
 			align = noAligner;
 			noAligner.algin(dataset, clustering.getClusters(), clustering.getFeatures());
 		}

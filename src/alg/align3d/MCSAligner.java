@@ -40,7 +40,7 @@ public class MCSAligner extends Abstract3DAligner
 	public void algin(DatasetFile dataset, List<ClusterData> clusters, List<MoleculeProperty> features)
 	{
 		ComputeMCS.computeMCS(dataset, clusters);
-		if (TaskProvider.task().isCancelled())
+		if (!TaskProvider.isRunning())
 			return;
 		alignToSmarts(dataset, clusters, SubstructureSmartsType.MCS);
 	}
@@ -76,10 +76,9 @@ public class MCSAligner extends Abstract3DAligner
 	@Override
 	public void giveNoSmartsWarning(int clusterIndex)
 	{
-		TaskProvider.task().warning(
-				"Could not align cluster " + (clusterIndex + 1) + ", no MCS found.",
-				getName() + " could not align the cluster, as there exists no common subgraph (of size >="
-						+ MIN_NUM_ATOMS + "). The cluster is too structurally diverse.");
+		TaskProvider.warning("Could not align cluster " + (clusterIndex + 1) + ", no MCS found.", getName()
+				+ " could not align the cluster, as there exists no common subgraph (of size >=" + MIN_NUM_ATOMS
+				+ "). The cluster is too structurally diverse.");
 	}
 
 }

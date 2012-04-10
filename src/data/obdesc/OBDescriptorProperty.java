@@ -155,7 +155,7 @@ public class OBDescriptorProperty extends AbstractMoleculeProperty implements Mo
 			{
 				if (getType() == Type.NUMERIC)
 				{
-					TaskProvider.task().warning(
+					TaskProvider.warning(
 							"Cannot compute feature: " + getName(),
 							"Numeric features cannot be parsed. Values returned from OpenBabel:\n"
 									+ ArrayUtil.toString(vals));

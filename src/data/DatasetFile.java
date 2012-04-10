@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import main.Settings;
+import main.TaskProvider;
 
 import org.openscience.cdk.interfaces.IMolecule;
 
@@ -203,6 +204,9 @@ public class DatasetFile
 		featureService.loadDataset(this, loadHydrogen);
 		if (getSDFPath(false) == null)
 		{
+			if (!TaskProvider.isRunning())
+				return;
+			TaskProvider.verbose("Creating 2D structures");
 			FeatureService.writeMoleculesToSDFFile(this, Settings.destinationSDFFile(this));
 			this.setSDFPath(Settings.destinationSDFFile(this), false);
 			this.updateMoleculesStructure(false);

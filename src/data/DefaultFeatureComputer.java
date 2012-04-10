@@ -42,9 +42,8 @@ public class DefaultFeatureComputer implements FeatureComputer
 		int count = 0;
 		for (MoleculePropertySet propSet : moleculePropertySets)
 		{
-			TaskProvider.task()
-					.update("Computing feature " + (count + 1) + "/" + moleculePropertySets.length + " : "
-							+ propSet.toString());
+			TaskProvider.update("Computing feature " + (count + 1) + "/" + moleculePropertySets.length + " : "
+					+ propSet.toString());
 
 			if (propSet instanceof IntegratedProperty)
 				((IntegratedProperty) propSet).setUsedForMapping(true);
@@ -60,16 +59,16 @@ public class DefaultFeatureComputer implements FeatureComputer
 					props.add(propSet.get(dataset, i));
 					features.add(propSet.get(dataset, i));
 
-					if (TaskProvider.task().isCancelled())
+					if (!TaskProvider.isRunning())
 						return;
 				}
 			}
-			if (TaskProvider.task().isCancelled())
+			if (!TaskProvider.isRunning())
 				return;
 			count++;
 		}
 
-		TaskProvider.task().update("Num features computed: " + features.size());
+		TaskProvider.update("Num features computed: " + features.size());
 
 		for (IntegratedProperty p : dataset.getIntegratedProperties(false))
 			if (!props.contains(p))
@@ -97,7 +96,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 			if ((d != null && d.length != numCompounds) || (s != null && s.length != numCompounds))
 				throw new Error("illegal num features " + p);
 
-			if (TaskProvider.task().isCancelled())
+			if (!TaskProvider.isRunning())
 				return;
 
 			for (int i = 0; i < numCompounds; i++)

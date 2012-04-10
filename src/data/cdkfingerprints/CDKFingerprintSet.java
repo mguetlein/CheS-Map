@@ -156,8 +156,7 @@ public class CDKFingerprintSet extends FragmentPropertySet
 		HashMap<CDKFingerprintProperty, String[]> hash = new HashMap<CDKFingerprintProperty, String[]>();
 		for (int m = 0; m < dataset.numCompounds(); m++)
 		{
-			TaskProvider.task().verbose(
-					"Computing CDK fingerprint for compound " + (m + 1) + "/" + dataset.numCompounds());
+			TaskProvider.verbose("Computing CDK fingerprint for compound " + (m + 1) + "/" + dataset.numCompounds());
 			//			TaskProvider.task().verbose("Total number of matched structural fragments (unfiltered): " + ps.size());
 
 			IMolecule mol = dataset.getMolecules()[m];
@@ -190,7 +189,7 @@ public class CDKFingerprintSet extends FragmentPropertySet
 			{
 				e.printStackTrace();
 			}
-			if (TaskProvider.task().isCancelled())
+			if (!TaskProvider.isRunning())
 				return false;
 		}
 		for (CDKFingerprintProperty p : ps)

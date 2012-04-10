@@ -27,7 +27,7 @@ public class ComputeMCS
 			if (MCSComputer.DEBUG)
 				System.out.println("\n\n");
 
-			TaskProvider.task().update("Computing MCS for cluster " + (++count) + "/" + clusters.size());
+			TaskProvider.update("Computing MCS for cluster " + (++count) + "/" + clusters.size());
 
 			IMolecule mols[] = new IMolecule[c.getSize()];
 			for (int i = 0; i < mols.length; i++)

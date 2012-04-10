@@ -159,7 +159,7 @@ public class CDKPropertySet implements MoleculePropertySet
 
 			for (int i = 0; i < mols.length; i++)
 			{
-				TaskProvider.task().verbose("Compute " + this + " for " + (i + 1) + "/" + mols.length + " compounds");
+				TaskProvider.verbose("Compute " + this + " for " + (i + 1) + "/" + mols.length + " compounds");
 
 				if (mols[i].getAtomCount() == 0)
 				{
@@ -198,7 +198,7 @@ public class CDKPropertySet implements MoleculePropertySet
 					}
 					catch (Throwable e)
 					{
-						TaskProvider.task().warning("Could not compute cdk feature " + this, e);
+						TaskProvider.warning("Could not compute cdk feature " + this, e);
 						for (int j = 0; j < getSize(); j++)
 							vv.get(j)[i] = null;
 					}
@@ -208,7 +208,7 @@ public class CDKPropertySet implements MoleculePropertySet
 					if (vv.get(j)[i] != null && (vv.get(j)[i].isNaN() || vv.get(j)[i].isInfinite()))
 						vv.get(j)[i] = null;
 
-				if (TaskProvider.task().isCancelled())
+				if (!TaskProvider.isRunning())
 					return false;
 			}
 			System.out.println("writing cdk props to: " + cache);

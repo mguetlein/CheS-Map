@@ -464,8 +464,8 @@ public class OBFingerprintSet extends FragmentPropertySet
 		int minor = Integer.parseInt(version.substring(index + 1, nIndex));
 		if (major < 2 || (major == 2 && minor < 3))
 		{
-			TaskProvider.task().warning(
-					"OpenBabel fingerprints require OpenBabel version >= 2.3, your version '" + version + "'", "");
+			TaskProvider.warning("OpenBabel fingerprints require OpenBabel version >= 2.3, your version '" + version
+					+ "'", "");
 			return false;
 		}
 
@@ -506,10 +506,10 @@ public class OBFingerprintSet extends FragmentPropertySet
 			tmp = File.createTempFile(dataset.getShortName(), "OBfingerprint");
 			String cmd[] = { BinHandler.BABEL_BINARY.getLocation(), "-isdf", dataset.getSDFPath(false), "-ofpt", "-xf",
 					type.toString(), "-xs" };
-			TaskProvider.task().verbose("Running babel: " + ArrayUtil.toString(cmd, " ", "", ""));
+			TaskProvider.verbose("Running babel: " + ArrayUtil.toString(cmd, " ", "", ""));
 			ExternalToolUtil.run("ob-fingerprints", cmd, tmp);
 
-			TaskProvider.task().verbose("Parsing fingerprints");
+			TaskProvider.verbose("Parsing fingerprints");
 			BufferedReader buffy = new BufferedReader(new FileReader(tmp));
 			String s = null;
 
@@ -568,7 +568,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 		catch (Throwable e)
 		{
 			e.printStackTrace();
-			TaskProvider.task().warning("Could not compute OpenBabel fingerprint " + this, e);
+			TaskProvider.warning("Could not compute OpenBabel fingerprint " + this, e);
 			// for (int j = 0; j < getSize(dataset); j++)
 			// get(dataset, j).setStringValues(dataset, new String[dataset.numCompounds()]);
 			return false;

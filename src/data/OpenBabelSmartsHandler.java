@@ -100,10 +100,10 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 			tmp = File.createTempFile(dataset.getShortName(), "OBsmarts");
 			String cmd[] = { BinHandler.BABEL_BINARY.getLocation(), "-isdf", dataset.getSDFPath(false), "-ofpt", "-xf",
 					FP, "-xs" };
-			TaskProvider.task().verbose("Running babel: " + ArrayUtil.toString(cmd, " ", "", ""));
+			TaskProvider.verbose("Running babel: " + ArrayUtil.toString(cmd, " ", "", ""));
 			ExternalToolUtil.run("ob-fingerprints", cmd, tmp, new String[] { "BABEL_DATADIR="
 					+ Settings.MODIFIED_BABEL_DATA_DIR });
-			TaskProvider.task().verbose("Parsing smarts");
+			TaskProvider.verbose("Parsing smarts");
 			BufferedReader buffy = new BufferedReader(new FileReader(tmp));
 			String line = null;
 			int compoundIndex = -1;

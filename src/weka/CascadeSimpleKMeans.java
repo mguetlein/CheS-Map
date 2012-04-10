@@ -83,10 +83,8 @@ public class CascadeSimpleKMeans extends RandomizableClusterer implements Cluste
 				if (printDebug)
 					System.out.print("cascade>  k:" + k + " ");
 
-				if (TaskProvider.exists())
-					TaskProvider.task().verbose(
-							"CascadeKMeans Clustering, Restarts: " + (i + 1) + "/" + restarts + ", K: " + k + "/"
-									+ maxNumClusters);
+				TaskProvider.verbose("CascadeKMeans Clustering, Restarts: " + (i + 1) + "/" + restarts + ", K: " + k
+						+ "/" + maxNumClusters);
 
 				int seed = r.nextInt();
 				kMeans.setSeed(seed);

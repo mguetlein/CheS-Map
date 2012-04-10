@@ -119,10 +119,8 @@ public class MCSComputer
 		for (IAtomContainer mol : mols)
 		{
 			mol = new Molecule(AtomContainerManipulator.removeHydrogens(mol));
-			if (TaskProvider.exists())
-				TaskProvider.task().verbose(
-						"Iterate over compound " + count + "/" + mols.length + ", num MCS-candidates: "
-								+ candidates.size());
+			TaskProvider.verbose("Iterate over compound " + count + "/" + mols.length + ", num MCS-candidates: "
+					+ candidates.size());
 			if (DEBUG)
 				System.out.println("[" + count + "]\nmol: " + g.createSMILES(mol));
 			if (candidates.size() == 0)
@@ -136,7 +134,7 @@ public class MCSComputer
 				List<IAtomContainer> newCandiates = new ArrayList<IAtomContainer>();
 				for (IAtomContainer can : candidates)
 				{
-					if (TaskProvider.exists() && TaskProvider.task().isCancelled())
+					if (!TaskProvider.isRunning())
 						return null;
 					if (DEBUG)
 					{

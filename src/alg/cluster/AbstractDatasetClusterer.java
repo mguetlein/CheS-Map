@@ -133,7 +133,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 		for (int j = toDelete.size() - 1; j >= 0; j--)
 			clusters.remove(toDelete.get(j).intValue());
 
-		TaskProvider.task().verbose("Storing cluster results in files");
+		TaskProvider.verbose("Storing cluster results in files");
 		int count = 0;
 		for (ClusterData c : clusters)
 		{

@@ -6,10 +6,10 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import main.Settings;
 import main.TaskProvider;
+import task.Task;
+import task.TaskDialog;
 import util.SequentialWorkerThread;
-import util.SwingUtil;
 import dataInterface.MoleculePropertySet;
 
 public class FeatureLoader
@@ -53,8 +53,8 @@ public class FeatureLoader
 			{
 				try
 				{
-					TaskProvider.registerThread("Compute features");
-					TaskProvider.task().showDialog(owner, "Computing features");
+					Task task = TaskProvider.initTask("Compute features");
+					new TaskDialog(task, owner);
 					int num = 0;
 					for (MoleculePropertySet set : sets)
 						if (!set.isComputed(dataset))
@@ -64,30 +64,24 @@ public class FeatureLoader
 					for (MoleculePropertySet set : sets)
 						if (!set.isComputed(dataset))
 						{
-							TaskProvider.task().update(p, " Compute feature: " + set);
+							TaskProvider.update(p, " Compute feature: " + set);
 							p += step;
 							//ignoring boolean return values, if error occured, a warning should be given in compute
 							set.compute(dataset);
-							if (TaskProvider.task().isCancelled())
+							if (!TaskProvider.isRunning())
 								break;
 						}
-					//HACK: wait a tiny bit, cannot close dialog if the computation was too fast
-					Thread.sleep(250);
-					TaskProvider.task().getDialog().setVisible(false);
-					if (TaskProvider.task().containsWarnings())
-						TaskProvider.task().showWarningDialog(Settings.TOP_LEVEL_FRAME, "Could not compute feature/s",
-								"Could not compute feature/s");
+
+					task.finish();
 				}
 				catch (Throwable e)
 				{
 					e.printStackTrace();
-					TaskProvider.task().error(e.getMessage(), e);
-					if (TaskProvider.task().getDialog() != null)
-						SwingUtil.waitWhileVisible(TaskProvider.task().getDialog());
+					TaskProvider.failed("Could not compute features", e);
 				}
 				finally
 				{
-					TaskProvider.clear();
+					TaskProvider.removeTask();
 				}
 				fireEvent("loaded");
 			}

@@ -1,63 +1,71 @@
 package main;
 
-import gui.Task;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import task.Task;
+import task.TaskImpl;
 
 public class TaskProvider
 {
-	private static HashMap<Thread, String> keys = new HashMap<Thread, String>();
-	private static HashMap<String, Task> tasks = new HashMap<String, Task>();
+	static TaskImpl currentTask;
 
-	public static Task task()
+	public synchronized static Task initTask(String name)
 	{
-		return task(keys.get(Thread.currentThread()));
+		currentTask = new TaskImpl(name);
+		return currentTask;
 	}
 
-	public static void clear()
+	public static void removeTask()
 	{
-		clear(keys.remove(Thread.currentThread()));
+		currentTask = null;
 	}
 
-	public static boolean exists()
+	public static void verbose(String verbose)
 	{
-		return keys.containsKey(Thread.currentThread());
+		if (currentTask != null)
+			currentTask.verbose(verbose);
 	}
 
-	/**
-	 * registers a 'key' and 'current thread' for task
-	 * 'key' may already exist, 'thread' may NOT yet exist
-	 * task is created (if not yet exists for key)  
-	 */
-	public static void registerThread(String key)
+	public static void update(String update)
 	{
-		if (keys.containsKey(Thread.currentThread()))
-			throw new Error("thread already registered");
-		keys.put(Thread.currentThread(), key);
-		if (!tasks.containsKey(key))
-			tasks.put(key, new Task(100.0));
+		if (currentTask != null)
+			currentTask.update(update);
 	}
 
-	private static Task task(String key)
+	public static boolean isRunning()
 	{
-		if (!tasks.containsKey(key))
-			throw new Error("task missing");
-		return tasks.get(key);
+		if (currentTask != null)
+			return currentTask.isRunning();
+		else
+			return true;
 	}
 
-	private static void clear(String key)
+	public static void update(double i, String update)
 	{
-		if (!tasks.containsKey(key))
-			throw new Error("task missing");
-		List<Thread> toDel = new ArrayList<Thread>();
-		for (Thread thread : keys.keySet())
-			if (keys.get(thread).equals(key))
-				toDel.add(thread);
-		for (Thread thread : toDel)
-			keys.remove(thread);
-		tasks.remove(key);
+		if (currentTask != null)
+			currentTask.update(i, update);
+	}
+
+	public static void warning(String warningMessage, Throwable exception)
+	{
+		if (currentTask != null)
+			currentTask.warning(warningMessage, exception);
+	}
+
+	public static void warning(String warningMessage, String details)
+	{
+		if (currentTask != null)
+			currentTask.warning(warningMessage, details);
+	}
+
+	public static void failed(String errorMessage, Throwable exception)
+	{
+		if (currentTask != null)
+			currentTask.failed(errorMessage, exception);
+	}
+
+	public static void failed(String errorMessage, String details)
+	{
+		if (currentTask != null)
+			currentTask.failed(errorMessage, details);
 	}
 
 }

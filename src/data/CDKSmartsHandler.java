@@ -55,14 +55,14 @@ public class CDKSmartsHandler implements SmartsHandler
 			catch (Throwable e)
 			{
 				e.printStackTrace();
-				TaskProvider.task().warning("Illegal Smarts: " + smarts.get(s), e.getMessage().replaceAll("\n", ", "));
+				TaskProvider.warning("Illegal Smarts: " + smarts.get(s), e.getMessage().replaceAll("\n", ", "));
 			}
 		}
 
 		IMolecule mols[] = dataset.getMolecules();
 		for (int m = 0; m < mols.length; m++)
 		{
-			TaskProvider.task().verbose("Matching smarts on compound " + (m + 1) + "/" + mols.length);
+			TaskProvider.verbose("Matching smarts on compound " + (m + 1) + "/" + mols.length);
 			for (int s = 0; s < smarts.size(); s++)
 			{
 				if (validSmarts[s])
@@ -75,9 +75,9 @@ public class CDKSmartsHandler implements SmartsHandler
 					}
 					catch (Exception e)
 					{
-						TaskProvider.task().warning("Could not match molecule", e);
+						TaskProvider.warning("Could not match molecule", e);
 					}
-					if (TaskProvider.task().isCancelled())
+					if (!TaskProvider.isRunning())
 						return null;
 				}
 			}
