@@ -1,6 +1,5 @@
 package dataInterface;
 
-import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.isomorphism.matchers.QueryAtomContainer;
 import org.openscience.cdk.smiles.smarts.parser.SMARTSParser;
 
@@ -15,7 +14,7 @@ public class SmartsUtil
 			//			System.out.println("length '" + smarts + "': " + cont.getAtomCount());
 			return cont.getAtomCount();
 		}
-		catch (CDKException e)
+		catch (Throwable e)
 		{
 			e.printStackTrace();
 			return -1;
