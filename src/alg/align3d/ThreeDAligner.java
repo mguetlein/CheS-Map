@@ -13,7 +13,7 @@ public interface ThreeDAligner extends Algorithm
 	public static final int MIN_NUM_ATOMS = 3;
 
 	public static final ThreeDAligner ALIGNER[] = new ThreeDAligner[] { NoAligner.INSTANCE, MCSAligner.INSTANCE,
-			MaxFragAligner.INSTANCE };
+			MaxFragAligner.INSTANCE, ManualAligner.INSTANCE };
 
 	public void algin(DatasetFile dataset, List<ClusterData> clusters, List<MoleculeProperty> features);
 

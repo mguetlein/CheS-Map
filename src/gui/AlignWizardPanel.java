@@ -1,8 +1,14 @@
 package gui;
 
+import gui.property.Property;
 import gui.wizard.GenericWizardPanel;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import main.Settings;
 import alg.Algorithm;
+import alg.align3d.ManualAligner;
 import alg.align3d.ThreeDAligner;
 
 public class AlignWizardPanel extends GenericWizardPanel
@@ -12,6 +18,24 @@ public class AlignWizardPanel extends GenericWizardPanel
 	public AlignWizardPanel(CheSMapperWizard w)
 	{
 		super(w);
+
+		for (Algorithm a : getAlgorithms())
+		{
+			if (a instanceof ManualAligner)
+			{
+				for (Property p : a.getProperties())
+				{
+					p.addPropertyChangeListener(new PropertyChangeListener()
+					{
+						@Override
+						public void propertyChange(PropertyChangeEvent evt)
+						{
+							wizard.update();
+						}
+					});
+				}
+			}
+		}
 	}
 
 	@Override

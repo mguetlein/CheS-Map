@@ -327,23 +327,26 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 				public void run()
 				{
 					final Task task = TaskProvider.initTask("Loading dataset file");
-					if (!wizard.isVisible())
+					if (wizard != null)
 					{
-						Thread th = new Thread(new Runnable()
+						if (!wizard.isVisible())
 						{
-							@Override
-							public void run()
+							Thread th = new Thread(new Runnable()
 							{
-								while (!wizard.isVisible())
-									ThreadUtil.sleep(100);
-								if (task.isRunning())
-									new TaskDialog(task, wizard);
-							}
-						});
-						th.start();
+								@Override
+								public void run()
+								{
+									while (!wizard.isVisible())
+										ThreadUtil.sleep(100);
+									if (task.isRunning())
+										new TaskDialog(task, wizard);
+								}
+							});
+							th.start();
+						}
+						else
+							new TaskDialog(task, wizard);
 					}
-					else
-						new TaskDialog(task, wizard);
 
 					TaskProvider.update("Loading dataset: " + d.getName());
 					try
