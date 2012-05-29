@@ -144,7 +144,7 @@ public class CDKPropertySet implements MoleculePropertySet
 		List<Double[]> vv;
 		if (Settings.CACHING_ENABLED && new File(cache).exists())
 		{
-			System.out.println("reading cdk props from: " + cache);
+			Settings.LOGGER.info("reading cdk props from: " + cache);
 			vv = ValueFileCache.readCacheDouble(cache);
 		}
 		else
@@ -211,7 +211,7 @@ public class CDKPropertySet implements MoleculePropertySet
 				if (!TaskProvider.isRunning())
 					return false;
 			}
-			System.out.println("writing cdk props to: " + cache);
+			Settings.LOGGER.info("writing cdk props to: " + cache);
 			ValueFileCache.writeCacheDouble(cache, vv);
 		}
 		for (int j = 0; j < getSize(); j++)

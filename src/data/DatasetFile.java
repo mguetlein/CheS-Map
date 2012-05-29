@@ -121,7 +121,7 @@ public class DatasetFile
 		int index = instances.indexOf(d);
 		if (index == -1)
 		{
-			System.out.println("new dataset " + d.getShortName());
+			Settings.LOGGER.info("new dataset " + d.getShortName());
 			instances.add(d);
 			return d;
 		}

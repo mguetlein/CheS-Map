@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Set;
 
 import main.BinHandler;
+import main.Settings;
 import util.ArrayUtil;
 import util.ExternalToolUtil;
 import util.FileUtil;
@@ -53,7 +54,7 @@ public class OBDescriptorFactory
 			}
 			catch (Exception e)
 			{
-				e.printStackTrace();
+				Settings.LOGGER.error(e);
 			}
 			finally
 			{
@@ -92,12 +93,12 @@ public class OBDescriptorFactory
 				int index = Math.max(indexTab, indexSpace);
 				vals[i] = lines[i].substring(index + 1).trim();
 			}
-			System.out.println(id + " " + ArrayUtil.toString(vals));
+			Settings.LOGGER.info(id + " " + ArrayUtil.toString(vals));
 			return vals;
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 			return null;
 		}
 		finally

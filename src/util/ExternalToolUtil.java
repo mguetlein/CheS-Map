@@ -4,6 +4,7 @@ import io.ExternalTool;
 
 import java.io.File;
 
+import main.Settings;
 import main.TaskProvider;
 
 public class ExternalToolUtil
@@ -30,18 +31,18 @@ public class ExternalToolUtil
 
 	public static String run(String processName, Object cmdStringOrArray, File stdOutFile, String env[])
 	{
-		ExternalTool ext = new ExternalTool()
+		ExternalTool ext = new ExternalTool(Settings.LOGGER)
 		{
 			protected void stdout(String s)
 			{
 				TaskProvider.verbose(s);
-				System.out.println(s);
+				Settings.LOGGER.info(s);
 			}
 
 			protected void stderr(String s)
 			{
 				TaskProvider.verbose(s);
-				System.err.println(s);
+				Settings.LOGGER.warn(s);
 			}
 		};
 		Process p;
@@ -57,7 +58,7 @@ public class ExternalToolUtil
 			}
 			catch (InterruptedException e)
 			{
-				e.printStackTrace();
+				Settings.LOGGER.error(e);
 			}
 			// check if this process should be aborted (via abort dialog)
 			if (!TaskProvider.isRunning())

@@ -7,6 +7,7 @@ import java.util.Random;
 
 import javax.vecmath.Vector3f;
 
+import main.Settings;
 import util.ArrayUtil;
 import util.DoubleArraySummary;
 import util.Vector3fUtil;
@@ -84,11 +85,11 @@ public class EmbedUtil
 					}
 				}
 			}
-			//			System.out.println(vals.size() + " " + ListUtil.toString(v_i));
+			//			Settings.LOGGER.println(vals.size() + " " + ListUtil.toString(v_i));
 			vals.put(instances.get(i), ArrayUtil.toPrimitiveDoubleArray(v_i));
 		}
 		//		for (MolecularPropertyOwner m : vals.keySet())
-		//			System.out.println("values: " + m.toString() + " " + ArrayUtil.toString(vals.get(m)));
+		//			Settings.LOGGER.println("values: " + m.toString() + " " + ArrayUtil.toString(vals.get(m)));
 
 		double[][] d = new double[instances.size()][instances.size()];
 		for (int i = 0; i < instances.size() - 1; i++)
@@ -103,7 +104,7 @@ public class EmbedUtil
 		for (int i = 0; i < instances.size(); i++)
 			for (int j = i; j < instances.size(); j++)
 				d[j][i] = 0.0;
-		//		System.out.println(ArrayUtil.toString(d));
+		//		Settings.LOGGER.println(ArrayUtil.toString(d));
 
 		return d;
 	}
@@ -123,7 +124,7 @@ public class EmbedUtil
 		for (int i = 0; i < positions.size(); i++)
 			for (int j = i; j < positions.size(); j++)
 				d[j][i] = 0.0;
-		//		System.out.println(ArrayUtil.toString(d));
+		//		Settings.LOGGER.println(ArrayUtil.toString(d));
 
 		return d;
 	}
@@ -138,11 +139,11 @@ public class EmbedUtil
 
 		for (int n : ns)
 		{
-			System.out.println(n);
+			Settings.LOGGER.info(n);
 
 			for (double dev : deviation)
 			{
-				System.out.println(dev);
+				Settings.LOGGER.info(dev);
 
 				double[] results = new double[restarts];
 
@@ -169,7 +170,7 @@ public class EmbedUtil
 					for (int i = 0; i < n; i++)
 						for (int j = i; j < n; j++)
 							d[j][i] = 0.0;
-					//		System.out.println(ArrayUtil.toString(d));
+					//		Settings.LOGGER.println(ArrayUtil.toString(d));
 
 					//hack to make normalization work
 					for (int i = 0; i < n; i++)
@@ -179,14 +180,14 @@ public class EmbedUtil
 					for (int i = 0; i < n; i++)
 						for (int j = i; j < n; j++)
 							d2[j][i] = 0.0;
-					//		System.out.println(ArrayUtil.toString(d));
+					//		Settings.LOGGER.println(ArrayUtil.toString(d));
 
 					results[k] = computeRSquare(d, d2);
 				}
 
-				System.out.println(DoubleArraySummary.create(results).getMedian());
+				Settings.LOGGER.info(DoubleArraySummary.create(results).getMedian());
 			}
-			System.out.println();
+			Settings.LOGGER.info();
 		}
 
 	}

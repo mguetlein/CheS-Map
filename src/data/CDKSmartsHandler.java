@@ -3,6 +3,7 @@ package data;
 import java.util.ArrayList;
 import java.util.List;
 
+import main.Settings;
 import main.TaskProvider;
 
 import org.openscience.cdk.exception.CDKException;
@@ -54,7 +55,7 @@ public class CDKSmartsHandler implements SmartsHandler
 			}
 			catch (Throwable e)
 			{
-				e.printStackTrace();
+				Settings.LOGGER.error(e);
 				TaskProvider.warning("Illegal Smarts: " + smarts.get(s), e.getMessage().replaceAll("\n", ", "));
 			}
 		}

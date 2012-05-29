@@ -62,9 +62,9 @@ public class BinHandler
 		for (Binary binary : bins)
 		{
 			if (binary.isFound())
-				System.err.println("external program " + binary.getCommand() + " found at " + binary.getLocation());
+				Settings.LOGGER.info("external program " + binary.getCommand() + " found at " + binary.getLocation());
 			else
-				System.err.println("external program " + binary.getCommand() + " not found");
+				Settings.LOGGER.warn("external program " + binary.getCommand() + " not found");
 		}
 	}
 
@@ -78,7 +78,7 @@ public class BinHandler
 			try
 			{
 				bVersion = File.createTempFile("babel", "version");
-				ExternalTool ext = new ExternalTool();
+				ExternalTool ext = new ExternalTool(Settings.LOGGER);
 				ext.run("babel", BABEL_BINARY.getLocation() + " -V", bVersion, true);
 				BufferedReader b = new BufferedReader(new FileReader(bVersion));
 				String s;
@@ -95,7 +95,7 @@ public class BinHandler
 			}
 			catch (Exception e)
 			{
-				e.printStackTrace();
+				Settings.LOGGER.error(e);
 			}
 			finally
 			{

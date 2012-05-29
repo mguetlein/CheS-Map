@@ -5,6 +5,7 @@ import io.RUtil;
 import java.util.ArrayList;
 import java.util.List;
 
+import main.Settings;
 import util.ArrayUtil;
 import util.ObjectUtil;
 import dataInterface.MoleculeProperty;
@@ -15,7 +16,7 @@ public class ExportRUtil
 	public static void toRTable(Iterable<MoleculeProperty> features, List<String[]> featureValues,
 			String destinationFile)
 	{
-		System.out.println("store features in " + destinationFile);
+		Settings.LOGGER.info("store features in " + destinationFile);
 
 		// transpose
 		List<String[]> featureValues1 = new ArrayList<String[]>();
@@ -41,7 +42,7 @@ public class ExportRUtil
 			}
 			else
 			{
-				System.err.println("Transforming nominal feature: " + feature.getName() + " "
+				Settings.LOGGER.info("Transforming nominal feature: " + feature.getName() + " "
 						+ ArrayUtil.toString(feature.getNominalDomain()));
 
 				for (String val : feature.getNominalDomain())
@@ -57,7 +58,7 @@ public class ExportRUtil
 							vals[i] = "0";
 					}
 					featureValues2.add(vals);
-					System.err.println("-> new feat: " + name + " " + ArrayUtil.toString(vals));
+					Settings.LOGGER.info("-> new feat: " + name + " " + ArrayUtil.toString(vals));
 					if (feature.getNominalDomain().length == 2)
 						break;
 				}

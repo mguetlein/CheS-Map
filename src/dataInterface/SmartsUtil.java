@@ -1,5 +1,7 @@
 package dataInterface;
 
+import main.Settings;
+
 import org.openscience.cdk.isomorphism.matchers.QueryAtomContainer;
 import org.openscience.cdk.smiles.smarts.parser.SMARTSParser;
 
@@ -11,19 +13,19 @@ public class SmartsUtil
 		try
 		{
 			QueryAtomContainer cont = SMARTSParser.parse(smarts);
-			//			System.out.println("length '" + smarts + "': " + cont.getAtomCount());
+			//			Settings.LOGGER.println("length '" + smarts + "': " + cont.getAtomCount());
 			return cont.getAtomCount();
 		}
 		catch (Throwable e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 			return -1;
 		}
 	}
 
 	public static void main(String args[])
 	{
-		System.out.println(getLength("[#7]-[#6]-[#6]-[#7]:[#7]:[#6]:[#6]"));
-		System.out.println(getLength("[a]"));
+		Settings.LOGGER.info(getLength("[#7]-[#6]-[#6]-[#7]:[#7]:[#6]:[#6]"));
+		Settings.LOGGER.info(getLength("[a]"));
 	}
 }

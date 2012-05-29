@@ -63,7 +63,7 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 			count++;
 			if (count > 50 && count % 10 == 0)
 			{
-				//System.err.println("reduce radius " + count);
+				//Settings.LOGGER.warn("reduce radius " + count);
 				dist *= 0.9;
 			}
 		}

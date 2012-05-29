@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import main.Settings;
 import main.TaskProvider;
 
 import org.openscience.cdk.CDKConstants;
@@ -57,18 +58,18 @@ public class MCSComputer
 			{
 				try
 				{
-					System.out.println("running");
+					Settings.LOGGER.info("running");
 					SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
 					IMolecule mol1 = sp
 							.parseSmiles("O=C1OC=C(C=C1)C4CCC5(O)(C6CCC3=CC(OC2OC(C)C(O)C(O)C2(O))CCC3(C)C6(CCC45(C)))");
 					IMolecule mol2 = sp
 							.parseSmiles("O=C1C=CC4(C(=C1)CCC3C5CC(C)C(O)(C(=O)COC2OC(CO)C(O)C(O)C2(O))C5(C)(CC(O)C34(F)))(C)");
 					UniversalIsomorphismTester.getOverlaps(mol1, mol2);
-					System.out.println("done");
+					Settings.LOGGER.info("done");
 				}
 				catch (Exception e)
 				{
-					e.printStackTrace();
+					Settings.LOGGER.error(e);
 				}
 			}
 		});
@@ -78,22 +79,22 @@ public class MCSComputer
 		while (true)
 		{
 			ThreadUtil.sleep(10000);
-			System.out.println(StringUtil.formatTime(System.currentTimeMillis() - start));
+			Settings.LOGGER.info(StringUtil.formatTime(System.currentTimeMillis() - start));
 		}
 	}
 
 	private static void printCandidates(String s, Iterable<IAtomContainer> l)
 	{
-		System.out.print(s + " candidates: ");
+		Settings.LOGGER.info(s + " candidates: ");
 		for (IAtomContainer can : l)
 		{
 			int aromCan = 0;
 			for (IAtom atom : can.atoms())
 				if (atom.getFlag(CDKConstants.ISAROMATIC))
 					aromCan++;
-			System.out.print("'" + g.createSMILES(can) + " (#arom:" + aromCan + ")' ");
+			Settings.LOGGER.info("'" + g.createSMILES(can) + " (#arom:" + aromCan + ")' ");
 		}
-		System.out.println();
+		Settings.LOGGER.info();
 	}
 
 	public static IAtomContainer computeMCS(IAtomContainer mols[]) throws CDKException
@@ -122,7 +123,7 @@ public class MCSComputer
 			TaskProvider.verbose("Iterate over compound " + count + "/" + mols.length + ", num MCS-candidates: "
 					+ candidates.size());
 			if (DEBUG)
-				System.out.println("[" + count + "]\nmol: " + g.createSMILES(mol));
+				Settings.LOGGER.info("[" + count + "]\nmol: " + g.createSMILES(mol));
 			if (candidates.size() == 0)
 			{
 				// if == first compound, add compound to candidates
@@ -146,7 +147,7 @@ public class MCSComputer
 						for (IAtom atom : mol.atoms())
 							if (atom.getFlag(CDKConstants.ISAROMATIC))
 								aromMol++;
-						System.out.println("mcs: " + g.createSMILES(can) + " (#arom:" + aromCan + ") - "
+						Settings.LOGGER.info("mcs: " + g.createSMILES(can) + " (#arom:" + aromCan + ") - "
 								+ g.createSMILES(mol) + " (#arom:" + aromMol + ")");
 					}
 					List<IAtomContainer> canMCS = MyUniversalIsomorphismTester.getOverlaps(can, mol);
@@ -162,7 +163,7 @@ public class MCSComputer
 				if (candidates.size() == 0)
 				{
 					if (DEBUG)
-						System.out.println("nothing found");
+						Settings.LOGGER.info("nothing found");
 					break;
 				}
 			}

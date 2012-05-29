@@ -62,9 +62,9 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 						MoleculePropertyUtil.valuesReplaceNullWithMedian(features, instances, dataset),
 						featureTableFile);
 			else
-				System.out.println("load cached features from " + featureTableFile);
+				Settings.LOGGER.info("load cached features from " + featureTableFile);
 
-			System.out.println("Using r-embedder " + getName() + " with properties: "
+			Settings.LOGGER.info("Using r-embedder " + getName() + " with properties: "
 					+ PropertyUtil.toString(getProperties()));
 
 			rScript = new File(RScriptUtil.getScriptPath(getShortName() + "." + propsMD5, getRScriptCode()));
@@ -97,9 +97,9 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			if (!nonZero && instances.size() > 1)
 				throw new IllegalStateException("No attributes!");
 
-			// System.out.println("before: " + ArrayUtil.toString(d));
+			// Settings.LOGGER.println("before: " + ArrayUtil.toString(d));
 			ArrayUtil.normalize(d, -1, 1);
-			// System.out.println("after: " + ArrayUtil.toString(d));
+			// Settings.LOGGER.println("after: " + ArrayUtil.toString(d));
 
 			List<Vector3f> positions = new ArrayList<Vector3f>();
 			for (int i = 0; i < instances.size(); i++)

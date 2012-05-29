@@ -20,11 +20,11 @@ public class CompoundArffWriter implements ArffWritable
 		File file = new File(arffFile);
 		if (!Settings.CACHING_ENABLED || !file.exists())
 		{
-			System.out.println("writing arff file: " + arffFile);
+			Settings.LOGGER.info("writing arff file: " + arffFile);
 			ArffWriter.writeToArffFile(file, new CompoundArffWriter(compounds, features));
 		}
 		else
-			System.out.println("arff file already exists: " + arffFile);
+			Settings.LOGGER.info("arff file already exists: " + arffFile);
 		return file;
 	}
 

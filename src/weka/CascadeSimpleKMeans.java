@@ -14,6 +14,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+import main.Settings;
 import main.TaskProvider;
 import weka.clusterers.Clusterer;
 import weka.clusterers.RandomizableClusterer;
@@ -76,12 +77,12 @@ public class CascadeSimpleKMeans extends RandomizableClusterer implements Cluste
 		for (int i = 0; i < restarts; i++)
 		{
 			if (printDebug)
-				System.out.println("cascade> restarts: " + (i + 1) + " / " + restarts);
+				Settings.LOGGER.info("cascade> restarts: " + (i + 1) + " / " + restarts);
 
 			for (int k = minNumClusters; k <= maxNumClusters; k++)
 			{
 				if (printDebug)
-					System.out.print("cascade>  k:" + k + " ");
+					Settings.LOGGER.info("cascade>  k:" + k + " ");
 
 				TaskProvider.verbose("CascadeKMeans Clustering, Restarts: " + (i + 1) + "/" + restarts + ", K: " + k
 						+ "/" + maxNumClusters);
@@ -101,7 +102,7 @@ public class CascadeSimpleKMeans extends RandomizableClusterer implements Cluste
 				}
 
 				if (printDebug)
-					System.out.println(" CH:" + df.format(ch) + "  W:"
+					Settings.LOGGER.info(" CH:" + df.format(ch) + "  W:"
 							+ df.format(kMeans.getSquaredError() / (double) (numInstances - kMeans.getNumClusters()))
 							+ " (unweighted:" + df.format(kMeans.getSquaredError()) + ")  B:"
 							+ df.format(getSquaredErrorBetweenClusters() / (double) (kMeans.getNumClusters() - 1))
@@ -113,12 +114,12 @@ public class CascadeSimpleKMeans extends RandomizableClusterer implements Cluste
 			String s = "cascade> max CH: [ ";
 			for (int i = 0; i < maxSeed.length; i++)
 				s += df.format(maxCHs[i]) + " ";
-			System.out.println(s + "]");
+			Settings.LOGGER.info(s + "]");
 		}
 		String s = "cascade> mean CH: [ ";
 		for (int i = 0; i < maxSeed.length; i++)
 			s += df.format(meanCHs[i]) + " ";
-		System.out.println(s + "]");
+		Settings.LOGGER.info(s + "]");
 
 		int bestK = -1;
 		double maxCH = -1;
@@ -139,8 +140,8 @@ public class CascadeSimpleKMeans extends RandomizableClusterer implements Cluste
 		}
 		int bestSeed = maxSeed[bestK - minNumClusters];
 
-		System.out.println("cascade> k (yields highest mean CH): " + bestK);
-		System.out.println("cascade> seed (highest CH for k=" + bestK + ") : " + bestSeed);
+		Settings.LOGGER.info("cascade> k (yields highest mean CH): " + bestK);
+		Settings.LOGGER.info("cascade> seed (highest CH for k=" + bestK + ") : " + bestSeed);
 
 		kMeans.setSeed(bestSeed);
 		kMeans.setNumClusters(bestK);

@@ -279,7 +279,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 
 	//	public static void main(String args[])
 	//	{
-	//		System.out.println(loadHttpFile("http://apps.ideaconsult.net:8080/ambit2/dataset/272?max=5"));
+	//		Settings.LOGGER.println(loadHttpFile("http://apps.ideaconsult.net:8080/ambit2/dataset/272?max=5"));
 	//	}
 
 	//	private void load(DatasetFile d)
@@ -382,7 +382,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 					}
 					catch (IllegalCompoundsException e)
 					{
-						e.printStackTrace();
+						Settings.LOGGER.error(e);
 						task.cancel();
 						TaskProvider.removeTask();
 						String cleanedSdf = Settings.destinationFile(d, d.getShortName() + ".cleaned.sdf");
@@ -405,7 +405,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 					}
 					catch (Throwable e)
 					{
-						e.printStackTrace();
+						Settings.LOGGER.error(e);
 						TaskProvider.failed(
 								"Could not load dataset: " + d.getPath(),
 								"<html>"

@@ -13,20 +13,20 @@ public class AlginTest
 		//		//		threed.generate3D(cluster);
 		//
 		//		IMolecule mols[] = CDKService.getMoleculeFromSdf(cluster, false);
-		//		System.out.println(ArrayUtil.toString(CDKService.getStringFromSdf(cluster, CDKProperty.SMILES)));
+		//		Settings.LOGGER.println(ArrayUtil.toString(CDKService.getStringFromSdf(cluster, CDKProperty.SMILES)));
 		//		for (IMolecule iMolecule : mols)
 		//		{
-		//			System.out.println(iMolecule.getAtomCount());
+		//			Settings.LOGGER.println(iMolecule.getAtomCount());
 		//		}
 		//
 		//		IMolecule back[] = CDKService.getMoleculeFromSdf(backbone, false);
-		//		System.out.println(ArrayUtil.toString(CDKService.getStringFromSdf(backbone, CDKProperty.SMILES)));
+		//		Settings.LOGGER.println(ArrayUtil.toString(CDKService.getStringFromSdf(backbone, CDKProperty.SMILES)));
 		//		for (IMolecule iMolecule : back)
 		//		{
-		//			System.out.println(iMolecule.getAtomCount());
+		//			Settings.LOGGER.println(iMolecule.getAtomCount());
 		//		}
 		//
-		//		System.out.println();
+		//		Settings.LOGGER.println();
 		//
 		//		try
 		//		{
@@ -48,7 +48,7 @@ public class AlginTest
 		//
 		//			KabschAlignment align = new KabschAlignment(atoms, atoms2);
 		//			align.align();
-		//			System.out.println(align.getRMSD());
+		//			Settings.LOGGER.println(align.getRMSD());
 		//
 		//			SDFWriter w = new SDFWriter(new FileWriter(cluster + ".algined"));
 		//
@@ -67,12 +67,12 @@ public class AlginTest
 		//		catch (CDKException e)
 		//		{
 		//			// TODO Auto-generated catch block
-		//			e.printStackTrace();
+		//			Settings.LOGGER.error(e);
 		//		}
 		//		catch (IOException e)
 		//		{
 		//			// TODO Auto-generated catch block
-		//			e.printStackTrace();
+		//			Settings.LOGGER.error(e);
 		//		}
 
 		//		KabschAlignment align = new KabschAlignment(al1, al2);

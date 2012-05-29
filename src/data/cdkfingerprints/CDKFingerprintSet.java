@@ -41,7 +41,7 @@ public class CDKFingerprintSet extends FragmentPropertySet
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 		}
 	}
 
@@ -187,7 +187,7 @@ public class CDKFingerprintSet extends FragmentPropertySet
 			}
 			catch (CDKException e)
 			{
-				e.printStackTrace();
+				Settings.LOGGER.error(e);
 			}
 			if (!TaskProvider.isRunning())
 				return false;
@@ -199,7 +199,7 @@ public class CDKFingerprintSet extends FragmentPropertySet
 			if (cs.getCount("1") + cs.getCount("0") != dataset.numCompounds())
 				throw new IllegalStateException();
 			p.setFrequency(dataset, cs.getCount("1"));
-			//			System.out.println("freq: " + p.getSmarts() + " " + cs.getCount("1"));
+			//			Settings.LOGGER.println("freq: " + p.getSmarts() + " " + cs.getCount("1"));
 			p.setStringValues(dataset, values);
 		}
 

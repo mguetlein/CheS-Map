@@ -46,12 +46,12 @@ public class RScriptUtil
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 		}
 		if (!new File(scriptPath).exists())
-			System.err.println("Rscript could not be created: " + scriptPath);
+			Settings.LOGGER.warn("Rscript could not be created: " + scriptPath);
 		else
-			System.out.println("Rscript created: " + scriptPath);
+			Settings.LOGGER.info("Rscript created: " + scriptPath);
 		return scriptPath;
 	}
 

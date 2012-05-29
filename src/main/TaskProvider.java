@@ -9,7 +9,7 @@ public class TaskProvider
 
 	public synchronized static Task initTask(String name)
 	{
-		currentTask = new TaskImpl(name);
+		currentTask = new TaskImpl(name, Settings.LOGGER);
 		return currentTask;
 	}
 

@@ -6,6 +6,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import main.Settings;
 import main.TaskProvider;
 import task.Task;
 import task.TaskDialog;
@@ -76,7 +77,7 @@ public class FeatureLoader
 				}
 				catch (Throwable e)
 				{
-					e.printStackTrace();
+					Settings.LOGGER.error(e);
 					TaskProvider.failed("Could not compute features", e);
 				}
 				finally

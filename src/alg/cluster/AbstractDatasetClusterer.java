@@ -97,13 +97,13 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 
 		if (Settings.CACHING_ENABLED && new File(filename).exists() && !interactive)
 		{
-			System.out.println("read cached cluster results from: " + filename);
+			Settings.LOGGER.info("read cached cluster results from: " + filename);
 			clusterAssignements = ValueFileCache.readCacheInteger2(filename);
 		}
 		else
 		{
 			clusterAssignements = cluster(dataset, compounds, features);
-			System.out.println("store cluster results to: " + filename);
+			Settings.LOGGER.info("store cluster results to: " + filename);
 			if (!interactive)
 				ValueFileCache.writeCacheInteger2(filename, clusterAssignements);
 		}
@@ -153,7 +153,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 				SDFUtil.filter(dataset.getSDFPath(true), clusterFile, ((ClusterDataImpl) c).calculateCompoundIndices());
 			}
 			else
-				System.out.println("cluster already stored: " + clusterFile);
+				Settings.LOGGER.info("cluster already stored: " + clusterFile);
 			((ClusterDataImpl) c).setName("Cluster " + count);
 			((ClusterDataImpl) c).setFilename(clusterFile);
 		}

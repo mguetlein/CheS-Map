@@ -119,7 +119,7 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 			TaskProvider.warning(getName() + " failed on cluster " + (index + 1), e.getMessage());
 			return false;
 		}
@@ -171,10 +171,10 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 		}
 		catch (ExternalToolError e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 			TaskProvider.warning("obfit failed on aligning cluster " + (index + 1), e.getMessage()
 					+ "\nMost likely the error cause is that CDK and OpenBabel have different aromaticity definitions");
-			System.err.println("error occured, checking if smarts are matching in openbabel for debugging");
+			Settings.LOGGER.warn("error occured, checking if smarts are matching in openbabel for debugging");
 			ExternalToolUtil.run("match-ref",
 					new String[] { BinHandler.BABEL_BINARY.getLocation(), tmpFirst.getAbsolutePath(), "-osmi",
 							"--filter", "\"s='" + cluster.getSubstructureSmarts(type) + "'\"" });

@@ -149,7 +149,7 @@ public class CheSMapping
 				catch (Throwable e)
 				{
 					mappingError = e;
-					e.printStackTrace();
+					Settings.LOGGER.error(e);
 					TaskProvider.failed("Mapping process failed", e);
 				}
 			}
@@ -161,7 +161,7 @@ public class CheSMapping
 		}
 		catch (InterruptedException e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 		}
 		return clusteringData;
 	}
@@ -216,7 +216,7 @@ public class CheSMapping
 		catch (Exception e)
 		{
 			clusterException = e;
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 			if (clusterer == noClusterer)
 				throw new Error("internal error: no clusterer should not fail!", e);
 			TaskProvider.warning(clusterer.getName() + " failed on clustering dataset", e.getMessage());
@@ -257,7 +257,7 @@ public class CheSMapping
 		catch (Exception e)
 		{
 			embedderException = e;
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 			if (emb == randomEmbedder)
 				throw new Error("internal error: random embedder should not fail!", e);
 			TaskProvider.warning(emb.getName() + " failed on embedding dataset, CheS-Mapper uses random positions",
@@ -274,7 +274,7 @@ public class CheSMapping
 			double rSquare = EmbedUtil.computeRSquare(
 					ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), featuresWithInfo,
 					emb.getPositions(), dataset);
-			System.out.println("r-square: " + rSquare);
+			Settings.LOGGER.info("r-square: " + rSquare);
 			String formRSquare = StringUtil.formatDouble(rSquare, 3);
 
 			if (rSquare >= 0.9)
@@ -321,7 +321,7 @@ public class CheSMapping
 		catch (Exception e)
 		{
 			alignException = e;
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 			TaskProvider.warning(align.getName() + " failed on aligning dataset", e.getMessage());
 			align = noAligner;
 			noAligner.algin(dataset, clustering.getClusters(), clustering.getFeatures());

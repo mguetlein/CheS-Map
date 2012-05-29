@@ -1,5 +1,7 @@
 package main.test;
 
+import main.Settings;
+
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.exception.InvalidSmilesException;
@@ -27,27 +29,27 @@ public class CDKTest
 			ha.addImplicitHydrogens(m);
 			AtomContainerManipulator.convertImplicitToExplicitHydrogens(m);
 
-			System.out.println(m);
+			Settings.LOGGER.info(m);
 
 			IMolecularDescriptor x = new XLogPDescriptor();
-			System.out.println("xlogp " + x.calculate(m).getValue());
+			Settings.LOGGER.info("xlogp " + x.calculate(m).getValue());
 
 			x = new WeightDescriptor();
-			System.out.println("weight " + x.calculate(m).getValue());
+			Settings.LOGGER.info("weight " + x.calculate(m).getValue());
 
 			x = new WienerNumbersDescriptor();
-			System.out.println("wiener " + x.calculate(m).getValue());
+			Settings.LOGGER.info("wiener " + x.calculate(m).getValue());
 
 			x = new BCUTDescriptor();
-			System.out.println("bcut " + x.calculate(m).getValue());
+			Settings.LOGGER.info("bcut " + x.calculate(m).getValue());
 		}
 		catch (InvalidSmilesException e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 		}
 		catch (CDKException e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 		}
 
 	}

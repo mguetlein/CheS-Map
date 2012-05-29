@@ -65,13 +65,13 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 
 		if (Settings.CACHING_ENABLED && new File(filename).exists())
 		{
-			System.out.println("read cached embedding results from: " + filename);
+			Settings.LOGGER.info("read cached embedding results from: " + filename);
 			positions = ValueFileCache.readCachePosition2(filename);
 		}
 		else
 		{
 			positions = embed(dataset, instances, features);
-			System.out.println("store embedding results to: " + filename);
+			Settings.LOGGER.info("store embedding results to: " + filename);
 			ValueFileCache.writeCachePosition2(filename, positions);
 		}
 	}

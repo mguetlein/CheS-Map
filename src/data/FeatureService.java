@@ -182,7 +182,7 @@ public class FeatureService
 		{
 			if (throwError)
 			{
-				e.printStackTrace();
+				Settings.LOGGER.error(e);
 				throw e;
 			}
 			return null;
@@ -215,7 +215,7 @@ public class FeatureService
 		if (fileToMolecules.get(dataset) == null)
 			throw new IllegalStateException();
 
-		System.out.print("read compounds structures fom file '" + dataset.getSDFPath(threeD) + "' ");
+		Settings.LOGGER.info("read compounds structures fom file '" + dataset.getSDFPath(threeD) + "' ");
 
 		try
 		{
@@ -235,7 +235,7 @@ public class FeatureService
 				}
 				catch (NoSuchAtomTypeException e)
 				{
-					e.printStackTrace();
+					Settings.LOGGER.error(e);
 				}
 				CDKHueckelAromaticityDetector.detectAromaticity(mol);
 				mols.add(mol);
@@ -282,7 +282,7 @@ public class FeatureService
 	{
 		if (fileToMolecules.get(dataset) == null)
 		{
-			System.out.print("read dataset file '" + dataset.getLocalPath() + "' with cdk");
+			Settings.LOGGER.info("read dataset file '" + dataset.getLocalPath() + "' with cdk");
 			TaskProvider.verbose("Parsing file with CDK");
 
 			Vector<IMolecule> mols = new Vector<IMolecule>();
@@ -356,7 +356,7 @@ public class FeatureService
 				}
 				catch (NoSuchAtomTypeException e)
 				{
-					e.printStackTrace();
+					Settings.LOGGER.error(e);
 				}
 				CDKHueckelAromaticityDetector.detectAromaticity(mol);
 
@@ -373,7 +373,7 @@ public class FeatureService
 				// }
 				// catch (CDKException e)
 				// {
-				// System.err.println("Could not add hydrogens:  " + e.getMessage());
+				// Settings.LOGGER.warn("Could not add hydrogens:  " + e.getMessage());
 				// }
 
 				if (mol.getAtomCount() == 0)
@@ -385,13 +385,13 @@ public class FeatureService
 
 			if (illegalMolecules.size() > 0)
 			{
-				System.err.println("Could not read " + illegalMolecules.size() + "/" + mols.size() + " molecules");
+				Settings.LOGGER.warn("Could not read " + illegalMolecules.size() + "/" + mols.size() + " molecules");
 				if (mols.size() > illegalMolecules.size())
 					throw new IllegalCompoundsException(illegalMolecules);
 				else
 					throw new IllegalStateException("Could not read any compounds");
 			}
-			System.out.println(" done (" + mols.size() + " compounds found)");
+			Settings.LOGGER.info(" done (" + mols.size() + " compounds found)");
 
 			// convert string to double
 			for (IntegratedProperty p : integratedProperties.get(dataset))
@@ -443,7 +443,7 @@ public class FeatureService
 			mols.toArray(res);
 			fileToMolecules.put(dataset, res);
 
-			// System.out.println("integrated properties in file: "
+			// Settings.LOGGER.println("integrated properties in file: "
 			// + CollectionUtil.toString(integratedProperties.get(dataset)));
 		}
 	}
@@ -467,7 +467,7 @@ public class FeatureService
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 			return null;
 		}
 	}
@@ -483,18 +483,18 @@ public class FeatureService
 			String smiles[];
 			if (new File(smilesFile).exists())
 			{
-				System.out.println("read cached smiles from: " + smilesFile);
+				Settings.LOGGER.info("read cached smiles from: " + smilesFile);
 				smiles = ValueFileCache.readCacheString(smilesFile).get(0);
 			}
 			else
 			{
-				System.out.print("compute smiles.. ");
+				Settings.LOGGER.info("compute smiles.. ");
 				SmilesGenerator sg = new SmilesGenerator();
 				smiles = new String[dataset.getMolecules().length];
 				int i = 0;
 				for (IMolecule m : dataset.getMolecules())
 					smiles[i++] = sg.createSMILES(m);
-				System.out.println(" ..done, store: " + smilesFile);
+				Settings.LOGGER.info(" ..done, store: " + smilesFile);
 				ValueFileCache.writeCacheString(smilesFile, smiles);
 			}
 			cdkSmiles.put(dataset, smiles);
@@ -559,11 +559,11 @@ public class FeatureService
 		}
 		catch (CDKException e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 		}
 	}
 
@@ -622,7 +622,7 @@ public class FeatureService
 					}
 					catch (Exception e)
 					{
-						e.printStackTrace();
+						Settings.LOGGER.error(e);
 						newSet.add(AtomContainerManipulator.removeHydrogens(oldSet.getMolecule(i)));
 					}
 					if (!TaskProvider.isRunning())
@@ -638,10 +638,10 @@ public class FeatureService
 			res |= tmpFile.delete();
 			if (!res)
 				throw new Error("renaming or delete file error");
-			System.out.println("created 2d sdf file: " + sdfFile);
+			Settings.LOGGER.info("created 2d sdf file: " + sdfFile);
 		}
 		else
-			System.out.println("sdf 2d file already exists: " + sdfFile);
+			Settings.LOGGER.info("sdf 2d file already exists: " + sdfFile);
 	}
 
 }

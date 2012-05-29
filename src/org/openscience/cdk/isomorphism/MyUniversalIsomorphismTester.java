@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import main.Settings;
+
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtom;
@@ -525,7 +527,7 @@ public class MyUniversalIsomorphismTester
 				}
 				catch (CloneNotSupportedException e)
 				{
-					e.printStackTrace();
+					Settings.LOGGER.error(e);
 				}
 				ac.addAtom(a1);
 				table.put(a, a1);
@@ -542,7 +544,7 @@ public class MyUniversalIsomorphismTester
 				}
 				catch (CloneNotSupportedException e)
 				{
-					e.printStackTrace();
+					Settings.LOGGER.error(e);
 				}
 				ac.addAtom(a2);
 				table.put(a, a2);

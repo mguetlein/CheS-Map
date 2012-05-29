@@ -60,9 +60,9 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 						MoleculePropertyUtil.valuesReplaceNullWithMedian(features,
 								ListUtil.cast(MolecularPropertyOwner.class, compounds), dataset), featureTableFile);
 			else
-				System.out.println("load cached features from " + featureTableFile);
+				Settings.LOGGER.info("load cached features from " + featureTableFile);
 
-			System.out.println("Using r-clusterer " + getName() + " with properties: "
+			Settings.LOGGER.info("Using r-clusterer " + getName() + " with properties: "
 					+ PropertyUtil.toString(getProperties()));
 
 			rScript = new File(RScriptUtil.getScriptPath(getShortName() + propsMD5, getRScriptCode()));

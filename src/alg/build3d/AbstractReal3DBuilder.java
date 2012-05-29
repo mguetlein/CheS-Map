@@ -42,7 +42,7 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 	{
 		if (Settings.CACHING_ENABLED && dataset.getSDFPath(false).contains("." + getInitials() + "3d"))
 		{
-			System.out.println("file already in " + getInitials() + "3d : " + dataset.getSDFPath(false)
+			Settings.LOGGER.info("file already in " + getInitials() + "3d : " + dataset.getSDFPath(false)
 					+ ", no 3d structure generation");
 			threeDFilename = dataset.getSDFPath(false);
 			return;
@@ -58,11 +58,11 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 			final File tmpFile = File.createTempFile("3dbuild", "tmp");
 			String finalFile = destinationFile(dataset);
 
-			//			System.out.println(threeDFilename);
+			//			Settings.LOGGER.println(threeDFilename);
 			File threeD = new File(finalFile);
 			if (!threeD.exists() || !Settings.CACHING_ENABLED)
 			{
-				System.out.println("computing 3d: " + finalFile);
+				Settings.LOGGER.info("computing 3d: " + finalFile);
 				running = true;
 				final int max = SDFUtil.countCompounds(sdfFile);
 				Thread th = new Thread(new Runnable()
@@ -78,7 +78,7 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 							}
 							catch (InterruptedException e)
 							{
-								e.printStackTrace();
+								Settings.LOGGER.error(e);
 							}
 							if (tmpFile.exists())
 							{
@@ -102,12 +102,12 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 					throw new Error("renaming or delete file error");
 			}
 			else
-				System.out.println("3d already computed: " + finalFile);
+				Settings.LOGGER.info("3d already computed: " + finalFile);
 			threeDFilename = finalFile;
 		}
 		catch (IOException e1)
 		{
-			e1.printStackTrace();
+			Settings.LOGGER.error(e1);
 		}
 	}
 

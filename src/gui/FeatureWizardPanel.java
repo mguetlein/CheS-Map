@@ -317,7 +317,7 @@ public class FeatureWizardPanel extends WizardPanel
 				if (e.getKeyChar() == '#')
 				{
 					MoleculePropertySet p = (MoleculePropertySet) selector.getHighlightedElement();
-					System.err.println("toggle type for " + p);
+					Settings.LOGGER.info("toggle type for " + p);
 					moleculePropertyPanel.toggleType();
 				}
 			}

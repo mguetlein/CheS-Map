@@ -6,6 +6,8 @@ import java.util.Random;
 
 import javax.vecmath.Vector3f;
 
+import main.Settings;
+
 public class Vector3fUtil
 {
 	public static String serialize(Vector3f v)
@@ -211,7 +213,7 @@ public class Vector3fUtil
 
 	public static void main(String args[])
 	{
-		System.out.println(new Vector3f(2, 3, 4));
+		Settings.LOGGER.info(new Vector3f(2, 3, 4));
 
 		//		Random random = new Random();
 		//		Vector3f sum = null;
@@ -220,7 +222,7 @@ public class Vector3fUtil
 		//		while (runs < 100000)
 		//		{
 		//			Vector3f v = randomVector(1, random);
-		//			// System.out.println(runs + "   v: " + v);
+		//			// Settings.LOGGER.println(runs + "   v: " + v);
 		//
 		//			if (sum == null)
 		//				sum = new Vector3f(v);
@@ -230,8 +232,8 @@ public class Vector3fUtil
 		//		}
 		//		Vector3f avg = new Vector3f(sum);
 		//		avg.scale(1 / (float) runs);
-		//		System.out.println(runs + " avg: " + avg);
-		//		System.out.println(runs + " length: " + avg.length());
+		//		Settings.LOGGER.println(runs + " avg: " + avg);
+		//		Settings.LOGGER.println(runs + " length: " + avg.length());
 
 	}
 }

@@ -26,7 +26,7 @@ public class DatasetUtil
 
 	public static void main(String args[])
 	{
-		System.out.println(uploadDatasetToAmbit("/home/martin/data/ches-mapper/chang.sdf"));
+		Settings.LOGGER.info(uploadDatasetToAmbit("/home/martin/data/ches-mapper/chang.sdf"));
 	}
 
 	public static void downloadDataset(String datasetUrl) throws Exception

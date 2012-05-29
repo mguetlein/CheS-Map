@@ -494,7 +494,7 @@ public class MoleculePropertyPanel extends JPanel
 
 	public void setSelectedPropertySet(MoleculePropertySet prop)
 	{
-		System.out.println("updating selected prop: " + prop);
+		Settings.LOGGER.info("updating selected prop: " + prop);
 
 		selectedPropertySet = prop;
 		selectedPropertyIndex = 0;

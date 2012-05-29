@@ -2,6 +2,7 @@ package data;
 
 import java.util.List;
 
+import main.Settings;
 import main.TaskProvider;
 
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -25,7 +26,7 @@ public class ComputeMCS
 		for (ClusterData c : clusters)
 		{
 			if (MCSComputer.DEBUG)
-				System.out.println("\n\n");
+				Settings.LOGGER.info("\n\n");
 
 			TaskProvider.update("Computing MCS for cluster " + (++count) + "/" + clusters.size());
 
@@ -39,7 +40,7 @@ public class ComputeMCS
 			}
 			catch (Exception e)
 			{
-				e.printStackTrace();
+				Settings.LOGGER.error(e);
 			}
 			if (mcsMolecule != null)
 			{
@@ -50,14 +51,14 @@ public class ComputeMCS
 				((ClusterDataImpl) c).setSubstructureSmarts(SubstructureSmartsType.MCS, smiles);
 				((ClusterDataImpl) c).setSubstructureSmartsMatchEngine(SubstructureSmartsType.MCS, MatchEngine.CDK);
 
-				System.out.println("MCSMolecule: " + c.getSubstructureSmarts(SubstructureSmartsType.MCS));
+				Settings.LOGGER.info("MCSMolecule: " + c.getSubstructureSmarts(SubstructureSmartsType.MCS));
 
-				//				System.out.println("non aromatic");
+				//				Settings.LOGGER.println("non aromatic");
 				//				g = new SmilesGenerator();
-				//				System.out.println(g.createSMILES(mcsMolecule));
+				//				Settings.LOGGER.println(g.createSMILES(mcsMolecule));
 			}
 			if (MCSComputer.DEBUG)
-				System.out.println("\n\n");
+				Settings.LOGGER.info("\n\n");
 		}
 
 	}

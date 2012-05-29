@@ -64,7 +64,7 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 		}
 	}
 
@@ -84,7 +84,7 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 		}
 	}
 
@@ -116,7 +116,7 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 				}
 				if (line.length() > 0)
 				{
-					// System.err.println("frags: " + line);
+					// Settings.LOGGER.warn("frags: " + line);
 					boolean minFreq = false;
 					for (String s : line.split("\\t"))
 					{

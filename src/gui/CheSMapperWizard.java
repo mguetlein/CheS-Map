@@ -83,7 +83,7 @@ public class CheSMapperWizard extends WizardDialog
 		}
 		catch (Exception e1)
 		{
-			e1.printStackTrace();
+			Settings.LOGGER.error(e1);
 		}
 
 		addComponentListener(new ComponentAdapter()

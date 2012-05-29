@@ -124,13 +124,13 @@ public class OBDescriptorProperty extends AbstractMoleculeProperty implements Mo
 		String vals[];
 		if (Settings.CACHING_ENABLED && new File(cache).exists())
 		{
-			System.out.println("reading ob descriptors from: " + cache);
+			Settings.LOGGER.info("reading ob descriptors from: " + cache);
 			vals = ValueFileCache.readCacheString(cache).get(0);
 		}
 		else
 		{
 			vals = OBDescriptorFactory.compute(dataset.getSDFPath(false), descriptorID);
-			System.out.println("writing ob descriptors to: " + cache);
+			Settings.LOGGER.info("writing ob descriptors to: " + cache);
 			ValueFileCache.writeCacheString(cache, vals);
 		}
 

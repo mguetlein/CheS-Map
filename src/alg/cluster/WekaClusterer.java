@@ -43,7 +43,7 @@ public class WekaClusterer extends AbstractDatasetClusterer
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 		}
 	}
 
@@ -174,7 +174,7 @@ public class WekaClusterer extends AbstractDatasetClusterer
 			eval.setClusterer(wekaClusterer);
 			TaskProvider.verbose("Clustering dataset");
 			eval.evaluateClusterer(data);
-			System.out.println("# of clusters: " + eval.getNumClusters());
+			Settings.LOGGER.info("# of clusters: " + eval.getNumClusters());
 
 			List<Integer> clusterAssignements = new ArrayList<Integer>();
 			for (int j = 0; j < eval.getClusterAssignments().length; j++)
@@ -248,7 +248,7 @@ public class WekaClusterer extends AbstractDatasetClusterer
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 		}
 		return s;
 	}

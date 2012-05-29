@@ -71,9 +71,9 @@ public class PropHandler
 				FileInputStream in = new FileInputStream(propertiesFile);
 				props.load(in);
 				in.close();
-				// System.out.println("property-keys: " + CollectionUtil.toString(PROPS.keySet()));
-				// System.out.println("property-values: " + CollectionUtil.toString(PROPS.values()));
-				System.out.println("Read properties from: " + propertiesFile);
+				// Settings.LOGGER.println("property-keys: " + CollectionUtil.toString(PROPS.keySet()));
+				// Settings.LOGGER.println("property-values: " + CollectionUtil.toString(PROPS.values()));
+				Settings.LOGGER.info("Read properties from: " + propertiesFile);
 			}
 			catch (Exception e)
 			{
@@ -81,7 +81,7 @@ public class PropHandler
 			}
 		}
 		else
-			System.out.println("No properties read or stored");
+			Settings.LOGGER.info("No properties read or stored");
 	}
 
 	private void storeProps()
@@ -96,7 +96,7 @@ public class PropHandler
 			}
 			catch (Exception e)
 			{
-				e.printStackTrace();
+				Settings.LOGGER.error(e);
 			}
 		}
 	}

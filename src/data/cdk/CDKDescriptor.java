@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import main.Settings;
+
 import org.openscience.cdk.qsar.DescriptorEngine;
 import org.openscience.cdk.qsar.IDescriptor;
 import org.openscience.cdk.qsar.IMolecularDescriptor;
@@ -45,8 +47,8 @@ public class CDKDescriptor
 					}
 					catch (Exception e)
 					{
-						//						System.err.println("could not init descriptor: " + s);
-						//						e.printStackTrace();
+						//						Settings.LOGGER.warn("could not init descriptor: " + s);
+						//						Settings.LOGGER.error(e);
 					}
 			buffy.close();
 			Collections.sort(descriptorList, new Comparator<IDescriptor>()
@@ -57,14 +59,14 @@ public class CDKDescriptor
 					return o1.getClass().getName().compareTo(o2.getClass().getName());
 				}
 			});
-			System.out.println("loaded " + descriptorList.size() + " cdk descriptors");
+			Settings.LOGGER.info("loaded " + descriptorList.size() + " cdk descriptors");
 
 			CDK_DESCRIPTORS = new CDKDescriptor[descriptorList.size()];
 			int i = 0;
 			for (IDescriptor c : descriptorList)
 			{
 				CDK_DESCRIPTORS[i++] = new CDKDescriptor((IMolecularDescriptor) c);
-				//				System.out.print("new " + c.getClass().getSimpleName() + "(), ");
+				//				Settings.LOGGER.print("new " + c.getClass().getSimpleName() + "(), ");
 			}
 
 			List<CDKDescriptor> numDesc = new ArrayList<CDKDescriptor>();
@@ -76,8 +78,8 @@ public class CDKDescriptor
 		}
 		catch (Exception e)
 		{
-			System.err.println("could not load CDK descriptors");
-			e.printStackTrace();
+			Settings.LOGGER.error("could not load CDK descriptors");
+			Settings.LOGGER.error(e);
 			CDK_DESCRIPTORS = new CDKDescriptor[0];
 			CDK_NUMERIC_DESCRIPTORS = new CDKDescriptor[0];
 		}

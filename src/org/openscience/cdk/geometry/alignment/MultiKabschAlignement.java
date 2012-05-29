@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.vecmath.Point3d;
 
+import main.Settings;
 import main.TaskProvider;
 
 import org.openscience.cdk.Atom;
@@ -94,7 +95,7 @@ public class MultiKabschAlignement
 				{
 					if (a.getPoint2d() == null)
 						throw new Error("no 2d coordinates");
-					System.err.println("no 3d coordinates available for " + g.createSMILES(molecules[m]));
+					Settings.LOGGER.warn("no 3d coordinates available for " + g.createSMILES(molecules[m]));
 					warning = true;
 				}
 				if (a.getPoint3d() == null)
@@ -130,7 +131,7 @@ public class MultiKabschAlignement
 		MoleculeInfo molInfo1 = molInfos[0];
 
 		if (DEBUG)
-			System.out.println("Num matches in compound 1: " + molInfo1.numSmartsMatches());
+			Settings.LOGGER.info("Num matches in compound 1: " + molInfo1.numSmartsMatches());
 
 		for (int m = 1; m < molecules.length; m++)
 		{
@@ -146,14 +147,14 @@ public class MultiKabschAlignement
 			String msg = "Align compound " + (m + 1) + "/" + molInfos.length + " to first compound";
 			TaskProvider.verbose(msg);
 			if (!TaskImpl.PRINT_VERBOSE)
-				System.out.println(msg);
+				Settings.LOGGER.info(msg);
 			else
-				System.out.println(msg);
+				Settings.LOGGER.info(msg);
 
 			if (DEBUG)
 			{
-				System.out.println("Num matches in compound " + (m + 1) + ": " + molInfo2.numSmartsMatches());
-				System.out.print("Aligning:");
+				Settings.LOGGER.info("Num matches in compound " + (m + 1) + ": " + molInfo2.numSmartsMatches());
+				Settings.LOGGER.info("Aligning:");
 			}
 
 			for (int matchIndex1 = 0; matchIndex1 < molInfo1.numSmartsMatches(); matchIndex1++)
@@ -222,7 +223,7 @@ public class MultiKabschAlignement
 						//							throw new IllegalStateException("rmsd is not valid " + a1.length);
 						double tmpCompleteRMSD = Double.MAX_VALUE;
 						if (DEBUG)
-							System.out.print(StringUtil.formatDouble(tmpRMSD) + " ");
+							Settings.LOGGER.info(StringUtil.formatDouble(tmpRMSD) + " ");
 
 						if (tmpRMSD - 0.1 < rmsd)
 						{
@@ -254,7 +255,7 @@ public class MultiKabschAlignement
 				}
 			}
 			if (DEBUG)
-				System.out.println();
+				Settings.LOGGER.info();
 
 			if (bestAtoms1 == null)
 				throw new IllegalStateException("Kabsch Alignement failed to align according to smarts '" + smarts
@@ -265,7 +266,7 @@ public class MultiKabschAlignement
 			KabschAlignment ka = new KabschAlignment(bestAtoms1, bestAtoms2);
 			ka.align();
 			if (centerOfMass != null && !centerOfMass.equals(ka.getCenterOfMass()))
-				System.err.println("Center of mol1 is not equal for all alignments:\n" + centerOfMass + " != "
+				Settings.LOGGER.warn("Center of mol1 is not equal for all alignments:\n" + centerOfMass + " != "
 						+ ka.getCenterOfMass());
 			centerOfMass = ka.getCenterOfMass();
 
@@ -288,9 +289,9 @@ public class MultiKabschAlignement
 				for (int atomIndex = 0; atomIndex < bestAtoms1.length; atomIndex++)
 					mappedAtoms.put(mol1.getAtomNumber(bestAtoms1[atomIndex]),
 							mol2.getAtomNumber(bestAtoms2[atomIndex]));
-				System.out.println("RMSD between matched subgraphs BEFORE aligning "
+				Settings.LOGGER.info("RMSD between matched subgraphs BEFORE aligning "
 						+ GeometryTools.getAllAtomRMSD(mol1, mol2, mappedAtoms, true));
-				System.out.println("RMSD between whole compounds   BEFORE aligning " + getAllAtomRMSD(mol1, mol2));
+				Settings.LOGGER.info("RMSD between whole compounds   BEFORE aligning " + getAllAtomRMSD(mol1, mol2));
 
 			}
 			ka.rotateAtomContainer(mol2);
@@ -300,8 +301,8 @@ public class MultiKabschAlignement
 			if (DEBUG)
 			{
 				double rmsdAfter = GeometryTools.getAllAtomRMSD(mol1, mol2, mappedAtoms, true);
-				System.out.println("RMSD between matched subgraphs AFTER  aligning " + rmsdAfter);
-				System.out.println("RMSD between whole compounds   AFTER  aligning " + getAllAtomRMSD(mol1, mol2));
+				Settings.LOGGER.info("RMSD between matched subgraphs AFTER  aligning " + rmsdAfter);
+				Settings.LOGGER.info("RMSD between whole compounds   AFTER  aligning " + getAllAtomRMSD(mol1, mol2));
 			}
 		}
 
@@ -349,12 +350,12 @@ public class MultiKabschAlignement
 			//			String s[] = { "c1cc(ccc1Oc2cc(cc(c2)Br)Br)Br", "c2cc(Oc1ccc(cc1Br)Br)c(cc2Br)Br" };
 			//			String smarts = "c1ccc(cc1)Oc2ccc(cc2)Br";
 			//			MultiKabschAlignement.align("pbde", s, smarts);
-			//			System.out.println();
+			//			Settings.LOGGER.println();
 
 			String s2[] = { "CCCC1CCNC(=O)C1", "O=C1CCC2CCCCC2(N1)" };
 			String smarts2 = "CCCCCCNC(C)=O";
 			MultiKabschAlignement.align("not-isomorph", s2, smarts2);
-			System.out.println();
+			Settings.LOGGER.info();
 			//
 			//			String s3[] = { "O=S(=O)(N)c1ccc(cc1)n3ncc(c3(c2ccccc2))Cl",
 			//					"O=Cc3cc(c1ccc(cc1)S(=O)(=O)C)n(c2ccc(F)cc2)c3C",
@@ -362,22 +363,22 @@ public class MultiKabschAlignement
 			//					"O=S(=O)(N)c1ccc(cc1)n3nc(cc3(c2cc(F)c(OC)c(F)c2))C(F)F" };
 			//			String smarts3 = "ccc(nc1ccccc1)c2ccccc2";
 			//			MultiKabschAlignement.align("cox", s3, smarts3);
-			//			System.out.println();
+			//			Settings.LOGGER.println();
 			//			
 			//			String s4[] = { "O=S(=O)(c1ccc(cc1)C3=C(c2ccc(F)c(F)c2)CCC3)C",
 			//					"O=S(=O)(c1ccc(cc1)c3ccccc3(c2ccc(cc2)Cl))C" };
 			//			String smarts4 = "O=S";// "c1ccccc1";
 			//			MultiKabschAlignement.align("cox2", s4, smarts4);
-			//			System.out.println();
+			//			Settings.LOGGER.println();
 
 			//			String s5[] = { "O=C2NC(=Nc1c2(ncn1COCCO))N", "O=C2NC(=Nc1c2(ncn1COC(CO)CO))N" };
 			//			String smarts5 = "OC";
 			//			MultiKabschAlignement.align("basic", s5, smarts5);
-			//			System.out.println();
+			//			Settings.LOGGER.println();
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 		}
 	}
 
@@ -389,7 +390,7 @@ public class MultiKabschAlignement
 		ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), "mm2");
 		for (int i = 0; i < mol.length; i++)
 		{
-			System.out.println("build molecule " + (i + 1) + "/" + mol.length);
+			Settings.LOGGER.info("build molecule " + (i + 1) + "/" + mol.length);
 			mol[i] = mb3d.generate3DCoordinates(sp.parseSmiles(smiles[i]), true);
 		}
 		toSDF(mol, "/tmp/" + name + ".before.sdf");
@@ -415,13 +416,13 @@ public class MultiKabschAlignement
 				}
 				catch (Exception e)
 				{
-					e.printStackTrace();
+					Settings.LOGGER.error(e);
 					newSet.add(AtomContainerManipulator.removeHydrogens(oldSet.getMolecule(i)));
 				}
 			}
 			writer.write(newSet);
 		}
 		writer.close();
-		System.out.println("written to " + file);
+		Settings.LOGGER.info("written to " + file);
 	}
 }

@@ -60,7 +60,7 @@ public class RESTUtil
 			if (lastMsg == -1 || (new Date().getTime() - lastMsg) > 10000)
 			{
 				lastMsg = new Date().getTime();
-				System.err.println(StringUtil.formatTime(new Date().getTime() - start) + " waiting for task "
+				Settings.LOGGER.info(StringUtil.formatTime(new Date().getTime() - start) + " waiting for task "
 						+ b.toString());
 			}
 			try
@@ -69,7 +69,7 @@ public class RESTUtil
 			}
 			catch (InterruptedException e)
 			{
-				e.printStackTrace();
+				Settings.LOGGER.error(e);
 			}
 			if (!TaskProvider.isRunning())
 				return null;
@@ -80,7 +80,7 @@ public class RESTUtil
 		}
 		else
 		{
-			System.out.println("result: " + b.toString());
+			Settings.LOGGER.info("result: " + b.toString());
 			return b.toString();
 		}
 	}
@@ -90,7 +90,7 @@ public class RESTUtil
 		HttpURLConnection connection = null;
 		try
 		{
-			System.err.println("deleting: " + urlString);
+			Settings.LOGGER.info("deleting: " + urlString);
 
 			URL url = new URL(urlString);
 			connection = (HttpURLConnection) url.openConnection();
@@ -104,7 +104,7 @@ public class RESTUtil
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 
 			StringBuffer serverError = new StringBuffer();
 			if (connection != null && connection.getErrorStream() != null)
@@ -149,7 +149,7 @@ public class RESTUtil
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 
 			StringBuffer serverError = new StringBuffer();
 			if (connection != null && connection.getErrorStream() != null)
@@ -195,7 +195,7 @@ public class RESTUtil
 				connection.setRequestProperty("Subjectid", URLEncoder.encode(getToken(), "UTF-8"));
 			connection.setRequestMethod("POST");
 			DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
-			System.err.println("POST " + p + " " + urlString);
+			Settings.LOGGER.info("POST " + p + " " + urlString);
 
 			String curl_call = "curl ";
 			for (String key : params.keySet())
@@ -203,7 +203,7 @@ public class RESTUtil
 			curl_call += urlString;
 			if (!urlString.contains("authenticate"))
 				curl_call += " -H \"subjectid=" + getToken() + "\"";
-			System.err.println("(for debbuging: '" + curl_call + "')");
+			Settings.LOGGER.info("(for debbuging: '" + curl_call + "')");
 
 			dos.writeBytes(p);
 			dos.flush();
@@ -212,7 +212,7 @@ public class RESTUtil
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 			JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME, "Error: could not post to: '" + urlString
 					+ "'\nError type: '" + e.getClass().getSimpleName() + "'\nMessage: '" + e.getMessage() + "'",
 					"Http Connection Error", JOptionPane.ERROR_MESSAGE);
@@ -226,7 +226,7 @@ public class RESTUtil
 		try
 		{
 			String randomMod = StringUtil.randomString(10, 10, new Random(), false);
-			System.err.println("randomMod: " + randomMod);
+			Settings.LOGGER.info("randomMod: " + randomMod);
 
 			String boundary = "*****";
 			String lineEnd = "\r\n";
@@ -273,7 +273,7 @@ public class RESTUtil
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 			JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME, "Error: could not post to: '" + urlString
 					+ "'\nError type: '" + e.getClass().getSimpleName() + "'\nMessage: '" + e.getMessage() + "'",
 					"Http Connection Error", JOptionPane.ERROR_MESSAGE);
@@ -286,9 +286,9 @@ public class RESTUtil
 	{
 		//		HashMap<String, String> params = new HashMap<String, String>();
 		//		params.put("accept", "text/uri-list");
-		//		System.out.println(get("http://local-ot/task/10", params));
+		//		Settings.LOGGER.println(get("http://local-ot/task/10", params));
 
-		System.out.println(getToken("guest", "guest"));
+		Settings.LOGGER.info(getToken("guest", "guest"));
 	}
 
 }

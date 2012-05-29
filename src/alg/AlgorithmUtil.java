@@ -1,6 +1,7 @@
 package alg;
 
 import main.BinHandler;
+import main.Settings;
 import weka.clusterers.EM;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
@@ -53,9 +54,9 @@ public class AlgorithmUtil
 
 			s.setResultValue(r, "Runs without R", a.getBinary() == BinHandler.RSCRIPT_BINARY ? "" : "Yes");
 		}
-		System.out.println(s.toNiceString());
-		System.out.println();
-		System.out.println(s.toMediaWikiString());
+		Settings.LOGGER.info(s.toNiceString());
+		Settings.LOGGER.info();
+		Settings.LOGGER.info(s.toMediaWikiString());
 	}
 
 	public static void main(String args[])

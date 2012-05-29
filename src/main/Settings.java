@@ -1,5 +1,7 @@
 package main;
 
+import io.Logger;
+
 import java.awt.Font;
 import java.awt.Image;
 import java.io.BufferedReader;
@@ -57,7 +59,7 @@ public class Settings
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 		}
 	}
 
@@ -117,23 +119,23 @@ public class Settings
 		try
 		{
 			URL manifestUrl = Settings.class.getResource("/META-INF/MANIFEST.MF");
-			// System.out.println(manifestUrl);
+			// Settings.LOGGER.println(manifestUrl);
 			BufferedReader br = new BufferedReader(new InputStreamReader(manifestUrl.openStream()));
 			String line;
 			while ((line = br.readLine()) != null)
 			{
-				// System.out.println(line);
+				// Settings.LOGGER.println(line);
 				if (line.matches("(?i).*built.*date.*"))
 				{
 					Settings.BUILD_DATE = line;
 					break;
 				}
 			}
-			// System.out.println(BUILD_DATE);
+			// Settings.LOGGER.println(BUILD_DATE);
 		}
 		catch (Exception e)
 		{
-			// e.printStackTrace();
+			// Settings.LOGGER.error(e);
 		}
 	}
 
@@ -155,7 +157,7 @@ public class Settings
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 		}
 	}
 
@@ -182,6 +184,8 @@ public class Settings
 	public static String MODIFIED_BABEL_DATA_DIR = BASE_DIR + File.separator + "babel_data";
 	public static String R_LIB_DIR = BASE_DIR + File.separator + "r_libs";
 
+	public static final Logger LOGGER;
+
 	static
 	{
 		for (String d : new String[] { BASE_DIR, STRUCTURAL_FRAGMENT_DIR, MODIFIED_BABEL_DATA_DIR, R_LIB_DIR })
@@ -191,6 +195,15 @@ public class Settings
 				dir.mkdir();
 			if (!dir.exists())
 				throw new Error("Could not create '" + d + "'");
+		}
+		try
+		{
+			LOGGER = new Logger(BASE_DIR + File.separator + "ches-mapper.log", true);
+			LOGGER.info("logger initialized ('" + BASE_DIR + File.separator + "ches-mapper.log" + "')");
+		}
+		catch (RuntimeException e)
+		{
+			throw new Error("cannot init logger", e);
 		}
 	}
 
@@ -219,7 +232,7 @@ public class Settings
 		}
 		catch (UnsupportedEncodingException e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 			return null;
 		}
 	}
@@ -238,7 +251,7 @@ public class Settings
 		}
 		catch (UnsupportedEncodingException e)
 		{
-			e.printStackTrace();
+			Settings.LOGGER.error(e);
 			return null;
 		}
 		return destinationFileForFileAndName(dataset.getSDFPath(false), destinationFilename);

@@ -175,7 +175,7 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	@Override
 	public boolean compute(DatasetFile dataset)
 	{
-		System.out.println("computing structural fragment " + StructuralFragmentProperties.getMatchEngine() + " "
+		Settings.LOGGER.info("computing structural fragment " + StructuralFragmentProperties.getMatchEngine() + " "
 				+ StructuralFragmentProperties.getMinFrequency() + " "
 				+ StructuralFragmentProperties.isSkipOmniFragments() + " " + dataset.getSDFPath(false));
 
@@ -188,7 +188,7 @@ public class StructuralFragmentSet extends FragmentPropertySet
 		List<boolean[]> matches;
 		if (Settings.CACHING_ENABLED && new File(smartsMatchFile).exists())
 		{
-			System.out.println("read cached matches from file: " + smartsMatchFile);
+			Settings.LOGGER.info("read cached matches from file: " + smartsMatchFile);
 			matches = readFromFile(smartsMatchFile);
 		}
 		else
@@ -201,7 +201,7 @@ public class StructuralFragmentSet extends FragmentPropertySet
 				throw new Error("illegal match engine");
 			if (!TaskProvider.isRunning())
 				return false;
-			System.out.println("store matches in file: " + smartsMatchFile);
+			Settings.LOGGER.info("store matches in file: " + smartsMatchFile);
 			writeToFile(smartsMatchFile, matches);
 		}
 

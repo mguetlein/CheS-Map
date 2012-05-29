@@ -114,7 +114,7 @@ public class StructuralFragments
 			}
 			catch (Exception e)
 			{
-				e.printStackTrace();
+				Settings.LOGGER.error(e);
 
 				if (FileUtil.getFilename(filename).equals(showWarningForFile))
 					JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME, "Could not parse SMARTS file '"
