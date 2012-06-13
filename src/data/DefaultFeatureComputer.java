@@ -106,7 +106,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 					c = (CompoundDataImpl) compounds.get(i);
 				else
 				{
-					c = new CompoundDataImpl(smiles[i]);
+					c = new CompoundDataImpl(smiles[i], dataset.getMolecules()[i]);
 					c.setIndex(i);
 					compounds.add(c);
 				}
@@ -118,7 +118,6 @@ public class DefaultFeatureComputer implements FeatureComputer
 				}
 				else
 					c.setStringValue(p, s[i]);
-
 			}
 		}
 	}

@@ -140,6 +140,8 @@ public class FeatureService
 						sss = StringUtil.trimQuotes(sss);
 						if (i == 0)
 							s.append(sss + " ");
+						if (sss.length() == 0)
+							sss = null;
 						props.get(propNames.get(i)).add(sss);
 						i++;
 					}

@@ -86,6 +86,8 @@ public class CascadeSimpleKMeans extends RandomizableClusterer implements Cluste
 
 				TaskProvider.verbose("CascadeKMeans Clustering, Restarts: " + (i + 1) + "/" + restarts + ", K: " + k
 						+ "/" + maxNumClusters);
+				if (!TaskProvider.isRunning())
+					return;
 
 				int seed = r.nextInt();
 				kMeans.setSeed(seed);
