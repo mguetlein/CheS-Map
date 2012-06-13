@@ -94,7 +94,8 @@ public class DefaultFeatureComputer implements FeatureComputer
 				s = p.getStringValues(dataset);
 
 			if ((d != null && d.length != numCompounds) || (s != null && s.length != numCompounds))
-				throw new Error("illegal num features " + p);
+				throw new Error("illegal num features " + p + ", is:" + (d != null ? d.length : s.length)
+						+ ", should be:" + numCompounds);
 
 			if (!TaskProvider.isRunning())
 				return;
