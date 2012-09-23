@@ -112,12 +112,16 @@ public class FeatureService
 			boolean firstLine = true;
 			List<String> propNames = new ArrayList<String>();
 			HashMap<String, List<String>> props = new HashMap<String, List<String>>();
+			String sep = ",";
 			while ((ss = b.readLine()) != null)
 			{
 				if (firstLine)
 				{
+					if (StringUtil.numOccurences(ss, ",") < StringUtil.numOccurences(ss, ";"))
+						sep = ";";
+
 					int i = 0;
-					for (String sss : ss.split(","))
+					for (String sss : ss.split(sep))
 					{
 						sss = StringUtil.trimQuotes(sss);
 						if (i == 0)
@@ -135,7 +139,7 @@ public class FeatureService
 				else if (!ss.startsWith("#") && ss.trim().length() > 0)
 				{
 					int i = 0;
-					for (String sss : ss.split(","))
+					for (String sss : ss.split(sep))
 					{
 						sss = StringUtil.trimQuotes(sss);
 						if (i == 0)

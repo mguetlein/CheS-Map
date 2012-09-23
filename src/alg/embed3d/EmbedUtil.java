@@ -10,6 +10,7 @@ import javax.vecmath.Vector3f;
 import main.Settings;
 import util.ArrayUtil;
 import util.DoubleArraySummary;
+import util.ObjectUtil;
 import util.Vector3fUtil;
 import data.DatasetFile;
 import dataInterface.MolecularPropertyOwner;
@@ -77,7 +78,7 @@ public class EmbedUtil
 					{
 						for (String val : feature.getNominalDomain())
 						{
-							if (instances.get(i).getStringValue(features.get(k)).equals(val))
+							if (ObjectUtil.equals(instances.get(i).getStringValue(features.get(k)), val))
 								v_i.add(1.0);
 							else
 								v_i.add(0.0);
