@@ -254,7 +254,9 @@ public class Settings
 			Settings.LOGGER.error(e);
 			return null;
 		}
-		return destinationFileForFileAndName(dataset.getSDFPath(false), destinationFilename);
+		return destinationFileForFileAndName(
+				(dataset.getSDFPath(false) == null ? dataset.getLocalPath() : dataset.getSDFPath(false)),
+				destinationFilename);
 	}
 
 	public static String destinationSDFFile(DatasetFile dataset)

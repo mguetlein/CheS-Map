@@ -22,6 +22,8 @@ public class DatasetFile
 	private String fullName;
 	private String name;
 
+	private String extension;
+
 	public boolean isLocal()
 	{
 		return URI == null;
@@ -250,5 +252,17 @@ public class DatasetFile
 		if (md5 == null)
 			md5 = FileUtil.getMD5String(localPath);
 		return md5;
+	}
+
+	public void setFileExtension(String ext)
+	{
+		this.extension = ext;
+	}
+
+	public String getFileExtension()
+	{
+		if (extension == null)
+			extension = FileUtil.getFilenamExtension(localPath);
+		return extension;
 	}
 }

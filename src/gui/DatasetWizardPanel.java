@@ -33,6 +33,7 @@ import main.TaskProvider;
 import opentox.DatasetUtil;
 import task.Task;
 import task.TaskDialog;
+import util.FileUtil;
 import util.ListUtil;
 import util.ThreadUtil;
 import util.VectorUtil;
@@ -382,23 +383,45 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 					}
 					catch (IllegalCompoundsException e)
 					{
+						// illegal compounds can only be handled in sdf or csv
+						if (d.getFileExtension() == null || !d.getFileExtension().matches("(?i)(csv|sdf)"))
+							throw new Error(e);
 						Settings.LOGGER.error(e);
 						task.cancel();
 						TaskProvider.removeTask();
-						String cleanedSdf = Settings.destinationFile(d, d.getShortName() + ".cleaned.sdf");
+						String cleanedFile = Settings.destinationFile(d,
+								d.getShortName() + ".cleaned." + d.getFileExtension());
 						int res = JOptionPane.showConfirmDialog(
 								Settings.TOP_LEVEL_FRAME,
 								"Could not read " + e.illegalCompounds.size() + " compound/s in dataset: "
 										+ d.getPath() + "\nIndices of compounds that could not be loaded: "
 										+ ListUtil.toString(e.illegalCompounds)
 										+ "\n\nDo you want to remove the faulty compounds and reload the dataset?"
-										+ "\n(New dataset would be stored at: " + cleanedSdf + ")", "Dataset faulty",
+										+ "\n(New dataset would be stored at: " + cleanedFile + ")", "Dataset faulty",
 								JOptionPane.YES_NO_OPTION);
 						block.unblock(f);
 						if (res == JOptionPane.YES_OPTION)
 						{
-							SDFUtil.filter_exclude(d.getSDFPath(false), cleanedSdf, e.illegalCompounds);
-							load(cleanedSdf);
+							if (d.getFileExtension().matches("(?i)sdf"))
+								SDFUtil.filter_exclude(d.getSDFPath(false), cleanedFile, e.illegalCompounds);
+							else if (d.getFileExtension().matches("(?i)csv"))
+							{
+								String all = FileUtil.readStringFromFile(d.getLocalPath());
+								StringBuffer cleaned = new StringBuffer();
+								int count = 0;
+								for (String line : all.split("\n"))
+								{
+									if (!e.illegalCompounds.contains(new Integer(count - 1)))
+									{
+										cleaned.append(line);
+										cleaned.append("\n");
+									}
+									count += 1;
+								}
+								FileUtil.writeStringToFile(cleanedFile, cleaned.toString());
+								ThreadUtil.sleep(1000);
+							}
+							load(cleanedFile);
 						}
 						else if (dataset == null)
 							buttonLoad.setEnabled(true);
@@ -425,7 +448,6 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 			});
 			th.start();
 		}
-
 	}
 
 	@Override

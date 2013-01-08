@@ -32,6 +32,7 @@ import org.openscience.cdk.interfaces.IChemFile;
 import org.openscience.cdk.interfaces.IChemObject;
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.interfaces.IMoleculeSet;
+import org.openscience.cdk.io.INChIPlainTextReader;
 import org.openscience.cdk.io.ISimpleChemObjectReader;
 import org.openscience.cdk.io.MDLReader;
 import org.openscience.cdk.io.MDLV2000Reader;
@@ -113,6 +114,8 @@ public class FeatureService
 			List<String> propNames = new ArrayList<String>();
 			HashMap<String, List<String>> props = new HashMap<String, List<String>>();
 			String sep = ",";
+			boolean smiles = false;
+			boolean inchi = false;
 			while ((ss = b.readLine()) != null)
 			{
 				if (firstLine)
@@ -121,14 +124,18 @@ public class FeatureService
 						sep = ";";
 
 					int i = 0;
-					for (String sss : ss.split(sep))
+					for (String sss : ss.split(sep + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)"))
 					{
 						sss = StringUtil.trimQuotes(sss);
 						if (i == 0)
 						{
-							if (!sss.matches(".*(?i)smiles.*"))
-								throw new IllegalArgumentException("first argument in csv must be smiles (is: " + sss
-										+ ")");
+							if (sss.matches(".*(?i)smiles.*"))
+								smiles = true;
+							else if (sss.matches(".*(?i)inchi.*"))
+								inchi = true;
+							else
+								throw new IllegalArgumentException(
+										"first argument in csv must be 'smiles' or 'inchi' (is: " + sss + ")");
 						}
 						propNames.add(sss);
 						props.put(sss, new ArrayList<String>());
@@ -139,7 +146,7 @@ public class FeatureService
 				else if (!ss.startsWith("#") && ss.trim().length() > 0)
 				{
 					int i = 0;
-					for (String sss : ss.split(sep))
+					for (String sss : ss.split(sep + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)"))
 					{
 						sss = StringUtil.trimQuotes(sss);
 						if (i == 0)
@@ -157,10 +164,31 @@ public class FeatureService
 					s.append("\n");
 				}
 			}
-			SMILESReader reader = new SMILESReader(new ByteArrayInputStream(s.toString().getBytes()));
-			IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
-			List<IAtomContainer> list = ChemFileManipulator.getAllAtomContainers(content);
-			reader.close();
+			List<IAtomContainer> list;
+			if (smiles)
+			{
+				SMILESReader reader = new SMILESReader(new ByteArrayInputStream(s.toString().getBytes()));
+				IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
+				list = ChemFileManipulator.getAllAtomContainers(content);
+				reader.close();
+			}
+			else if (inchi)
+			{
+				list = new ArrayList<IAtomContainer>();
+				for (String inch : s.toString().split("\n"))
+				{
+					INChIPlainTextReader reader = new INChIPlainTextReader(new ByteArrayInputStream(inch.getBytes()));
+					IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
+					List<IAtomContainer> l = ChemFileManipulator.getAllAtomContainers(content);
+					if (l.size() != 1)
+						throw new Error();
+					list.add(l.get(0));
+					reader.close();
+				}
+			}
+			else
+				throw new Error("Could not read csv file");
+
 			int molCount = 0;
 			for (IAtomContainer mol : list)
 			{
@@ -300,11 +328,14 @@ public class FeatureService
 				throw new IllegalArgumentException("file not found: " + dataset.getLocalPath());
 
 			List<IAtomContainer> list;
-			if (dataset.getLocalPath().endsWith(".csv"))
+			if (dataset.getLocalPath().endsWith(".csv") || dataset.getLocalPath().endsWith("viz"))
+			{
 				list = readFromCSV(file, true);
+				dataset.setFileExtension("csv");
+			}
 			else if ((list = readFromCSV(file, false)) != null)
 			{
-				// read from csv was successfull
+				dataset.setFileExtension("csv");
 			}
 			else
 			{
