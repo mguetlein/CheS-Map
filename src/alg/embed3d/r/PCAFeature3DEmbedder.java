@@ -56,7 +56,8 @@ public class PCAFeature3DEmbedder extends AbstractRTo3DEmbedder
 				+ "res <- prcomp(df)\n" //
 				+ "rows <-min(ncol(res$x),3)\n" //
 				+ "print(head(res$x[,1:rows]))\n" //
-				+ "write.table(res$x[,1:rows],args[2]) ";
+				+ "write.table(res$x[,1:rows],args[2])\n"//
+				+ "write.table(res$rotation[,1:rows],args[3])\n";
 	}
 
 	@Override

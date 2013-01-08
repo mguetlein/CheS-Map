@@ -39,4 +39,12 @@ public abstract class AbstractAlgorithm implements Algorithm
 		return null;
 	}
 
+	protected Messages processMessages = new Messages();
+
+	@Override
+	public Messages getProcessMessages()
+	{
+		return processMessages;
+	}
+
 }

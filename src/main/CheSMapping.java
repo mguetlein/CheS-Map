@@ -267,6 +267,10 @@ public class CheSMapping
 					ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), null);
 		}
 
+		//		if (emb.getProcessMessages() != null && emb.getProcessMessages().containsWarning())
+		//			TaskProvider.warning("Warning from 3D Embedding " + emb.getName(),
+		//					emb.getProcessMessages().getMessage(MessageType.Warning).getString());
+
 		clustering.setEmbedAlgorithm(emb.getName());
 
 		if (dataset.numCompounds() > 2)

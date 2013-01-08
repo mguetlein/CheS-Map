@@ -1,5 +1,6 @@
 package alg.embed3d;
 
+import gui.Message;
 import gui.binloc.Binary;
 import gui.property.PropertyUtil;
 import io.RUtil;
@@ -41,6 +42,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 	public List<Vector3f> embed(DatasetFile dataset, final List<MolecularPropertyOwner> instances,
 			final List<MoleculeProperty> features) throws IOException
 	{
+		processMessages.clear();
 		if (features.size() < getMinNumFeatures())
 			throw new EmbedException(this, getShortName() + " requires for embedding at least " + getMinNumFeatures()
 					+ " features with non-unique values (num features is '" + features.size() + "')");
@@ -49,6 +51,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 					+ " compounds (num compounds is '" + instances.size() + "')");
 
 		File tmp = File.createTempFile(dataset.getShortName(), "emb");
+		File tmpInfo = File.createTempFile(dataset.getShortName(), "embInfo");
 		File rScript = null;
 		try
 		{
@@ -72,9 +75,18 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 					getShortName(),
 					new String[] { BinHandler.RSCRIPT_BINARY.getLocation(), FileUtil.getAbsolutePathEscaped(rScript),
 							FileUtil.getAbsolutePathEscaped(new File(featureTableFile)),
-							FileUtil.getAbsolutePathEscaped(tmp) });
+							FileUtil.getAbsolutePathEscaped(tmp), FileUtil.getAbsolutePathEscaped(tmpInfo) });
 			if (!tmp.exists())
 				throw new IllegalStateException("embedding failed:\n" + errorOut);
+
+			try
+			{
+				processMessages.add(Message.infoMessage(FileUtil.readStringFromFile(tmpInfo.getAbsolutePath())));
+			}
+			catch (Exception e)
+			{
+				Settings.LOGGER.warn("could not read info from embbeding algorithm");
+			}
 
 			List<Vector3D> v3d = RUtil.readRVectorMatrix(tmp.getAbsolutePath());
 			if (v3d.size() != instances.size())
@@ -110,6 +122,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		finally
 		{
 			tmp.delete();
+			tmpInfo.delete();
 			if (rScript != null)
 				rScript.delete();
 		}

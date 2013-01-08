@@ -19,6 +19,8 @@ public interface Algorithm
 
 	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer);
 
+	public Messages getProcessMessages();
+
 	public Property getRandomSeedProperty();
 
 	public Property getRandomRestartProperty();
