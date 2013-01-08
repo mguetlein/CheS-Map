@@ -1,5 +1,9 @@
 package data;
 
+import gui.MultiImageIcon;
+import gui.MultiImageIcon.Layout;
+import gui.MultiImageIcon.Orientation;
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -13,12 +17,13 @@ import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IMolecule;
+import org.openscience.cdk.interfaces.IMoleculeSet;
 import org.openscience.cdk.layout.StructureDiagramGenerator;
 import org.openscience.cdk.renderer.AtomContainerRenderer;
 import org.openscience.cdk.renderer.color.CPKAtomColors;
@@ -35,12 +40,23 @@ import util.SwingUtil;
 
 public class CDKCompoundIcon
 {
+
 	public static ImageIcon createIcon(IMolecule iMolecule, boolean black) throws CDKException
+	{
+		IMoleculeSet set = ConnectivityChecker.partitionIntoMolecules(iMolecule);
+		List<ImageIcon> icons = new ArrayList<ImageIcon>();
+		for (int i = 0; i < set.getAtomContainerCount(); i++)
+		{
+			icons.add(createIcon(set.getMolecule(i), black, 120,
+					(int) Math.round(160 / (double) set.getAtomContainerCount())));
+		}
+		return new MultiImageIcon(icons, Layout.vertical, Orientation.center, 2);
+	}
+
+	public static ImageIcon createIcon(IMolecule iMolecule, boolean black, int width, int height) throws CDKException
 	{
 		Color fColor = black ? Color.WHITE : Color.BLACK;
 		Color bColor = black ? Color.BLACK : Color.WHITE;
-		int maxWidth = 120;
-		int maxHeight = 160;
 
 		int origWidth = 1;
 		int origHeight = 1;
@@ -87,8 +103,8 @@ public class CDKCompoundIcon
 		renderer.paint(iMolecule, new AWTDrawVisitor(g2));
 
 		//scale
-		double sx = maxWidth / (double) origWidth;
-		double sy = maxHeight / (double) origHeight;
+		double sx = width / (double) origWidth;
+		double sy = height / (double) origHeight;
 		double scale = Math.min(Math.min(sx, sy), 1);
 		int scaledWidth = (int) (origWidth * scale);
 		int scaledHeight = (int) (origHeight * scale);
@@ -108,18 +124,18 @@ public class CDKCompoundIcon
 	{
 		//IMolecule iMolecule = MoleculeFactory.make123Triazole();
 		//String smiles = "BrN1C(=O)CCC1=O";
-		String smiles = "C=C-Cl";
+		String smiles = "C=C-Cl.BrN1C(=O)CCC1=O";
 		SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
 		IMolecule iMolecule = sp.parseSmiles(smiles);
 
 		JPanel pB = new JPanel();
 		pB.setBackground(Color.black);
-//		pB.setBorder(new EmptyBorder(50, 50, 50, 50));
+		//		pB.setBorder(new EmptyBorder(50, 50, 50, 50));
 		pB.add(new JLabel(createIcon(iMolecule, true)));
 
 		JPanel pW = new JPanel();
 		pW.setBackground(Color.white);
-//		pW.setBorder(new EmptyBorder(50, 50, 50, 50));
+		//		pW.setBorder(new EmptyBorder(50, 50, 50, 50));
 		pW.add(new JLabel(createIcon(iMolecule, false)));
 
 		JPanel p = new JPanel();
