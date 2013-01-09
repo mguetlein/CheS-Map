@@ -7,6 +7,7 @@ import gui.property.Property;
 import main.Settings;
 import rscript.RScriptUtil;
 import util.MessageUtil;
+import util.StringLineAdder;
 import alg.cluster.DatasetClusterer;
 import alg.embed3d.AbstractRTo3DEmbedder;
 import data.DatasetFile;
@@ -89,23 +90,25 @@ public class TSNEFeature3DEmbedder extends AbstractRTo3DEmbedder
 	@Override
 	protected String getRScriptCode()
 	{
-		String s = "args <- commandArgs(TRUE)\n";
-		s += RScriptUtil.installAndLoadPackage("tsne") + "\n";
-		s += "df = read.table(args[1])\n";
-		s += "set.seed(" + randomSeed.getValue() + ")\n";
-		s += "inst <- nrow(unique(df))\n";
-		s += "print(paste('unique instances ',inst))\n";
-		s += "if(inst < 3) stop(\"number of unique data points < 3\")\n";
-		s += "perp <- min(" + perplexity.getValue() + ",inst)\n";
-		s += "feats <- ncol(df)\n";
-		s += "print(paste('features ',feats))\n";
-		s += "dims <- min(" + initial_dims.getValue() + ",feats)\n";
-		s += "res <- tsne(df, k = 3, perplexity=perp, max_iter=" + maxNumIterations.getValue()
-				+ ", initial_dims=dims)\n";
-		s += "print(head(res$ydata))\n";
+		StringLineAdder s = new StringLineAdder();
+		s.add("args <- commandArgs(TRUE)");
+		s.add(RScriptUtil.installAndLoadPackage("tsne"));
+		s.add("df = read.table(args[1])");
+		s.add("set.seed(" + randomSeed.getValue() + ")");
+		s.add("inst <- nrow(unique(df))");
+		s.add("print(paste('unique instances ',inst))");
+		s.add("if(inst < 3) stop(\"number of unique data points < 3\")");
+		s.add("perp <- min(" + perplexity.getValue() + ",inst)");
+		s.add("feats <- ncol(df)");
+		s.add("print(paste('features ',feats))");
+		s.add("dims <- min(" + initial_dims.getValue() + ",feats)");
+		s.add("res <- tsne(df, k = 3, perplexity=perp, max_iter=" + maxNumIterations.getValue()
+				+ ", initial_dims=dims)");
+		s.add("print(head(res$ydata))");
 		//+ "##res <- smacofSphere.dual(df, ndim = 3)\n" + "#print(res$conf)\n" + "#print(class(res$conf))\n"
-		s += "write.table(res$ydata,args[2]) \n";
-		return s;
+		s.add("write.table(res$ydata,args[2])");
+		s.add("write.table(as.matrix(dist(df, method = \"euclidean\")),args[3])");
+		return s.toString();
 	}
 
 	@Override

@@ -51,6 +51,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 					+ " compounds (num compounds is '" + instances.size() + "')");
 
 		File tmp = File.createTempFile(dataset.getShortName(), "emb");
+		File tmpDist = File.createTempFile(dataset.getShortName(), "embDist");
 		File tmpInfo = File.createTempFile(dataset.getShortName(), "embInfo");
 		File rScript = null;
 		try
@@ -75,7 +76,8 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 					getShortName(),
 					new String[] { BinHandler.RSCRIPT_BINARY.getLocation(), FileUtil.getAbsolutePathEscaped(rScript),
 							FileUtil.getAbsolutePathEscaped(new File(featureTableFile)),
-							FileUtil.getAbsolutePathEscaped(tmp), FileUtil.getAbsolutePathEscaped(tmpInfo) });
+							FileUtil.getAbsolutePathEscaped(tmp), FileUtil.getAbsolutePathEscaped(tmpDist),
+							FileUtil.getAbsolutePathEscaped(tmpInfo) });
 			if (!tmp.exists())
 				throw new IllegalStateException("embedding failed:\n" + errorOut);
 
@@ -116,12 +118,19 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			List<Vector3f> positions = new ArrayList<Vector3f>();
 			for (int i = 0; i < instances.size(); i++)
 				positions.add(new Vector3f((float) d[i][0], (float) d[i][1], (float) d[i][2]));
+
+			double featureDistanceMatrix[][] = RUtil.readMatrix(tmpDist.getAbsolutePath(), 0);
+			if (featureDistanceMatrix == null)
+				throw new IllegalStateException("embedding failed: could not read distance matrix");
+			rSquare = EmbedUtil.computeRSquare(positions, featureDistanceMatrix);
+
 			return positions;
 			// v3f[i] = new Vector3f((float) v3d.get(i).getX(), (float) v3d.get(i).getY(), (float) v3d.get(i).getZ());
 		}
 		finally
 		{
 			tmp.delete();
+			tmpDist.delete();
 			tmpInfo.delete();
 			if (rScript != null)
 				rScript.delete();

@@ -11,6 +11,8 @@ import java.util.List;
 import javax.vecmath.Vector3f;
 
 import main.Settings;
+import util.DoubleUtil;
+import util.FileUtil;
 import util.ValueFileCache;
 import alg.AbstractAlgorithm;
 import alg.cluster.DatasetClusterer;
@@ -28,11 +30,20 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	}
 
 	private List<Vector3f> positions;
+	protected double rSquare = -Double.MAX_VALUE;
 
 	@Override
 	public final List<Vector3f> getPositions()
 	{
 		return positions;
+	}
+
+	@Override
+	public double getRSquare()
+	{
+		if (rSquare == -Double.MAX_VALUE)
+			throw new IllegalStateException("compute r-square first");
+		return rSquare;
 	}
 
 	@Override
@@ -54,26 +65,29 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	public void embedDataset(DatasetFile dataset, List<MolecularPropertyOwner> instances,
 			List<MoleculeProperty> features) throws Exception
 	{
-		String filename = Settings.destinationFile(
-				dataset,
-				dataset.getShortName()
-						+ "."
-						+ getShortName()
-						+ "."
-						+ MoleculePropertyUtil.getSetMD5(features,
-								dataset.getMD5() + " " + PropertyUtil.getPropertyMD5(getProperties())) + ".embed");
+		String basename = dataset.getShortName()
+				+ "."
+				+ getShortName()
+				+ "."
+				+ MoleculePropertyUtil.getSetMD5(features,
+						dataset.getMD5() + " " + PropertyUtil.getPropertyMD5(getProperties()));
+		String embedFilename = Settings.destinationFile(dataset, basename + ".embed");
+		String rSquareFilename = Settings.destinationFile(dataset, basename + ".rSquare");
 
-		if (Settings.CACHING_ENABLED && new File(filename).exists())
+		if (Settings.CACHING_ENABLED && new File(embedFilename).exists() && new File(rSquareFilename).exists())
 		{
-			Settings.LOGGER.info("read cached embedding results from: " + filename);
-			positions = ValueFileCache.readCachePosition2(filename);
+			Settings.LOGGER.info("read cached embedding results from: " + embedFilename);
+			positions = ValueFileCache.readCachePosition2(embedFilename);
+			Settings.LOGGER.info("read cached embedding rSquare from: " + rSquareFilename);
+			rSquare = DoubleUtil.parseDouble(FileUtil.readStringFromFile(rSquareFilename));
 		}
 		else
 		{
 			positions = embed(dataset, instances, features);
-			Settings.LOGGER.info("store embedding results to: " + filename);
-			ValueFileCache.writeCachePosition2(filename, positions);
+			Settings.LOGGER.info("store embedding results to: " + embedFilename);
+			ValueFileCache.writeCachePosition2(embedFilename, positions);
+			Settings.LOGGER.info("store embedding rSquare to: " + rSquareFilename);
+			FileUtil.writeStringToFile(rSquareFilename, rSquare + "");
 		}
 	}
-
 }

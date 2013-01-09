@@ -7,6 +7,7 @@ import gui.property.Property;
 import main.Settings;
 import rscript.RScriptUtil;
 import util.MessageUtil;
+import util.StringLineAdder;
 import alg.cluster.DatasetClusterer;
 import alg.embed3d.AbstractRTo3DEmbedder;
 import data.DatasetFile;
@@ -53,15 +54,19 @@ public class SMACOF3DEmbedder extends AbstractRTo3DEmbedder
 	@Override
 	protected String getRScriptCode()
 	{
-		return "args <- commandArgs(TRUE)\n" + "\n" + RScriptUtil.installAndLoadPackage("smacof") + "\n"
-				+ "df = read.table(args[1])\n"
-				+ "d <- dist(df, method = \"euclidean\")\n" //
-				+ "res <- smacofSym(d, ndim = 3, metric = FALSE, ties = \"secondary\", verbose = TRUE, itmax = "
-				+ maxNumIterations.getValue() + ")\n" //
-				+ "#res <- smacofSphere.dual(df, ndim = 3)\n" //
-				+ "print(head(res$conf))\n" //
-				+ "print(class(res$conf))\n" //
-				+ "write.table(res$conf,args[2]) ";
+		StringLineAdder s = new StringLineAdder();
+		s.add("args <- commandArgs(TRUE)");
+		s.add(RScriptUtil.installAndLoadPackage("smacof"));
+		s.add("df = read.table(args[1])");
+		s.add("d <- dist(df, method = \"euclidean\")");
+		s.add("res <- smacofSym(d, ndim = 3, metric = FALSE, ties = \"secondary\", verbose = TRUE, itmax = "
+				+ maxNumIterations.getValue() + ")");
+		s.add("#res <- smacofSphere.dual(df, ndim = 3)");
+		s.add("print(head(res$conf))");
+		s.add("print(class(res$conf))");
+		s.add("write.table(res$conf,args[2])");
+		s.add("write.table(as.matrix(d),args[3])");
+		return s.toString();
 	}
 
 	@Override

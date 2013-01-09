@@ -15,7 +15,6 @@ import alg.build3d.OpenBabel3DBuilder;
 import alg.build3d.ThreeDBuilder;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
-import alg.embed3d.EmbedUtil;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
 import data.ClusterDataImpl;
@@ -275,9 +274,7 @@ public class CheSMapping
 
 		if (dataset.numCompounds() > 2)
 		{
-			double rSquare = EmbedUtil.computeRSquare(
-					ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), featuresWithInfo,
-					emb.getPositions(), dataset);
+			double rSquare = emb.getRSquare();
 			Settings.LOGGER.info("r-square: " + rSquare);
 			String formRSquare = StringUtil.formatDouble(rSquare, 3);
 

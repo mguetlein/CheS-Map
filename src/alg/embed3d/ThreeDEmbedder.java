@@ -26,6 +26,8 @@ public interface ThreeDEmbedder extends Algorithm
 
 	public List<Vector3f> getPositions();
 
+	public double getRSquare();
+
 	public boolean isLinear();
 
 	public boolean isLocalMapping();

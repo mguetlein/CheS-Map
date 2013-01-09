@@ -19,12 +19,19 @@ import dataInterface.MoleculeProperty.Type;
 
 public class EmbedUtil
 {
-	public static double computeRSquare(List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
-			List<Vector3f> positions, DatasetFile dataset)
+	public static double computeRSquare(List<Vector3f> positions, double distanceMatrix[][])
 	{
-		double d1[][] = euclMatrix(instances, features, dataset);
+		double d1[][] = distanceMatrix;
+		normalizeDistanceMatrix(d1);
 		double d2[][] = euclMatrix(positions);
+		normalizeDistanceMatrix(d2);
 		return computeRSquare(d1, d2);
+	}
+
+	public static double computeRSquare(List<Vector3f> positions, List<MolecularPropertyOwner> instances,
+			List<MoleculeProperty> features, DatasetFile dataset)
+	{
+		return computeRSquare(positions, euclMatrix(instances, features, dataset));
 	}
 
 	private static double computeRSquare(double[][] featureDistances, double[][] threeDDistances)
@@ -33,20 +40,33 @@ public class EmbedUtil
 		double ss_tot = 0;
 		double featureDistances_mean = 0;
 		int count = 0;
-		for (int i = 0; i < featureDistances.length - 1; i++)
-			for (int j = i + 1; j < featureDistances.length; j++)
-			{
-				featureDistances_mean += featureDistances[i][j];
-				count += 1;
-			}
+		for (int i = 0; i < featureDistances.length; i++)
+			for (int j = 0; j < featureDistances.length; j++)
+				if (i != j)
+				{
+					featureDistances_mean += featureDistances[i][j];
+					count++;
+				}
 		featureDistances_mean /= (double) count;
-		for (int i = 0; i < featureDistances.length - 1; i++)
-			for (int j = i + 1; j < featureDistances.length; j++)
-			{
-				ss_err += Math.pow(featureDistances[i][j] - threeDDistances[i][j], 2);
-				ss_tot += Math.pow(featureDistances[i][j] - featureDistances_mean, 2);
-			}
+		for (int i = 0; i < featureDistances.length; i++)
+			for (int j = 0; j < featureDistances.length; j++)
+				if (i != j)
+				{
+					ss_err += Math.pow(featureDistances[i][j] - threeDDistances[i][j], 2);
+					ss_tot += Math.pow(featureDistances[i][j] - featureDistances_mean, 2);
+				}
 		return 1 - ss_err / ss_tot;
+	}
+
+	private static void normalizeDistanceMatrix(double d[][])
+	{
+		//hack to make normalization work: fill diagonal values with something from value range 
+		for (int i = 0; i < d.length; i++)
+			d[i][i] = d[0][1];
+		ArrayUtil.normalize(d);
+		for (int i = 0; i < d.length; i++)
+			d[i][i] = 0.0;
+		//		Settings.LOGGER.println(ArrayUtil.toString(d));
 	}
 
 	private static double[][] euclMatrix(List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
@@ -95,18 +115,11 @@ public class EmbedUtil
 		double[][] d = new double[instances.size()][instances.size()];
 		for (int i = 0; i < instances.size() - 1; i++)
 			for (int j = i + 1; j < instances.size(); j++)
+			{
 				d[i][j] = ArrayUtil.euclDistance(vals.get(instances.get(i)), vals.get(instances.get(j)));
-
-		//hack to make normalization work
-		for (int i = 0; i < instances.size(); i++)
-			for (int j = i; j < instances.size(); j++)
-				d[j][i] = d[0][1];
-		ArrayUtil.normalize(d);
-		for (int i = 0; i < instances.size(); i++)
-			for (int j = i; j < instances.size(); j++)
-				d[j][i] = 0.0;
+				d[j][i] = d[i][j];
+			}
 		//		Settings.LOGGER.println(ArrayUtil.toString(d));
-
 		return d;
 	}
 
@@ -115,18 +128,11 @@ public class EmbedUtil
 		double[][] d = new double[positions.size()][positions.size()];
 		for (int i = 0; i < positions.size() - 1; i++)
 			for (int j = i + 1; j < positions.size(); j++)
+			{
 				d[i][j] = (double) Vector3fUtil.dist(positions.get(i), positions.get(j));
-
-		//hack to make normalization work
-		for (int i = 0; i < positions.size(); i++)
-			for (int j = i; j < positions.size(); j++)
-				d[j][i] = d[0][1];
-		ArrayUtil.normalize(d);
-		for (int i = 0; i < positions.size(); i++)
-			for (int j = i; j < positions.size(); j++)
-				d[j][i] = 0.0;
+				d[j][i] = d[i][j];
+			}
 		//		Settings.LOGGER.println(ArrayUtil.toString(d));
-
 		return d;
 	}
 
@@ -144,7 +150,7 @@ public class EmbedUtil
 
 			for (double dev : deviation)
 			{
-				Settings.LOGGER.info(dev);
+				Settings.LOGGER.info("dev: " + dev);
 
 				double[] results = new double[restarts];
 
@@ -153,36 +159,17 @@ public class EmbedUtil
 					double d[][] = new double[n][n];
 					double d2[][] = new double[n][n];
 
-					for (int i = 0; i < n - 1; i++)
-						for (int j = i + 1; j < n; j++)
-						{
-							d[i][j] = r.nextDouble();
-
-							d2[i][j] = d[i][j] + (d[i][j] * dev * (r.nextBoolean() ? 1 : -1));
-
-							//d2[i][j] = r.nextDouble();
-						}
-
-					//hack to make normalization work
 					for (int i = 0; i < n; i++)
-						for (int j = i; j < n; j++)
-							d[j][i] = d[0][1];
-					ArrayUtil.normalize(d);
-					for (int i = 0; i < n; i++)
-						for (int j = i; j < n; j++)
-							d[j][i] = 0.0;
-					//		Settings.LOGGER.println(ArrayUtil.toString(d));
+						for (int j = 0; j < n; j++)
+							if (i != j)
+							{
+								d[i][j] = r.nextDouble();
+								d2[i][j] = d[i][j] + (d[i][j] * dev * (r.nextBoolean() ? 1 : -1));
+								//d2[i][j] = r.nextDouble();
+							}
 
-					//hack to make normalization work
-					for (int i = 0; i < n; i++)
-						for (int j = i; j < n; j++)
-							d2[j][i] = d2[0][1];
-					ArrayUtil.normalize(d2);
-					for (int i = 0; i < n; i++)
-						for (int j = i; j < n; j++)
-							d2[j][i] = 0.0;
-					//		Settings.LOGGER.println(ArrayUtil.toString(d));
-
+					normalizeDistanceMatrix(d);
+					normalizeDistanceMatrix(d2);
 					results[k] = computeRSquare(d, d2);
 				}
 
