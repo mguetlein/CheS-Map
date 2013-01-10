@@ -3,7 +3,12 @@ package main;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.util.Properties;
+
+import util.ArrayUtil;
+import util.FileUtil;
+import util.Version;
 
 public class PropHandler
 {
@@ -58,14 +63,91 @@ public class PropHandler
 	private Properties props;
 	private String propertiesFile;
 
+	private static boolean isPropertyCompatible(Version version1, Version version2)
+	{
+		if (version1.major != version2.major)
+		{
+			//different major versions are incompatible
+			return false;
+		}
+		else if (version1.major == 0)
+		{
+			// no prop-compatibility-support for version 0
+			return false;
+		}
+		else if (version1.major == 1)
+		{
+			//so far all minor versions within major version 1 are compatible
+			return true;
+		}
+		else
+		{
+			// let minors by default be compatible in higher versions 
+			Settings.LOGGER.warn("No compatibility info for versions > 1");
+			return true;
+		}
+	}
+
 	private PropHandler(boolean loadProperties)
 	{
 		// try loading props
 		props = new Properties();
 		if (loadProperties)
 		{
-			propertiesFile = Settings.BASE_DIR + File.separator + "ches.mapper." + Settings.MAJOR_MINOR_VERSION
-					+ ".props";
+			propertiesFile = Settings.BASE_DIR + File.separator + "ches.mapper.v" + Settings.VERSION.major + "."
+					+ Settings.VERSION.minor + ".props";
+
+			if (new File(propertiesFile).exists())
+				Settings.LOGGER.debug("property file for current version " + Settings.VERSION + " found: "
+						+ propertiesFile);
+			else
+			{
+				Settings.LOGGER.debug("property file for current version " + Settings.VERSION + " not found");
+				String propFileNames[] = new File(Settings.BASE_DIR).list(new FilenameFilter()
+				{
+					@Override
+					public boolean accept(File dir, String name)
+					{
+						return name.matches("ches\\.mapper\\.v[0-9]+\\.[0-9]+\\.props");
+					}
+				});
+				if (propFileNames.length > 0)
+				{
+					Settings.LOGGER.debug(propFileNames.length + " other property files found");
+					Version mmVersions[] = new Version[propFileNames.length];
+					for (int i = 0; i < mmVersions.length; i++)
+					{
+						String majorMinor = propFileNames[i].substring("ches.mapper.".length(),
+								propFileNames[i].indexOf(".props"));
+						mmVersions[i] = Version.fromMajorMinorString(majorMinor);
+					}
+					Version currentMajorMinor = new Version(Settings.VERSION.major, Settings.VERSION.minor);
+					if (ArrayUtil.indexOf(mmVersions, currentMajorMinor) != -1)
+						throw new Error("internal error, current prop file should not be included");
+					int order[] = ArrayUtil.getOrdering(mmVersions, Version.COMPARATOR, false);
+					propFileNames = ArrayUtil.sortAccordingToOrdering(order, propFileNames);
+					mmVersions = ArrayUtil.sortAccordingToOrdering(order, mmVersions);
+					int complientIndex = -1;
+					for (int i = 0; i < mmVersions.length; i++)
+					{
+						if (isPropertyCompatible(currentMajorMinor, mmVersions[i]))
+						{
+							Settings.LOGGER.debug(Settings.VERSION + " is complient with " + propFileNames[i]);
+							complientIndex = i;
+							break;
+						}
+					}
+					if (complientIndex != -1)
+					{
+						String source = Settings.BASE_DIR + File.separator + propFileNames[complientIndex];
+						Settings.LOGGER.debug("copy " + source + " to " + propertiesFile);
+						FileUtil.copy(new File(source), new File(propertiesFile));
+					}
+					else
+						Settings.LOGGER.debug("no compatible property file found");
+				}
+			}
+
 			try
 			{
 				FileInputStream in = new FileInputStream(propertiesFile);

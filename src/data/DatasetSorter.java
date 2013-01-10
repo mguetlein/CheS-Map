@@ -35,7 +35,7 @@ public class DatasetSorter
 			{
 				return StringUtil.compareTo(o1, o2);
 			}
-		}, false);
+		}, true);
 
 		this.files = new String[order.length];
 		this.names = new String[order.length];

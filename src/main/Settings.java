@@ -25,7 +25,7 @@ import javax.swing.plaf.InsetsUIResource;
 import util.FileUtil;
 import util.ImageLoader;
 import util.OSUtil;
-import weka.core.Version;
+import util.Version;
 import data.DatasetFile;
 
 public class Settings
@@ -139,8 +139,7 @@ public class Settings
 		}
 	}
 
-	public static String VERSION = "v?.?.?";
-	public static String MAJOR_MINOR_VERSION = "v?.?";
+	public static util.Version VERSION = null;
 	static
 	{
 		try
@@ -151,12 +150,12 @@ public class Settings
 				r = new BufferedReader(new FileReader(new File("VERSION")));
 			else
 				r = new BufferedReader(new InputStreamReader(u.openStream()));
-			VERSION = r.readLine();
-			MAJOR_MINOR_VERSION = VERSION.substring(0, VERSION.lastIndexOf('.'));
+			VERSION = util.Version.fromString(r.readLine());
 			r.close();
 		}
 		catch (Exception e)
 		{
+			VERSION = new Version(0, 0, 0);
 			Settings.LOGGER.error(e);
 		}
 	}
@@ -165,7 +164,7 @@ public class Settings
 	public static String CDK_STRING = text("lib.cdk", CDK_VERSION);
 	public static String OPENBABEL_STRING = text("lib.openbabel");
 	public static String R_STRING = text("lib.r");
-	public static String WEKA_STRING = text("lib.weka", Version.VERSION);
+	public static String WEKA_STRING = text("lib.weka", weka.core.Version.VERSION);
 
 	public static String VERSION_STRING = VERSION + ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
 	public static String TITLE = "CheS-Mapper";
