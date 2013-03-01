@@ -1,12 +1,27 @@
 package alg.build3d;
 
 import io.SDFUtil;
+import io.SDFUtil.SDChecker;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.List;
+
+import javax.vecmath.Point3d;
 
 import main.Settings;
 import main.TaskProvider;
+
+import org.openscience.cdk.ChemFile;
+import org.openscience.cdk.interfaces.IAtom;
+import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IChemFile;
+import org.openscience.cdk.interfaces.IChemObject;
+import org.openscience.cdk.io.MDLV2000Reader;
+import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
+
 import data.DatasetFile;
 
 public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
@@ -34,6 +49,8 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 	public boolean isCached(DatasetFile dataset)
 	{
 		File threeD = new File(destinationFile(dataset));
+		if (threeD.exists())
+			Settings.LOGGER.info("3d file already exists: " + threeD);
 		return threeD.exists();
 	}
 
@@ -93,6 +110,59 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 				th.start();
 				build3D(dataset, tmpFile.getAbsolutePath());
 				running = false;
+
+				SDChecker sdCheck = new SDChecker()
+				{
+					@Override
+					public boolean invalid(String moleculeString)
+					{
+						try
+						{
+							int numAtoms = -1;
+							for (String line : moleculeString.split("\n"))
+								if (line.contains("V2000"))
+								{
+									numAtoms = Integer.parseInt(line.substring(0, 3).trim());
+									break;
+								}
+							if (numAtoms == -1)
+								throw new Exception("could not parse num atoms");
+							MDLV2000Reader reader = new MDLV2000Reader(new InputStreamReader(new ByteArrayInputStream(
+									moleculeString.getBytes())));
+							IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
+							List<IAtomContainer> list = ChemFileManipulator.getAllAtomContainers(content);
+							if (list.size() != 1)
+								throw new Exception("Cannot parse molecule");
+							if (list.get(0).getAtomCount() != numAtoms)
+								throw new Exception("Num atoms " + list.get(0).getAtomCount() + " != " + numAtoms);
+							for (int i = 0; i < list.get(0).getBondCount(); i++)
+							{
+								if (list.get(0).getBond(i).getAtomCount() != 2)
+									throw new Exception("Num atoms for bond is "
+											+ list.get(0).getBond(i).getAtomCount());
+								IAtom a = list.get(0).getBond(i).getAtom(0);
+								IAtom b = list.get(0).getBond(i).getAtom(1);
+								Point3d pa = a.getPoint3d();
+								if (pa == null)
+									pa = new Point3d(a.getPoint2d().x, a.getPoint2d().y, 0.0);
+								Point3d pb = b.getPoint3d();
+								if (pb == null)
+									pb = new Point3d(b.getPoint2d().x, b.getPoint2d().y, 0.0);
+								double d = pa.distance(pb);
+								if (d < 0.9 || d > 2.5)
+									throw new Exception("Distance between atoms is " + d);
+							}
+							return false;
+						}
+						catch (Exception e)
+						{
+							e.printStackTrace();
+							return true;
+						}
+					}
+				};
+				SDFUtil.checkSDFile(tmpFile.getAbsolutePath(), dataset.getSDFPath(false), tmpFile.getAbsolutePath(),
+						sdCheck);
 
 				if (!TaskProvider.isRunning())
 					return;

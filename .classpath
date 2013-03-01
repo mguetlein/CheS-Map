@@ -6,7 +6,7 @@
 	<classpathentry kind="lib" path="lib/commons-math-1.2/commons-math-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/forms-1.2.1/forms-1.2.1.jar" sourcepath="/home/martin/workspace/external/forms-1.2.1/src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/JavaLib"/>
-	<classpathentry kind="lib" path="lib/weka-3-6-6/weka.jar" sourcepath="/home/martin/software/weka-3-6-6/weka-src.jar"/>
+	<classpathentry kind="lib" path="lib/weka-3-6-6/weka.jar" sourcepath="/home/martin/workspace/external/weka-3-6-6/weka-src.jar"/>
 	<classpathentry kind="lib" path="lib/cdk-jar-1.4.7/cdk-1.4.7_mod.jar" sourcepath="/home/martin/workspace/external/cdk-src+libs-1.4.7/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
