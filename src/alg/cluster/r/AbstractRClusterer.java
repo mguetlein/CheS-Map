@@ -29,7 +29,7 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 {
 	public static final DatasetClusterer[] R_CLUSTERER = new AbstractRClusterer[] { KMeansRClusterer.INSTANCE,
 			CascadeKMeansRClusterer.INSTANCE, HierarchicalRClusterer.INSTANCE,
-			DynamicTreeCutHierarchicalRClusterer.INSTANCE, MahalanobisFixedPointClusterer.INSTANCE };
+			DynamicTreeCutHierarchicalRClusterer.INSTANCE };//, MahalanobisFixedPointClusterer.INSTANCE };
 
 	@Override
 	public Binary getBinary()
