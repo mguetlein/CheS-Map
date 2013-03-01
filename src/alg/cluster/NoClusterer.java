@@ -82,4 +82,11 @@ public class NoClusterer extends AbstractAlgorithm implements DatasetClusterer
 	{
 		return null;
 	}
+
+	@Override
+	public boolean isDisjointClusterer()
+	{
+		return true;
+	}
+
 }

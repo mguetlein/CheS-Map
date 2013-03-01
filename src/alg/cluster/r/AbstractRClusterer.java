@@ -29,7 +29,7 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 {
 	public static final DatasetClusterer[] R_CLUSTERER = new AbstractRClusterer[] { KMeansRClusterer.INSTANCE,
 			CascadeKMeansRClusterer.INSTANCE, HierarchicalRClusterer.INSTANCE,
-			DynamicTreeCutHierarchicalRClusterer.INSTANCE };
+			DynamicTreeCutHierarchicalRClusterer.INSTANCE, MahalanobisFixedPointClusterer.INSTANCE };
 
 	@Override
 	public Binary getBinary()
@@ -42,7 +42,7 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 	public static String TOO_FEW_UNIQUE_DATA_POINTS = "Too few unique data points, add features or decrease number of clusters.";
 
 	@Override
-	protected List<Integer> cluster(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
+	protected List<Integer[]> cluster(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
 			throws IOException
 	{
 		File tmp = File.createTempFile(dataset.getShortName(), "cluster");
@@ -72,7 +72,7 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 							FileUtil.getAbsolutePathEscaped(new File(featureTableFile)),
 							FileUtil.getAbsolutePathEscaped(tmp) });
 
-			List<Integer> cluster = new ArrayList<Integer>();
+			List<Integer[]> cluster = new ArrayList<Integer[]>();
 			if (tmp.exists())
 				cluster = RUtil.readCluster(tmp.getAbsolutePath());
 			if (cluster.size() != compounds.size())

@@ -53,10 +53,10 @@ public class MoleculePropertyUtil
 
 	public static Color getColor(int index)
 	{
-		if (index + 1 > AVAILABLE_COLORS.length)
-			return Color.GRAY;
-		else
-			return AVAILABLE_COLORS[index];
+		//		if (index + 1 > AVAILABLE_COLORS.length)
+		//			return Color.GRAY;
+		//		else
+		return AVAILABLE_COLORS[index % AVAILABLE_COLORS.length];
 	}
 
 	public static Color[] getNominalColors(MoleculeProperty p)

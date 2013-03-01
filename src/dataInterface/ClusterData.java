@@ -25,4 +25,6 @@ public interface ClusterData extends MolecularPropertyOwner
 	public int numMissingValues(MoleculeProperty p);
 
 	public String getAlignAlgorithm();
+
+	public boolean containsNotClusteredCompounds();
 }

@@ -21,14 +21,17 @@ public class ClusteringData
 	private List<ClusterData> clusters = new ArrayList<ClusterData>();
 	private List<CompoundData> compounds = new ArrayList<CompoundData>();
 
+	private int numMultiClusteredCompounds = -1;
+
 	private String clusterAlgorithm;
+	private boolean isClusterAlgorithmDisjoint;
 	private String embedAlgorithm;
 
 	private String embedQuality;
 
 	// --------------------------------------------
 
-	public int getSize()
+	public int getNumClusters()
 	{
 		return clusters.size();
 	}
@@ -77,6 +80,22 @@ public class ClusteringData
 		return compounds;
 	}
 
+	public int getNumCompounds(boolean includingMultiClusteredCompounds)
+	{
+		if (includingMultiClusteredCompounds)
+		{
+			if (numMultiClusteredCompounds == -1)
+			{
+				numMultiClusteredCompounds = 0;
+				for (ClusterData c : clusters)
+					numMultiClusteredCompounds += c.getSize();
+			}
+			return numMultiClusteredCompounds;
+		}
+		else
+			return compounds.size();
+	}
+
 	public void addProperty(MoleculeProperty property)
 	{
 		properties.add(property);
@@ -120,6 +139,16 @@ public class ClusteringData
 	public String getClusterAlgorithm()
 	{
 		return clusterAlgorithm;
+	}
+
+	public void setClusterAlgorithmDistjoint(boolean disjoint)
+	{
+		isClusterAlgorithmDisjoint = disjoint;
+	}
+
+	public boolean isClusterAlgorithmDisjoint()
+	{
+		return isClusterAlgorithmDisjoint;
 	}
 
 	public void setEmbedAlgorithm(String embedAlgorithm)

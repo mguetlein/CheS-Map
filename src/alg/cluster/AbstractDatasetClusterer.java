@@ -60,6 +60,12 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 	}
 
 	@Override
+	public boolean isDisjointClusterer()
+	{
+		return true;
+	}
+
+	@Override
 	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
 		Messages m = super.getMessages(dataset, featureInfo, clusterer);
@@ -71,7 +77,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 		return m;
 	}
 
-	protected abstract List<Integer> cluster(DatasetFile dataset, List<CompoundData> compounds,
+	protected abstract List<Integer[]> cluster(DatasetFile dataset, List<CompoundData> compounds,
 			List<MoleculeProperty> features) throws Exception;
 
 	protected abstract String getShortName();
@@ -84,7 +90,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 
 		String filename = Settings.destinationFile(dataset, dataset.getShortName() + "." + getShortName() + "."
 				+ datasetFeaturesClusterpropsMD5 + ".cluster");
-		List<Integer> clusterAssignements;
+		List<Integer[]> clusterAssignements;
 
 		boolean interactive = false;
 		if (this instanceof WekaClusterer && ((WekaClusterer) this).wekaClusterer instanceof CascadeSimpleKMeans)
@@ -98,30 +104,98 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 		if (Settings.CACHING_ENABLED && new File(filename).exists() && !interactive)
 		{
 			Settings.LOGGER.info("read cached cluster results from: " + filename);
-			clusterAssignements = ValueFileCache.readCacheInteger2(filename);
+			clusterAssignements = ValueFileCache.readCacheInteger(filename);
 		}
 		else
 		{
 			clusterAssignements = cluster(dataset, compounds, features);
 			Settings.LOGGER.info("store cluster results to: " + filename);
 			if (!interactive)
-				ValueFileCache.writeCacheInteger2(filename, clusterAssignements);
+				ValueFileCache.writeCacheInteger(filename, clusterAssignements);
 		}
 
+		HashMap<Integer, List<Integer>> modelToCluster = new HashMap<Integer, List<Integer>>();
+
+		boolean multiAssignment = false;
+		for (int m = 0; m < clusterAssignements.size(); m++)
+		{
+			Integer[] clusterIndices = clusterAssignements.get(m);
+			if (clusterIndices != null)
+			{
+				if (isDisjointClusterer() && clusterIndices.length > 1)
+					throw new Error("Disjoint clusterer with more than one cluster assingment");
+				multiAssignment |= clusterIndices.length > 1;
+
+				List<Integer> clusterList = modelToCluster.get(m);
+				if (clusterList == null)
+				{
+					clusterList = new ArrayList<Integer>();
+					modelToCluster.put(m, clusterList);
+				}
+				for (Integer c : clusterIndices)
+					clusterList.add(c);
+			}
+		}
+		if (multiAssignment)
+			TaskProvider.warning(Settings.text("cluster.warning.disjoint"),
+					Settings.text("cluster.warning.disjoint.desc"));
+
+		//		if (isDisjointClusterer())
+		//			for (int i = 0; i < clusterAssignements.size(); i++)
+		//			{
+		//				List<Integer> cluster = new ArrayList<Integer>();
+		//				cluster.add(clusterAssignements.get(i));
+		//				modelToCluster.put(i, cluster);
+		//			}
+		//		else
+		//		{
+		//			boolean clusterFound = true;
+		//			int clusterIndex = 0;
+		//			while (clusterFound)
+		//			{
+		//				clusterFound = false;
+		//				int clusterMask = ((int) Math.pow(2, clusterIndex));
+		//				for (int modelIndex = 0; modelIndex < clusterAssignements.size(); modelIndex++)
+		//				{
+		//					BinaryFlag flag = new BinaryFlag(clusterAssignements.get(modelIndex));
+		//					if (flag.isSet(clusterMask))
+		//					{
+		//						List<Integer> clusterList = modelToCluster.get(modelIndex);
+		//						if (clusterList == null)
+		//						{
+		//							clusterList = new ArrayList<Integer>();
+		//							modelToCluster.put(modelIndex, clusterList);
+		//						}
+		//						clusterList.add(clusterIndex);
+		//						clusterFound = true;
+		//					}
+		//				}
+		//				clusterIndex++;
+		//			}
+		//		}
+
+		//create cluster objects and add compounds to clusters
 		clusters = new ArrayList<ClusterData>();
 		HashMap<Integer, ClusterDataImpl> map = new HashMap<Integer, ClusterDataImpl>();
-		for (int i = 0; i < clusterAssignements.size(); i++)
+		for (int modelIndex = 0; modelIndex < clusterAssignements.size(); modelIndex++)
 		{
-			if (!map.containsKey(clusterAssignements.get(i)))
+			if (modelToCluster.containsKey(modelIndex))
 			{
-				ClusterDataImpl c = new ClusterDataImpl();
-				clusters.add(c);
-				map.put(clusterAssignements.get(i), c);
+				for (Integer clusterIndex : modelToCluster.get(modelIndex))
+				{
+					ClusterDataImpl c = map.get(clusterIndex);
+					if (c == null)
+					{
+						c = new ClusterDataImpl();
+						clusters.add(c);
+						map.put(clusterIndex, c);
+					}
+					c.addCompound(compounds.get(modelIndex));
+				}
 			}
-			ClusterDataImpl c = map.get(clusterAssignements.get(i));
-			c.addCompound(compounds.get(i));
 		}
 
+		//remove empty clusters
 		List<Integer> toDelete = new ArrayList<Integer>();
 		int i = 0;
 		for (ClusterData c : clusters)
@@ -132,6 +206,22 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 		}
 		for (int j = toDelete.size() - 1; j >= 0; j--)
 			clusters.remove(toDelete.get(j).intValue());
+
+		//add cluster for not-clustered compounds
+		ClusterDataImpl unclusteredCompounds = null;
+		for (int j = 0; j < compounds.size(); j++)
+		{
+			if (modelToCluster.get(j) == null || modelToCluster.get(j).size() == 0)
+			{
+				if (unclusteredCompounds == null)
+				{
+					unclusteredCompounds = new ClusterDataImpl();
+					unclusteredCompounds.setContainsNotClusteredCompounds(true);
+					clusters.add(unclusteredCompounds);
+				}
+				unclusteredCompounds.addCompound(compounds.get(j));
+			}
+		}
 
 		TaskProvider.verbose("Storing cluster results in files");
 		int count = 0;
@@ -144,7 +234,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 			// String origName = origFile.substring(origFile.lastIndexOf("/") + 1);
 
 			String name = dataset.getShortName() + "_" + getShortName() + "_" + datasetFeaturesClusterpropsMD5
-					+ "_cluster_" + count++ + ".sdf";
+					+ "_cluster_" + count + ".sdf";
 			String clusterFile = Settings.destinationFile(dataset, name);
 			if (!Settings.CACHING_ENABLED || !new File(clusterFile).exists() || interactive)
 			{
@@ -154,10 +244,23 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 			}
 			else
 				Settings.LOGGER.info("cluster already stored: " + clusterFile);
-			((ClusterDataImpl) c).setName("Cluster " + count);
+			((ClusterDataImpl) c).setName(clusterName(count++, c == unclusteredCompounds));
 			((ClusterDataImpl) c).setFilename(clusterFile);
 		}
+		if (unclusteredCompounds != null)
+			TaskProvider.warning(Settings.text("cluster.warning.not-clustered-compounds",
+					unclusteredCompounds.getName(), unclusteredCompounds.getSize() + ""), Settings
+					.text("cluster.warning.not-clustered-compounds.desc"));
+
 		if (count == 0)
 			throw new Error("clusterer returned no cluster");
+	}
+
+	private static String clusterName(int index, boolean notClusteredCompounds)
+	{
+		if (notClusteredCompounds)
+			return "Not clustered";
+		else
+			return "Cluster " + (index + 1);
 	}
 }

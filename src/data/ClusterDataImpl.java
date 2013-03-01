@@ -31,6 +31,7 @@ public class ClusterDataImpl implements ClusterData
 	private HashMap<SubstructureSmartsType, MatchEngine> substructureSmartsEngine = new HashMap<SubstructureSmartsType, MatchEngine>();
 	private HashMap<MoleculeProperty, ArraySummary> values = new HashMap<MoleculeProperty, ArraySummary>();
 	private HashMap<MoleculeProperty, ArraySummary> normalizedValues = new HashMap<MoleculeProperty, ArraySummary>();
+	private boolean containsNotClusteredCompounds = false;
 
 	public String getName()
 	{
@@ -204,4 +205,14 @@ public class ClusterDataImpl implements ClusterData
 		return compounds.size();
 	}
 
+	@Override
+	public boolean containsNotClusteredCompounds()
+	{
+		return containsNotClusteredCompounds;
+	}
+
+	public void setContainsNotClusteredCompounds(boolean b)
+	{
+		containsNotClusteredCompounds = b;
+	}
 }

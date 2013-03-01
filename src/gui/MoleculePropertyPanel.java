@@ -375,6 +375,7 @@ public class MoleculePropertyPanel extends JPanel
 					if (o != null)
 						counts.add((double) set.getCount(o));
 				p = new BarPlotPanel(null, "#compounds", counts, values);
+				((BarPlotPanel) p).setMaximumBarWidth(.35);
 			}
 			else if (type == Type.NUMERIC)
 			{

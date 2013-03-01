@@ -225,6 +225,7 @@ public class CheSMapping
 		for (ClusterData c : clusterer.getClusters())
 			clustering.addCluster(c);
 		clustering.setClusterAlgorithm(clusterer.getName());
+		clustering.setClusterAlgorithmDistjoint(clusterer.isDisjointClusterer());
 	}
 
 	private void embedDataset(DatasetFile dataset, ClusteringData clustering, List<MoleculeProperty> featuresWithInfo)
@@ -329,7 +330,7 @@ public class CheSMapping
 		}
 		if (align.getSubstructureSmartsType() != null)
 			clustering.addSubstructureSmartsTypes(align.getSubstructureSmartsType());
-		for (int i = 0; i < clustering.getSize(); i++)
+		for (int i = 0; i < clustering.getNumClusters(); i++)
 			((ClusterDataImpl) clustering.getCluster(i)).setAlignedFilename(align.getAlginedClusterFile(i));
 	}
 

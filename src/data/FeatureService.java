@@ -76,16 +76,30 @@ public class FeatureService
 		return p;
 	}
 
-	public IntegratedProperty[] getIntegratedClusterProperties(DatasetFile dataset)
+	public IntegratedProperty getIntegratedClusterProperty(DatasetFile dataset)
 	{
-		List<IntegratedProperty> props = new ArrayList<IntegratedProperty>();
+		IntegratedProperty cProp = null;
 		for (IntegratedProperty integratedProperty : integratedProperties.get(dataset))
-			if (integratedProperty.toString().matches("Prediction feature for cluster assignment.*"))
-				props.add(integratedProperty);
-		IntegratedProperty p[] = new IntegratedProperty[props.size()];
-		props.toArray(p);
-		Arrays.sort(p, new ToStringComparator());
-		return p;
+			if (integratedProperty.toString().toLowerCase().equals("cluster"))
+			{
+				cProp = integratedProperty;
+				break;
+			}
+		if (cProp == null)
+			for (IntegratedProperty integratedProperty : integratedProperties.get(dataset))
+				if (integratedProperty.toString().toLowerCase().equals("clusters"))
+				{
+					cProp = integratedProperty;
+					break;
+				}
+		if (cProp == null)
+			for (IntegratedProperty integratedProperty : integratedProperties.get(dataset))
+				if (integratedProperty.toString().matches("(?i).*cluster.*"))
+				{
+					cProp = integratedProperty;
+					break;
+				}
+		return cProp;
 	}
 
 	public boolean isLoaded(DatasetFile dataset)
@@ -225,11 +239,13 @@ public class FeatureService
 
 	public static boolean guessNominalFeatureType(int numDistinctFeatures, int datasetSize)
 	{
-		if (numDistinctFeatures <= 5)
-			return true;
-		if (datasetSize > 200 && numDistinctFeatures <= 10)
-			return true;
-		if (datasetSize > 1000 && numDistinctFeatures <= 20)
+		//		if (numDistinctFeatures <= 5)
+		//			return true;
+		//		if (datasetSize > 200 && numDistinctFeatures <= 10)
+		//			return true;
+		//		if (datasetSize > 1000 && numDistinctFeatures <= 20)
+		//			return true;
+		if (numDistinctFeatures <= 2)
 			return true;
 		return false;
 	}

@@ -172,9 +172,9 @@ public class DatasetFile
 		return featureService.getIntegratedProperties(this, includingSmiles);
 	}
 
-	public IntegratedProperty[] getIntegratedClusterProperties()
+	public IntegratedProperty getIntegratedClusterProperty()
 	{
-		return featureService.getIntegratedClusterProperties(this);
+		return featureService.getIntegratedClusterProperty(this);
 	}
 
 	public boolean isLoaded()

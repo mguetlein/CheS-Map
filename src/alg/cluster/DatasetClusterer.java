@@ -16,12 +16,14 @@ public interface DatasetClusterer extends Algorithm
 {
 	public static DatasetClusterer CLUSTERERS[] = ArrayUtil.concat(DatasetClusterer.class,
 			new DatasetClusterer[] { NoClusterer.INSTANCE }, WekaClusterer.WEKA_CLUSTERER,
-			AbstractRClusterer.R_CLUSTERER);
+			AbstractRClusterer.R_CLUSTERER, new DatasetClusterer[] { ManualClusterer.INSTANCE });
 
 	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
 			throws Exception;
 
 	public List<ClusterData> getClusters();
+
+	public boolean isDisjointClusterer();
 
 	public boolean requiresFeatures();
 

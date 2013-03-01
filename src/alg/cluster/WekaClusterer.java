@@ -155,7 +155,7 @@ public class WekaClusterer extends AbstractDatasetClusterer
 	}
 
 	@Override
-	protected List<Integer> cluster(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
+	protected List<Integer[]> cluster(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
 	{
 		WekaPropertyUtil.setProperties(wekaClusterer, properties);
 
@@ -176,9 +176,9 @@ public class WekaClusterer extends AbstractDatasetClusterer
 			eval.evaluateClusterer(data);
 			Settings.LOGGER.info("# of clusters: " + eval.getNumClusters());
 
-			List<Integer> clusterAssignements = new ArrayList<Integer>();
+			List<Integer[]> clusterAssignements = new ArrayList<Integer[]>();
 			for (int j = 0; j < eval.getClusterAssignments().length; j++)
-				clusterAssignements.add((int) eval.getClusterAssignments()[j]);
+				clusterAssignements.add(new Integer[] { (int) eval.getClusterAssignments()[j] });
 			return clusterAssignements;
 		}
 		catch (Exception e)
