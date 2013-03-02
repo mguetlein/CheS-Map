@@ -3,11 +3,14 @@ package alg.cluster;
 import gui.FeatureWizardPanel.FeatureInfo;
 import gui.Message;
 import gui.Messages;
+import gui.property.BooleanProperty;
+import gui.property.Property;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import main.Settings;
+import util.ArrayUtil;
 import util.IntegerUtil;
 import alg.AlgorithmException;
 import data.DatasetFile;
@@ -18,6 +21,8 @@ public class ManualClusterer extends AbstractDatasetClusterer
 {
 	public static final ManualClusterer INSTANCE = new ManualClusterer();
 	private boolean isDisjoint;
+
+	BooleanProperty ignoreSingletons = new BooleanProperty("Ignore singelton clusters", false);
 
 	public ManualClusterer()
 	{
@@ -37,6 +42,12 @@ public class ManualClusterer extends AbstractDatasetClusterer
 	}
 
 	@Override
+	public Property[] getProperties()
+	{
+		return new Property[] { ignoreSingletons };
+	}
+
+	@Override
 	protected List<Integer[]> cluster(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
 			throws Exception
 	{
@@ -44,6 +55,8 @@ public class ManualClusterer extends AbstractDatasetClusterer
 		if (clusterProp == null)
 			throw new AlgorithmException.ClusterException(this, "No feature with name including 'cluster' found");
 		List<Integer[]> clusterAssignment = new ArrayList<Integer[]>();
+		List<Integer[]> moleculeAssignment = new ArrayList<Integer[]>();
+
 		for (int compoundIndex = 0; compoundIndex < compounds.size(); compoundIndex++)
 		{
 			CompoundData m = compounds.get(compoundIndex);
@@ -60,6 +73,38 @@ public class ManualClusterer extends AbstractDatasetClusterer
 								"Cannot parse cluster assignment as integer: " + vals[i] + " in " + val);
 				}
 				clusterAssignment.add(intVals);
+				for (Integer clazz : intVals)
+				{
+					while (moleculeAssignment.size() <= clazz)
+						moleculeAssignment.add(new Integer[0]);
+					moleculeAssignment.set(clazz, ArrayUtil.concat(Integer.class, moleculeAssignment.get(clazz),
+							new Integer[] { compoundIndex }));
+				}
+			}
+		}
+
+		if (ignoreSingletons.getValue())
+		{
+			List<Integer> remClazz = new ArrayList<Integer>();
+			for (int c = 0; c < moleculeAssignment.size(); c++)
+				if (moleculeAssignment.get(c).length < 2)
+					remClazz.add(c);
+			System.out.println("removing " + remClazz.size() + " singleton clusters");
+			if (remClazz.size() > 0)
+			{
+				List<Integer[]> newClusterAssignment = new ArrayList<Integer[]>();
+				for (int m = 0; m < clusterAssignment.size(); m++)
+				{
+					List<Integer> newClusters = new ArrayList<Integer>();
+					for (int c : clusterAssignment.get(m))
+						if (!remClazz.contains(new Integer(c)))
+							newClusters.add(c);
+					if (newClusters.size() == 0)
+						newClusterAssignment.add(new Integer[0]);
+					else
+						newClusterAssignment.add(ArrayUtil.toArray(newClusters));
+				}
+				clusterAssignment = newClusterAssignment;
 			}
 		}
 		//		else
