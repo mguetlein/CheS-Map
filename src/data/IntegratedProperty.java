@@ -48,6 +48,15 @@ public class IntegratedProperty extends AbstractMoleculeProperty implements Mole
 	}
 
 	@Override
+	/**
+	 * make sure that HashSet<IntegratedPropterty>.get() and .contains() works for two "different" integrated props that return "equals().true"
+	 */
+	public int hashCode()
+	{
+		return property.hashCode();
+	}
+
+	@Override
 	public int getSize(DatasetFile dataset)
 	{
 		return 1;
