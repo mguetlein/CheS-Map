@@ -113,6 +113,7 @@ public class ValueFileCache
 			String s = "";
 			for (Vector3f vector3f : positions)
 				s += Vector3fUtil.serialize(vector3f) + ",";
+			s = s.substring(0, s.length() - 1);
 			b.write(s + "\n");
 			b.close();
 		}

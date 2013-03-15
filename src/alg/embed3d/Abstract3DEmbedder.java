@@ -78,6 +78,8 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		{
 			Settings.LOGGER.info("read cached embedding results from: " + embedFilename);
 			positions = ValueFileCache.readCachePosition2(embedFilename);
+			if (positions.size() == instances.size() + 1 && positions.get(positions.size() - 1) == null) // fix for old version
+				positions.remove(positions.size() - 1);
 			Settings.LOGGER.info("read cached embedding rSquare from: " + rSquareFilename);
 			rSquare = DoubleUtil.parseDouble(FileUtil.readStringFromFile(rSquareFilename));
 		}
@@ -89,5 +91,8 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 			Settings.LOGGER.info("store embedding rSquare to: " + rSquareFilename);
 			FileUtil.writeStringToFile(rSquareFilename, rSquare + "");
 		}
+
+		if (positions.size() != instances.size())
+			throw new IllegalStateException("illegal num positions " + positions.size() + " " + instances.size());
 	}
 }

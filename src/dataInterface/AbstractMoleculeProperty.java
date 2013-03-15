@@ -151,6 +151,7 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	private HashMap<DatasetFile, String[]> stringValues = new HashMap<DatasetFile, String[]>();
 	private HashMap<DatasetFile, Double[]> doubleValues = new HashMap<DatasetFile, Double[]>();
 	private HashMap<DatasetFile, Double[]> normalizedValues = new HashMap<DatasetFile, Double[]>();
+	private HashMap<DatasetFile, Double[]> normalizedLogValues = new HashMap<DatasetFile, Double[]>();
 	private HashMap<DatasetFile, Double> median = new HashMap<DatasetFile, Double>();
 	private HashMap<DatasetFile, Integer> missing = new HashMap<DatasetFile, Integer>();
 
@@ -182,9 +183,10 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 			throw new IllegalStateException();
 		Double normalized[] = ArrayUtil.normalize(vals, false);
 		setMissing(dataset, normalized);
-		//Double normalized[] = ArrayUtil.normalizeLog(vals);
+		Double normalizedLog[] = ArrayUtil.normalizeLog(vals, false);
 		doubleValues.put(dataset, vals);
 		normalizedValues.put(dataset, normalized);
+		normalizedLogValues.put(dataset, normalizedLog);
 		median.put(dataset, DoubleArraySummary.create(normalized).getMedian());
 	}
 
@@ -231,6 +233,16 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 		if (!normalizedValues.containsKey(dataset))
 			throw new Error("values not yet set");
 		return normalizedValues.get(dataset);
+	}
+
+	@Override
+	public Double[] getNormalizedLogValues(DatasetFile dataset)
+	{
+		if (getType() != Type.NUMERIC)
+			throw new IllegalStateException();
+		if (!normalizedLogValues.containsKey(dataset))
+			throw new Error("values not yet set");
+		return normalizedLogValues.get(dataset);
 	}
 
 	@Override

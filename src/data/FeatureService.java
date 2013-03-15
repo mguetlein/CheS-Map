@@ -10,7 +10,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,7 +56,7 @@ public class FeatureService
 {
 	private HashMap<DatasetFile, IMolecule[]> fileToMolecules = new HashMap<DatasetFile, IMolecule[]>();
 	private HashMap<DatasetFile, Boolean> fileHas3D = new HashMap<DatasetFile, Boolean>();
-	private HashMap<DatasetFile, Set<IntegratedProperty>> integratedProperties = new HashMap<DatasetFile, Set<IntegratedProperty>>();
+	private HashMap<DatasetFile, LinkedHashSet<IntegratedProperty>> integratedProperties = new HashMap<DatasetFile, LinkedHashSet<IntegratedProperty>>();
 	private HashMap<DatasetFile, IntegratedProperty> integratedSmiles = new HashMap<DatasetFile, IntegratedProperty>();
 	private HashMap<DatasetFile, String[]> cdkSmiles = new HashMap<DatasetFile, String[]>();
 
@@ -72,7 +72,7 @@ public class FeatureService
 		for (IntegratedProperty pp : integratedProperties.get(dataset))
 			if (includingSmiles || !pp.equals(integratedSmiles.get(dataset)))
 				p[i++] = pp;
-		Arrays.sort(p, new ToStringComparator());
+		//		Arrays.sort(p, new ToStringComparator());
 		return p;
 	}
 
@@ -336,7 +336,7 @@ public class FeatureService
 			TaskProvider.verbose("Parsing file with CDK");
 
 			Vector<IMolecule> mols = new Vector<IMolecule>();
-			integratedProperties.put(dataset, new HashSet<IntegratedProperty>());
+			integratedProperties.put(dataset, new LinkedHashSet<IntegratedProperty>());
 
 			int mCount = 0;
 			File file = new File(dataset.getLocalPath());

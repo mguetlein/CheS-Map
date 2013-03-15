@@ -40,6 +40,8 @@ public interface MoleculeProperty
 
 	public Double[] getNormalizedValues(DatasetFile dataset);
 
+	public Double[] getNormalizedLogValues(DatasetFile dataset);
+
 	public Double getNormalizedMedian(DatasetFile dataset);
 
 	public String getUniqueName();
