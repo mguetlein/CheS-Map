@@ -1,5 +1,7 @@
 package gui;
 
+import gui.property.Property;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -15,6 +17,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Vector;
 
 import javax.swing.Icon;
@@ -40,13 +43,12 @@ import util.ImageLoader;
 import util.MessageUtil;
 import util.VectorUtil;
 import util.WizardComponentFactory;
-import alg.FeatureComputer;
+import workflow.FeatureWorkflowProvider;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import data.DatasetFile;
-import data.DefaultFeatureComputer;
 import data.FeatureLoader;
 import data.IntegratedProperty;
 import data.cdk.CDKPropertySet;
@@ -60,7 +62,7 @@ import dataInterface.MoleculeProperty.Type;
 import dataInterface.MoleculePropertySet;
 import dataInterface.MoleculePropertySetUtil;
 
-public class FeatureWizardPanel extends WizardPanel
+public class FeatureWizardPanel extends WizardPanel implements FeatureWorkflowProvider
 {
 	Selector<MoleculePropertySet> selector;
 	JLabel numFeaturesLabel;
@@ -87,9 +89,17 @@ public class FeatureWizardPanel extends WizardPanel
 
 	private JButton addSmarts;
 
+	public FeatureWizardPanel()
+	{
+		this(null);
+	}
+
 	public FeatureWizardPanel(CheSMapperWizard wizard)
 	{
 		this.wizard = wizard;
+		if (wizard == null)
+			return;
+
 		createSelector();
 		buildLayout();
 		addListeners();
@@ -438,6 +448,9 @@ public class FeatureWizardPanel extends WizardPanel
 
 	public void update()
 	{
+		if (wizard == null)
+			return;
+
 		selector.repaintSelector();
 
 		boolean notComputed = false;
@@ -538,8 +551,10 @@ public class FeatureWizardPanel extends WizardPanel
 	{
 		if (dataset.equals(this.dataset) && !forceUpdate)
 			return;
-
 		this.dataset = dataset;
+		if (wizard == null)
+			return;
+
 		moleculePropertyPanel.setDataset(dataset);
 
 		selfUpdate = true;
@@ -557,7 +572,34 @@ public class FeatureWizardPanel extends WizardPanel
 		selector.addElements(STRUCTURAL_FRAGMENTS);
 		selector.addElementList(STRUCTURAL_FRAGMENTS, StructuralFragments.instance.getSets());
 
-		String integratedFeatures = PropHandler.get("features-integrated");
+		for (MoleculePropertySet m : getFeaturesFromWorkflow(PropHandler.getProperties(), false))
+			selector.setSelected(m);
+
+		selector.setSelected(selected);
+
+		update();
+		selfUpdate = false;
+	}
+
+	@Override
+	public MoleculePropertySet[] getFeaturesFromWorkflow(Properties props, boolean storeToSettings)
+	{
+		for (Property p : StructuralFragmentProperties.getProperties())
+			p.loadOrResetToDefault(props);
+		if (storeToSettings)
+		{
+			for (String propKey : allPropKeys)
+				if (props.containsKey(propKey))
+					PropHandler.put(propKey, (String) props.get(propKey));
+				else
+					PropHandler.remove(propKey);
+			for (Property p : StructuralFragmentProperties.getProperties())
+				p.put(PropHandler.getProperties());
+		}
+
+		List<MoleculePropertySet> features = new ArrayList<MoleculePropertySet>();
+
+		String integratedFeatures = (String) props.get(propKeyIntegrated);
 		Vector<String> selection = VectorUtil.fromCSVString(integratedFeatures);
 		for (String string : selection)
 		{
@@ -568,18 +610,18 @@ public class FeatureWizardPanel extends WizardPanel
 			String feat = string.substring(0, index);
 
 			IntegratedProperty p = IntegratedProperty.fromString(feat, t, dataset);
-			selector.setSelected(p);
+			features.add(p);
 		}
 
-		String cdkFeatures = PropHandler.get("features-cdk");
+		String cdkFeatures = (String) props.get(propKeyCDK);
 		selection = VectorUtil.fromCSVString(cdkFeatures);
 		for (String string : selection)
 		{
 			CDKPropertySet d = CDKPropertySet.fromString(string);
-			selector.setSelected(d);
+			features.add(d);
 		}
 
-		String obFeatures = PropHandler.get("features-ob");
+		String obFeatures = (String) props.get(propKeyOB);
 		selection = VectorUtil.fromCSVString(obFeatures);
 		for (String string : selection)
 		{
@@ -589,46 +631,70 @@ public class FeatureWizardPanel extends WizardPanel
 			Type t = Type.valueOf(string.substring(index + 1));
 			String feat = string.substring(0, index);
 			OBDescriptorProperty p = OBDescriptorProperty.fromString(feat, t);
-			selector.setSelected(p);
+			features.add(p);
 		}
 
-		String fragmentFeatures = PropHandler.get("features-fragments");
+		String fragmentFeatures = (String) props.get(propKeyFragments);
 		selection = VectorUtil.fromCSVString(fragmentFeatures);
 		for (String string : selection)
 		{
 			FragmentPropertySet d = StructuralFragments.instance.findFromString(string);
 			if (d != null)
-				selector.setSelected(d);
+				features.add(d);
 		}
 
-		selector.setSelected(selected);
-
-		update();
-		selfUpdate = false;
+		return ArrayUtil.toArray(MoleculePropertySet.class, features);
 	}
+
+	private String propKeyIntegrated = "features-integrated";
+	private String propKeyCDK = "features-cdk";
+	private String propKeyOB = "features-ob";
+	private String propKeyFragments = "features-fragments";
+	private String[] allPropKeys = { propKeyIntegrated, propKeyCDK, propKeyOB, propKeyFragments };
 
 	@Override
 	public void proceed()
 	{
-		MoleculePropertySet[] integratedProps = selector.getSelected(INTEGRATED_FEATURES);
-		String[] serilizedProps = new String[integratedProps.length];
-		for (int i = 0; i < serilizedProps.length; i++)
-			serilizedProps[i] = integratedProps[i] + "#" + integratedProps[i].getType();
-		PropHandler.put("features-integrated", ArrayUtil.toCSVString(serilizedProps, true));
+		putIntegratedToProps(selector.getSelected(INTEGRATED_FEATURES), PropHandler.getProperties());
+
 		if (CDKPropertySet.NUMERIC_DESCRIPTORS.length > 0)
-			PropHandler.put("features-cdk", ArrayUtil.toCSVString(selector.getSelected(CDK_FEATURES), true));
+			if (selector.getSelected(CDK_FEATURES).length > 0)
+				PropHandler.put(propKeyCDK, ArrayUtil.toCSVString(selector.getSelected(CDK_FEATURES), true));
+			else
+				PropHandler.remove(propKeyCDK);
 
 		MoleculePropertySet[] obFeats = selector.getSelected(OB_FEATURES);
-		String[] serilizedOBFeats = new String[obFeats.length];
-		for (int i = 0; i < serilizedOBFeats.length; i++)
-			serilizedOBFeats[i] = obFeats[i] + "#" + obFeats[i].getType();
-		PropHandler.put("features-ob", ArrayUtil.toCSVString(serilizedOBFeats, true));
+		if (obFeats.length > 0)
+		{
+			String[] serilizedOBFeats = new String[obFeats.length];
+			for (int i = 0; i < serilizedOBFeats.length; i++)
+				serilizedOBFeats[i] = obFeats[i] + "#" + obFeats[i].getType();
+			PropHandler.put(propKeyOB, ArrayUtil.toCSVString(serilizedOBFeats, true));
+		}
+		else
+			PropHandler.remove(propKeyOB);
 
-		PropHandler.put("features-fragments", ArrayUtil.toCSVString(selector.getSelected(STRUCTURAL_FRAGMENTS), true));
+		if (selector.getSelected(STRUCTURAL_FRAGMENTS).length > 0)
+			PropHandler.put(propKeyFragments, ArrayUtil.toCSVString(selector.getSelected(STRUCTURAL_FRAGMENTS), true));
+		else
+			PropHandler.remove(propKeyFragments);
 		PropHandler.storeProperties();
 
 		if (fragmentProperties != null)
 			fragmentProperties.store();
+	}
+
+	private void putIntegratedToProps(MoleculePropertySet[] integratedProps, Properties props)
+	{
+		if (integratedProps.length > 0)
+		{
+			String[] serilizedProps = new String[integratedProps.length];
+			for (int i = 0; i < serilizedProps.length; i++)
+				serilizedProps[i] = integratedProps[i] + "#" + integratedProps[i].getType();
+			props.put(propKeyIntegrated, ArrayUtil.toCSVString(serilizedProps, true));
+		}
+		else
+			props.remove(propKeyIntegrated);
 	}
 
 	@Override
@@ -637,9 +703,9 @@ public class FeatureWizardPanel extends WizardPanel
 		return msg;
 	}
 
-	public FeatureComputer getFeatureComputer()
+	public MoleculePropertySet[] getSelectedFeatures()
 	{
-		return new DefaultFeatureComputer(selector.getSelected());
+		return selector.getSelected();
 	}
 
 	@Override
@@ -659,4 +725,42 @@ public class FeatureWizardPanel extends WizardPanel
 		return fragmentProperties;
 	}
 
+	@Override
+	public void exportFeaturesToWorkflow(String[] featureNames, Properties props)
+	{
+		IntegratedProperty[] availableIntegratedProps = dataset.getIntegratedProperties(false);
+		IntegratedProperty[] selectedIntegratedProps = new IntegratedProperty[featureNames.length];
+		int index = 0;
+		for (String featureName : featureNames)
+		{
+			IntegratedProperty match = null;
+			for (IntegratedProperty availableProp : availableIntegratedProps)
+			{
+				if (availableProp.getName().equals(featureName))
+				{
+					match = availableProp;
+					break;
+				}
+			}
+			if (match == null)
+				throw new IllegalArgumentException("could not find property: " + featureName + " in "
+						+ ArrayUtil.toString(availableIntegratedProps));
+			if (match.isTypeAllowed(Type.NUMERIC))
+				match.setType(Type.NUMERIC);
+			else if (match.getType() != Type.NOMINAL)
+				throw new IllegalArgumentException("probably not suited: " + featureName);
+			selectedIntegratedProps[index++] = match;
+		}
+		putIntegratedToProps(selectedIntegratedProps, props);
+	}
+
+	@Override
+	public void exportSettingsToWorkflow(Properties props)
+	{
+		for (String propKey : allPropKeys)
+			if (PropHandler.containsKey(propKey))
+				props.put(propKey, PropHandler.get(propKey));
+		for (Property p : StructuralFragmentProperties.getProperties())
+			p.put(props);
+	}
 }

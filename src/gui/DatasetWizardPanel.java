@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.Properties;
 import java.util.Vector;
 
 import javax.swing.DefaultListCellRenderer;
@@ -26,6 +27,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileFilter;
 
 import main.PropHandler;
 import main.Settings;
@@ -37,7 +39,7 @@ import util.FileUtil;
 import util.ListUtil;
 import util.ThreadUtil;
 import util.VectorUtil;
-import alg.DatasetProvider;
+import workflow.DatasetWorkflowProvider;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
@@ -46,7 +48,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import data.DatasetFile;
 import data.FeatureService.IllegalCompoundsException;
 
-public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
+public class DatasetWizardPanel extends WizardPanel implements DatasetWorkflowProvider
 {
 	JTextField textField;
 	JFileChooser chooser;
@@ -65,21 +67,41 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 	Vector<DatasetFile> oldDatasets;
 
 	private DatasetFile dataset;
+	private boolean showLoadDialog;
+
+	private String propKeyDataset = "dataset-recently-used";
+
+	public DatasetWizardPanel()
+	{
+		this(null, false);
+	}
+
+	public DatasetWizardPanel(boolean showLoadDialog)
+	{
+		this(null, showLoadDialog);
+	}
 
 	public DatasetWizardPanel(WizardDialog wizard)
 	{
+		this(wizard, true);
+	}
+
+	private DatasetWizardPanel(WizardDialog wizard, boolean showLoadDialog)
+	{
 		this.wizard = wizard;
-		if (wizard != null)
-			block = wizard;
-		else
+		this.showLoadDialog = showLoadDialog;
+		if (wizard == null)
+		{
 			block = new BlockableFrame("");
+			return;
+		}
+
+		block = wizard;
 		DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout(
 				"pref,5dlu,pref:grow(0.99),5dlu,right:p:grow(0.01)"));
-
 		builder.append(new JLabel(
 				"Select dataset file (Copy a http link into the textfield to load a dataset from the internet):"), 5);
 		builder.nextLine();
-
 		textField = new JTextField(45);
 		textField.getDocument().addDocumentListener(new DocumentAdapter()
 		{
@@ -108,7 +130,6 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 			}
 		});
 		builder.append(textField, 3);
-
 		JButton search = new JButton("Open file...");
 		search.addActionListener(new ActionListener()
 		{
@@ -135,8 +156,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		});
 		builder.append(search);
 		builder.nextLine();
-
-		String dir = PropHandler.get("dataset-recently-used");
+		String dir = PropHandler.get(propKeyDataset);
 		oldDatasets = new Vector<DatasetFile>();
 		if (dir != null)
 		{
@@ -243,7 +263,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		add(builder.getPanel());
 
 		// auto load last selected dataset
-		if (wizard != null && oldDatasets.size() > 0)
+		if (oldDatasets.size() > 0)
 		{
 			//			if (oldDatasets.get(0).isLocal())
 			load(oldDatasets.get(0).getPath()); // auto-load local files
@@ -254,28 +274,30 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 
 	private void updateDataset()
 	{
-		if (dataset == null)
+		if (wizard != null)
 		{
-			labelFile.setText("-");
-			labelProps.setText("-");
-			labelSize.setText("-");
-			label3D.setText("-");
-			recentlyUsed.clearSelection();
-		}
-		else
-		{
-			labelFile.setText(dataset.getFullName());
-			labelProps.setText(dataset.getIntegratedProperties(true).length + "");
-			labelSize.setText(dataset.numCompounds() + "");
-			label3D.setText(dataset.has3D() + "");
-			if (oldDatasets.indexOf(dataset) == -1)
-				if (oldDatasets.contains(dataset))
-					recentlyUsed.setSelectedValue(dataset, true);
-				else
-					recentlyUsed.clearSelection();
-		}
-		if (wizard != null)//in test suite, wizard is null
+			if (dataset == null)
+			{
+				labelFile.setText("-");
+				labelProps.setText("-");
+				labelSize.setText("-");
+				label3D.setText("-");
+				recentlyUsed.clearSelection();
+			}
+			else
+			{
+				labelFile.setText(dataset.getFullName());
+				labelProps.setText(dataset.getIntegratedProperties(true).length + "");
+				labelSize.setText(dataset.numCompounds() + "");
+				label3D.setText(dataset.has3D() + "");
+				if (oldDatasets.indexOf(dataset) == -1)
+					if (oldDatasets.contains(dataset))
+						recentlyUsed.setSelectedValue(dataset, true);
+					else
+						recentlyUsed.clearSelection();
+			}
 			wizard.update();
+		}
 	}
 
 	//	public static void main(String args[])
@@ -291,17 +313,24 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 	//			load(d.getURI());
 	//	}
 
-	public void load(final String f)
+	private void load(String f)
+	{
+		load(f, false);
+	}
+
+	private void load(final String f, boolean wait)
 	{
 		if (block.isBlocked())
 			return;
 		block.block(f);
 
 		dataset = null;
-		if (!textField.getText().equals(f))
-			textField.setText(f);
-		buttonLoad.setEnabled(false);
-
+		if (wizard != null)
+		{
+			if (!textField.getText().equals(f))
+				textField.setText(f);
+			buttonLoad.setEnabled(false);
+		}
 		final DatasetFile d;
 		boolean http = f.startsWith("http");
 		if (http)
@@ -317,20 +346,24 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		}
 		else
 		{
-			labelFile.setText("-");
-			labelProps.setText("-");
-			labelNumericProps.setText("-");
-			labelSize.setText("-");
-			label3D.setText("-");
+			if (wizard != null)
+			{
+				labelFile.setText("-");
+				labelProps.setText("-");
+				labelNumericProps.setText("-");
+				labelSize.setText("-");
+				label3D.setText("-");
+			}
 
 			Thread th = new Thread(new Runnable()
 			{
 				public void run()
 				{
 					final Task task = TaskProvider.initTask("Loading dataset file");
-					if (wizard != null)
+
+					if (showLoadDialog)
 					{
-						if (!wizard.isVisible())
+						if (wizard != null && !wizard.isVisible())
 						{
 							Thread th = new Thread(new Runnable()
 							{
@@ -348,7 +381,6 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 						else
 							new TaskDialog(task, wizard);
 					}
-
 					TaskProvider.update("Loading dataset: " + d.getName());
 					try
 					{
@@ -448,6 +480,15 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 			});
 			th.start();
 		}
+
+		if (wait)
+		{
+			if (showLoadDialog && Thread.currentThread().getName().contains("AWT-EventQueue"))
+				throw new Error("Cannot wait within awt event thread when load dialog is shown");
+			ThreadUtil.sleep(100);
+			while (block.isBlocked())
+				ThreadUtil.sleep(100);
+		}
 	}
 
 	@Override
@@ -459,7 +500,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		Vector<String> strings = new Vector<String>();
 		for (DatasetFile d : oldDatasets)
 			strings.add(d.toString());
-		PropHandler.put("dataset-recently-used", VectorUtil.toCSVString(strings));
+		PropHandler.put(propKeyDataset, VectorUtil.toCSVString(strings));
 		PropHandler.storeProperties();
 	}
 
@@ -472,20 +513,9 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 			return Messages.errorMessage(""); // error is obvious (select dataset!)
 	}
 
-	@Override
 	public DatasetFile getDatasetFile()
 	{
 		return dataset;
-	}
-
-	public boolean isLoading()
-	{
-		return block.isBlocked();
-	}
-
-	public DatasetProvider getDatasetProvider()
-	{
-		return this;
 	}
 
 	@Override
@@ -500,4 +530,77 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetProvider
 		return Settings.text("dataset.desc");
 	}
 
+	@Override
+	public void exportDatasetToWorkflow(String datasetPath, Properties props)
+	{
+		load(datasetPath, true);
+		props.put(propKeyDataset, dataset.toString());
+	}
+
+	@Override
+	public void exportSettingsToWorkflow(Properties props)
+	{
+		props.put(propKeyDataset, VectorUtil.fromCSVString(PropHandler.get(propKeyDataset)).get(0));
+	}
+
+	@Override
+	public DatasetFile getDatasetFromWorkflow(Properties props, boolean storeToSettings, String alternateDatasetDir)
+	{
+		DatasetFile df = DatasetFile.fromString(VectorUtil.fromCSVString((String) props.get(propKeyDataset)).get(0));
+		if (df.isLocal() && !new File(df.getLocalPath()).exists())
+		{
+			String alternate = alternateDatasetDir + File.separator + df.getName();
+			if (new File(alternate).exists())
+				df = DatasetFile.localFile(alternate);
+			else
+			{
+				int res = JOptionPane.showConfirmDialog(Settings.TOP_LEVEL_FRAME, "The dataset file '" + df.getName()
+						+ "' that was specified in the workflow could not be found.\n(Neither at " + df.getLocalPath()
+						+ ",\nnor at " + alternate + ")\n\nLoad this file from a different location?",
+						"Dataset not found", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+				if (res != JOptionPane.YES_OPTION)
+					return null;
+				final String finalName = df.getName();
+				JFileChooser fc = new JFileChooser(alternateDatasetDir);
+				fc.setFileFilter(new FileFilter()
+				{
+					@Override
+					public String getDescription()
+					{
+						return "Dataset file " + finalName;
+					}
+
+					@Override
+					public boolean accept(File f)
+					{
+						return f.isDirectory() || f.getName().equals(finalName);
+					}
+				});
+				int res2 = fc.showOpenDialog(Settings.TOP_LEVEL_FRAME);
+				if (res2 != JFileChooser.APPROVE_OPTION)
+					return null;
+				File f = fc.getSelectedFile();
+				if (f != null && f.exists() && f.getName().equals(finalName))
+					df = DatasetFile.localFile(f.getAbsolutePath());
+				else
+					return null;
+			}
+		}
+		String newVal = df.toString();
+		String oldVals = PropHandler.get(propKeyDataset);
+		if (oldVals != null)
+		{
+			Vector<String> vec = VectorUtil.fromCSVString(oldVals);
+			int index = vec.indexOf(newVal);
+			if (index != -1)
+				vec.remove(index);
+			vec.insertElementAt(newVal, 0);
+			PropHandler.put(propKeyDataset, VectorUtil.toCSVString(vec));
+		}
+		else
+			PropHandler.put(propKeyDataset, newVal);
+
+		load(df.getPath(), true);
+		return dataset;
+	}
 }

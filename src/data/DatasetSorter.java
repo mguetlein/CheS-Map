@@ -33,7 +33,7 @@ public class DatasetSorter
 			@Override
 			public int compare(String o1, String o2)
 			{
-				return StringUtil.compareTo(o1, o2);
+				return StringUtil.compareFilenames(o1, o2);
 			}
 		}, true);
 

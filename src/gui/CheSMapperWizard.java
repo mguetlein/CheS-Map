@@ -2,16 +2,24 @@ package gui;
 
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.Properties;
 
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.filechooser.FileFilter;
 
 import main.CheSMapping;
+import main.PropHandler;
 import main.ScreenSetup;
 import main.Settings;
+import util.FileUtil;
 import util.ScreenUtil;
 import util.SwingUtil;
 import weka.gui.GenericObjectEditor;
+import workflow.Workflow;
 import data.ClusteringData;
 
 public class CheSMapperWizard extends WizardDialog
@@ -104,8 +112,69 @@ public class CheSMapperWizard extends WizardDialog
 		}
 
 		((JComponent) getContentPane().getComponent(0)).setBorder(ScreenSetup.SETUP.getWizardBorder());
+		setImportActive(true);
 
 		setVisible(true);
+	}
+
+	protected void doImport()
+	{
+		JFileChooser chooser = null;
+		String dir = PropHandler.get("workflow-import-dir");
+		if (dir == null)
+			dir = PropHandler.get("workflow-export-dir");
+		if (dir == null)
+			dir = System.getProperty("user.home");
+		chooser = new JFileChooser(new File(dir));
+		chooser.setFileFilter(new FileFilter()
+		{
+			@Override
+			public String getDescription()
+			{
+				return "CheS-Mapper Workflow File (*.ches)";
+			}
+
+			@Override
+			public boolean accept(File f)
+			{
+				return FileUtil.getFilenamExtension(f.getAbsolutePath()).matches("(?i)ches");
+			}
+		});
+		chooser.showOpenDialog(this);
+		final File f = chooser.getSelectedFile();
+		if (f != null)
+		{
+			PropHandler.put("workflow-import-dir", f.getParent());
+			PropHandler.storeProperties();
+			Properties props = null;
+			try
+			{
+				props = new Properties();
+				FileInputStream in = new FileInputStream(f);
+				props.load(in);
+				in.close();
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+			if (props != null)
+			{
+				final Properties fProps = props;
+				Thread th = new Thread(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						// do not do this in AWT event thread, this will cause errors
+						chesMapping = Workflow.createMappingFromWorkflow(fProps, f.getParent());
+						if (chesMapping != null)
+							setVisible(false);
+					}
+				});
+				th.start();
+			}
+		}
 	}
 
 	protected String getFinishText()
@@ -132,7 +201,7 @@ public class CheSMapperWizard extends WizardDialog
 	@Override
 	public void finish()
 	{
-		chesMapping = new CheSMapping(dataset.getDatasetProvider(), features.getFeatureComputer(),
+		chesMapping = new CheSMapping(dataset.getDatasetFile(), features.getSelectedFeatures(),
 				cluster.getDatasetClusterer(), create3D.get3DBuilder(), embed.get3DEmbedder(), align.getAlginer());
 	}
 

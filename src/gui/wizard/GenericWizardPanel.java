@@ -5,6 +5,7 @@ import gui.FeatureWizardPanel.FeatureInfo;
 import gui.Messages;
 import gui.MoreTextPanel;
 import gui.binloc.Binary;
+import gui.property.Property;
 import gui.property.PropertyPanel;
 
 import java.awt.BorderLayout;
@@ -17,6 +18,7 @@ import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
+import java.util.Properties;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -33,6 +35,7 @@ import javax.swing.event.ListSelectionListener;
 import main.BinHandler;
 import main.PropHandler;
 import util.WizardComponentFactory;
+import workflow.AlgorithmWorkflowProvider;
 import alg.Algorithm;
 import alg.cluster.DatasetClusterer;
 
@@ -42,7 +45,7 @@ import com.jgoodies.forms.layout.Sizes;
 
 import data.DatasetFile;
 
-public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
+public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel implements AlgorithmWorkflowProvider
 {
 	DefaultListModel listModel;
 	JList list;
@@ -58,24 +61,38 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 	{
 		protected abstract Algorithm getAlgorithm();
 
+		protected abstract Algorithm getYesAlgorithm();
+
+		protected abstract Algorithm getNoAlgorithm();
+
 		protected abstract void store();
 	}
+
+	private SimplePanel simpleView;
+	private String propKeySimpleViewSelected = getTitle() + "-simple-selected";
+	protected String propKeySimpleViewYesSelected = getTitle() + "-simple-yes";
+	private String propKeyMethod = getTitle() + "-method";
 
 	protected abstract boolean hasSimpleView();
 
 	protected abstract SimplePanel createSimpleView();
-
-	private SimplePanel simpleView;
 
 	protected abstract Algorithm[] getAlgorithms();
 
 	public GenericWizardPanel(CheSMapperWizard wizard)
 	{
 		this.wizard = wizard;
+		if (wizard == null)
+		{
+			if (hasSimpleView())
+				simpleView = createSimpleView();
+			return;
+		}
+
 		buildLayout();
 		addListeners();
 
-		String method = PropHandler.get(getTitle() + "-method");
+		String method = PropHandler.get(propKeyMethod);
 		boolean selected = false;
 		if (method != null)
 		{
@@ -108,8 +125,7 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 		{
 			simpleView = createSimpleView();
 			simple().add(simpleView);
-			String simpleSelected = PropHandler.get(getTitle() + "-simple-selected");
-			if (simpleSelected == null || simpleSelected.equals("true"))
+			if (isSimpleSelectedFromProps(PropHandler.getProperties(), false))
 				toggle(true);
 		}
 	}
@@ -282,12 +298,12 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 	@Override
 	public void proceed()
 	{
-		PropHandler.put(getTitle() + "-simple-selected", isSimpleSelected() ? "true" : "false");
+		PropHandler.put(propKeySimpleViewSelected, isSimpleSelected() ? "true" : "false");
 		if (isSimpleSelected())
 			simpleView.store();
 		else
 		{
-			PropHandler.put(getTitle() + "-method", selectedAlgorithm.getName());
+			PropHandler.put(propKeyMethod, selectedAlgorithm.getName());
 			cards.get(selectedAlgorithm.toString()).store();
 		}
 		PropHandler.storeProperties();
@@ -315,6 +331,11 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 		return -1;
 	}
 
+	public void setSelectedAlgorithm(Algorithm alg)
+	{
+		throw new Error("not yet implemeted");
+	}
+
 	public Algorithm getSelectedAlgorithm()
 	{
 		if (isSimpleSelected())
@@ -328,6 +349,101 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel
 		super.toggle(simple);
 		if (wizard != null)
 			wizard.update();
+	}
+
+	@Override
+	public void exportAlgorithmToWorkflow(Algorithm algorithm, Properties props)
+	{
+		if (hasSimpleView()
+				&& (algorithm == null || algorithm == simpleView.getYesAlgorithm() || algorithm == simpleView
+						.getNoAlgorithm()))
+		{
+			props.put(propKeySimpleViewSelected, "true");
+			if (algorithm == null || algorithm == simpleView.getNoAlgorithm())
+				props.put(propKeySimpleViewYesSelected, "false");
+			else
+			{
+				props.put(propKeySimpleViewYesSelected, "true");
+				for (Property p : algorithm.getProperties())
+					p.put(props);
+			}
+		}
+		else
+		{
+			props.put(propKeySimpleViewSelected, "false");
+			props.put(propKeyMethod, algorithm.getName());
+			for (Property p : algorithm.getProperties())
+				p.put(props);
+		}
+	}
+
+	private Algorithm getAlgorithmByName(String algorithmName)
+	{
+		for (Algorithm a : getAlgorithms())
+			if (a.getName().equals(algorithmName))
+				return a;
+		return null;
+	}
+
+	@Override
+	public Algorithm getAlgorithmFromWorkflow(Properties props, boolean storeToSettings)
+	{
+		Algorithm alg = null;
+		if (hasSimpleView() && isSimpleSelectedFromProps(props, storeToSettings))
+		{
+			if (isSimpleYesSelectedFromProps(props, storeToSettings))
+				alg = simpleView.getYesAlgorithm();
+			else
+				alg = simpleView.getNoAlgorithm();
+		}
+		else
+			alg = getAlgorithmByName((String) props.get(propKeyMethod));
+
+		if (alg.getProperties() != null)
+			for (Property p : alg.getProperties())
+				p.loadOrResetToDefault(props);
+		if (storeToSettings)
+		{
+			PropHandler.put(propKeyMethod, alg.getName());
+			if (alg.getProperties() != null)
+				for (Property p : alg.getProperties())
+					p.put(PropHandler.getProperties());
+		}
+		return alg;
+	}
+
+	public void exportSettingsToWorkflow(Properties props)
+	{
+		if (PropHandler.containsKey(propKeySimpleViewSelected))
+			props.put(propKeySimpleViewSelected, PropHandler.get(propKeySimpleViewSelected));
+		if (PropHandler.containsKey(propKeySimpleViewYesSelected))
+			props.put(propKeySimpleViewYesSelected, PropHandler.get(propKeySimpleViewYesSelected));
+		if (PropHandler.containsKey(propKeyMethod))
+			props.put(propKeyMethod, PropHandler.get(propKeyMethod));
+		Algorithm algorithm = getAlgorithmFromWorkflow(PropHandler.getProperties(), false);
+		if (algorithm.getProperties() != null)
+			for (Property p : algorithm.getProperties())
+				p.put(props);
+	}
+
+	protected boolean isSimpleSelectedFromProps(Properties props, boolean storeToSettings)
+	{
+		if (!props.containsKey(propKeySimpleViewSelected))
+			props.put(propKeySimpleViewSelected, "true");
+		String val = (String) props.get(propKeySimpleViewSelected);
+		if (storeToSettings)
+			PropHandler.put(propKeySimpleViewSelected, val);
+		return val.equals("true");
+	}
+
+	protected boolean isSimpleYesSelectedFromProps(Properties props, boolean storeToSettings)
+	{
+		if (!props.containsKey(propKeySimpleViewYesSelected))
+			props.put(propKeySimpleViewYesSelected, "true");
+		String val = (String) props.get(propKeySimpleViewYesSelected);
+		if (storeToSettings)
+			PropHandler.put(propKeySimpleViewYesSelected, val);
+		return val.equals("true");
 	}
 
 }

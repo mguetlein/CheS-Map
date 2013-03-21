@@ -6,6 +6,11 @@ import alg.build3d.ThreeDBuilder;
 
 public class Build3DWizardPanel extends GenericWizardPanel
 {
+	public Build3DWizardPanel()
+	{
+		this(null);
+	}
+
 	public Build3DWizardPanel(CheSMapperWizard w)
 	{
 		super(w);

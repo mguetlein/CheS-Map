@@ -32,18 +32,19 @@ public class ClusterWizardPanel extends GenericWizardPanel
 	boolean canProceed = false;
 	private static IntegerProperty min = new IntegerProperty("minNumClusters", 2, 1, Integer.MAX_VALUE);
 	private static IntegerProperty max = new IntegerProperty("maxNumClusters", 10, 1, Integer.MAX_VALUE);
-	private static Property[] PROPS = new Property[] { min, max };
+	private static Property[] DEFAULT_CLUSTERER_PROPS = new Property[] { min, max };
 	static
 	{
 		min.setDisplayName("minimum number of clusters");
 		max.setDisplayName("maximum number of clusters");
 	}
 
-	private static final DatasetClusterer DEFAULT = WekaClusterer.getNewInstance(new CascadeSimpleKMeans(), PROPS);
+	private static final DatasetClusterer DEFAULT = WekaClusterer.getNewInstance(new CascadeSimpleKMeans(),
+			DEFAULT_CLUSTERER_PROPS);
 
-	public static DatasetClusterer getDefaultClusterer()
+	public ClusterWizardPanel()
 	{
-		return DEFAULT;
+		this(null);
 	}
 
 	public ClusterWizardPanel(CheSMapperWizard w)
@@ -89,6 +90,9 @@ public class ClusterWizardPanel extends GenericWizardPanel
 
 		public SimpleClusterPanel()
 		{
+			if (wizard == null)
+				return;
+
 			ButtonGroup group = new ButtonGroup();
 			group.add(buttonYes);
 			group.add(buttonNo);
@@ -109,7 +113,7 @@ public class ClusterWizardPanel extends GenericWizardPanel
 			b.append(buttonYes);
 			b.setLineGapSize(Sizes.dluX(4));
 			JPanel props = new JPanel(new BorderLayout(5, 5));
-			props.add(new JLabel("Applies '" + getDefaultClusterer().getName() + "'"), BorderLayout.NORTH);
+			props.add(new JLabel("Applies '" + getYesAlgorithm().getName() + "'"), BorderLayout.NORTH);
 			props.add(propertyPanel);
 			b.append(props);
 			b.nextLine();
@@ -119,12 +123,24 @@ public class ClusterWizardPanel extends GenericWizardPanel
 			setLayout(new BorderLayout());
 			add(b.getPanel());
 
-			String simpleSelected = PropHandler.get(getTitle() + "-simple-yes");
+			String simpleSelected = PropHandler.get(propKeySimpleViewYesSelected);
 			if (simpleSelected != null && simpleSelected.equals("false"))
 			{
 				buttonNo.setSelected(true);
 				propertyPanel.setEnabled(false);
 			}
+		}
+
+		@Override
+		protected Algorithm getNoAlgorithm()
+		{
+			return NoClusterer.INSTANCE;
+		}
+
+		@Override
+		protected Algorithm getYesAlgorithm()
+		{
+			return DEFAULT;
 		}
 
 		private void updateSimpleSelection(boolean clusterYes)
@@ -137,16 +153,16 @@ public class ClusterWizardPanel extends GenericWizardPanel
 		protected Algorithm getAlgorithm()
 		{
 			if (buttonYes.isSelected())
-				return getDefaultClusterer();
+				return getYesAlgorithm();
 			else
-				return NoClusterer.INSTANCE;
+				return getNoAlgorithm();
 		}
 
 		@Override
 		protected void store()
 		{
 			propertyPanel.store();
-			PropHandler.put(getTitle() + "-simple-yes", buttonYes.isSelected() ? "true" : "false");
+			PropHandler.put(propKeySimpleViewYesSelected, buttonYes.isSelected() ? "true" : "false");
 		}
 	}
 

@@ -13,47 +13,51 @@ import util.FileUtil.CSVFile;
 
 public class ValueFileCache
 {
-
-	public static List<String[]> readCacheString(String cacheFile)
+	public static List<String[]> readCacheString(String cacheFile, int expectedSize)
 	{
-		CSVFile file = FileUtil.readCSV(cacheFile);
+		CSVFile file = FileUtil.readCSV(cacheFile, expectedSize);
 		if (file == null)
 			throw new Error("could not read csv");
 		return file.content;
 	}
 
-	public static List<Double[]> readCacheDouble(String cacheFile)
+	public static List<Double[]> readCacheDouble(String cacheFile, int expectedSize)
 	{
 		List<Double[]> d = new ArrayList<Double[]>();
-		for (String[] strings : readCacheString(cacheFile))
+		for (String[] strings : readCacheString(cacheFile, expectedSize))
 			d.add(ArrayUtil.parse(strings));
 		return d;
 	}
 
 	public static List<Integer[]> readCacheInteger(String cacheFile)
 	{
+		return readCacheInteger(cacheFile, -1);
+	}
+
+	public static List<Integer[]> readCacheInteger(String cacheFile, int expectedSize)
+	{
 		List<Integer[]> d = new ArrayList<Integer[]>();
-		for (String[] strings : readCacheString(cacheFile))
+		for (String[] strings : readCacheString(cacheFile, expectedSize))
 			d.add(ArrayUtil.parseIntegers(strings));
 		return d;
 	}
 
-	public static List<Integer> readCacheInteger2(String cacheFile)
+	public static List<Integer> readCacheInteger2(String cacheFile, int expectedSize)
 	{
-		return ArrayUtil.toList(readCacheInteger(cacheFile).get(0));
+		return ArrayUtil.toList(readCacheInteger(cacheFile, expectedSize).get(0));
 	}
 
-	private static List<Vector3f[]> readCachePosition(String cacheFile)
+	private static List<Vector3f[]> readCachePosition(String cacheFile, int expectedSize)
 	{
 		List<Vector3f[]> d = new ArrayList<Vector3f[]>();
-		for (String[] strings : readCacheString(cacheFile))
+		for (String[] strings : readCacheString(cacheFile, expectedSize))
 			d.add(Vector3fUtil.parseArray(strings));
 		return d;
 	}
 
-	public static List<Vector3f> readCachePosition2(String cacheFile)
+	public static List<Vector3f> readCachePosition2(String cacheFile, int expectedSize)
 	{
-		return ArrayUtil.toList(readCachePosition(cacheFile).get(0));
+		return ArrayUtil.toList(readCachePosition(cacheFile, expectedSize).get(0));
 	}
 
 	public static void writeCacheString(String cacheFile, String[] values)

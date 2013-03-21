@@ -139,9 +139,9 @@ public class StructuralFragmentSet extends FragmentPropertySet
 		}
 	}
 
-	private List<boolean[]> readFromFile(String file)
+	private List<boolean[]> readFromFile(String file, int expectedSize)
 	{
-		CSVFile f = FileUtil.readCSV(file);
+		CSVFile f = FileUtil.readCSV(file, expectedSize);
 		List<boolean[]> l = new ArrayList<boolean[]>();
 		for (String[] s : f.content)
 			l.add(ArrayUtil.parseBoolean(s));
@@ -189,7 +189,7 @@ public class StructuralFragmentSet extends FragmentPropertySet
 		if (Settings.CACHING_ENABLED && new File(smartsMatchFile).exists())
 		{
 			Settings.LOGGER.info("read cached matches from file: " + smartsMatchFile);
-			matches = readFromFile(smartsMatchFile);
+			matches = readFromFile(smartsMatchFile, dataset.numCompounds());
 		}
 		else
 		{

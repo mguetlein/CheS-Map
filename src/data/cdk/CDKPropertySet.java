@@ -145,7 +145,7 @@ public class CDKPropertySet implements MoleculePropertySet
 		if (Settings.CACHING_ENABLED && new File(cache).exists())
 		{
 			Settings.LOGGER.info("reading cdk props from: " + cache);
-			vv = ValueFileCache.readCacheDouble(cache);
+			vv = ValueFileCache.readCacheDouble(cache, mols.length);
 		}
 		else
 		{

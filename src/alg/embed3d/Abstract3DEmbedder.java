@@ -77,9 +77,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		if (Settings.CACHING_ENABLED && new File(embedFilename).exists() && new File(rSquareFilename).exists())
 		{
 			Settings.LOGGER.info("read cached embedding results from: " + embedFilename);
-			positions = ValueFileCache.readCachePosition2(embedFilename);
-			if (positions.size() == instances.size() + 1 && positions.get(positions.size() - 1) == null) // fix for old version
-				positions.remove(positions.size() - 1);
+			positions = ValueFileCache.readCachePosition2(embedFilename, instances.size());
 			Settings.LOGGER.info("read cached embedding rSquare from: " + rSquareFilename);
 			rSquare = DoubleUtil.parseDouble(FileUtil.readStringFromFile(rSquareFilename));
 		}

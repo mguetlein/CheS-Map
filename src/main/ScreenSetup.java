@@ -27,6 +27,8 @@ public class ScreenSetup
 			new Dimension(1200, 750), true, 20, true);
 	public static final ScreenSetup VIDEO = new ScreenSetup(new EmptyBorder(0, 0, 0, 0), new Dimension(1024, 768),
 			new Dimension(1024, 768), true, 12, false);
+	public static final ScreenSetup SMALL_SCREEN = new ScreenSetup(new EmptyBorder(0, 0, 0, 0),
+			new Dimension(824, 568), new Dimension(924, 668), false, 12, false);
 
 	public static ScreenSetup SETUP = DEFAULT;
 

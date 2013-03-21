@@ -15,27 +15,33 @@ public class AlignWizardPanel extends GenericWizardPanel
 {
 	boolean canProceed = false;
 
+	public AlignWizardPanel()
+	{
+		this(null);
+	}
+
 	public AlignWizardPanel(CheSMapperWizard w)
 	{
 		super(w);
 
-		for (Algorithm a : getAlgorithms())
-		{
-			if (a instanceof ManualAligner)
+		if (wizard != null)
+			for (Algorithm a : getAlgorithms())
 			{
-				for (Property p : a.getProperties())
+				if (a instanceof ManualAligner)
 				{
-					p.addPropertyChangeListener(new PropertyChangeListener()
+					for (Property p : a.getProperties())
 					{
-						@Override
-						public void propertyChange(PropertyChangeEvent evt)
+						p.addPropertyChangeListener(new PropertyChangeListener()
 						{
-							wizard.update();
-						}
-					});
+							@Override
+							public void propertyChange(PropertyChangeEvent evt)
+							{
+								wizard.update();
+							}
+						});
+					}
 				}
 			}
-		}
 	}
 
 	@Override

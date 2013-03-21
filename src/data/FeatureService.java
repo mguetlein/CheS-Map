@@ -237,16 +237,22 @@ public class FeatureService
 		}
 	}
 
-	public static boolean guessNominalFeatureType(int numDistinctFeatures, int datasetSize)
+	public static boolean guessNominalFeatureType(int numDistinctFeatures, int datasetSize, boolean numeric)
 	{
-		//		if (numDistinctFeatures <= 5)
-		//			return true;
-		//		if (datasetSize > 200 && numDistinctFeatures <= 10)
-		//			return true;
-		//		if (datasetSize > 1000 && numDistinctFeatures <= 20)
-		//			return true;
-		if (numDistinctFeatures <= 2)
-			return true;
+		if (numeric)
+		{
+			if (numDistinctFeatures <= 2)
+				return true;
+		}
+		else
+		{
+			if (numDistinctFeatures <= 5)
+				return true;
+			if (datasetSize > 200 && numDistinctFeatures <= 10)
+				return true;
+			if (datasetSize > 1000 && numDistinctFeatures <= 20)
+				return true;
+		}
 		return false;
 	}
 
@@ -473,7 +479,7 @@ public class FeatureService
 					// numericSdfProperties.get(f).add(p);
 					p.setTypeAllowed(Type.NOMINAL, true);
 					p.setTypeAllowed(Type.NUMERIC, true);
-					if (guessNominalFeatureType(numDistinct, stringValues.length))
+					if (guessNominalFeatureType(numDistinct, stringValues.length, true))
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(Type.NUMERIC);
@@ -482,7 +488,7 @@ public class FeatureService
 				{
 					p.setTypeAllowed(Type.NOMINAL, true);
 					p.setTypeAllowed(Type.NUMERIC, false);
-					if (guessNominalFeatureType(numDistinct, stringValues.length))
+					if (guessNominalFeatureType(numDistinct, stringValues.length, false))
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(null);
@@ -537,7 +543,7 @@ public class FeatureService
 			if (new File(smilesFile).exists())
 			{
 				Settings.LOGGER.info("read cached smiles from: " + smilesFile);
-				smiles = ValueFileCache.readCacheString(smilesFile).get(0);
+				smiles = ValueFileCache.readCacheString(smilesFile, dataset.numCompounds()).get(0);
 			}
 			else
 			{

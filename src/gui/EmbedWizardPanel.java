@@ -30,6 +30,11 @@ public class EmbedWizardPanel extends GenericWizardPanel
 	ThreeDEmbedder embedder;
 	boolean canProceed = false;
 
+	public EmbedWizardPanel()
+	{
+		this(null);
+	}
+
 	public EmbedWizardPanel(CheSMapperWizard w)
 	{
 		super(w);
@@ -71,12 +76,15 @@ public class EmbedWizardPanel extends GenericWizardPanel
 
 	class SimpleEmbedPanel extends SimplePanel
 	{
-		JRadioButton buttonYes = new JRadioButton(
-				"Yes (recommended, applies '" + getDefaultEmbedder().getName() + "')", true);
+		JRadioButton buttonYes = new JRadioButton("Yes (recommended, applies '" + getYesAlgorithm().getName() + "')",
+				true);
 		JRadioButton buttonNo = new JRadioButton("No");
 
 		public SimpleEmbedPanel()
 		{
+			if (wizard == null)
+				return;
+
 			ButtonGroup group = new ButtonGroup();
 			group.add(buttonYes);
 			group.add(buttonNo);
@@ -103,7 +111,7 @@ public class EmbedWizardPanel extends GenericWizardPanel
 			setLayout(new BorderLayout());
 			add(b.getPanel());
 
-			String simpleSelected = PropHandler.get(getTitle() + "-simple-yes");
+			String simpleSelected = PropHandler.get(propKeySimpleViewYesSelected);
 			if (simpleSelected != null && simpleSelected.equals("false"))
 				buttonNo.setSelected(true);
 		}
@@ -114,18 +122,30 @@ public class EmbedWizardPanel extends GenericWizardPanel
 		}
 
 		@Override
+		protected Algorithm getNoAlgorithm()
+		{
+			return Random3DEmbedder.INSTANCE;
+		}
+
+		@Override
+		protected Algorithm getYesAlgorithm()
+		{
+			return DEFAULT;
+		}
+
+		@Override
 		protected Algorithm getAlgorithm()
 		{
 			if (buttonYes.isSelected())
-				return getDefaultEmbedder();
+				return getYesAlgorithm();
 			else
-				return Random3DEmbedder.INSTANCE;
+				return getNoAlgorithm();
 		}
 
 		@Override
 		protected void store()
 		{
-			PropHandler.put(getTitle() + "-simple-yes", buttonYes.isSelected() ? "true" : "false");
+			PropHandler.put(propKeySimpleViewYesSelected, buttonYes.isSelected() ? "true" : "false");
 		}
 	}
 
@@ -137,8 +157,4 @@ public class EmbedWizardPanel extends GenericWizardPanel
 
 	private static ThreeDEmbedder DEFAULT = WekaPCA3DEmbedder.INSTANCE_NO_PROBS;
 
-	public static ThreeDEmbedder getDefaultEmbedder()
-	{
-		return DEFAULT;
-	}
 }

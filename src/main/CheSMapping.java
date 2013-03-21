@@ -7,11 +7,9 @@ import javax.vecmath.Vector3f;
 
 import util.ListUtil;
 import util.StringUtil;
-import alg.DatasetProvider;
 import alg.FeatureComputer;
 import alg.align3d.NoAligner;
 import alg.align3d.ThreeDAligner;
-import alg.build3d.OpenBabel3DBuilder;
 import alg.build3d.ThreeDBuilder;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
@@ -26,11 +24,12 @@ import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.MolecularPropertyOwner;
 import dataInterface.MoleculeProperty;
+import dataInterface.MoleculePropertySet;
 import dataInterface.MoleculePropertyUtil;
 
 public class CheSMapping
 {
-	DatasetProvider datasetProvider;
+	DatasetFile dataset;
 	FeatureComputer featureComputer;
 	DatasetClusterer datasetClusterer;
 	ThreeDBuilder threeDGenerator;
@@ -41,33 +40,11 @@ public class CheSMapping
 	NoClusterer noClusterer = NoClusterer.INSTANCE;
 	ThreeDAligner noAligner = NoAligner.INSTANCE;
 
-	public static CheSMapping testWorkflow()
+	public CheSMapping(DatasetFile dataset, MoleculePropertySet features[], DatasetClusterer datasetClusterer,
+			ThreeDBuilder threeDGenerator, ThreeDEmbedder threeDEmbedder, ThreeDAligner threeDAligner)
 	{
-		DatasetProvider datasetProvider = new DatasetProvider()
-		{
-			@Override
-			public DatasetFile getDatasetFile()
-			{
-				return null;
-			}
-		};
-		FeatureComputer featureComputer = new DefaultFeatureComputer();
-		//DatasetClusterer datasetClusterer = new KMeansClusterer();
-		DatasetClusterer datasetClusterer = null; //mew StructuralClusterer();
-		ThreeDBuilder threeDGenerator = OpenBabel3DBuilder.INSTANCE;
-		ThreeDEmbedder threeDEmbedder = Random3DEmbedder.INSTANCE;
-		ThreeDAligner threeDAligner = null;
-
-		return new CheSMapping(datasetProvider, featureComputer, datasetClusterer, threeDGenerator, threeDEmbedder,
-				threeDAligner);
-	}
-
-	public CheSMapping(DatasetProvider datasetProvider, FeatureComputer featureComputer,
-			DatasetClusterer datasetClusterer, ThreeDBuilder threeDGenerator, ThreeDEmbedder threeDEmbedder,
-			ThreeDAligner threeDAligner)
-	{
-		this.datasetProvider = datasetProvider;
-		this.featureComputer = featureComputer;
+		this.dataset = dataset;
+		this.featureComputer = new DefaultFeatureComputer(features);
 		this.datasetClusterer = datasetClusterer;
 		this.threeDGenerator = threeDGenerator;
 		this.threeDEmbedder = threeDEmbedder;
@@ -92,8 +69,6 @@ public class CheSMapping
 			{
 				try
 				{
-					DatasetFile dataset = datasetProvider.getDatasetFile();
-
 					TaskProvider.update(10, "Compute 3d compound structures");
 					threeDGenerator.build3D(dataset);
 					dataset.setSDFPath(threeDGenerator.get3DSDFFile(), true);
@@ -332,6 +307,11 @@ public class CheSMapping
 			clustering.addSubstructureSmartsTypes(align.getSubstructureSmartsType());
 		for (int i = 0; i < clustering.getNumClusters(); i++)
 			((ClusterDataImpl) clustering.getCluster(i)).setAlignedFilename(align.getAlginedClusterFile(i));
+	}
+
+	public DatasetFile getDatasetFile()
+	{
+		return dataset;
 	}
 
 }

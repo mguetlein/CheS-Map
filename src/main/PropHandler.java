@@ -183,4 +183,9 @@ public class PropHandler
 		}
 	}
 
+	public static boolean containsKey(String prop)
+	{
+		return INSTANCE.props.containsKey(prop);
+	}
+
 }

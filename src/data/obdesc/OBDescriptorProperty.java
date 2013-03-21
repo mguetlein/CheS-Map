@@ -125,7 +125,7 @@ public class OBDescriptorProperty extends AbstractMoleculeProperty implements Mo
 		if (Settings.CACHING_ENABLED && new File(cache).exists())
 		{
 			Settings.LOGGER.info("reading ob descriptors from: " + cache);
-			vals = ValueFileCache.readCacheString(cache).get(0);
+			vals = ValueFileCache.readCacheString(cache, dataset.numCompounds()).get(0);
 		}
 		else
 		{
@@ -170,7 +170,8 @@ public class OBDescriptorProperty extends AbstractMoleculeProperty implements Mo
 		}
 		if (getType() == null)
 		{
-			if (isTypeAllowed(Type.NOMINAL) && FeatureService.guessNominalFeatureType(numDistinct, vals.length))
+			if (isTypeAllowed(Type.NOMINAL)
+					&& FeatureService.guessNominalFeatureType(numDistinct, vals.length, isTypeAllowed(Type.NUMERIC)))
 				setType(Type.NOMINAL);
 			else if (isTypeAllowed(Type.NUMERIC))
 				setType(Type.NUMERIC);
