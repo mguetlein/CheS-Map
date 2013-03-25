@@ -18,25 +18,11 @@ import main.Settings;
 import util.FileUtil;
 import util.ScreenUtil;
 import util.SwingUtil;
-import weka.gui.GenericObjectEditor;
 import workflow.MappingWorkflow;
 import data.ClusteringData;
 
 public class CheSMapperWizard extends WizardDialog
 {
-	static
-	{
-		Thread th = new Thread(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				new GenericObjectEditor();
-			}
-		});
-		th.start();
-	}
-
 	DatasetWizardPanel dataset;
 	Build3DWizardPanel create3D;
 	FeatureWizardPanel features;

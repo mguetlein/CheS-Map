@@ -20,6 +20,7 @@ import weka.clusterers.Clusterer;
 import weka.clusterers.RandomizableClusterer;
 import weka.clusterers.SimpleKMeans;
 import weka.core.Capabilities;
+import weka.core.DenseInstance;
 import weka.core.DistanceFunction;
 import weka.core.EuclideanDistance;
 import weka.core.Instance;
@@ -60,7 +61,7 @@ public class CascadeSimpleKMeans extends RandomizableClusterer implements Cluste
 		rep.setInputFormat(data);
 		data = Filter.useFilter(data, rep);
 
-		meanInstance = new Instance(data.numAttributes());
+		meanInstance = new DenseInstance(data.numAttributes());
 		for (int i = 0; i < data.numAttributes(); i++)
 			meanInstance.setValue(i, data.meanOrMode(i));
 		numInstances = data.numInstances();
