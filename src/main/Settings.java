@@ -139,6 +139,34 @@ public class Settings
 		}
 	}
 
+	public static String BASE_DIR = System.getProperty("user.home") + File.separator + ".ches-mapper";
+	public static String STRUCTURAL_FRAGMENT_DIR = BASE_DIR + File.separator + "structural_fragments";
+	public static String MODIFIED_BABEL_DATA_DIR = BASE_DIR + File.separator + "babel_data";
+	public static String R_LIB_DIR = BASE_DIR + File.separator + "r_libs";
+
+	public static final Logger LOGGER;
+
+	static
+	{
+		for (String d : new String[] { BASE_DIR, STRUCTURAL_FRAGMENT_DIR, MODIFIED_BABEL_DATA_DIR, R_LIB_DIR })
+		{
+			File dir = new File(d);
+			if (!dir.exists())
+				dir.mkdir();
+			if (!dir.exists())
+				throw new Error("Could not create '" + d + "'");
+		}
+		try
+		{
+			LOGGER = new Logger(BASE_DIR + File.separator + "ches-mapper.log", true);
+			LOGGER.info("logger initialized ('" + BASE_DIR + File.separator + "ches-mapper.log" + "')");
+		}
+		catch (RuntimeException e)
+		{
+			throw new Error("cannot init logger", e);
+		}
+	}
+
 	public static util.Version VERSION = null;
 	static
 	{
@@ -177,34 +205,6 @@ public class Settings
 	public static String SMSD_STRING = "The Small Molecule Subgraph Detector (SMSD) (see http://www.ebi.ac.uk/thornton-srv/software/SMSD, integrated into CDK)";
 
 	// ------------------ TMP/RESULT-FILE SUPPORT ---------------------------------------------
-
-	public static String BASE_DIR = System.getProperty("user.home") + File.separator + ".ches-mapper";
-	public static String STRUCTURAL_FRAGMENT_DIR = BASE_DIR + File.separator + "structural_fragments";
-	public static String MODIFIED_BABEL_DATA_DIR = BASE_DIR + File.separator + "babel_data";
-	public static String R_LIB_DIR = BASE_DIR + File.separator + "r_libs";
-
-	public static final Logger LOGGER;
-
-	static
-	{
-		for (String d : new String[] { BASE_DIR, STRUCTURAL_FRAGMENT_DIR, MODIFIED_BABEL_DATA_DIR, R_LIB_DIR })
-		{
-			File dir = new File(d);
-			if (!dir.exists())
-				dir.mkdir();
-			if (!dir.exists())
-				throw new Error("Could not create '" + d + "'");
-		}
-		try
-		{
-			LOGGER = new Logger(BASE_DIR + File.separator + "ches-mapper.log", true);
-			LOGGER.info("logger initialized ('" + BASE_DIR + File.separator + "ches-mapper.log" + "')");
-		}
-		catch (RuntimeException e)
-		{
-			throw new Error("cannot init logger", e);
-		}
-	}
 
 	public static String[] getFragmentFiles()
 	{

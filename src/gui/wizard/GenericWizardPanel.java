@@ -35,7 +35,7 @@ import javax.swing.event.ListSelectionListener;
 import main.BinHandler;
 import main.PropHandler;
 import util.WizardComponentFactory;
-import workflow.AlgorithmWorkflowProvider;
+import workflow.AlgorithmMappingWorkflowProvider;
 import alg.Algorithm;
 import alg.cluster.DatasetClusterer;
 
@@ -45,7 +45,7 @@ import com.jgoodies.forms.layout.Sizes;
 
 import data.DatasetFile;
 
-public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel implements AlgorithmWorkflowProvider
+public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel implements AlgorithmMappingWorkflowProvider
 {
 	DefaultListModel listModel;
 	JList list;
@@ -352,7 +352,7 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel imple
 	}
 
 	@Override
-	public void exportAlgorithmToWorkflow(Algorithm algorithm, Properties props)
+	public void exportAlgorithmToMappingWorkflow(Algorithm algorithm, Properties props)
 	{
 		if (hasSimpleView()
 				&& (algorithm == null || algorithm == simpleView.getYesAlgorithm() || algorithm == simpleView
@@ -386,7 +386,7 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel imple
 	}
 
 	@Override
-	public Algorithm getAlgorithmFromWorkflow(Properties props, boolean storeToSettings)
+	public Algorithm getAlgorithmFromMappingWorkflow(Properties props, boolean storeToSettings)
 	{
 		Algorithm alg = null;
 		if (hasSimpleView() && isSimpleSelectedFromProps(props, storeToSettings))
@@ -398,6 +398,8 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel imple
 		}
 		else
 			alg = getAlgorithmByName((String) props.get(propKeyMethod));
+		if (alg == null)
+			alg = getAlgorithms()[0];
 
 		if (alg.getProperties() != null)
 			for (Property p : alg.getProperties())
@@ -412,7 +414,7 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel imple
 		return alg;
 	}
 
-	public void exportSettingsToWorkflow(Properties props)
+	public void exportSettingsToMappingWorkflow(Properties props)
 	{
 		if (PropHandler.containsKey(propKeySimpleViewSelected))
 			props.put(propKeySimpleViewSelected, PropHandler.get(propKeySimpleViewSelected));
@@ -420,7 +422,7 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel imple
 			props.put(propKeySimpleViewYesSelected, PropHandler.get(propKeySimpleViewYesSelected));
 		if (PropHandler.containsKey(propKeyMethod))
 			props.put(propKeyMethod, PropHandler.get(propKeyMethod));
-		Algorithm algorithm = getAlgorithmFromWorkflow(PropHandler.getProperties(), false);
+		Algorithm algorithm = getAlgorithmFromMappingWorkflow(PropHandler.getProperties(), false);
 		if (algorithm.getProperties() != null)
 			for (Property p : algorithm.getProperties())
 				p.put(props);

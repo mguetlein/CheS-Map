@@ -19,7 +19,7 @@ import util.FileUtil;
 import util.ScreenUtil;
 import util.SwingUtil;
 import weka.gui.GenericObjectEditor;
-import workflow.Workflow;
+import workflow.MappingWorkflow;
 import data.ClusteringData;
 
 public class CheSMapperWizard extends WizardDialog
@@ -137,12 +137,12 @@ public class CheSMapperWizard extends WizardDialog
 			@Override
 			public boolean accept(File f)
 			{
-				return FileUtil.getFilenamExtension(f.getAbsolutePath()).matches("(?i)ches");
+				return f.isDirectory() || FileUtil.getFilenamExtension(f.getAbsolutePath()).matches("(?i)ches");
 			}
 		});
 		chooser.showOpenDialog(this);
 		final File f = chooser.getSelectedFile();
-		if (f != null)
+		if (f != null && FileUtil.getFilenamExtension(f.getAbsolutePath()).matches("(?i)ches"))
 		{
 			PropHandler.put("workflow-import-dir", f.getParent());
 			PropHandler.storeProperties();
@@ -167,7 +167,7 @@ public class CheSMapperWizard extends WizardDialog
 					public void run()
 					{
 						// do not do this in AWT event thread, this will cause errors
-						chesMapping = Workflow.createMappingFromWorkflow(fProps, f.getParent());
+						chesMapping = MappingWorkflow.createMappingFromMappingWorkflow(fProps, f.getParent());
 						if (chesMapping != null)
 							setVisible(false);
 					}

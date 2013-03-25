@@ -1,6 +1,7 @@
 package data;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import dataInterface.ClusterData;
@@ -20,6 +21,8 @@ public class ClusteringData
 
 	private List<ClusterData> clusters = new ArrayList<ClusterData>();
 	private List<CompoundData> compounds = new ArrayList<CompoundData>();
+
+	private HashMap<MoleculeProperty, Integer> numDistinct = new HashMap<MoleculeProperty, Integer>();
 
 	private int numMultiClusteredCompounds = -1;
 
@@ -96,9 +99,10 @@ public class ClusteringData
 			return compounds.size();
 	}
 
-	public void addProperty(MoleculeProperty property)
+	public void addProperty(MoleculeProperty property, int numDistinct)
 	{
 		properties.add(property);
+		this.numDistinct.put(property, numDistinct);
 	}
 
 	public List<MoleculeProperty> getProperties()
@@ -106,14 +110,20 @@ public class ClusteringData
 		return properties;
 	}
 
-	public void addFeature(MoleculeProperty feature)
+	public void addFeature(MoleculeProperty feature, int numDistinct)
 	{
 		features.add(feature);
+		this.numDistinct.put(feature, numDistinct);
 	}
 
 	public List<MoleculeProperty> getFeatures()
 	{
 		return features;
+	}
+
+	public int numDistinctValues(MoleculeProperty prop)
+	{
+		return numDistinct.get(prop);
 	}
 
 	public String getSDFFilename()

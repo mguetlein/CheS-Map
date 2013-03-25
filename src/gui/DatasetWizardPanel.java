@@ -39,7 +39,7 @@ import util.FileUtil;
 import util.ListUtil;
 import util.ThreadUtil;
 import util.VectorUtil;
-import workflow.DatasetWorkflowProvider;
+import workflow.DatasetMappingWorkflowProvider;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
@@ -48,7 +48,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import data.DatasetFile;
 import data.FeatureService.IllegalCompoundsException;
 
-public class DatasetWizardPanel extends WizardPanel implements DatasetWorkflowProvider
+public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWorkflowProvider
 {
 	JTextField textField;
 	JFileChooser chooser;
@@ -531,20 +531,20 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetWorkflowPr
 	}
 
 	@Override
-	public void exportDatasetToWorkflow(String datasetPath, Properties props)
+	public void exportDatasetToMappingWorkflow(String datasetPath, Properties props)
 	{
 		load(datasetPath, true);
 		props.put(propKeyDataset, dataset.toString());
 	}
 
 	@Override
-	public void exportSettingsToWorkflow(Properties props)
+	public void exportSettingsToMappingWorkflow(Properties props)
 	{
 		props.put(propKeyDataset, VectorUtil.fromCSVString(PropHandler.get(propKeyDataset)).get(0));
 	}
 
 	@Override
-	public DatasetFile getDatasetFromWorkflow(Properties props, boolean storeToSettings, String alternateDatasetDir)
+	public DatasetFile getDatasetFromMappingWorkflow(Properties props, boolean storeToSettings, String alternateDatasetDir)
 	{
 		DatasetFile df = DatasetFile.fromString(VectorUtil.fromCSVString((String) props.get(propKeyDataset)).get(0));
 		if (df.isLocal() && !new File(df.getLocalPath()).exists())

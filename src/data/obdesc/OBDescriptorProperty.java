@@ -4,7 +4,6 @@ import gui.binloc.Binary;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -13,7 +12,6 @@ import main.Settings;
 import main.TaskProvider;
 import util.ArrayUtil;
 import util.ListUtil;
-import util.ToStringComparator;
 import util.ValueFileCache;
 import data.DatasetFile;
 import data.FeatureService;
@@ -137,16 +135,7 @@ public class OBDescriptorProperty extends AbstractMoleculeProperty implements Mo
 		int numDistinct = -1;
 		if (isTypeAllowed(Type.NOMINAL))
 		{
-			Set<String> distinctValues = ArrayUtil.getDistinctValues(vals);
-			if (distinctValues.contains(null))
-				distinctValues.remove(null);
-			numDistinct = distinctValues.size();
-			String dom[] = new String[distinctValues.size()];
-			distinctValues.toArray(dom);
-			Arrays.sort(dom, new ToStringComparator());
-
 			setStringValues(dataset, vals);
-			setNominalDomain(dom);
 		}
 		if (isTypeAllowed(Type.NUMERIC))
 		{

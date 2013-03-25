@@ -43,7 +43,7 @@ import util.ImageLoader;
 import util.MessageUtil;
 import util.VectorUtil;
 import util.WizardComponentFactory;
-import workflow.FeatureWorkflowProvider;
+import workflow.FeatureMappingWorkflowProvider;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
@@ -62,7 +62,7 @@ import dataInterface.MoleculeProperty.Type;
 import dataInterface.MoleculePropertySet;
 import dataInterface.MoleculePropertySetUtil;
 
-public class FeatureWizardPanel extends WizardPanel implements FeatureWorkflowProvider
+public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWorkflowProvider
 {
 	Selector<MoleculePropertySet> selector;
 	JLabel numFeaturesLabel;
@@ -572,7 +572,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureWorkflowPr
 		selector.addElements(STRUCTURAL_FRAGMENTS);
 		selector.addElementList(STRUCTURAL_FRAGMENTS, StructuralFragments.instance.getSets());
 
-		for (MoleculePropertySet m : getFeaturesFromWorkflow(PropHandler.getProperties(), false))
+		for (MoleculePropertySet m : getFeaturesFromMappingWorkflow(PropHandler.getProperties(), false))
 			selector.setSelected(m);
 
 		selector.setSelected(selected);
@@ -582,7 +582,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureWorkflowPr
 	}
 
 	@Override
-	public MoleculePropertySet[] getFeaturesFromWorkflow(Properties props, boolean storeToSettings)
+	public MoleculePropertySet[] getFeaturesFromMappingWorkflow(Properties props, boolean storeToSettings)
 	{
 		for (Property p : StructuralFragmentProperties.getProperties())
 			p.loadOrResetToDefault(props);
@@ -726,7 +726,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureWorkflowPr
 	}
 
 	@Override
-	public void exportFeaturesToWorkflow(String[] featureNames, Properties props)
+	public void exportFeaturesToMappingWorkflow(String[] featureNames, Properties props)
 	{
 		IntegratedProperty[] availableIntegratedProps = dataset.getIntegratedProperties(false);
 		IntegratedProperty[] selectedIntegratedProps = new IntegratedProperty[featureNames.length];
@@ -755,7 +755,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureWorkflowPr
 	}
 
 	@Override
-	public void exportSettingsToWorkflow(Properties props)
+	public void exportSettingsToMappingWorkflow(Properties props)
 	{
 		for (String propKey : allPropKeys)
 			if (PropHandler.containsKey(propKey))

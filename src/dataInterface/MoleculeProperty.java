@@ -24,8 +24,6 @@ public interface MoleculeProperty
 
 	public String[] getNominalDomain();
 
-	public void setNominalDomain(String domain[]);
-
 	public boolean isSmartsProperty();
 
 	public String getSmarts();
@@ -47,5 +45,7 @@ public interface MoleculeProperty
 	public String getUniqueName();
 
 	public int numMissingValues(DatasetFile dataset);
+
+	public int numDistinctValues(DatasetFile dataset);
 
 }

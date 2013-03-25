@@ -1,12 +1,15 @@
 package dataInterface;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import util.ArrayUtil;
 import util.DoubleArraySummary;
+import util.ToStringComparator;
 import data.DatasetFile;
 import data.fragments.MatchEngine;
 
@@ -115,12 +118,6 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	}
 
 	@Override
-	public void setNominalDomain(String domain[])
-	{
-		this.domain = domain;
-	}
-
-	@Override
 	public boolean isSmartsProperty()
 	{
 		return smarts != null && smarts.length() > 0;
@@ -154,6 +151,7 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	private HashMap<DatasetFile, Double[]> normalizedLogValues = new HashMap<DatasetFile, Double[]>();
 	private HashMap<DatasetFile, Double> median = new HashMap<DatasetFile, Double>();
 	private HashMap<DatasetFile, Integer> missing = new HashMap<DatasetFile, Integer>();
+	private HashMap<DatasetFile, Integer> distinct = new HashMap<DatasetFile, Integer>();
 
 	public boolean isValuesSet(DatasetFile dataset)
 	{
@@ -171,6 +169,7 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 			throw new IllegalStateException();
 		//		Double normalized[] = ArrayUtil.normalizeObjectArray(vals);
 		setMissing(dataset, vals);
+		setDomainAndNumDistinct(dataset, vals);
 		stringValues.put(dataset, vals);
 		//		normalizedValues.put(dataset, normalized);
 	}
@@ -188,6 +187,28 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 		normalizedValues.put(dataset, normalized);
 		normalizedLogValues.put(dataset, normalizedLog);
 		median.put(dataset, DoubleArraySummary.create(normalized).getMedian());
+	}
+
+	private void setDomainAndNumDistinct(DatasetFile dataset, String values[])
+	{
+		Set<String> distinctValues = ArrayUtil.getDistinctValues(values);
+		if (distinctValues.contains(null))
+			distinctValues.remove(null);
+		int numDistinct = distinctValues.size();
+		String dom[] = new String[distinctValues.size()];
+		distinctValues.toArray(dom);
+		Arrays.sort(dom, new ToStringComparator());
+		domain = dom;
+		distinct.put(dataset, numDistinct);
+	}
+
+	@Override
+	public int numDistinctValues(DatasetFile dataset)
+	{
+		if (distinct.containsKey(dataset))
+			return distinct.get(dataset);
+		else
+			return -1;
 	}
 
 	private void setMissing(DatasetFile dataset, Object values[])

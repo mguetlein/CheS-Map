@@ -20,7 +20,6 @@ public abstract class AbstractFragmentProperty extends AbstractMoleculeProperty
 		setSmartsMatchEngine(matchEngine);
 		setTypeAllowed(Type.NUMERIC, false);
 		setType(Type.NOMINAL);
-		setNominalDomain(new String[] { "0", "1" });
 	}
 
 	private HashMap<DatasetFile, Integer> freq = new HashMap<DatasetFile, Integer>();

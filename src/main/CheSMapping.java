@@ -83,9 +83,9 @@ public class CheSMapping
 					TaskProvider.update(20, "Compute features");
 					featureComputer.computeFeatures(dataset);
 					for (MoleculeProperty f : featureComputer.getFeatures())
-						clustering.addFeature(f);
+						clustering.addFeature(f, f.numDistinctValues(dataset));
 					for (MoleculeProperty p : featureComputer.getProperties())
-						clustering.addProperty(p);
+						clustering.addProperty(p, p.numDistinctValues(dataset));
 					for (CompoundData c : featureComputer.getCompounds())
 						clustering.addCompound(c);
 

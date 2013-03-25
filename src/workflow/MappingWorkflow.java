@@ -28,9 +28,9 @@ import alg.embed3d.ThreeDEmbedder;
 import data.DatasetFile;
 import dataInterface.MoleculePropertySet;
 
-public class Workflow
+public class MappingWorkflow
 {
-	public static void exportWorkflowToFile(Properties workflow)
+	public static void exportMappingWorkflowToFile(Properties workflowMappingProps)
 	{
 		String dir = PropHandler.get("workflow-export-dir");
 		if (dir == null)
@@ -53,12 +53,19 @@ public class Workflow
 							"Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION)
 				return;
 		}
+		exportMappingWorkflowToFile(workflowMappingProps, dest);
+		PropHandler.put("workflow-export-dir", FileUtil.getParent(dest));
+		PropHandler.storeProperties();
+	}
+
+	public static void exportMappingWorkflowToFile(Properties workflowMappingProps, String outfile)
+	{
 		try
 		{
-			BufferedWriter writer = new BufferedWriter(new FileWriter(new File(dest)));
+			BufferedWriter writer = new BufferedWriter(new FileWriter(new File(outfile)));
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			BufferedOutputStream out = new BufferedOutputStream(baos);
-			workflow.store(out, "---No Comment---");
+			workflowMappingProps.store(out, "---No Comment---");
 			out.close();
 			baos.close();
 			String pStr = baos.toString();
@@ -69,55 +76,60 @@ public class Workflow
 		{
 			e.printStackTrace();
 		}
-		PropHandler.put("workflow-export-dir", FileUtil.getParent(dest));
-		PropHandler.storeProperties();
 	}
 
-	public static Properties createWorkflow(String file, String[] featureNames, DatasetClusterer clusterer)
+	public static Properties createMappingWorkflow(String datasetFile, String[] featureNames, DatasetClusterer clusterer)
 	{
 		Properties props = new Properties();
 
 		DatasetWizardPanel datasetProvider = new DatasetWizardPanel();
-		datasetProvider.exportDatasetToWorkflow(file, props);
+		datasetProvider.exportDatasetToMappingWorkflow(datasetFile, props);
 
 		FeatureWizardPanel features = new FeatureWizardPanel();
 		features.updateIntegratedFeatures(datasetProvider.getDatasetFile());
-		features.exportFeaturesToWorkflow(featureNames, props);
+		features.exportFeaturesToMappingWorkflow(featureNames, props);
 
 		ClusterWizardPanel cluster = new ClusterWizardPanel();
-		cluster.exportAlgorithmToWorkflow(clusterer, props);
+		cluster.exportAlgorithmToMappingWorkflow(clusterer, props);
 
 		return props;
 	}
 
-	public static Properties exportWorkflow()
+	public static Properties exportSettingsToMappingWorkflow()
 	{
 		Properties props = new Properties();
-		for (WorkflowProvider p : new WorkflowProvider[] { new DatasetWizardPanel(), new Build3DWizardPanel(),
-				new FeatureWizardPanel(), new ClusterWizardPanel(), new EmbedWizardPanel(), new AlignWizardPanel() })
-			p.exportSettingsToWorkflow(props);
+		for (MappingWorkflowProvider p : new MappingWorkflowProvider[] { new DatasetWizardPanel(),
+				new Build3DWizardPanel(), new FeatureWizardPanel(), new ClusterWizardPanel(), new EmbedWizardPanel(),
+				new AlignWizardPanel() })
+			p.exportSettingsToMappingWorkflow(props);
 		return props;
 	}
 
-	public static CheSMapping createMappingFromWorkflow(Properties props, String alternateDatasetDir)
+	public static CheSMapping createMappingFromMappingWorkflow(Properties workflowMappingProps,
+			String alternateDatasetDir)
 	{
-		DatasetFile dataset = new DatasetWizardPanel().getDatasetFromWorkflow(props, true, alternateDatasetDir);
+		DatasetFile dataset = new DatasetWizardPanel().getDatasetFromMappingWorkflow(workflowMappingProps, true,
+				alternateDatasetDir);
 		if (dataset == null)
 			return null;
-		ThreeDBuilder builder = (ThreeDBuilder) new Build3DWizardPanel().getAlgorithmFromWorkflow(props, true);
+		ThreeDBuilder builder = (ThreeDBuilder) new Build3DWizardPanel().getAlgorithmFromMappingWorkflow(
+				workflowMappingProps, true);
 		FeatureWizardPanel f = new FeatureWizardPanel();
 		f.updateIntegratedFeatures(dataset);
-		MoleculePropertySet features[] = f.getFeaturesFromWorkflow(props, true);
-		DatasetClusterer clusterer = (DatasetClusterer) new ClusterWizardPanel().getAlgorithmFromWorkflow(props, true);
-		ThreeDEmbedder embedder = (ThreeDEmbedder) new EmbedWizardPanel().getAlgorithmFromWorkflow(props, true);
-		ThreeDAligner aligner = (ThreeDAligner) new AlignWizardPanel().getAlgorithmFromWorkflow(props, true);
+		MoleculePropertySet features[] = f.getFeaturesFromMappingWorkflow(workflowMappingProps, true);
+		DatasetClusterer clusterer = (DatasetClusterer) new ClusterWizardPanel().getAlgorithmFromMappingWorkflow(
+				workflowMappingProps, true);
+		ThreeDEmbedder embedder = (ThreeDEmbedder) new EmbedWizardPanel().getAlgorithmFromMappingWorkflow(
+				workflowMappingProps, true);
+		ThreeDAligner aligner = (ThreeDAligner) new AlignWizardPanel().getAlgorithmFromMappingWorkflow(
+				workflowMappingProps, true);
 		PropHandler.storeProperties();
 		return new CheSMapping(dataset, features, clusterer, builder, embedder, aligner);
 	}
 
 	public static void main(String args[])
 	{
-		exportWorkflowToFile(createWorkflow("/home/martin/data/caco2.sdf", new String[] { "logD", "rgyr", "HCPSA",
-				"fROTB" }, null));
+		exportMappingWorkflowToFile(createMappingWorkflow("/home/martin/data/caco2.sdf", new String[] { "logD", "rgyr",
+				"HCPSA", "fROTB" }, null));
 	}
 }

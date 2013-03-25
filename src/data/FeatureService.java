@@ -8,12 +8,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 
 import javax.vecmath.Point3d;
@@ -48,7 +46,6 @@ import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 
 import util.ArrayUtil;
 import util.StringUtil;
-import util.ToStringComparator;
 import util.ValueFileCache;
 import dataInterface.MoleculeProperty.Type;
 
@@ -464,14 +461,7 @@ public class FeatureService
 				String stringValues[] = new String[l.size()];
 				l.toArray(stringValues);
 
-				Set<String> distinctValues = ArrayUtil.getDistinctValues(stringValues);
-				if (distinctValues.contains(null))
-					distinctValues.remove(null);
-				int numDistinct = distinctValues.size();
-				String dom[] = new String[distinctValues.size()];
-				distinctValues.toArray(dom);
-				Arrays.sort(dom, new ToStringComparator());
-				p.setNominalDomain(dom);
+				p.setStringValues(dataset, stringValues);
 
 				Double doubleValues[] = ArrayUtil.parse(stringValues);
 				if (doubleValues != null)
@@ -479,7 +469,7 @@ public class FeatureService
 					// numericSdfProperties.get(f).add(p);
 					p.setTypeAllowed(Type.NOMINAL, true);
 					p.setTypeAllowed(Type.NUMERIC, true);
-					if (guessNominalFeatureType(numDistinct, stringValues.length, true))
+					if (guessNominalFeatureType(p.numDistinctValues(dataset), stringValues.length, true))
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(Type.NUMERIC);
@@ -488,12 +478,11 @@ public class FeatureService
 				{
 					p.setTypeAllowed(Type.NOMINAL, true);
 					p.setTypeAllowed(Type.NUMERIC, false);
-					if (guessNominalFeatureType(numDistinct, stringValues.length, false))
+					if (guessNominalFeatureType(p.numDistinctValues(dataset), stringValues.length, false))
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(null);
 				}
-				p.setStringValues(dataset, stringValues);
 				if (p.getType() == Type.NUMERIC || p.isTypeAllowed(Type.NUMERIC))
 					p.setDoubleValues(dataset, doubleValues);
 			}

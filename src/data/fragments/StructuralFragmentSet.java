@@ -225,7 +225,6 @@ public class StructuralFragmentSet extends FragmentPropertySet
 					m[i] = "0";
 			}
 			StructuralFragment fragment = fragments.get(StructuralFragmentProperties.getMatchEngine()).get(count);
-			fragment.setNominalDomain(new String[] { "0", "1" });
 			fragment.setFrequency(dataset, f);
 			fragment.setStringValues(dataset, m);
 			addFragment(fragment, dataset, StructuralFragmentProperties.getMatchEngine());
