@@ -24,6 +24,8 @@ public class CompoundDataImpl implements CompoundData
 
 	public CompoundDataImpl(String smiles, IMolecule m)
 	{
+		if (smiles == null || smiles.toString().length() == 0)
+			throw new IllegalArgumentException();
 		this.smiles = smiles;
 		this.iMolecule = m;
 	}

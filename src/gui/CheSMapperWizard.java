@@ -152,11 +152,20 @@ public class CheSMapperWizard extends WizardDialog
 					@Override
 					public void run()
 					{
-						// do not do this in AWT event thread, this will cause errors
-						chesMapping = MappingWorkflow.createMappingFromMappingWorkflow(fProps, f.getParent());
+						try
+						{
+							CheSMapperWizard.this.block("create worflow");
+							// do not do this in AWT event thread, this will cause errors
+							chesMapping = MappingWorkflow.createMappingFromMappingWorkflow(fProps, f.getParent());
+						}
+						finally
+						{
+							CheSMapperWizard.this.unblock("create worflow");
+						}
 						if (chesMapping != null)
-							setVisible(false);
+							CheSMapperWizard.this.setVisible(false);
 					}
+
 				});
 				th.start();
 			}

@@ -380,29 +380,31 @@ public class FeatureService
 			for (IAtomContainer iAtomContainer : list)
 			{
 				IMolecule mol = (IMolecule) iAtomContainer;
+				for (Object key : mol.getProperties().keySet())
+				{
+					IntegratedProperty p = IntegratedProperty.create(key.toString(), dataset);
+					integratedProperties.get(dataset).add(p);
+					if (key.toString().equals("STRUCTURE_SMILES"))
+						integratedSmiles.put(dataset, p);
+					else if (key.toString().equals("SMILES"))
+						integratedSmiles.put(dataset, p);
+				}
+				if (!TaskProvider.isRunning())
+					return;
+			}
+			for (IAtomContainer iAtomContainer : list)
+			{
+				IMolecule mol = (IMolecule) iAtomContainer;
 				if (!TaskProvider.isRunning())
 					return;
 				TaskProvider.verbose("Loaded " + (mCount + 1) + "/" + list.size() + " molecules");
 
 				Map<Object, Object> props = mol.getProperties();
-				for (Object key : props.keySet())
+				for (IntegratedProperty p : integratedProperties.get(dataset))
 				{
-					// if (ArrayUtil.indexOf(allCDKDescriptors, key.toString()) != -1)
-					// throw new IllegalStateException("sdf-property has equal name as cdk-descriptor: "
-					// + key.toString());
-					IntegratedProperty p = IntegratedProperty.create(key.toString(), dataset);
-					// add key to sdfProperties
-					integratedProperties.get(dataset).add(p);
-
-					if (key.toString().equals("STRUCTURE_SMILES"))
-						integratedSmiles.put(dataset, p);
-					else if (key.toString().equals("SMILES"))
-						integratedSmiles.put(dataset, p);
-
-					// add value to values
 					if (!propVals.containsKey(p))
 						propVals.put(p, new ArrayList<Object>());
-					propVals.get(p).add(props.get(key));
+					propVals.get(p).add(props.get(p.getName()));
 				}
 
 				mol = (IMolecule) AtomContainerManipulator.removeHydrogens(mol);
@@ -523,7 +525,18 @@ public class FeatureService
 	public String[] getSmiles(DatasetFile dataset)
 	{
 		if (integratedSmiles.containsKey(dataset))
-			return integratedSmiles.get(dataset).getStringValues(dataset);
+		{
+			String smiles[] = integratedSmiles.get(dataset).getStringValues(dataset);
+			SmilesGenerator sg = null;
+			for (int i = 0; i < smiles.length; i++)
+				if (smiles[i] == null || smiles[i].length() == 0)
+				{
+					if (sg == null)
+						sg = new SmilesGenerator();
+					smiles[i] = sg.createSMILES(dataset.getMolecules()[i]);
+				}
+			return smiles;
+		}
 		else if (!cdkSmiles.containsKey(dataset))
 		{
 			String smilesFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + dataset.getMD5()
