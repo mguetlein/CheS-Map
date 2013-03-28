@@ -19,7 +19,6 @@ import main.Settings;
 import util.FileUtil;
 import util.ScreenUtil;
 import util.SwingUtil;
-import util.ThreadUtil;
 import workflow.MappingWorkflow;
 import data.ClusteringData;
 
@@ -156,7 +155,14 @@ public class CheSMapperWizard extends WizardDialog
 					{
 						try
 						{
-							CheSMapperWizard.this.block("create worflow");
+							SwingUtilities.invokeLater(new Runnable()
+							{
+								@Override
+								public void run()
+								{
+									CheSMapperWizard.this.block("create worflow");
+								}
+							});
 							// do not do this in AWT event thread, this will cause errors
 							chesMapping = MappingWorkflow.createMappingFromMappingWorkflow(fProps, f.getParent());
 						}
@@ -177,7 +183,6 @@ public class CheSMapperWizard extends WizardDialog
 								@Override
 								public void run()
 								{
-									ThreadUtil.sleep(100); // avoid strange hangups
 									close(RETURN_VALUE_IMPORT);
 								}
 							});
