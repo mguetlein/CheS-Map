@@ -23,6 +23,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionEvent;
@@ -472,9 +473,15 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 												: "<br>(Make sure to start the dataset URL with 'http' if you want to load an external dataset.)")
 										+ "</html>");
 						TaskProvider.removeTask();
-						if (dataset == null)
-							buttonLoad.setEnabled(true);
-						block.unblock(f);
+						SwingUtilities.invokeLater(new Runnable()
+						{
+							public void run()
+							{
+								if (dataset == null)
+									buttonLoad.setEnabled(true);
+								block.unblock(f);
+							}
+						});
 					}
 				}
 			});
@@ -544,7 +551,8 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 	}
 
 	@Override
-	public DatasetFile getDatasetFromMappingWorkflow(Properties props, boolean storeToSettings, String alternateDatasetDir)
+	public DatasetFile getDatasetFromMappingWorkflow(Properties props, boolean storeToSettings,
+			String alternateDatasetDir)
 	{
 		DatasetFile df = DatasetFile.fromString(VectorUtil.fromCSVString((String) props.get(propKeyDataset)).get(0));
 		if (df.isLocal() && !new File(df.getLocalPath()).exists())

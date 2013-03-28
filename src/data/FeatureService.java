@@ -21,6 +21,7 @@ import main.TaskProvider;
 
 import org.openscience.cdk.AtomContainer;
 import org.openscience.cdk.ChemFile;
+import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.aromaticity.CDKHueckelAromaticityDetector;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.exception.NoSuchAtomTypeException;
@@ -41,11 +42,12 @@ import org.openscience.cdk.layout.StructureDiagramGenerator;
 import org.openscience.cdk.modeling.builder3d.ModelBuilder3D;
 import org.openscience.cdk.modeling.builder3d.TemplateHandler3D;
 import org.openscience.cdk.smiles.SmilesGenerator;
+import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 
 import util.ArrayUtil;
-import util.StringUtil;
+import util.FileUtil;
 import util.ValueFileCache;
 import dataInterface.MoleculeProperty.Type;
 
@@ -118,67 +120,64 @@ public class FeatureService
 	{
 		try
 		{
-			StringBuffer s = new StringBuffer();
-			BufferedReader b = new BufferedReader(new InputStreamReader(new FileInputStream(f)));
-			String ss = "";
-			boolean firstLine = true;
+			StringBuffer smilesInchiContent = new StringBuffer();
 			List<String> propNames = new ArrayList<String>();
 			HashMap<String, List<String>> props = new HashMap<String, List<String>>();
-			String sep = ",";
 			boolean smiles = false;
 			boolean inchi = false;
-			while ((ss = b.readLine()) != null)
+			FileUtil.CSVFile csvFile = FileUtil.readCSV(f.getAbsolutePath());
+			int rowIndex = 0;
+			for (String line[] : csvFile.content)
 			{
-				if (firstLine)
+				if (rowIndex == 0)
 				{
-					if (StringUtil.numOccurences(ss, ",") < StringUtil.numOccurences(ss, ";"))
-						sep = ";";
-
-					int i = 0;
-					for (String sss : ss.split(sep + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)"))
+					int columnIndex = 0;
+					for (String value : line)
 					{
-						sss = StringUtil.trimQuotes(sss);
-						if (i == 0)
+						if (columnIndex == 0)
 						{
-							if (sss.matches(".*(?i)smiles.*"))
+							if (value.matches(".*(?i)smiles.*"))
 								smiles = true;
-							else if (sss.matches(".*(?i)inchi.*"))
+							else if (value.matches(".*(?i)inchi.*"))
 								inchi = true;
 							else
 								throw new IllegalArgumentException(
-										"first argument in csv must be 'smiles' or 'inchi' (is: " + sss + ")");
+										"first argument in csv must be 'smiles' or 'inchi' (is: " + value + ")");
 						}
-						propNames.add(sss);
-						props.put(sss, new ArrayList<String>());
-						i++;
+						propNames.add(value);
+						props.put(value, new ArrayList<String>());
+						columnIndex++;
 					}
-					firstLine = false;
 				}
-				else if (!ss.startsWith("#") && ss.trim().length() > 0)
+				else
 				{
-					int i = 0;
-					for (String sss : ss.split(sep + "(?=([^\"]*\"[^\"]*\")*[^\"]*$)"))
+					int columnIndex = 0;
+					for (String value : line)
 					{
-						sss = StringUtil.trimQuotes(sss);
-						if (i == 0)
-							s.append(sss + " ");
-						if (sss.length() == 0)
-							sss = null;
-						props.get(propNames.get(i)).add(sss);
-						i++;
+						if (columnIndex == 0)
+						{
+							if (value == null)
+								throw new IllegalArgumentException("Empty " + (smiles ? "smiles " : "inchi")
+										+ " in row " + (rowIndex + 1));
+							smilesInchiContent.append(value + " ");
+						}
+						props.get(propNames.get(columnIndex)).add(value);
+						columnIndex++;
 					}
-					while (i < props.size())
+					while (columnIndex < props.size())
 					{
-						props.get(propNames.get(i)).add(null);
-						i++;
+						props.get(propNames.get(columnIndex)).add(null);
+						columnIndex++;
 					}
-					s.append("\n");
+					smilesInchiContent.append("\n");
 				}
+				rowIndex++;
 			}
 			List<IAtomContainer> list;
 			if (smiles)
 			{
-				SMILESReader reader = new SMILESReader(new ByteArrayInputStream(s.toString().getBytes()));
+				SMILESReader reader = new SMILESReader(new ByteArrayInputStream(smilesInchiContent.toString()
+						.getBytes()));
 				IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
 				list = ChemFileManipulator.getAllAtomContainers(content);
 				reader.close();
@@ -186,7 +185,7 @@ public class FeatureService
 			else if (inchi)
 			{
 				list = new ArrayList<IAtomContainer>();
-				for (String inch : s.toString().split("\n"))
+				for (String inch : smilesInchiContent.toString().split("\n"))
 				{
 					INChIPlainTextReader reader = new INChIPlainTextReader(new ByteArrayInputStream(inch.getBytes()));
 					IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
@@ -199,6 +198,30 @@ public class FeatureService
 			}
 			else
 				throw new Error("Could not read csv file");
+			if (list.size() != (csvFile.content.size() - 1) && smiles)
+			{
+				System.err.println("wrong num molecules checking smarts");
+				rowIndex = 0;
+				SmilesParser smilesParser = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+				for (String smilesString : smilesInchiContent.toString().split("\n"))
+				{
+					smilesString = smilesString.trim();
+					IAtomContainer molecule = null;
+					String error = "";
+					try
+					{
+						molecule = smilesParser.parseSmiles(smilesString);
+					}
+					catch (Exception ex)
+					{
+						error = ", error: " + ex.getMessage();
+					}
+					if (molecule == null || molecule.getAtomCount() == 0)
+						throw new IllegalArgumentException("Illegal smiles '" + smilesString + "' in row "
+								+ (rowIndex + 1) + error);
+					rowIndex++;
+				}
+			}
 
 			int molCount = 0;
 			for (IAtomContainer mol : list)
