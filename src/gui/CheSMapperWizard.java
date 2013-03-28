@@ -19,6 +19,7 @@ import main.Settings;
 import util.FileUtil;
 import util.ScreenUtil;
 import util.SwingUtil;
+import util.ThreadUtil;
 import workflow.MappingWorkflow;
 import data.ClusteringData;
 
@@ -171,7 +172,15 @@ public class CheSMapperWizard extends WizardDialog
 							});
 						}
 						if (chesMapping != null)
-							close(RETURN_VALUE_IMPORT);
+							SwingUtilities.invokeLater(new Runnable()
+							{
+								@Override
+								public void run()
+								{
+									ThreadUtil.sleep(100); // avoid strange hangups
+									close(RETURN_VALUE_IMPORT);
+								}
+							});
 					}
 
 				});

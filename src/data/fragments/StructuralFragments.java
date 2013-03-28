@@ -65,7 +65,8 @@ public class StructuralFragments
 				for (String[] line : csv.content)
 				{
 					if (line.length != 2)
-						throw new IllegalStateException("Illegal format in line '" + a.get(MatchEngine.CDK).size()
+						throw new IllegalStateException("Illegal substructure format in file: '" + filename
+								+ "'\nin line '" + a.get(MatchEngine.CDK).size()
 								+ "' (should be <name>,\"<smarts>\"), line:\n" + ArrayUtil.toString(line));
 					else
 					{
