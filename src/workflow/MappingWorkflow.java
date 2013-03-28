@@ -37,7 +37,7 @@ public class MappingWorkflow
 			dir = PropHandler.get("workflow-import-dir");
 		if (dir == null)
 			dir = System.getProperty("user.home");
-		String name = dir + File.separator + "ches-mapper-workflow.ches";
+		String name = dir + File.separator + "ches-mapper-wizard-settings.ches";
 		JFileChooser f = new JFileChooser(dir);
 		f.setSelectedFile(new File(name));
 		int i = f.showSaveDialog(Settings.TOP_LEVEL_FRAME);
@@ -108,7 +108,7 @@ public class MappingWorkflow
 	public static CheSMapping createMappingFromMappingWorkflow(Properties workflowMappingProps,
 			String alternateDatasetDir)
 	{
-		DatasetFile dataset = new DatasetWizardPanel().getDatasetFromMappingWorkflow(workflowMappingProps, true,
+		DatasetFile dataset = new DatasetWizardPanel(true).getDatasetFromMappingWorkflow(workflowMappingProps, true,
 				alternateDatasetDir);
 		if (dataset == null)
 			return null;

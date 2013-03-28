@@ -9,6 +9,7 @@ import java.util.Properties;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
 import main.CheSMapping;
@@ -117,7 +118,7 @@ public class CheSMapperWizard extends WizardDialog
 			@Override
 			public String getDescription()
 			{
-				return "CheS-Mapper Workflow File (*.ches)";
+				return "CheS-Mapper Wizard Settings File (*.ches)";
 			}
 
 			@Override
@@ -160,10 +161,17 @@ public class CheSMapperWizard extends WizardDialog
 						}
 						finally
 						{
-							CheSMapperWizard.this.unblock("create worflow");
+							SwingUtilities.invokeLater(new Runnable()
+							{
+								@Override
+								public void run()
+								{
+									CheSMapperWizard.this.unblock("create worflow");
+								}
+							});
 						}
 						if (chesMapping != null)
-							CheSMapperWizard.this.setVisible(false);
+							close(RETURN_VALUE_IMPORT);
 					}
 
 				});
@@ -171,6 +179,8 @@ public class CheSMapperWizard extends WizardDialog
 			}
 		}
 	}
+
+	public static final int RETURN_VALUE_IMPORT = 2;
 
 	protected String getFinishText()
 	{
