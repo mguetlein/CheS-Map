@@ -17,6 +17,7 @@ import org.openscience.cdk.qsar.result.IDescriptorResult;
 import org.openscience.cdk.qsar.result.IntegerArrayResult;
 import org.openscience.cdk.qsar.result.IntegerResult;
 
+import util.FileUtil.UnexpectedNumColsException;
 import util.StringUtil;
 import util.ValueFileCache;
 import data.DatasetFile;
@@ -141,13 +142,20 @@ public class CDKPropertySet implements MoleculePropertySet
 
 		String cache = cacheFile(dataset);
 
-		List<Double[]> vv;
+		List<Double[]> vv = null;
 		if (Settings.CACHING_ENABLED && new File(cache).exists())
 		{
 			Settings.LOGGER.info("reading cdk props from: " + cache);
-			vv = ValueFileCache.readCacheDouble(cache, mols.length);
+			try
+			{
+				vv = ValueFileCache.readCacheDouble(cache, mols.length);
+			}
+			catch (UnexpectedNumColsException e)
+			{
+				Settings.LOGGER.error(e);
+			}
 		}
-		else
+		if (vv == null)
 		{
 			IMolecularDescriptor descriptor = desc.getIMolecularDescriptor();
 			if (descriptor == null)

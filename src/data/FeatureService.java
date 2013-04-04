@@ -48,6 +48,7 @@ import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 
 import util.ArrayUtil;
 import util.FileUtil;
+import util.FileUtil.UnexpectedNumColsException;
 import util.ValueFileCache;
 import dataInterface.MoleculeProperty.Type;
 
@@ -375,10 +376,10 @@ public class FeatureService
 				list = readFromCSV(file, true);
 				dataset.setFileExtension("csv");
 			}
-			else if ((list = readFromCSV(file, false)) != null)
-			{
-				dataset.setFileExtension("csv");
-			}
+			//			else if ((list = readFromCSV(file, false)) != null)
+			//			{
+			//				dataset.setFileExtension("csv");
+			//			}
 			else
 			{
 				ISimpleChemObjectReader reader;
@@ -564,13 +565,20 @@ public class FeatureService
 		{
 			String smilesFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + dataset.getMD5()
 					+ ".smiles");
-			String smiles[];
+			String smiles[] = null;
 			if (new File(smilesFile).exists())
 			{
 				Settings.LOGGER.info("read cached smiles from: " + smilesFile);
-				smiles = ValueFileCache.readCacheString(smilesFile, dataset.numCompounds()).get(0);
+				try
+				{
+					smiles = ValueFileCache.readCacheString(smilesFile, dataset.numCompounds()).get(0);
+				}
+				catch (UnexpectedNumColsException e)
+				{
+					Settings.LOGGER.error(e);
+				}
 			}
-			else
+			if (smiles == null)
 			{
 				Settings.LOGGER.info("compute smiles.. ");
 				SmilesGenerator sg = new SmilesGenerator();

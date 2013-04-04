@@ -17,6 +17,7 @@ import util.ArrayUtil;
 import util.DoubleKeyHashMap;
 import util.FileUtil;
 import util.FileUtil.CSVFile;
+import util.FileUtil.UnexpectedNumColsException;
 import util.StringUtil;
 import data.CDKSmartsHandler;
 import data.DatasetFile;
@@ -139,9 +140,9 @@ public class StructuralFragmentSet extends FragmentPropertySet
 		}
 	}
 
-	private List<boolean[]> readFromFile(String file, int expectedSize)
+	private List<boolean[]> readFromFile(String file, int expectedNumRows) throws UnexpectedNumColsException
 	{
-		CSVFile f = FileUtil.readCSV(file, expectedSize);
+		CSVFile f = FileUtil.readCSV(file, expectedNumRows);
 		List<boolean[]> l = new ArrayList<boolean[]>();
 		for (String[] s : f.content)
 			l.add(ArrayUtil.parseBoolean(s));
@@ -185,13 +186,20 @@ public class StructuralFragmentSet extends FragmentPropertySet
 
 		String smartsMatchFile = getSmartsMatchCacheFile(dataset);
 
-		List<boolean[]> matches;
+		List<boolean[]> matches = null;
 		if (Settings.CACHING_ENABLED && new File(smartsMatchFile).exists())
 		{
 			Settings.LOGGER.info("read cached matches from file: " + smartsMatchFile);
-			matches = readFromFile(smartsMatchFile, dataset.numCompounds());
+			try
+			{
+				matches = readFromFile(smartsMatchFile, dataset.numCompounds());
+			}
+			catch (UnexpectedNumColsException e)
+			{
+				Settings.LOGGER.error(e);
+			}
 		}
-		else
+		if (matches == null)
 		{
 			if (StructuralFragmentProperties.getMatchEngine() == MatchEngine.CDK)
 				matches = new CDKSmartsHandler().match(smarts, dataset);

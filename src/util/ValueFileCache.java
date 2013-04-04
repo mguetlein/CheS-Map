@@ -10,54 +10,68 @@ import java.util.List;
 import javax.vecmath.Vector3f;
 
 import util.FileUtil.CSVFile;
+import util.FileUtil.UnexpectedNumColsException;
 
 public class ValueFileCache
 {
-	public static List<String[]> readCacheString(String cacheFile, int expectedSize)
+	public static List<String[]> readCacheString(String cacheFile, int expectedNumCols)
+			throws UnexpectedNumColsException
 	{
-		CSVFile file = FileUtil.readCSV(cacheFile, expectedSize);
+		CSVFile file = FileUtil.readCSV(cacheFile, expectedNumCols);
 		if (file == null)
 			throw new Error("could not read csv");
 		return file.content;
 	}
 
-	public static List<Double[]> readCacheDouble(String cacheFile, int expectedSize)
+	public static List<Double[]> readCacheDouble(String cacheFile, int expectedNumCols)
+			throws UnexpectedNumColsException
 	{
 		List<Double[]> d = new ArrayList<Double[]>();
-		for (String[] strings : readCacheString(cacheFile, expectedSize))
+		for (String[] strings : readCacheString(cacheFile, expectedNumCols))
 			d.add(ArrayUtil.parse(strings));
 		return d;
 	}
 
 	public static List<Integer[]> readCacheInteger(String cacheFile)
 	{
-		return readCacheInteger(cacheFile, -1);
+		try
+		{
+			return readCacheInteger(cacheFile, -1);
+		}
+		catch (UnexpectedNumColsException e)
+		{
+			throw new Error("should never happen");
+		}
 	}
 
-	public static List<Integer[]> readCacheInteger(String cacheFile, int expectedSize)
+	public static List<Integer[]> readCacheInteger(String cacheFile, int expectedNumCols)
+			throws UnexpectedNumColsException
 	{
 		List<Integer[]> d = new ArrayList<Integer[]>();
-		for (String[] strings : readCacheString(cacheFile, expectedSize))
+		for (String[] strings : readCacheString(cacheFile, expectedNumCols))
 			d.add(ArrayUtil.parseIntegers(strings));
 		return d;
 	}
 
-	public static List<Integer> readCacheInteger2(String cacheFile, int expectedSize)
+	public static List<Integer> readCacheInteger2(String cacheFile, int expectedNumCols)
+			throws UnexpectedNumColsException
 	{
-		return ArrayUtil.toList(readCacheInteger(cacheFile, expectedSize).get(0));
+		return ArrayUtil.toList(readCacheInteger(cacheFile, expectedNumCols).get(0));
 	}
 
-	private static List<Vector3f[]> readCachePosition(String cacheFile, int expectedSize)
+	private static List<Vector3f[]> readCachePosition(String cacheFile, int expectedNumCols)
+			throws UnexpectedNumColsException
 	{
 		List<Vector3f[]> d = new ArrayList<Vector3f[]>();
-		for (String[] strings : readCacheString(cacheFile, expectedSize))
+		for (String[] strings : readCacheString(cacheFile, expectedNumCols))
 			d.add(Vector3fUtil.parseArray(strings));
 		return d;
 	}
 
-	public static List<Vector3f> readCachePosition2(String cacheFile, int expectedSize)
+	public static List<Vector3f> readCachePosition2(String cacheFile, int expectedNumCols)
+			throws UnexpectedNumColsException
 	{
-		return ArrayUtil.toList(readCachePosition(cacheFile, expectedSize).get(0));
+		return ArrayUtil.toList(readCachePosition(cacheFile, expectedNumCols).get(0));
 	}
 
 	public static void writeCacheString(String cacheFile, String[] values)

@@ -11,6 +11,7 @@ import main.BinHandler;
 import main.Settings;
 import main.TaskProvider;
 import util.ArrayUtil;
+import util.FileUtil.UnexpectedNumColsException;
 import util.ListUtil;
 import util.ValueFileCache;
 import data.DatasetFile;
@@ -119,13 +120,20 @@ public class OBDescriptorProperty extends AbstractMoleculeProperty implements Mo
 	public boolean compute(DatasetFile dataset)
 	{
 		String cache = cacheFile(dataset);
-		String vals[];
+		String vals[] = null;
 		if (Settings.CACHING_ENABLED && new File(cache).exists())
 		{
 			Settings.LOGGER.info("reading ob descriptors from: " + cache);
-			vals = ValueFileCache.readCacheString(cache, dataset.numCompounds()).get(0);
+			try
+			{
+				vals = ValueFileCache.readCacheString(cache, dataset.numCompounds()).get(0);
+			}
+			catch (UnexpectedNumColsException e)
+			{
+				Settings.LOGGER.error(e);
+			}
 		}
-		else
+		if (vals == null)
 		{
 			vals = OBDescriptorFactory.compute(dataset.getSDFPath(false), descriptorID);
 			Settings.LOGGER.info("writing ob descriptors to: " + cache);
