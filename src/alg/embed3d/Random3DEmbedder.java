@@ -101,8 +101,11 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 			List<MoleculeProperty> features)
 	{
 		positions = getPositions(instances.size());
-		rSquare = EmbedUtil.computeRSquare(positions, instances, features, dataset);
-		ccc = EmbedUtil.computeCCC(positions, instances, features, dataset);
+		if (instances.size() > 2)
+		{
+			rSquare = EmbedUtil.computeRSquare(positions, instances, features, dataset);
+			ccc = EmbedUtil.computeCCC(positions, instances, features, dataset);
+		}
 	}
 
 	@Override
