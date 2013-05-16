@@ -1,7 +1,6 @@
 package main;
 
 import java.awt.Dimension;
-import java.awt.HeadlessException;
 import java.awt.Window;
 
 import javax.swing.border.Border;
@@ -41,15 +40,7 @@ public class ScreenSetup
 		this.fullScreenSize = viewerFixedSize;
 		this.wizardSize = wizardFixedSize;
 		this.antialiasOn = antialiasOn;
-		try
-		{
-			this.screen = ScreenUtil.getLargestScreen();
-		}
-		catch (HeadlessException e)
-		{
-			// just to make sure the tests are running without display
-			this.screen = 0;
-		}
+		this.screen = ScreenUtil.getLargestScreen();
 		this.fontSize = fontSize;
 		this.wizardUndecorated = wizardUndecorated;
 	}

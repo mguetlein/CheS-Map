@@ -95,7 +95,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 		this.showLoadDialog = showLoadDialog;
 		if (wizard == null)
 		{
-			block = new BlockableFrame("");
+			block = new BlockableImpl();
 			return;
 		}
 
