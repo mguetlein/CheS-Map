@@ -20,7 +20,6 @@ import util.FileUtil;
 import util.ScreenUtil;
 import util.SwingUtil;
 import workflow.MappingWorkflow;
-import data.ClusteringData;
 
 public class CheSMapperWizard extends WizardDialog
 {
@@ -224,21 +223,17 @@ public class CheSMapperWizard extends WizardDialog
 				cluster.getDatasetClusterer(), create3D.get3DBuilder(), embed.get3DEmbedder(), align.getAlginer());
 	}
 
-	public boolean isWorkflowSelected()
+	public CheSMapping getChesMapping()
 	{
-		return chesMapping != null;
+		return chesMapping;
 	}
 
-	public ClusteringData doMapping()
-	{
-		return chesMapping.doMapping();
-	}
 
 	public static void main(String args[])
 	{
 		CheSMapperWizard wwd = new CheSMapperWizard(null);
 		SwingUtil.waitWhileVisible(wwd);
-		wwd.doMapping();
+		wwd.getChesMapping().doMapping();
 		System.exit(0);
 	}
 }

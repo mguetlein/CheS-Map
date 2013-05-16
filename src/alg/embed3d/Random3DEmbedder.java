@@ -26,6 +26,7 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 
 	private List<Vector3f> positions;
 	private double rSquare = -Double.MAX_VALUE;
+	private double ccc = -Double.MAX_VALUE;
 
 	private List<Vector3f> getPositions(int numPositions)
 	{
@@ -39,10 +40,27 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	@Override
 	public double getRSquare()
 	{
-		if (rSquare == -Double.MAX_VALUE)
-			throw new IllegalStateException("compute r-square first");
 		return rSquare;
 	}
+
+	@Override
+	public double getCCC()
+	{
+		return ccc;
+	}
+
+	//	@Override
+	//	public MoleculeProperty getCCCProperty()
+	//	{
+	//		return null;
+	//	}
+
+	//	@Override
+	//	public MoleculePropertyEmbedQuality getEmbedQuality(MoleculeProperty p, DatasetFile dataset,
+	//			List<MolecularPropertyOwner> instances)
+	//	{
+	//		return new MoleculePropertyEmbedQuality(p, positions, instances, dataset);
+	//	}
 
 	IntegerProperty randomSeed = new IntegerProperty("Random seed", "Random embedding - Random seed", 1);
 
@@ -84,6 +102,7 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	{
 		positions = getPositions(instances.size());
 		rSquare = EmbedUtil.computeRSquare(positions, instances, features, dataset);
+		ccc = EmbedUtil.computeCCC(positions, instances, features, dataset);
 	}
 
 	@Override

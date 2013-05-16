@@ -203,6 +203,7 @@ public class CheSMapping
 		clustering.setClusterAlgorithmDistjoint(clusterer.isDisjointClusterer());
 	}
 
+	@SuppressWarnings("unchecked")
 	private void embedDataset(DatasetFile dataset, ClusteringData clustering, List<MoleculeProperty> featuresWithInfo)
 	{
 		embedderException = null;
@@ -239,7 +240,7 @@ public class CheSMapping
 					e.getMessage());
 			emb = randomEmbedder;
 			randomEmbedder.embedDataset(dataset,
-					ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), null);
+					ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), featuresWithInfo);
 		}
 
 		//		if (emb.getProcessMessages() != null && emb.getProcessMessages().containsWarning())
@@ -251,32 +252,45 @@ public class CheSMapping
 		if (dataset.numCompounds() > 2)
 		{
 			double rSquare = emb.getRSquare();
-			Settings.LOGGER.info("r-square: " + rSquare);
-			String formRSquare = StringUtil.formatDouble(rSquare, 3);
+			double ccc = emb.getCCC();
+			Settings.LOGGER.info("r-square: " + rSquare + ", ccc: " + ccc);
+			String formRSquare = StringUtil.formatDouble(rSquare, 2);
+			String formCCC = StringUtil.formatDouble(emb.getCCC(), 2);
+			String details = " (r^2: " + formRSquare + ", CCC: " + formCCC + ")";
 
 			if (rSquare >= 0.9)
-				clustering.setEmbedQuality("excellent (r^2: " + formRSquare + ")");
+				clustering.setEmbedQuality("excellent" + details);
 			else if (rSquare >= 0.7)
-				clustering.setEmbedQuality("good (r^2: " + formRSquare + ")");
+				clustering.setEmbedQuality("good" + details);
 			else if (rSquare >= 0.5)
 			{
-				TaskProvider.warning("The embedding quality is moderate (r^2:" + formRSquare + ")",
+				TaskProvider.warning("The embedding quality is moderate" + details,
 						Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
-				clustering.setEmbedQuality("moderate (r^2: " + formRSquare + ")");
+				clustering.setEmbedQuality("moderate" + details);
 			}
 			else
 			// < 0.5 
 			{
-				String msg = "The embedding quality is poor (r^2:" + formRSquare + ")";
+				String msg = "The embedding quality is poor" + details;
 				if (emb instanceof Random3DEmbedder)
-					msg = "Random embedding applied, 3D positions do not reflect feature values (r^2:" + formRSquare
-							+ ").";
+					msg = "Random embedding applied, 3D positions do not reflect feature values" + details;
 				TaskProvider.warning(msg, Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
-				clustering.setEmbedQuality("poor (r^2: " + formRSquare + ")");
+				clustering.setEmbedQuality("poor" + details);
 			}
+
+			//			for (int i = 0; i < clustering.getNumCompounds(true); i++)
+			//				((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(emb.getCCCProperty(), emb
+			//						.getCCCProperty().getDoubleValues(dataset)[i]);
+			//			clustering.setEmbeddingQualityProperty(emb.getCCCProperty());
 		}
 		else
 			clustering.setEmbedQuality("n/a");
+
+		//		for (MoleculeProperty p : ListUtil.concat(clustering.getProperties(), clustering.getFeatures()))
+		//			clustering.setEmbeddingQuality(
+		//					p,
+		//					emb.getEmbedQuality(p, dataset,
+		//							ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds())));
 
 		int cCount = 0;
 		for (Vector3f v : emb.getPositions())

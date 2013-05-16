@@ -30,7 +30,10 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	}
 
 	private List<Vector3f> positions;
-	protected double rSquare = -Double.MAX_VALUE;
+	private double rSquare = -Double.MAX_VALUE;
+	private double ccc = -Double.MAX_VALUE;
+
+	//	private MoleculeProperty cccProp;
 
 	@Override
 	public final List<Vector3f> getPositions()
@@ -41,10 +44,27 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	@Override
 	public double getRSquare()
 	{
-		if (rSquare == -Double.MAX_VALUE)
-			throw new IllegalStateException("compute r-square first");
 		return rSquare;
 	}
+
+	@Override
+	public double getCCC()
+	{
+		return ccc;
+	}
+
+	//	@Override
+	//	public MoleculeProperty getCCCProperty()
+	//	{
+	//		return cccProp;
+	//	}
+
+	//	@Override
+	//	public MoleculePropertyEmbedQuality getEmbedQuality(MoleculeProperty p, DatasetFile dataset,
+	//			List<MolecularPropertyOwner> instances)
+	//	{
+	//		return new MoleculePropertyEmbedQuality(p, positions, instances, dataset);
+	//	}
 
 	@Override
 	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
@@ -62,6 +82,8 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 
 	protected abstract String getShortName();
 
+	protected abstract double[][] getFeatureDistanceMatrix();
+
 	public void embedDataset(DatasetFile dataset, List<MolecularPropertyOwner> instances,
 			List<MoleculeProperty> features) throws Exception
 	{
@@ -73,22 +95,50 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 						dataset.getMD5() + " " + PropertyUtil.getPropertyMD5(getProperties()));
 		String embedFilename = Settings.destinationFile(dataset, basename + ".embed");
 		String rSquareFilename = Settings.destinationFile(dataset, basename + ".rSquare");
+		String cccFilename = Settings.destinationFile(dataset, basename + ".ccc");
+		//		String cccPropFilename = Settings.destinationFile(dataset, basename + ".cccProp");
+		//		double cccPropValues[];
 
-		if (Settings.CACHING_ENABLED && new File(embedFilename).exists() && new File(rSquareFilename).exists())
+		if (Settings.CACHING_ENABLED && new File(embedFilename).exists() && new File(rSquareFilename).exists()
+				&& new File(cccFilename).exists())// && new File(cccPropFilename).exists())
 		{
 			Settings.LOGGER.info("read cached embedding results from: " + embedFilename);
 			positions = ValueFileCache.readCachePosition2(embedFilename, instances.size());
 			Settings.LOGGER.info("read cached embedding rSquare from: " + rSquareFilename);
 			rSquare = DoubleUtil.parseDouble(FileUtil.readStringFromFile(rSquareFilename));
+			Settings.LOGGER.info("read cached embedding ccc from: " + cccFilename);
+			ccc = DoubleUtil.parseDouble(FileUtil.readStringFromFile(cccFilename));
+			//			Settings.LOGGER.info("read cached embedding ccc property from: " + cccPropFilename);
+			//			cccPropValues = ArrayUtil.toPrimitiveDoubleArray(ValueFileCache.readCacheDouble2(cccPropFilename));
 		}
 		else
 		{
 			positions = embed(dataset, instances, features);
 			Settings.LOGGER.info("store embedding results to: " + embedFilename);
 			ValueFileCache.writeCachePosition2(embedFilename, positions);
+
+			double d[][] = getFeatureDistanceMatrix();
+			if (d != null)
+				rSquare = EmbedUtil.computeRSquare(positions, d);
+			else
+				rSquare = EmbedUtil.computeRSquare(positions, instances, features, dataset);
 			Settings.LOGGER.info("store embedding rSquare to: " + rSquareFilename);
 			FileUtil.writeStringToFile(rSquareFilename, rSquare + "");
+
+			if (d != null)
+				ccc = EmbedUtil.computeCCC(positions, d);
+			else
+				ccc = EmbedUtil.computeCCC(positions, instances, features, dataset);
+			Settings.LOGGER.info("store embedding ccc to: " + cccFilename);
+			FileUtil.writeStringToFile(cccFilename, ccc + "");
+
+			//			if (d != null)
+			//				cccPropValues = EmbedUtil.computeCCCs(positions, d);
+			//			else
+			//				cccPropValues = EmbedUtil.computeCCCs(positions, instances, features, dataset);
+			//			ValueFileCache.writeCacheDouble2(cccPropFilename, ArrayUtil.toList(cccPropValues));
 		}
+		//		cccProp = new CCCMoleculePropertySet(dataset, cccPropValues);
 
 		if (positions.size() != instances.size())
 			throw new IllegalStateException("illegal num positions " + positions.size() + " " + instances.size());

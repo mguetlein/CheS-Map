@@ -15,7 +15,7 @@ import data.fragments.MatchEngine;
 
 public abstract class AbstractMoleculeProperty implements MoleculeProperty
 {
-	String name;
+	protected String name;
 	private String uniqueName;
 	protected String description;
 
@@ -186,7 +186,9 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 		doubleValues.put(dataset, vals);
 		normalizedValues.put(dataset, normalized);
 		normalizedLogValues.put(dataset, normalizedLog);
-		median.put(dataset, DoubleArraySummary.create(normalized).getMedian());
+		DoubleArraySummary sum = DoubleArraySummary.create(normalized);
+		median.put(dataset, sum.getMedian());
+		distinct.put(dataset, sum.getNum());
 	}
 
 	private void setDomainAndNumDistinct(DatasetFile dataset, String values[])

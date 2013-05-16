@@ -30,6 +30,8 @@ import dataInterface.MoleculePropertyUtil;
 
 public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 {
+	private double[][] featureDistanceMatrix;
+
 	protected abstract String getRScriptCode();
 
 	protected abstract String getShortName();
@@ -119,10 +121,9 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			for (int i = 0; i < instances.size(); i++)
 				positions.add(new Vector3f((float) d[i][0], (float) d[i][1], (float) d[i][2]));
 
-			double featureDistanceMatrix[][] = RUtil.readMatrix(tmpDist.getAbsolutePath(), 0);
+			featureDistanceMatrix = RUtil.readMatrix(tmpDist.getAbsolutePath(), 0);
 			if (featureDistanceMatrix == null)
 				throw new IllegalStateException("embedding failed: could not read distance matrix");
-			rSquare = EmbedUtil.computeRSquare(positions, featureDistanceMatrix);
 
 			return positions;
 			// v3f[i] = new Vector3f((float) v3d.get(i).getX(), (float) v3d.get(i).getY(), (float) v3d.get(i).getZ());
@@ -135,6 +136,12 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			if (rScript != null)
 				rScript.delete();
 		}
+	}
+
+	@Override
+	protected double[][] getFeatureDistanceMatrix()
+	{
+		return featureDistanceMatrix;
 	}
 
 	@Override

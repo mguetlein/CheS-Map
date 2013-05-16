@@ -34,28 +34,154 @@ public class EmbedUtil
 		return computeRSquare(positions, euclMatrix(instances, features, dataset));
 	}
 
-	private static double computeRSquare(double[][] featureDistances, double[][] threeDDistances)
+	private static double computeRSquare(double[][] m1, double[][] m2)
 	{
 		double ss_err = 0;
 		double ss_tot = 0;
-		double featureDistances_mean = 0;
+		double m1_mean = 0;
 		int count = 0;
-		for (int i = 0; i < featureDistances.length; i++)
-			for (int j = 0; j < featureDistances.length; j++)
+		for (int i = 0; i < m1.length; i++)
+			for (int j = 0; j < m1.length; j++)
 				if (i != j)
 				{
-					featureDistances_mean += featureDistances[i][j];
+					m1_mean += m1[i][j];
 					count++;
 				}
-		featureDistances_mean /= (double) count;
-		for (int i = 0; i < featureDistances.length; i++)
-			for (int j = 0; j < featureDistances.length; j++)
+		m1_mean /= (double) count;
+		for (int i = 0; i < m1.length; i++)
+			for (int j = 0; j < m1.length; j++)
 				if (i != j)
 				{
-					ss_err += Math.pow(featureDistances[i][j] - threeDDistances[i][j], 2);
-					ss_tot += Math.pow(featureDistances[i][j] - featureDistances_mean, 2);
+					ss_err += Math.pow(m1[i][j] - m2[i][j], 2);
+					ss_tot += Math.pow(m1[i][j] - m1_mean, 2);
 				}
 		return 1 - ss_err / ss_tot;
+	}
+
+	public static double computeCCC(List<Vector3f> positions, double distanceMatrix[][])
+	{
+		return computeCCC(positions, Dimensions.xyz, distanceMatrix);
+	}
+
+	public static double computeCCC(List<Vector3f> positions, Dimensions dims, double distanceMatrix[][])
+	{
+		double d1[][] = distanceMatrix;
+		normalizeDistanceMatrix(d1);
+		double d2[][] = euclMatrix(positions, dims);
+		normalizeDistanceMatrix(d2);
+		return computeCCC(d1, d2);
+	}
+
+	public static double computeCCC(List<Vector3f> positions, List<MolecularPropertyOwner> instances,
+			List<MoleculeProperty> features, DatasetFile dataset)
+	{
+		return computeCCC(positions, euclMatrix(instances, features, dataset));
+	}
+
+	public static double[] computeCCCs(List<Vector3f> positions, double distanceMatrix[][])
+	{
+		double d1[][] = distanceMatrix;
+		normalizeDistanceMatrix(d1);
+		double d2[][] = euclMatrix(positions);
+		normalizeDistanceMatrix(d2);
+		return computeCCCs(d1, d2);
+	}
+
+	public static double[] computeCCCs(List<Vector3f> positions, List<MolecularPropertyOwner> instances,
+			List<MoleculeProperty> features, DatasetFile dataset)
+	{
+		return computeCCCs(positions, euclMatrix(instances, features, dataset));
+	}
+
+	private static double[] computeCCCs(double[][] m1, double[][] m2)
+	{
+		double ccc[] = new double[m1.length];
+
+		for (int k = 0; k < ccc.length; k++)
+		{
+			double m1_mean = 0;
+			double m2_mean = 0;
+			int count = 0;
+			for (int i = 0; i < m1.length; i++)
+				if (i != k)
+				{
+					m1_mean += m1[i][k];
+					m2_mean += m2[i][k];
+					m1_mean += m1[k][i];
+					m2_mean += m2[k][i];
+					count += 2;
+				}
+			m1_mean /= (double) count;
+			m2_mean /= (double) count;
+
+			double numerator = 0;
+			for (int i = 0; i < m1.length; i++)
+				if (i != k)
+				{
+					numerator += (m1[i][k] - m1_mean) * (m2[i][k] - m2_mean);
+					numerator += (m1[k][i] - m1_mean) * (m2[k][i] - m2_mean);
+				}
+			numerator *= 2;
+
+			double m1_ss = 0;
+			double m2_ss = 0;
+			for (int i = 0; i < m1.length; i++)
+				if (i != k)
+				{
+					m1_ss += Math.pow((m1[i][k] - m1_mean), 2);
+					m2_ss += Math.pow((m2[i][k] - m2_mean), 2);
+					m1_ss += Math.pow((m1[k][i] - m1_mean), 2);
+					m2_ss += Math.pow((m2[k][i] - m2_mean), 2);
+				}
+			double denominator = m1_ss + m2_ss;
+			denominator += count * Math.pow((m1_mean - m2_mean), 2);
+			ccc[k] = numerator / denominator;
+			if (Double.isInfinite(ccc[k]) || Double.isNaN(ccc[k]))
+				ccc[k] = 0;
+
+		}
+		return ccc;
+	}
+
+	private static double computeCCC(double[][] m1, double[][] m2)
+	{
+		double m1_mean = 0;
+		double m2_mean = 0;
+		int count = 0;
+		for (int i = 0; i < m1.length; i++)
+			for (int j = 0; j < m1.length; j++)
+				if (i != j)
+				{
+					m1_mean += m1[i][j];
+					m2_mean += m2[i][j];
+					count++;
+				}
+		m1_mean /= (double) count;
+		m2_mean /= (double) count;
+
+		double numerator = 0;
+		for (int i = 0; i < m1.length; i++)
+			for (int j = 0; j < m1.length; j++)
+				if (i != j)
+					numerator += (m1[i][j] - m1_mean) * (m2[i][j] - m2_mean);
+		numerator *= 2;
+
+		double m1_ss = 0;
+		double m2_ss = 0;
+		for (int i = 0; i < m1.length; i++)
+			for (int j = 0; j < m1.length; j++)
+				if (i != j)
+				{
+					m1_ss += Math.pow((m1[i][j] - m1_mean), 2);
+					m2_ss += Math.pow((m2[i][j] - m2_mean), 2);
+				}
+
+		double denominator = m1_ss + m2_ss;
+		denominator += count * Math.pow((m1_mean - m2_mean), 2);
+		double ccc = numerator / denominator;
+		if (Double.isInfinite(ccc) || Double.isNaN(ccc))
+			return 0;
+		return ccc;
 	}
 
 	private static void normalizeDistanceMatrix(double d[][])
@@ -123,17 +249,62 @@ public class EmbedUtil
 		return d;
 	}
 
+	public enum Dimensions
+	{
+		xyz, xy, xz, yz, x, y, z
+	}
+
 	private static double[][] euclMatrix(List<Vector3f> positions)
+	{
+		return euclMatrix(positions, Dimensions.xyz);
+	}
+
+	private static double[][] euclMatrix(List<Vector3f> positions, Dimensions dims)
 	{
 		double[][] d = new double[positions.size()][positions.size()];
 		for (int i = 0; i < positions.size() - 1; i++)
 			for (int j = i + 1; j < positions.size(); j++)
 			{
-				d[i][j] = (double) Vector3fUtil.dist(positions.get(i), positions.get(j));
+				d[i][j] = dist(positions.get(i), positions.get(j), dims);
 				d[j][i] = d[i][j];
 			}
 		//		Settings.LOGGER.println(ArrayUtil.toString(d));
 		return d;
+	}
+
+	private static double dist(Vector3f v1, Vector3f v2, Dimensions dims)
+	{
+		switch (dims)
+		{
+			case xyz:
+				return Vector3fUtil.dist(v1, v2);
+			case xy:
+				Vector3f vec1 = new Vector3f(v1);
+				Vector3f vec2 = new Vector3f(v2);
+				vec1.z = 0;
+				vec2.z = 0;
+				return Vector3fUtil.dist(vec1, vec2);
+			case xz:
+				vec1 = new Vector3f(v1);
+				vec2 = new Vector3f(v2);
+				vec1.y = 0;
+				vec2.y = 0;
+				return Vector3fUtil.dist(vec1, vec2);
+			case yz:
+				vec1 = new Vector3f(v1);
+				vec2 = new Vector3f(v2);
+				vec1.x = 0;
+				vec2.x = 0;
+				return Vector3fUtil.dist(vec1, vec2);
+			case x:
+				return Math.abs(v1.x - v2.x);
+			case y:
+				return Math.abs(v1.y - v2.y);
+			case z:
+				return Math.abs(v1.z - v2.z);
+			default:
+				throw new Error("wtf");
+		}
 	}
 
 	public static void main(String args[])
@@ -177,7 +348,68 @@ public class EmbedUtil
 			}
 			Settings.LOGGER.info();
 		}
-
 	}
+
+	//	public static class MoleculePropertyEmbedQuality implements Comparable<MoleculePropertyEmbedQuality>
+	//	{
+	//		Double d;
+	//		MoleculeProperty feature;
+	//		List<Vector3f> positions;
+	//		List<MolecularPropertyOwner> instances;
+	//		DatasetFile dataset;
+	//
+	//		public MoleculePropertyEmbedQuality(MoleculeProperty feature, List<Vector3f> positions,
+	//				List<MolecularPropertyOwner> instances, DatasetFile dataset)
+	//		{
+	//			this.feature = feature;
+	//			this.positions = positions;
+	//			this.instances = instances;
+	//			this.dataset = dataset;
+	//		}
+	//
+	//		public MoleculePropertyEmbedQuality clone()
+	//		{
+	//			return new MoleculePropertyEmbedQuality(feature, positions, instances, dataset);
+	//		}
+	//
+	//		public String toString()
+	//		{
+	//			if (d == null)
+	//				return "computing..";
+	//			if (Double.isNaN(d))
+	//				return "na";
+	//			return StringUtil.formatDouble(d);
+	//		}
+	//
+	//		public double compute(Dimensions dims)
+	//		{
+	//			if (d == null)
+	//			{
+	//				if (feature.getType() != Type.NUMERIC && feature.getType() != Type.NOMINAL)
+	//					d = Double.NaN;
+	//				else
+	//				{
+	//					List<MoleculeProperty> features = new ArrayList<MoleculeProperty>();
+	//					features.add(feature);
+	//					double m[][] = euclMatrix(instances, features, dataset);
+	//					d = computeCCC(positions, dims, m);
+	//				}
+	//			}
+	//			return d;
+	//		}
+	//
+	//		public int compareTo(MoleculePropertyEmbedQuality o)
+	//		{
+	//			if (d == null || Double.isNaN(d))
+	//			{
+	//				if (o.d == null || Double.isNaN(o.d))
+	//					return 0;
+	//				return -1;
+	//			}
+	//			if (o.d == null || Double.isNaN(o.d))
+	//				return 1;
+	//			return d.compareTo(o.d);
+	//		}
+	//	}
 
 }

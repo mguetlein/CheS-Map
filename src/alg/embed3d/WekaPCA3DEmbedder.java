@@ -67,10 +67,13 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 				z = (float) in.value(2);
 			positions.add(new Vector3f(x, y, z));
 		}
-
-		rSquare = EmbedUtil.computeRSquare(positions, instances, features, dataset);
-
 		return positions;
+	}
+
+	@Override
+	protected double[][] getFeatureDistanceMatrix()
+	{
+		return null;
 	}
 
 	@Override

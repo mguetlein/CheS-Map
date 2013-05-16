@@ -47,5 +47,4 @@ public interface MoleculeProperty
 	public int numMissingValues(DatasetFile dataset);
 
 	public int numDistinctValues(DatasetFile dataset);
-
 }

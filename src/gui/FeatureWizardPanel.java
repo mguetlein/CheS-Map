@@ -18,7 +18,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -41,7 +40,7 @@ import util.DoubleImageIcon;
 import util.FileUtil;
 import util.ImageLoader;
 import util.MessageUtil;
-import util.VectorUtil;
+import util.StringUtil;
 import util.WizardComponentFactory;
 import workflow.FeatureMappingWorkflowProvider;
 
@@ -600,7 +599,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		List<MoleculePropertySet> features = new ArrayList<MoleculePropertySet>();
 
 		String integratedFeatures = (String) props.get(propKeyIntegrated);
-		Vector<String> selection = VectorUtil.fromCSVString(integratedFeatures);
+		List<String> selection = StringUtil.split(integratedFeatures);
 		for (String string : selection)
 		{
 			int index = string.lastIndexOf('#');
@@ -614,7 +613,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		}
 
 		String cdkFeatures = (String) props.get(propKeyCDK);
-		selection = VectorUtil.fromCSVString(cdkFeatures);
+		selection = StringUtil.split(cdkFeatures);
 		for (String string : selection)
 		{
 			CDKPropertySet d = CDKPropertySet.fromString(string);
@@ -622,7 +621,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		}
 
 		String obFeatures = (String) props.get(propKeyOB);
-		selection = VectorUtil.fromCSVString(obFeatures);
+		selection = StringUtil.split(obFeatures);
 		for (String string : selection)
 		{
 			int index = string.lastIndexOf('#');
@@ -635,7 +634,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		}
 
 		String fragmentFeatures = (String) props.get(propKeyFragments);
-		selection = VectorUtil.fromCSVString(fragmentFeatures);
+		selection = StringUtil.split(fragmentFeatures);
 		for (String string : selection)
 		{
 			FragmentPropertySet d = StructuralFragments.instance.findFromString(string);
@@ -726,9 +725,21 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 	}
 
 	@Override
-	public void exportFeaturesToMappingWorkflow(String[] featureNames, Properties props)
+	public void exportFeaturesToMappingWorkflow(String[] featureNames, boolean selectAllInternalFeatures,
+			Properties props)
 	{
 		IntegratedProperty[] availableIntegratedProps = dataset.getIntegratedProperties(false);
+		if (featureNames != null && featureNames.length > 0 && selectAllInternalFeatures)
+			throw new IllegalArgumentException("either specify features manually, or select all internal features");
+		if (selectAllInternalFeatures)
+		{
+			List<String> features = new ArrayList<String>();
+			for (int i = 0; i < availableIntegratedProps.length; i++)
+				if (availableIntegratedProps[i].isTypeAllowed(Type.NUMERIC)
+						|| availableIntegratedProps[i].getType() == Type.NOMINAL)
+					features.add(availableIntegratedProps[i].getName());
+			featureNames = ArrayUtil.toArray(String.class, features);
+		}
 		IntegratedProperty[] selectedIntegratedProps = new IntegratedProperty[featureNames.length];
 		int index = 0;
 		for (String featureName : featureNames)

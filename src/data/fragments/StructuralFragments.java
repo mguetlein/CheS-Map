@@ -61,7 +61,7 @@ public class StructuralFragments
 				for (MatchEngine m : MatchEngine.values())
 					a.put(m, new ArrayList<StructuralFragment>());
 
-				CSVFile csv = FileUtil.readCSV(filename);
+				CSVFile csv = FileUtil.readCSV(filename, ",");
 				for (String[] line : csv.content)
 				{
 					if (line.length != 2)

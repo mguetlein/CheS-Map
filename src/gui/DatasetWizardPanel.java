@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -38,6 +39,7 @@ import task.Task;
 import task.TaskDialog;
 import util.FileUtil;
 import util.ListUtil;
+import util.StringUtil;
 import util.ThreadUtil;
 import util.VectorUtil;
 import workflow.DatasetMappingWorkflowProvider;
@@ -161,9 +163,10 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 		oldDatasets = new Vector<DatasetFile>();
 		if (dir != null)
 		{
-			Vector<String> strings = VectorUtil.fromCSVString(dir);
+			List<String> strings = StringUtil.split(dir);
 			for (String s : strings)
-				oldDatasets.add(DatasetFile.fromString(s));
+				if (s != null && s.trim().length() > 0)
+					oldDatasets.add(DatasetFile.fromString(s));
 		}
 		final DefaultListModel m = new DefaultListModel();
 		for (DatasetFile d : oldDatasets)
@@ -319,7 +322,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 		load(f, false);
 	}
 
-	private void load(final String f, boolean wait)
+	public void load(final String f, boolean wait)
 	{
 		if (block.isBlocked())
 			return;
@@ -477,7 +480,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 						{
 							public void run()
 							{
-								if (dataset == null)
+								if (wizard != null && dataset == null)
 									buttonLoad.setEnabled(true);
 								block.unblock(f);
 							}
@@ -541,20 +544,21 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 	public void exportDatasetToMappingWorkflow(String datasetPath, Properties props)
 	{
 		load(datasetPath, true);
-		props.put(propKeyDataset, dataset.toString());
+		if (dataset != null)
+			props.put(propKeyDataset, dataset.toString());
 	}
 
 	@Override
 	public void exportSettingsToMappingWorkflow(Properties props)
 	{
-		props.put(propKeyDataset, VectorUtil.fromCSVString(PropHandler.get(propKeyDataset)).get(0));
+		props.put(propKeyDataset, StringUtil.split(PropHandler.get(propKeyDataset)).get(0));
 	}
 
 	@Override
 	public DatasetFile getDatasetFromMappingWorkflow(Properties props, boolean storeToSettings,
 			String alternateDatasetDir)
 	{
-		DatasetFile df = DatasetFile.fromString(VectorUtil.fromCSVString((String) props.get(propKeyDataset)).get(0));
+		DatasetFile df = DatasetFile.fromString(StringUtil.split((String) props.get(propKeyDataset)).get(0));
 		if (df.isLocal() && !new File(df.getLocalPath()).exists())
 		{
 			String alternate = alternateDatasetDir + File.separator + df.getName();
@@ -598,7 +602,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 		String oldVals = PropHandler.get(propKeyDataset);
 		if (oldVals != null)
 		{
-			Vector<String> vec = VectorUtil.fromCSVString(oldVals);
+			Vector<String> vec = new Vector<String>(StringUtil.split(oldVals, true));
 			int index = vec.indexOf(newVal);
 			if (index != -1)
 				vec.remove(index);

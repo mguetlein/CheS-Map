@@ -28,7 +28,15 @@ public interface ThreeDEmbedder extends Algorithm
 
 	public double getRSquare();
 
+	public double getCCC();
+
+	//	public MoleculePropertyEmbedQuality getEmbedQuality(MoleculeProperty p, DatasetFile dataset,
+	//			List<MolecularPropertyOwner> instances);
+
 	public boolean isLinear();
 
 	public boolean isLocalMapping();
+
+	//	public MoleculeProperty getCCCProperty();
+
 }

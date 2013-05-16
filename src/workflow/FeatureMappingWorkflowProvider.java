@@ -8,5 +8,6 @@ public interface FeatureMappingWorkflowProvider extends MappingWorkflowProvider
 {
 	public MoleculePropertySet[] getFeaturesFromMappingWorkflow(Properties mappingWorkflowProps, boolean storeToSettings);
 
-	public void exportFeaturesToMappingWorkflow(String featureNames[], Properties props);
+	public void exportFeaturesToMappingWorkflow(String featureNames[], boolean selectAllInternalFeatures,
+			Properties props);
 }

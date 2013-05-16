@@ -11,7 +11,6 @@ import java.util.List;
 
 import main.Settings;
 import util.ArrayUtil;
-import util.IntegerUtil;
 import alg.AlgorithmException;
 import data.DatasetFile;
 import dataInterface.CompoundData;
@@ -57,28 +56,52 @@ public class ManualClusterer extends AbstractDatasetClusterer
 		List<Integer[]> clusterAssignment = new ArrayList<Integer[]>();
 		List<Integer[]> moleculeAssignment = new ArrayList<Integer[]>();
 
-		for (int compoundIndex = 0; compoundIndex < compounds.size(); compoundIndex++)
+		try
 		{
-			CompoundData m = compounds.get(compoundIndex);
-			String val = m.getStringValue(clusterProp);
-			if (val != null && val.trim().length() > 0)
+			for (int compoundIndex = 0; compoundIndex < compounds.size(); compoundIndex++)
 			{
-				String vals[] = val.trim().split(",");
-				Integer intVals[] = new Integer[vals.length];
-				for (int i = 0; i < intVals.length; i++)
+				CompoundData m = compounds.get(compoundIndex);
+				String val = m.getStringValue(clusterProp);
+				if (val != null && val.trim().length() > 0)
 				{
-					intVals[i] = IntegerUtil.parseInteger(vals[i]);
-					if (intVals[i] == null)
-						throw new AlgorithmException.ClusterException(this,
-								"Cannot parse cluster assignment as integer: " + vals[i] + " in " + val);
+					String vals[] = val.trim().split(",");
+					Integer intVals[] = new Integer[vals.length];
+					for (int i = 0; i < intVals.length; i++)
+					{
+						intVals[i] = Integer.parseInt(vals[i]);
+					}
+					clusterAssignment.add(intVals);
+					for (Integer clazz : intVals)
+					{
+						while (moleculeAssignment.size() <= clazz)
+							moleculeAssignment.add(new Integer[0]);
+						moleculeAssignment.set(clazz, ArrayUtil.concat(Integer.class, moleculeAssignment.get(clazz),
+								new Integer[] { compoundIndex }));
+					}
 				}
-				clusterAssignment.add(intVals);
-				for (Integer clazz : intVals)
+			}
+		}
+		catch (NumberFormatException e)
+		{
+			String domain[] = clusterProp.getNominalDomain();
+
+			for (int compoundIndex = 0; compoundIndex < compounds.size(); compoundIndex++)
+			{
+				CompoundData m = compounds.get(compoundIndex);
+				String val = m.getStringValue(clusterProp);
+				if (val == null)
+					clusterAssignment.add(new Integer[0]);
+				else
 				{
-					while (moleculeAssignment.size() <= clazz)
+					int i = ArrayUtil.indexOf(domain, val);
+					if (i == -1)
+						throw new Error("should never happen");
+					clusterAssignment.add(new Integer[] { i });
+					while (moleculeAssignment.size() <= i)
 						moleculeAssignment.add(new Integer[0]);
-					moleculeAssignment.set(clazz, ArrayUtil.concat(Integer.class, moleculeAssignment.get(clazz),
-							new Integer[] { compoundIndex }));
+					moleculeAssignment
+							.set(i, ArrayUtil.concat(Integer.class, moleculeAssignment.get(i),
+									new Integer[] { compoundIndex }));
 				}
 			}
 		}

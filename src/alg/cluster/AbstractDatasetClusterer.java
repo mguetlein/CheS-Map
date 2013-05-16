@@ -14,6 +14,7 @@ import java.util.List;
 
 import main.Settings;
 import main.TaskProvider;
+import util.ArrayUtil;
 import util.ValueFileCache;
 import weka.CascadeSimpleKMeans;
 import alg.AbstractAlgorithm;
@@ -123,7 +124,8 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 			if (clusterIndices != null)
 			{
 				if (isDisjointClusterer() && clusterIndices.length > 1)
-					throw new Error("Disjoint clusterer with more than one cluster assingment");
+					throw new Error("Disjoint clusterer with more than one cluster assingment "
+							+ ArrayUtil.toString(clusterIndices));
 				multiAssignment |= clusterIndices.length > 1;
 
 				List<Integer> clusterList = modelToCluster.get(m);

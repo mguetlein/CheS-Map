@@ -32,6 +32,9 @@ public class ClusteringData
 
 	private String embedQuality;
 
+	//	private MoleculeProperty embedQualityProperty;
+	//	private HashMap<MoleculeProperty, MoleculePropertyEmbedQuality> embedQualityPerProp = new HashMap<MoleculeProperty, MoleculePropertyEmbedQuality>();
+
 	// --------------------------------------------
 
 	public int getNumClusters()
@@ -181,4 +184,23 @@ public class ClusteringData
 		return embedQuality;
 	}
 
+	//	public MoleculeProperty getEmbeddingQualityProperty()
+	//	{
+	//		return embedQualityProperty;
+	//	}
+	//
+	//	public void setEmbeddingQualityProperty(MoleculeProperty embedQualityProperty)
+	//	{
+	//		this.embedQualityProperty = embedQualityProperty;
+	//	}
+	//
+	//	public void setEmbeddingQuality(MoleculeProperty p, MoleculePropertyEmbedQuality embedQuality)
+	//	{
+	//		embedQualityPerProp.put(p, embedQuality);
+	//	}
+	//
+	//	public MoleculePropertyEmbedQuality getEmbeddingQuality(MoleculeProperty p)
+	//	{
+	//		return embedQualityPerProp.get(p);
+	//	}
 }

@@ -32,6 +32,24 @@ public class ValueFileCache
 		return d;
 	}
 
+	public static List<Double> readCacheDouble2(String cacheFile)
+	{
+		try
+		{
+			return ArrayUtil.toList(readCacheDouble(cacheFile, -1).get(0));
+		}
+		catch (UnexpectedNumColsException e)
+		{
+			throw new Error("should never happen");
+		}
+	}
+
+	public static List<Double> readCacheDouble2(String cacheFile, int expectedNumCols)
+			throws UnexpectedNumColsException
+	{
+		return ArrayUtil.toList(readCacheDouble(cacheFile, expectedNumCols).get(0));
+	}
+
 	public static List<Integer[]> readCacheInteger(String cacheFile)
 	{
 		try
@@ -79,6 +97,13 @@ public class ValueFileCache
 		List<Object[]> l = new ArrayList<Object[]>();
 		l.add(values);
 		writeCache(cacheFile, l);
+	}
+
+	public static void writeCacheDouble2(String cacheFile, List<Double> values)
+	{
+		List<Double[]> l = new ArrayList<Double[]>();
+		l.add(ArrayUtil.toDoubleArray(values));
+		writeCacheDouble(cacheFile, l);
 	}
 
 	public static void writeCacheDouble(String cacheFile, List<Double[]> values)
