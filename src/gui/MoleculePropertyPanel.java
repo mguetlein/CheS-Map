@@ -262,7 +262,7 @@ public class MoleculePropertyPanel extends JPanel
 
 	private JTable rawDataTable()
 	{
-		MoleculeProperty selectedProperty = selectedPropertySet.get(dataset, selectedPropertyIndex);
+		final MoleculeProperty selectedProperty = selectedPropertySet.get(dataset, selectedPropertyIndex);
 		Object o[];
 		Double n[] = null;
 		String[] c = new String[] { "Index", selectedPropertySet.get(dataset, selectedPropertyIndex).toString() };
@@ -279,7 +279,7 @@ public class MoleculePropertyPanel extends JPanel
 		Object v[][] = new Object[o.length][selectedProperty.getType() == Type.NUMERIC ? 3 : 2];
 		for (int i = 0; i < o.length; i++)
 		{
-			v[i][0] = new Integer(i);
+			v[i][0] = new Integer(i + 1);
 			v[i][1] = o[i];
 			if (selectedProperty.getType() == Type.NUMERIC)
 				v[i][2] = n[i];
@@ -298,7 +298,10 @@ public class MoleculePropertyPanel extends JPanel
 					boolean hasFocus, int row, int column)
 			{
 				if (value instanceof Double)
-					value = StringUtil.formatDouble((Double) value, 3);
+					if (column == 1 && selectedProperty.isInteger(dataset))
+						value = StringUtil.formatDouble((Double) value, 0);
+					else
+						value = StringUtil.formatDouble((Double) value, 3);
 				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			}
 		});

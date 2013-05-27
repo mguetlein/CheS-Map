@@ -152,6 +152,7 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	private HashMap<DatasetFile, Double> median = new HashMap<DatasetFile, Double>();
 	private HashMap<DatasetFile, Integer> missing = new HashMap<DatasetFile, Integer>();
 	private HashMap<DatasetFile, Integer> distinct = new HashMap<DatasetFile, Integer>();
+	private HashMap<DatasetFile, Boolean> isInteger = new HashMap<DatasetFile, Boolean>();
 
 	public boolean isValuesSet(DatasetFile dataset)
 	{
@@ -189,6 +190,14 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 		DoubleArraySummary sum = DoubleArraySummary.create(normalized);
 		median.put(dataset, sum.getMedian());
 		distinct.put(dataset, sum.getNum());
+		Boolean integerValue = true;
+		for (Double d : vals)
+			if (d != null && Math.round(d) != d)
+			{
+				integerValue = false;
+				break;
+			}
+		isInteger.put(dataset, integerValue);
 	}
 
 	private void setDomainAndNumDistinct(DatasetFile dataset, String values[])
@@ -202,6 +211,14 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 		Arrays.sort(dom, new ToStringComparator());
 		domain = dom;
 		distinct.put(dataset, numDistinct);
+	}
+
+	private DatasetFile mappedDataset;
+
+	@Override
+	public void setMappedDataset(DatasetFile dataset)
+	{
+		this.mappedDataset = dataset;
 	}
 
 	@Override
@@ -276,6 +293,21 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 		if (!doubleValues.containsKey(dataset))
 			throw new Error("values not yet set");
 		return median.get(dataset);
+	}
+
+	@Override
+	public Boolean isIntegerInMappedDataset()
+	{
+		return isInteger(mappedDataset);
+	}
+
+	@Override
+	public Boolean isInteger(DatasetFile dataset)
+	{
+		if (isInteger.containsKey(dataset))
+			return isInteger.get(dataset);
+		else
+			return null;
 	}
 
 }

@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import util.ArrayUtil;
+import util.DoubleArraySummary;
 import util.ObjectUtil;
 import data.DatasetFile;
 import dataInterface.MoleculeProperty.Type;
@@ -14,6 +16,18 @@ import freechart.FreeChartUtil;
 
 public class MoleculePropertyUtil
 {
+	public static int computeNumDistinct(Double values[])
+	{
+		return DoubleArraySummary.create(values).getNum();
+	}
+
+	public static int computeNumDistinct(String values[])
+	{
+		Set<String> distinctValues = ArrayUtil.getDistinctValues(values);
+		if (distinctValues.contains(null))
+			distinctValues.remove(null);
+		return distinctValues.size();
+	}
 
 	public static List<String[]> valuesReplaceNullWithMedian(List<MoleculeProperty> props,
 			List<MolecularPropertyOwner> values, DatasetFile dataset)

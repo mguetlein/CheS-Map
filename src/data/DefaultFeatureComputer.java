@@ -57,6 +57,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 				for (int i = 0; i < propSet.getSize(dataset); i++)
 				{
 					props.add(propSet.get(dataset, i));
+					propSet.get(dataset, i).setMappedDataset(dataset);
 					features.add(propSet.get(dataset, i));
 
 					if (!TaskProvider.isRunning())
@@ -75,6 +76,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 			{
 				p.setUsedForMapping(false);
 				props.add(p);
+				p.setMappedDataset(dataset);
 				properties.add(p);
 			}
 

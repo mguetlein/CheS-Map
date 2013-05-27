@@ -407,7 +407,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 								}
 							}
 							else
-								throw new Exception("file not found");
+								throw new Exception("file not found: " + datasetFile.getAbsolutePath());
 						}
 
 						task.finish();

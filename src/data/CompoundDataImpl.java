@@ -75,7 +75,7 @@ public class CompoundDataImpl implements CompoundData
 	public String getStringValue(MoleculeProperty p)
 	{
 		if (p.getType() == Type.NUMERIC)
-			throw new IllegalStateException();
+			throw new IllegalStateException(p + " is numeric!");
 		return stringValues.get(p);
 	}
 

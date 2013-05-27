@@ -32,6 +32,8 @@ public interface MoleculeProperty
 
 	public MoleculePropertySet getMoleculePropertySet();
 
+	public String getUniqueName();
+
 	public String[] getStringValues(DatasetFile dataset);
 
 	public Double[] getDoubleValues(DatasetFile dataset);
@@ -42,9 +44,13 @@ public interface MoleculeProperty
 
 	public Double getNormalizedMedian(DatasetFile dataset);
 
-	public String getUniqueName();
-
 	public int numMissingValues(DatasetFile dataset);
 
 	public int numDistinctValues(DatasetFile dataset);
+
+	public Boolean isInteger(DatasetFile dataset);
+
+	public void setMappedDataset(DatasetFile dataset);
+
+	public Boolean isIntegerInMappedDataset();
 }
