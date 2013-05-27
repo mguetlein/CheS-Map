@@ -98,11 +98,11 @@ public class PropHandler
 					+ Settings.VERSION.minor + ".props";
 
 			if (new File(propertiesFile).exists())
-				Settings.LOGGER.debug("property file for current version " + Settings.VERSION + " found: "
+				Settings.LOGGER.debug("Property file for current version " + Settings.VERSION + " found: "
 						+ propertiesFile);
 			else
 			{
-				Settings.LOGGER.debug("property file for current version " + Settings.VERSION + " not found");
+				Settings.LOGGER.debug("Property file for current version " + Settings.VERSION + " not found");
 				String propFileNames[] = new File(Settings.BASE_DIR).list(new FilenameFilter()
 				{
 					@Override
@@ -140,11 +140,11 @@ public class PropHandler
 					if (complientIndex != -1)
 					{
 						String source = Settings.BASE_DIR + File.separator + propFileNames[complientIndex];
-						Settings.LOGGER.debug("copy " + source + " to " + propertiesFile);
+						Settings.LOGGER.debug("Copy " + source + " to " + propertiesFile);
 						FileUtil.copy(new File(source), new File(propertiesFile));
 					}
 					else
-						Settings.LOGGER.debug("no compatible property file found");
+						Settings.LOGGER.debug("No compatible property file found");
 				}
 			}
 

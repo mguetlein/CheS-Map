@@ -62,9 +62,9 @@ public class BinHandler
 		for (Binary binary : bins)
 		{
 			if (binary.isFound())
-				Settings.LOGGER.info("external program " + binary.getCommand() + " found at " + binary.getLocation());
+				Settings.LOGGER.info("External program " + binary.getCommand() + " found at " + binary.getLocation());
 			else
-				Settings.LOGGER.warn("external program " + binary.getCommand() + " not found");
+				Settings.LOGGER.warn("External program " + binary.getCommand() + " not found");
 		}
 	}
 

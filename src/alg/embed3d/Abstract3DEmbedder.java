@@ -18,8 +18,8 @@ import alg.AbstractAlgorithm;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundPropertyUtil;
 import dataInterface.CompoundPropertyOwner;
+import dataInterface.CompoundPropertyUtil;
 
 public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedder
 {
@@ -84,8 +84,8 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 
 	protected abstract double[][] getFeatureDistanceMatrix();
 
-	public void embedDataset(DatasetFile dataset, List<CompoundPropertyOwner> instances,
-			List<CompoundProperty> features) throws Exception
+	public void embedDataset(DatasetFile dataset, List<CompoundPropertyOwner> instances, List<CompoundProperty> features)
+			throws Exception
 	{
 		String basename = dataset.getShortName()
 				+ "."
@@ -102,13 +102,13 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		if (Settings.CACHING_ENABLED && new File(embedFilename).exists() && new File(rSquareFilename).exists()
 				&& new File(cccFilename).exists())// && new File(cccPropFilename).exists())
 		{
-			Settings.LOGGER.info("read cached embedding results from: " + embedFilename);
+			Settings.LOGGER.info("Read cached embedding results from: " + embedFilename);
 			positions = ValueFileCache.readCachePosition2(embedFilename, instances.size());
-			Settings.LOGGER.info("read cached embedding rSquare from: " + rSquareFilename);
+			Settings.LOGGER.info("Read cached embedding rSquare from: " + rSquareFilename);
 			rSquare = DoubleUtil.parseDouble(FileUtil.readStringFromFile(rSquareFilename));
-			Settings.LOGGER.info("read cached embedding ccc from: " + cccFilename);
+			Settings.LOGGER.info("Read cached embedding ccc from: " + cccFilename);
 			ccc = DoubleUtil.parseDouble(FileUtil.readStringFromFile(cccFilename));
-			//			Settings.LOGGER.info("read cached embedding ccc property from: " + cccPropFilename);
+			//			Settings.LOGGER.info("Read cached embedding ccc property from: " + cccPropFilename);
 			//			cccPropValues = ArrayUtil.toPrimitiveDoubleArray(ValueFileCache.readCacheDouble2(cccPropFilename));
 		}
 		else

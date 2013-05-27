@@ -159,7 +159,7 @@ public class Settings
 		try
 		{
 			LOGGER = new Logger(BASE_DIR + File.separator + "ches-mapper.log", true);
-			LOGGER.info("logger initialized ('" + BASE_DIR + File.separator + "ches-mapper.log" + "')");
+			LOGGER.info("Logger initialized ('" + BASE_DIR + File.separator + "ches-mapper.log" + "')");
 		}
 		catch (RuntimeException e)
 		{

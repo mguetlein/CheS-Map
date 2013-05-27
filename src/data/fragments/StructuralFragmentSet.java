@@ -22,8 +22,8 @@ import util.StringUtil;
 import data.CDKSmartsHandler;
 import data.DatasetFile;
 import data.OpenBabelSmartsHandler;
-import dataInterface.FragmentPropertySet;
 import dataInterface.CompoundProperty.Type;
+import dataInterface.FragmentPropertySet;
 
 public class StructuralFragmentSet extends FragmentPropertySet
 {
@@ -176,7 +176,7 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	@Override
 	public boolean compute(DatasetFile dataset)
 	{
-		Settings.LOGGER.info("computing structural fragment " + StructuralFragmentProperties.getMatchEngine() + " "
+		Settings.LOGGER.info("Computing structural fragment " + StructuralFragmentProperties.getMatchEngine() + " "
 				+ StructuralFragmentProperties.getMinFrequency() + " "
 				+ StructuralFragmentProperties.isSkipOmniFragments() + " " + dataset.getSDFPath(false));
 
@@ -189,7 +189,7 @@ public class StructuralFragmentSet extends FragmentPropertySet
 		List<boolean[]> matches = null;
 		if (Settings.CACHING_ENABLED && new File(smartsMatchFile).exists())
 		{
-			Settings.LOGGER.info("read cached matches from file: " + smartsMatchFile);
+			Settings.LOGGER.info("Read cached matches from file: " + smartsMatchFile);
 			try
 			{
 				matches = readFromFile(smartsMatchFile, dataset.numCompounds());

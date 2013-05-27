@@ -359,7 +359,7 @@ public class FeatureService
 	{
 		if (fileToCompounds.get(dataset) == null)
 		{
-			Settings.LOGGER.info("read dataset file '" + dataset.getLocalPath() + "' with cdk");
+			//Settings.LOGGER.info("read dataset file '" + dataset.getLocalPath() + "' with cdk");
 			TaskProvider.verbose("Parsing file with CDK");
 
 			Vector<IMolecule> mols = new Vector<IMolecule>();
@@ -473,7 +473,7 @@ public class FeatureService
 				else
 					throw new IllegalStateException("Could not read any compounds");
 			}
-			Settings.LOGGER.info(" done (" + mols.size() + " compounds found)");
+			Settings.LOGGER.info(mols.size() + " compounds found");
 
 			// convert string to double
 			for (IntegratedProperty p : integratedProperties.get(dataset))
@@ -568,7 +568,7 @@ public class FeatureService
 			String smiles[] = null;
 			if (new File(smilesFile).exists())
 			{
-				Settings.LOGGER.info("read cached smiles from: " + smilesFile);
+				Settings.LOGGER.info("Read cached smiles from: " + smilesFile);
 				try
 				{
 					smiles = ValueFileCache.readCacheString(smilesFile, dataset.numCompounds()).get(0);

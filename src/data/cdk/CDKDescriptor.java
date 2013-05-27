@@ -59,7 +59,7 @@ public class CDKDescriptor
 					return o1.getClass().getName().compareTo(o2.getClass().getName());
 				}
 			});
-			Settings.LOGGER.info("loaded " + descriptorList.size() + " cdk descriptors");
+			Settings.LOGGER.info("Loaded " + descriptorList.size() + " cdk descriptors");
 
 			CDK_DESCRIPTORS = new CDKDescriptor[descriptorList.size()];
 			int i = 0;

@@ -104,13 +104,13 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 
 		if (Settings.CACHING_ENABLED && new File(filename).exists() && !interactive)
 		{
-			Settings.LOGGER.info("read cached cluster results from: " + filename);
+			Settings.LOGGER.info("Read cached cluster results from: " + filename);
 			clusterAssignements = ValueFileCache.readCacheInteger(filename);
 		}
 		else
 		{
 			clusterAssignements = cluster(dataset, compounds, features);
-			Settings.LOGGER.info("store cluster results to: " + filename);
+			Settings.LOGGER.info("Store cluster results to: " + filename);
 			if (!interactive)
 				ValueFileCache.writeCacheInteger(filename, clusterAssignements);
 		}
