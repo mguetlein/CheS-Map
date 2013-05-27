@@ -14,9 +14,9 @@ import util.ListUtil;
 import data.fragments.MatchEngine;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
-import dataInterface.CompoundPropertyOwner;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
+import dataInterface.CompoundPropertyOwner;
 import dataInterface.SubstructureSmartsType;
 
 public class ClusterDataImpl implements ClusterData
@@ -116,6 +116,17 @@ public class ClusterDataImpl implements ClusterData
 	public void setSubstructureSmartsMatchEngine(SubstructureSmartsType type, MatchEngine engine)
 	{
 		substructureSmartsEngine.put(type, engine);
+	}
+
+	@Override
+	public void remove(int indices[])
+	{
+		Arrays.sort(indices);
+		for (int i = indices.length - 1; i > 0; i--)
+			compounds.remove(indices[i]);
+		compoundDistances = null;
+		values.clear();
+		normalizedValues.clear();
 	}
 
 	private ArraySummary getSummaryValue(CompoundProperty p, boolean normalized)

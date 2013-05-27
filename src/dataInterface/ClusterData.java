@@ -27,4 +27,6 @@ public interface ClusterData extends CompoundPropertyOwner
 	public String getAlignAlgorithm();
 
 	public boolean containsNotClusteredCompounds();
+
+	public void remove(int indices[]);
 }
