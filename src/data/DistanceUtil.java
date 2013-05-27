@@ -4,18 +4,18 @@ import java.util.List;
 
 import util.ArrayUtil;
 import util.DistanceMatrix;
-import dataInterface.MolecularPropertyOwner;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculeProperty.Type;
+import dataInterface.CompoundPropertyOwner;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.Type;
 
 public class DistanceUtil
 {
-	public static double distance(MolecularPropertyOwner c1, MolecularPropertyOwner c2, List<MoleculeProperty> props)
+	public static double distance(CompoundPropertyOwner c1, CompoundPropertyOwner c2, List<CompoundProperty> props)
 	{
 		double d1[] = new double[props.size()];
 		double d2[] = new double[props.size()];
 		int count = 0;
-		for (MoleculeProperty p : props)
+		for (CompoundProperty p : props)
 		{
 			if (p.getType() == Type.NUMERIC)
 			{
@@ -34,10 +34,10 @@ public class DistanceUtil
 		return ArrayUtil.euclDistance(d1, d2);
 	}
 
-	public static DistanceMatrix<MolecularPropertyOwner> computeDistances(List<MolecularPropertyOwner> instances,
-			List<MoleculeProperty> props)
+	public static DistanceMatrix<CompoundPropertyOwner> computeDistances(List<CompoundPropertyOwner> instances,
+			List<CompoundProperty> props)
 	{
-		DistanceMatrix<MolecularPropertyOwner> m = new DistanceMatrix<MolecularPropertyOwner>();
+		DistanceMatrix<CompoundPropertyOwner> m = new DistanceMatrix<CompoundPropertyOwner>();
 		for (int i = 0; i < instances.size() - 1; i++)
 			for (int j = i + 1; j < instances.size(); j++)
 				m.setDistance(instances.get(i), instances.get(j),

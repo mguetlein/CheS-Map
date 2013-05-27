@@ -21,8 +21,8 @@ import util.ExternalToolUtil;
 import util.ListUtil;
 import data.DatasetFile;
 import data.fragments.StructuralFragmentProperties;
+import dataInterface.CompoundProperty.Type;
 import dataInterface.FragmentPropertySet;
-import dataInterface.MoleculeProperty.Type;
 
 public class OBFingerprintSet extends FragmentPropertySet
 {
@@ -480,21 +480,21 @@ public class OBFingerprintSet extends FragmentPropertySet
 
 			// if (obProp.getOBType() != OBFingerprintProperty.FingerprintType.FP2)
 			// {
-			// List<String> fingerprintsForMolecules = obProp.compute(dataset);
-			// int numMols = fileToMolecules.get(dataset).length;
-			// if (fingerprintsForMolecules.size() != numMols)
+			// List<String> fingerprintsForCompounds = obProp.compute(dataset);
+			// int numMols = fileToCompounds.get(dataset).length;
+			// if (fingerprintsForCompounds.size() != numMols)
 			// throw new IllegalStateException("babel returned fingerprints for "
-			// + fingerprintsForMolecules.size() + " compounds, but dataset contains " + numMols
+			// + fingerprintsForCompounds.size() + " compounds, but dataset contains " + numMols
 			// + " compounds.");
 			// int numFingerprints = obProp.getSize(dataset);
-			// if (fingerprintsForMolecules.get(0).length() != numFingerprints)
+			// if (fingerprintsForCompounds.get(0).length() != numFingerprints)
 			// throw new IllegalStateException("fingerprint length not correct");
 			//
 			// for (int j = 0; j < numFingerprints; j++)
 			// {
 			// String[] featureValue = new String[numMols];
 			// for (int i = 0; i < numMols; i++)
-			// featureValue[i] = fingerprintsForMolecules.get(i).charAt(j) + "";
+			// featureValue[i] = fingerprintsForCompounds.get(i).charAt(j) + "";
 			// featureValues.add(featureValue);
 			// }
 			// }
@@ -544,7 +544,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 			// Settings.LOGGER.warn(frag + " " + ListUtil.toString(occurences.get(frag)));
 
 			if (dataset.numCompounds() - 1 != count)
-				throw new Error("num molecules not correct " + dataset.numCompounds() + " " + count);
+				throw new Error("num compounds not correct " + dataset.numCompounds() + " " + count);
 
 			for (OBFingerprintProperty p : occurences.keySet())
 			{

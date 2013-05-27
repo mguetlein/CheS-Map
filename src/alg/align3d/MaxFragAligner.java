@@ -9,7 +9,7 @@ import data.DatasetFile;
 import data.fragments.MatchEngine;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
-import dataInterface.MoleculeProperty;
+import dataInterface.CompoundProperty;
 import dataInterface.SmartsUtil;
 import dataInterface.SubstructureSmartsType;
 
@@ -39,14 +39,14 @@ public class MaxFragAligner extends Abstract3DAligner
 	}
 
 	@Override
-	public void algin(DatasetFile dataset, List<ClusterData> clusters, List<MoleculeProperty> features)
+	public void algin(DatasetFile dataset, List<ClusterData> clusters, List<CompoundProperty> features)
 	{
 		for (ClusterData clusterData : clusters)
 		{
-			MoleculeProperty maxFrag = null;
+			CompoundProperty maxFrag = null;
 			int maxFragLength = -1;
 			MatchEngine maxMatchEngine = null;
-			for (MoleculeProperty feat : features)
+			for (CompoundProperty feat : features)
 			{
 				if (!feat.isSmartsProperty())
 					continue;

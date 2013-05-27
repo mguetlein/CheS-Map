@@ -11,10 +11,10 @@ import util.ArrayUtil;
 import util.DoubleArraySummary;
 import util.ObjectUtil;
 import data.DatasetFile;
-import dataInterface.MoleculeProperty.Type;
+import dataInterface.CompoundProperty.Type;
 import freechart.FreeChartUtil;
 
-public class MoleculePropertyUtil
+public class CompoundPropertyUtil
 {
 	public static int computeNumDistinct(Double values[])
 	{
@@ -29,15 +29,15 @@ public class MoleculePropertyUtil
 		return distinctValues.size();
 	}
 
-	public static List<String[]> valuesReplaceNullWithMedian(List<MoleculeProperty> props,
-			List<MolecularPropertyOwner> values, DatasetFile dataset)
+	public static List<String[]> valuesReplaceNullWithMedian(List<CompoundProperty> props,
+			List<CompoundPropertyOwner> values, DatasetFile dataset)
 	{
 		List<String[]> v = new ArrayList<String[]>();
-		for (MolecularPropertyOwner vv : values)
+		for (CompoundPropertyOwner vv : values)
 		{
 			String d[] = new String[props.size()];
 			int count = 0;
-			for (MoleculeProperty p : props)
+			for (CompoundProperty p : props)
 			{
 				if (p.getType() == Type.NUMERIC)
 				{
@@ -55,7 +55,7 @@ public class MoleculePropertyUtil
 		return v;
 	}
 
-	private static HashMap<MoleculeProperty, Color[]> mapping = new HashMap<MoleculeProperty, Color[]>();
+	private static HashMap<CompoundProperty, Color[]> mapping = new HashMap<CompoundProperty, Color[]>();
 
 	private static Color[] AVAILABLE_COLORS = FreeChartUtil.BRIGHT_COLORS;
 	static
@@ -73,7 +73,7 @@ public class MoleculePropertyUtil
 		return AVAILABLE_COLORS[index % AVAILABLE_COLORS.length];
 	}
 
-	public static Color[] getNominalColors(MoleculeProperty p)
+	public static Color[] getNominalColors(CompoundProperty p)
 	{
 		if (p.getType() != Type.NOMINAL)
 			throw new IllegalArgumentException();
@@ -94,7 +94,7 @@ public class MoleculePropertyUtil
 		return mapping.get(p);
 	}
 
-	public static Color getNominalColor(MoleculeProperty p, String val)
+	public static Color getNominalColor(CompoundProperty p, String val)
 	{
 		int index = ArrayUtil.indexOf(p.getNominalDomain(), val);
 		if (index == -1)
@@ -102,42 +102,42 @@ public class MoleculePropertyUtil
 		return getNominalColors(p)[index];
 	}
 
-	public static boolean containsSmartsProperty(List<MoleculeProperty> list)
+	public static boolean containsSmartsProperty(List<CompoundProperty> list)
 	{
-		for (MoleculeProperty p : list)
+		for (CompoundProperty p : list)
 			if (p.isSmartsProperty())
 				return true;
 		return false;
 	}
 
-	public static String getSetMD5(List<MoleculeProperty> list)
+	public static String getSetMD5(List<CompoundProperty> list)
 	{
 		return getSetMD5(list, "");
 	}
 
-	public static String getSetMD5(List<MoleculeProperty> list, String additionalParam)
+	public static String getSetMD5(List<CompoundProperty> list, String additionalParam)
 	{
-		return MoleculePropertySetUtil.getMD5(getSets(list), additionalParam);
+		return CompoundPropertySetUtil.getMD5(getSets(list), additionalParam);
 	}
 
-	public static List<MoleculePropertySet> getSets(List<MoleculeProperty> list)
+	public static List<CompoundPropertySet> getSets(List<CompoundProperty> list)
 	{
-		List<MoleculePropertySet> sets = new ArrayList<MoleculePropertySet>();
-		for (MoleculeProperty p : list)
-			if (sets.indexOf(p.getMoleculePropertySet()) == -1)
-				sets.add(p.getMoleculePropertySet());
+		List<CompoundPropertySet> sets = new ArrayList<CompoundPropertySet>();
+		for (CompoundProperty p : list)
+			if (sets.indexOf(p.getCompoundPropertySet()) == -1)
+				sets.add(p.getCompoundPropertySet());
 		return sets;
 	}
 
-	public static boolean hasUniqueValues(List<MoleculeProperty> list, DatasetFile data)
+	public static boolean hasUniqueValues(List<CompoundProperty> list, DatasetFile data)
 	{
-		for (MoleculeProperty p : list)
+		for (CompoundProperty p : list)
 			if (!hasUniqueValue(p, data))
 				return false;
 		return true;
 	}
 
-	public static boolean hasUniqueValue(MoleculeProperty prop, DatasetFile data)
+	public static boolean hasUniqueValue(CompoundProperty prop, DatasetFile data)
 	{
 		boolean first = true;
 		Object value = null;

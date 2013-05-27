@@ -5,7 +5,7 @@ import java.util.List;
 
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
-import dataInterface.MoleculeProperty;
+import dataInterface.CompoundProperty;
 import dataInterface.SubstructureSmartsType;
 
 public class ClusteringData
@@ -14,8 +14,8 @@ public class ClusteringData
 	private String fullName;
 	private String sdfFilename;
 
-	private List<MoleculeProperty> features = new ArrayList<MoleculeProperty>();
-	private List<MoleculeProperty> properties = new ArrayList<MoleculeProperty>();
+	private List<CompoundProperty> features = new ArrayList<CompoundProperty>();
+	private List<CompoundProperty> properties = new ArrayList<CompoundProperty>();
 	private List<SubstructureSmartsType> substructureSmartsTypes = new ArrayList<SubstructureSmartsType>();
 
 	private List<ClusterData> clusters = new ArrayList<ClusterData>();
@@ -29,8 +29,8 @@ public class ClusteringData
 
 	private String embedQuality;
 
-	//	private MoleculeProperty embedQualityProperty;
-	//	private HashMap<MoleculeProperty, MoleculePropertyEmbedQuality> embedQualityPerProp = new HashMap<MoleculeProperty, MoleculePropertyEmbedQuality>();
+	//	private CompoundProperty embedQualityProperty;
+	//	private HashMap<CompoundProperty, CompoundPropertyEmbedQuality> embedQualityPerProp = new HashMap<CompoundProperty, CompoundPropertyEmbedQuality>();
 
 	// --------------------------------------------
 
@@ -99,22 +99,22 @@ public class ClusteringData
 			return compounds.size();
 	}
 
-	public void addProperty(MoleculeProperty property)
+	public void addProperty(CompoundProperty property)
 	{
 		properties.add(property);
 	}
 
-	public List<MoleculeProperty> getProperties()
+	public List<CompoundProperty> getProperties()
 	{
 		return properties;
 	}
 
-	public void addFeature(MoleculeProperty feature)
+	public void addFeature(CompoundProperty feature)
 	{
 		features.add(feature);
 	}
 
-	public List<MoleculeProperty> getFeatures()
+	public List<CompoundProperty> getFeatures()
 	{
 		return features;
 	}
@@ -174,22 +174,22 @@ public class ClusteringData
 		return embedQuality;
 	}
 
-	//	public MoleculeProperty getEmbeddingQualityProperty()
+	//	public CompoundProperty getEmbeddingQualityProperty()
 	//	{
 	//		return embedQualityProperty;
 	//	}
 	//
-	//	public void setEmbeddingQualityProperty(MoleculeProperty embedQualityProperty)
+	//	public void setEmbeddingQualityProperty(CompoundProperty embedQualityProperty)
 	//	{
 	//		this.embedQualityProperty = embedQualityProperty;
 	//	}
 	//
-	//	public void setEmbeddingQuality(MoleculeProperty p, MoleculePropertyEmbedQuality embedQuality)
+	//	public void setEmbeddingQuality(CompoundProperty p, CompoundPropertyEmbedQuality embedQuality)
 	//	{
 	//		embedQualityPerProp.put(p, embedQuality);
 	//	}
 	//
-	//	public MoleculePropertyEmbedQuality getEmbeddingQuality(MoleculeProperty p)
+	//	public CompoundPropertyEmbedQuality getEmbeddingQuality(CompoundProperty p)
 	//	{
 	//		return embedQualityPerProp.get(p);
 	//	}

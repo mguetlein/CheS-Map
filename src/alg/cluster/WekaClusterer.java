@@ -29,8 +29,8 @@ import weka.clusterers.SimpleKMeans;
 import weka.core.Instances;
 import data.DatasetFile;
 import dataInterface.CompoundData;
-import dataInterface.MolecularPropertyOwner;
-import dataInterface.MoleculeProperty;
+import dataInterface.CompoundPropertyOwner;
+import dataInterface.CompoundProperty;
 
 public class WekaClusterer extends AbstractDatasetClusterer
 {
@@ -155,12 +155,12 @@ public class WekaClusterer extends AbstractDatasetClusterer
 	}
 
 	@Override
-	protected List<Integer[]> cluster(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
+	protected List<Integer[]> cluster(DatasetFile dataset, List<CompoundData> compounds, List<CompoundProperty> features)
 	{
 		WekaPropertyUtil.setProperties(wekaClusterer, properties);
 
 		TaskProvider.verbose("Converting data to arff-format");
-		File f = CompoundArffWriter.writeArffFile(dataset, ListUtil.cast(MolecularPropertyOwner.class, compounds),
+		File f = CompoundArffWriter.writeArffFile(dataset, ListUtil.cast(CompoundPropertyOwner.class, compounds),
 				features);
 
 		try

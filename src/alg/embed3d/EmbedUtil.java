@@ -13,9 +13,9 @@ import util.DoubleArraySummary;
 import util.ObjectUtil;
 import util.Vector3fUtil;
 import data.DatasetFile;
-import dataInterface.MolecularPropertyOwner;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculeProperty.Type;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.Type;
+import dataInterface.CompoundPropertyOwner;
 
 public class EmbedUtil
 {
@@ -28,8 +28,8 @@ public class EmbedUtil
 		return computeRSquare(d1, d2);
 	}
 
-	public static double computeRSquare(List<Vector3f> positions, List<MolecularPropertyOwner> instances,
-			List<MoleculeProperty> features, DatasetFile dataset)
+	public static double computeRSquare(List<Vector3f> positions, List<CompoundPropertyOwner> instances,
+			List<CompoundProperty> features, DatasetFile dataset)
 	{
 		return computeRSquare(positions, euclMatrix(instances, features, dataset));
 	}
@@ -72,8 +72,8 @@ public class EmbedUtil
 		return computeCCC(d1, d2);
 	}
 
-	public static double computeCCC(List<Vector3f> positions, List<MolecularPropertyOwner> instances,
-			List<MoleculeProperty> features, DatasetFile dataset)
+	public static double computeCCC(List<Vector3f> positions, List<CompoundPropertyOwner> instances,
+			List<CompoundProperty> features, DatasetFile dataset)
 	{
 		return computeCCC(positions, euclMatrix(instances, features, dataset));
 	}
@@ -87,8 +87,8 @@ public class EmbedUtil
 		return computeCCCs(d1, d2);
 	}
 
-	public static double[] computeCCCs(List<Vector3f> positions, List<MolecularPropertyOwner> instances,
-			List<MoleculeProperty> features, DatasetFile dataset)
+	public static double[] computeCCCs(List<Vector3f> positions, List<CompoundPropertyOwner> instances,
+			List<CompoundProperty> features, DatasetFile dataset)
 	{
 		return computeCCCs(positions, euclMatrix(instances, features, dataset));
 	}
@@ -195,16 +195,16 @@ public class EmbedUtil
 		//		Settings.LOGGER.println(ArrayUtil.toString(d));
 	}
 
-	private static double[][] euclMatrix(List<MolecularPropertyOwner> instances, List<MoleculeProperty> features,
+	private static double[][] euclMatrix(List<CompoundPropertyOwner> instances, List<CompoundProperty> features,
 			DatasetFile dataset)
 	{
-		HashMap<MolecularPropertyOwner, double[]> vals = new HashMap<MolecularPropertyOwner, double[]>();
+		HashMap<CompoundPropertyOwner, double[]> vals = new HashMap<CompoundPropertyOwner, double[]>();
 		for (int i = 0; i < instances.size(); i++)
 		{
 			List<Double> v_i = new ArrayList<Double>();
 			for (int k = 0; k < features.size(); k++)
 			{
-				MoleculeProperty feature = features.get(k);
+				CompoundProperty feature = features.get(k);
 				if (feature.getType() == Type.NUMERIC)
 				{
 					Double v = instances.get(i).getNormalizedValue(feature);
@@ -350,15 +350,15 @@ public class EmbedUtil
 		}
 	}
 
-	//	public static class MoleculePropertyEmbedQuality implements Comparable<MoleculePropertyEmbedQuality>
+	//	public static class CompoundPropertyEmbedQuality implements Comparable<CompoundPropertyEmbedQuality>
 	//	{
 	//		Double d;
-	//		MoleculeProperty feature;
+	//		CompoundProperty feature;
 	//		List<Vector3f> positions;
 	//		List<MolecularPropertyOwner> instances;
 	//		DatasetFile dataset;
 	//
-	//		public MoleculePropertyEmbedQuality(MoleculeProperty feature, List<Vector3f> positions,
+	//		public CompoundPropertyEmbedQuality(CompoundProperty feature, List<Vector3f> positions,
 	//				List<MolecularPropertyOwner> instances, DatasetFile dataset)
 	//		{
 	//			this.feature = feature;
@@ -367,9 +367,9 @@ public class EmbedUtil
 	//			this.dataset = dataset;
 	//		}
 	//
-	//		public MoleculePropertyEmbedQuality clone()
+	//		public CompoundPropertyEmbedQuality clone()
 	//		{
-	//			return new MoleculePropertyEmbedQuality(feature, positions, instances, dataset);
+	//			return new CompoundPropertyEmbedQuality(feature, positions, instances, dataset);
 	//		}
 	//
 	//		public String toString()
@@ -389,7 +389,7 @@ public class EmbedUtil
 	//					d = Double.NaN;
 	//				else
 	//				{
-	//					List<MoleculeProperty> features = new ArrayList<MoleculeProperty>();
+	//					List<CompoundProperty> features = new ArrayList<CompoundProperty>();
 	//					features.add(feature);
 	//					double m[][] = euclMatrix(instances, features, dataset);
 	//					d = computeCCC(positions, dims, m);
@@ -398,7 +398,7 @@ public class EmbedUtil
 	//			return d;
 	//		}
 	//
-	//		public int compareTo(MoleculePropertyEmbedQuality o)
+	//		public int compareTo(CompoundPropertyEmbedQuality o)
 	//		{
 	//			if (d == null || Double.isNaN(d))
 	//			{

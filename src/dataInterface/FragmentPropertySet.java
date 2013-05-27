@@ -5,7 +5,7 @@ import java.beans.PropertyChangeListener;
 
 import data.fragments.StructuralFragmentProperties;
 
-public abstract class FragmentPropertySet implements MoleculePropertySet
+public abstract class FragmentPropertySet implements CompoundPropertySet
 {
 	public FragmentPropertySet()
 	{

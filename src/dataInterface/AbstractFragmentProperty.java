@@ -5,7 +5,7 @@ import java.util.HashMap;
 import data.DatasetFile;
 import data.fragments.MatchEngine;
 
-public abstract class AbstractFragmentProperty extends AbstractMoleculeProperty
+public abstract class AbstractFragmentProperty extends AbstractCompoundProperty
 {
 	public AbstractFragmentProperty(String name, String description, String smarts, MatchEngine matchEngine)
 	{

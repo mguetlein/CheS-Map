@@ -3,7 +3,7 @@ package dataInterface;
 import data.DatasetFile;
 import data.fragments.MatchEngine;
 
-public interface MoleculeProperty
+public interface CompoundProperty
 {
 	public static enum Type
 	{
@@ -30,7 +30,7 @@ public interface MoleculeProperty
 
 	public MatchEngine getSmartsMatchEngine();
 
-	public MoleculePropertySet getMoleculePropertySet();
+	public CompoundPropertySet getCompoundPropertySet();
 
 	public String getUniqueName();
 

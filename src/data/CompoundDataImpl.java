@@ -9,16 +9,16 @@ import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IMolecule;
 
 import dataInterface.CompoundData;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculeProperty.Type;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.Type;
 
 public class CompoundDataImpl implements CompoundData
 {
 	private Vector3f position;
 	private int index;
-	private HashMap<MoleculeProperty, String> stringValues = new HashMap<MoleculeProperty, String>();
-	private HashMap<MoleculeProperty, Double> doubleValues = new HashMap<MoleculeProperty, Double>();
-	private HashMap<MoleculeProperty, Double> normalizedValues = new HashMap<MoleculeProperty, Double>();
+	private HashMap<CompoundProperty, String> stringValues = new HashMap<CompoundProperty, String>();
+	private HashMap<CompoundProperty, Double> doubleValues = new HashMap<CompoundProperty, Double>();
+	private HashMap<CompoundProperty, Double> normalizedValues = new HashMap<CompoundProperty, Double>();
 	private String smiles;
 	private IMolecule iMolecule;
 
@@ -50,36 +50,36 @@ public class CompoundDataImpl implements CompoundData
 		this.index = index;
 	}
 
-	public void setDoubleValue(MoleculeProperty p, Double v)
+	public void setDoubleValue(CompoundProperty p, Double v)
 	{
 		doubleValues.put(p, v);
 	}
 
-	public void setStringValue(MoleculeProperty p, String v)
+	public void setStringValue(CompoundProperty p, String v)
 	{
 		stringValues.put(p, v);
 	}
 
-	public void setNormalizedValue(MoleculeProperty p, Double v)
+	public void setNormalizedValue(CompoundProperty p, Double v)
 	{
 		normalizedValues.put(p, v);
 	}
 
-	public Double getDoubleValue(MoleculeProperty p)
+	public Double getDoubleValue(CompoundProperty p)
 	{
 		if (p.getType() != Type.NUMERIC)
 			throw new IllegalStateException();
 		return doubleValues.get(p);
 	}
 
-	public String getStringValue(MoleculeProperty p)
+	public String getStringValue(CompoundProperty p)
 	{
 		if (p.getType() == Type.NUMERIC)
 			throw new IllegalStateException(p + " is numeric!");
 		return stringValues.get(p);
 	}
 
-	public Double getNormalizedValue(MoleculeProperty p)
+	public Double getNormalizedValue(CompoundProperty p)
 	{
 		if (p.getType() != Type.NUMERIC)
 			throw new IllegalStateException();

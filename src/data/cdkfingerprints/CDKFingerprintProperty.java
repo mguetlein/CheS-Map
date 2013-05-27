@@ -26,7 +26,7 @@ public class CDKFingerprintProperty extends AbstractFragmentProperty
 	}
 
 	@Override
-	public CDKFingerprintSet getMoleculePropertySet()
+	public CDKFingerprintSet getCompoundPropertySet()
 	{
 		return set;
 	}

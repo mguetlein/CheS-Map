@@ -22,10 +22,10 @@ import data.DatasetFile;
 import data.DefaultFeatureComputer;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
-import dataInterface.MolecularPropertyOwner;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculePropertySet;
-import dataInterface.MoleculePropertyUtil;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertyOwner;
+import dataInterface.CompoundPropertySet;
+import dataInterface.CompoundPropertyUtil;
 
 public class CheSMapping
 {
@@ -40,7 +40,7 @@ public class CheSMapping
 	NoClusterer noClusterer = NoClusterer.INSTANCE;
 	ThreeDAligner noAligner = NoAligner.INSTANCE;
 
-	public CheSMapping(DatasetFile dataset, MoleculePropertySet features[], DatasetClusterer datasetClusterer,
+	public CheSMapping(DatasetFile dataset, CompoundPropertySet features[], DatasetClusterer datasetClusterer,
 			ThreeDBuilder threeDGenerator, ThreeDEmbedder threeDEmbedder, ThreeDAligner threeDAligner)
 	{
 		this.dataset = dataset;
@@ -73,7 +73,7 @@ public class CheSMapping
 					threeDGenerator.build3D(dataset);
 					dataset.setSDFPath(threeDGenerator.get3DSDFFile(), true);
 					if (!dataset.getSDFPath(true).equals(dataset.getSDFPath(false)))
-						dataset.updateMoleculesStructure(true);
+						dataset.updateCompoundStructure(true);
 
 					ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getFullName(),
 							dataset.getSDFPath(true));
@@ -82,16 +82,16 @@ public class CheSMapping
 						return;
 					TaskProvider.update(20, "Compute features");
 					featureComputer.computeFeatures(dataset);
-					for (MoleculeProperty f : featureComputer.getFeatures())
+					for (CompoundProperty f : featureComputer.getFeatures())
 						clustering.addFeature(f);
-					for (MoleculeProperty p : featureComputer.getProperties())
+					for (CompoundProperty p : featureComputer.getProperties())
 						clustering.addProperty(p);
 					for (CompoundData c : featureComputer.getCompounds())
 						clustering.addCompound(c);
 
-					List<MoleculeProperty> featuresWithInfo = new ArrayList<MoleculeProperty>();
-					for (MoleculeProperty p : clustering.getFeatures())
-						if (!MoleculePropertyUtil.hasUniqueValue(p, dataset))
+					List<CompoundProperty> featuresWithInfo = new ArrayList<CompoundProperty>();
+					for (CompoundProperty p : clustering.getFeatures())
+						if (!CompoundPropertyUtil.hasUniqueValue(p, dataset))
 							featuresWithInfo.add(p);
 
 					if (!TaskProvider.isRunning())
@@ -160,7 +160,7 @@ public class CheSMapping
 		return alignException;
 	}
 
-	private void clusterDataset(DatasetFile dataset, ClusteringData clustering, List<MoleculeProperty> featuresWithInfo)
+	private void clusterDataset(DatasetFile dataset, ClusteringData clustering, List<CompoundProperty> featuresWithInfo)
 	{
 		DatasetClusterer clusterer = datasetClusterer;
 		clusterException = null;
@@ -204,7 +204,7 @@ public class CheSMapping
 	}
 
 	@SuppressWarnings("unchecked")
-	private void embedDataset(DatasetFile dataset, ClusteringData clustering, List<MoleculeProperty> featuresWithInfo)
+	private void embedDataset(DatasetFile dataset, ClusteringData clustering, List<CompoundProperty> featuresWithInfo)
 	{
 		embedderException = null;
 		ThreeDEmbedder emb = threeDEmbedder;
@@ -227,7 +227,7 @@ public class CheSMapping
 		}
 		try
 		{
-			emb.embedDataset(dataset, ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()),
+			emb.embedDataset(dataset, ListUtil.cast(CompoundPropertyOwner.class, clustering.getCompounds()),
 					featuresWithInfo);
 		}
 		catch (Exception e)
@@ -239,8 +239,8 @@ public class CheSMapping
 			TaskProvider.warning(emb.getName() + " failed on embedding dataset, CheS-Mapper uses random positions",
 					e.getMessage());
 			emb = randomEmbedder;
-			randomEmbedder.embedDataset(dataset,
-					ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds()), featuresWithInfo);
+			randomEmbedder.embedDataset(dataset, ListUtil.cast(CompoundPropertyOwner.class, clustering.getCompounds()),
+					featuresWithInfo);
 		}
 
 		//		if (emb.getProcessMessages() != null && emb.getProcessMessages().containsWarning())
@@ -286,7 +286,7 @@ public class CheSMapping
 		else
 			clustering.setEmbedQuality("n/a");
 
-		//		for (MoleculeProperty p : ListUtil.concat(clustering.getProperties(), clustering.getFeatures()))
+		//		for (CompoundProperty p : ListUtil.concat(clustering.getProperties(), clustering.getFeatures()))
 		//			clustering.setEmbeddingQuality(
 		//					p,
 		//					emb.getEmbedQuality(p, dataset,

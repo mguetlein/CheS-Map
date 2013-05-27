@@ -31,7 +31,7 @@ public class OBFingerprintProperty extends AbstractFragmentProperty
 	}
 
 	@Override
-	public OBFingerprintSet getMoleculePropertySet()
+	public OBFingerprintSet getCompoundPropertySet()
 	{
 		return new OBFingerprintSet(type);
 	}

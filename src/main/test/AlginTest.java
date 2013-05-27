@@ -1,6 +1,5 @@
 package main.test;
 
-
 public class AlginTest
 {
 	public static void main(String args[])
@@ -12,14 +11,14 @@ public class AlginTest
 		//		//		threed.generate3D(backbone);
 		//		//		threed.generate3D(cluster);
 		//
-		//		IMolecule mols[] = CDKService.getMoleculeFromSdf(cluster, false);
+		//		IMolecule mols[] = CDKService.getCompoundFromSdf(cluster, false);
 		//		Settings.LOGGER.println(ArrayUtil.toString(CDKService.getStringFromSdf(cluster, CDKProperty.SMILES)));
 		//		for (IMolecule iMolecule : mols)
 		//		{
 		//			Settings.LOGGER.println(iMolecule.getAtomCount());
 		//		}
 		//
-		//		IMolecule back[] = CDKService.getMoleculeFromSdf(backbone, false);
+		//		IMolecule back[] = CDKService.getCompoundFromSdf(backbone, false);
 		//		Settings.LOGGER.println(ArrayUtil.toString(CDKService.getStringFromSdf(backbone, CDKProperty.SMILES)));
 		//		for (IMolecule iMolecule : back)
 		//		{

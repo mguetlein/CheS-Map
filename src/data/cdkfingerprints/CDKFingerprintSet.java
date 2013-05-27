@@ -23,7 +23,7 @@ import data.DatasetFile;
 import data.cdk.CDKDescriptor;
 import data.fragments.StructuralFragmentProperties;
 import dataInterface.FragmentPropertySet;
-import dataInterface.MoleculeProperty.Type;
+import dataInterface.CompoundProperty.Type;
 
 public class CDKFingerprintSet extends FragmentPropertySet
 {
@@ -159,7 +159,7 @@ public class CDKFingerprintSet extends FragmentPropertySet
 			TaskProvider.verbose("Computing CDK fingerprint for compound " + (m + 1) + "/" + dataset.numCompounds());
 			//			TaskProvider.task().verbose("Total number of matched structural fragments (unfiltered): " + ps.size());
 
-			IMolecule mol = dataset.getMolecules()[m];
+			IMolecule mol = dataset.getCompounds()[m];
 			try
 			{
 				BitSet bs = fingerprinter.getFingerprint(mol);

@@ -10,7 +10,7 @@ import main.Settings;
 import util.ArrayUtil;
 import util.ExternalToolUtil;
 import util.FileUtil;
-import dataInterface.MoleculeProperty.Type;
+import dataInterface.CompoundProperty.Type;
 
 public class OBDescriptorFactory
 {

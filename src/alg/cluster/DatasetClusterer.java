@@ -10,7 +10,7 @@ import alg.cluster.r.AbstractRClusterer;
 import data.DatasetFile;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
-import dataInterface.MoleculeProperty;
+import dataInterface.CompoundProperty;
 
 public interface DatasetClusterer extends Algorithm
 {
@@ -18,7 +18,7 @@ public interface DatasetClusterer extends Algorithm
 			new DatasetClusterer[] { NoClusterer.INSTANCE }, WekaClusterer.WEKA_CLUSTERER,
 			AbstractRClusterer.R_CLUSTERER, new DatasetClusterer[] { ManualClusterer.INSTANCE });
 
-	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
+	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<CompoundProperty> features)
 			throws Exception;
 
 	public List<ClusterData> getClusters();

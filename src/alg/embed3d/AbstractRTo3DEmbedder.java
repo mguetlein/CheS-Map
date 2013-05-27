@@ -24,9 +24,9 @@ import util.ExternalToolUtil;
 import util.FileUtil;
 import alg.AlgorithmException.EmbedException;
 import data.DatasetFile;
-import dataInterface.MolecularPropertyOwner;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculePropertyUtil;
+import dataInterface.CompoundPropertyOwner;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertyUtil;
 
 public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 {
@@ -41,8 +41,8 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 	protected abstract String getErrorDescription(String errorOut);
 
 	@Override
-	public List<Vector3f> embed(DatasetFile dataset, final List<MolecularPropertyOwner> instances,
-			final List<MoleculeProperty> features) throws IOException
+	public List<Vector3f> embed(DatasetFile dataset, final List<CompoundPropertyOwner> instances,
+			final List<CompoundProperty> features) throws IOException
 	{
 		processMessages.clear();
 		if (features.size() < getMinNumFeatures())
@@ -59,13 +59,13 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		try
 		{
 			String propsMD5 = PropertyUtil.getPropertyMD5(getProperties());
-			String datasetMD5 = MoleculePropertyUtil.getSetMD5(features, dataset.getMD5());
+			String datasetMD5 = CompoundPropertyUtil.getSetMD5(features, dataset.getMD5());
 
 			String featureTableFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + datasetMD5
 					+ ".features.table");
 			if (!Settings.CACHING_ENABLED || !new File(featureTableFile).exists())
 				ExportRUtil.toRTable(features,
-						MoleculePropertyUtil.valuesReplaceNullWithMedian(features, instances, dataset),
+						CompoundPropertyUtil.valuesReplaceNullWithMedian(features, instances, dataset),
 						featureTableFile);
 			else
 				Settings.LOGGER.info("load cached features from " + featureTableFile);

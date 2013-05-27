@@ -11,7 +11,7 @@ import main.TaskProvider;
 import task.Task;
 import task.TaskDialog;
 import util.SequentialWorkerThread;
-import dataInterface.MoleculePropertySet;
+import dataInterface.CompoundPropertySet;
 
 public class FeatureLoader
 {
@@ -39,12 +39,12 @@ public class FeatureLoader
 			ll.propertyChange(new PropertyChangeEvent(this, prop, false, true));
 	}
 
-	public void loadFeature(MoleculePropertySet set, DatasetFile dataset, Window owner)
+	public void loadFeature(CompoundPropertySet set, DatasetFile dataset, Window owner)
 	{
-		loadFeatures(new MoleculePropertySet[] { set }, dataset, owner);
+		loadFeatures(new CompoundPropertySet[] { set }, dataset, owner);
 	}
 
-	public void loadFeatures(final MoleculePropertySet[] sets, final DatasetFile dataset, final Window owner)
+	public void loadFeatures(final CompoundPropertySet[] sets, final DatasetFile dataset, final Window owner)
 	{
 		worker.waitUntilDone();
 		worker.addJob(new Runnable()
@@ -57,12 +57,12 @@ public class FeatureLoader
 					Task task = TaskProvider.initTask("Compute features");
 					new TaskDialog(task, owner);
 					int num = 0;
-					for (MoleculePropertySet set : sets)
+					for (CompoundPropertySet set : sets)
 						if (!set.isComputed(dataset))
 							num++;
 					int step = 100 / num;
 					int p = 0;
-					for (MoleculePropertySet set : sets)
+					for (CompoundPropertySet set : sets)
 						if (!set.isComputed(dataset))
 						{
 							TaskProvider.update(p, " Compute feature: " + set);

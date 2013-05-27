@@ -13,7 +13,7 @@ import util.ToStringComparator;
 import data.DatasetFile;
 import data.fragments.MatchEngine;
 
-public abstract class AbstractMoleculeProperty implements MoleculeProperty
+public abstract class AbstractCompoundProperty implements CompoundProperty
 {
 	protected String name;
 	private String uniqueName;
@@ -25,7 +25,7 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 	protected String smarts;
 	protected MatchEngine matchEngine;
 
-	private static HashMap<String, AbstractMoleculeProperty> uniqueNames = new HashMap<String, AbstractMoleculeProperty>();
+	private static HashMap<String, AbstractCompoundProperty> uniqueNames = new HashMap<String, AbstractCompoundProperty>();
 
 	public static void clearPropertyOfType(Class<?> type)
 	{
@@ -37,12 +37,12 @@ public abstract class AbstractMoleculeProperty implements MoleculeProperty
 			uniqueNames.remove(k);
 	}
 
-	public AbstractMoleculeProperty(String name, String description)
+	public AbstractCompoundProperty(String name, String description)
 	{
 		this(name, name, description);
 	}
 
-	public AbstractMoleculeProperty(String name, String uniqueName, String description)
+	public AbstractCompoundProperty(String name, String uniqueName, String description)
 	{
 		if (uniqueNames.containsKey(uniqueName))
 			throw new IllegalArgumentException("Not unique: " + uniqueName);

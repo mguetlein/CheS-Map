@@ -10,8 +10,8 @@ import alg.embed3d.r.SMACOF3DEmbedder;
 import alg.embed3d.r.Sammon3DEmbedder;
 import alg.embed3d.r.TSNEFeature3DEmbedder;
 import data.DatasetFile;
-import dataInterface.MolecularPropertyOwner;
-import dataInterface.MoleculeProperty;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertyOwner;
 
 public interface ThreeDEmbedder extends Algorithm
 {
@@ -21,8 +21,8 @@ public interface ThreeDEmbedder extends Algorithm
 
 	public boolean requiresFeatures();
 
-	public void embedDataset(DatasetFile dataset, List<MolecularPropertyOwner> instances,
-			List<MoleculeProperty> features) throws Exception;
+	public void embedDataset(DatasetFile dataset, List<CompoundPropertyOwner> instances, List<CompoundProperty> features)
+			throws Exception;
 
 	public List<Vector3f> getPositions();
 
@@ -30,13 +30,13 @@ public interface ThreeDEmbedder extends Algorithm
 
 	public double getCCC();
 
-	//	public MoleculePropertyEmbedQuality getEmbedQuality(MoleculeProperty p, DatasetFile dataset,
+	//	public CompoundPropertyEmbedQuality getEmbedQuality(CompoundProperty p, DatasetFile dataset,
 	//			List<MolecularPropertyOwner> instances);
 
 	public boolean isLinear();
 
 	public boolean isLocalMapping();
 
-	//	public MoleculeProperty getCCCProperty();
+	//	public CompoundProperty getCCCProperty();
 
 }

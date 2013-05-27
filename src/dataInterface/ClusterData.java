@@ -4,7 +4,7 @@ import java.util.List;
 
 import data.fragments.MatchEngine;
 
-public interface ClusterData extends MolecularPropertyOwner
+public interface ClusterData extends CompoundPropertyOwner
 {
 	public String getName();
 
@@ -20,9 +20,9 @@ public interface ClusterData extends MolecularPropertyOwner
 
 	public boolean isAligned();
 
-	public String getSummaryStringValue(MoleculeProperty p);
+	public String getSummaryStringValue(CompoundProperty p);
 
-	public int numMissingValues(MoleculeProperty p);
+	public int numMissingValues(CompoundProperty p);
 
 	public String getAlignAlgorithm();
 

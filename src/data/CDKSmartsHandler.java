@@ -60,7 +60,7 @@ public class CDKSmartsHandler implements SmartsHandler
 			}
 		}
 
-		IMolecule mols[] = dataset.getMolecules();
+		IMolecule mols[] = dataset.getCompounds();
 		for (int m = 0; m < mols.length; m++)
 		{
 			TaskProvider.verbose("Matching smarts on compound " + (m + 1) + "/" + mols.length);
@@ -76,7 +76,7 @@ public class CDKSmartsHandler implements SmartsHandler
 					}
 					catch (Exception e)
 					{
-						TaskProvider.warning("Could not match molecule", e);
+						TaskProvider.warning("Could not match compound", e);
 					}
 					if (!TaskProvider.isRunning())
 						return null;

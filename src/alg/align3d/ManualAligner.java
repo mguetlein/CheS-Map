@@ -17,7 +17,7 @@ import data.ClusterDataImpl;
 import data.DatasetFile;
 import data.fragments.MatchEngine;
 import dataInterface.ClusterData;
-import dataInterface.MoleculeProperty;
+import dataInterface.CompoundProperty;
 import dataInterface.SmartsUtil;
 import dataInterface.SubstructureSmartsType;
 
@@ -41,7 +41,7 @@ public class ManualAligner extends Abstract3DAligner
 	}
 
 	@Override
-	public void algin(DatasetFile dataset, List<ClusterData> clusters, List<MoleculeProperty> features)
+	public void algin(DatasetFile dataset, List<ClusterData> clusters, List<CompoundProperty> features)
 	{
 		for (ClusterData c : clusters)
 		{

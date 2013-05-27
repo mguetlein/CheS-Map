@@ -7,7 +7,7 @@ import alg.AbstractAlgorithm;
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import dataInterface.ClusterData;
-import dataInterface.MoleculeProperty;
+import dataInterface.CompoundProperty;
 import dataInterface.SubstructureSmartsType;
 
 public class NoAligner extends AbstractAlgorithm implements ThreeDAligner
@@ -36,7 +36,7 @@ public class NoAligner extends AbstractAlgorithm implements ThreeDAligner
 	}
 
 	@Override
-	public void algin(DatasetFile dataset, List<ClusterData> clusters, List<MoleculeProperty> features)
+	public void algin(DatasetFile dataset, List<ClusterData> clusters, List<CompoundProperty> features)
 	{
 		for (ClusterData c : clusters)
 			((ClusterDataImpl) c).setAlignAlgorithm(getName());

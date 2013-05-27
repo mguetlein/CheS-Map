@@ -3,20 +3,20 @@ package alg.embed3d;
 import gui.binloc.Binary;
 import util.ArrayUtil;
 import data.DatasetFile;
-import dataInterface.AbstractMoleculeProperty;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculePropertySet;
+import dataInterface.AbstractCompoundProperty;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertySet;
 
-public class CCCMoleculePropertySet extends AbstractMoleculeProperty implements MoleculePropertySet
+public class CCCPropertySet extends AbstractCompoundProperty implements CompoundPropertySet
 {
-	public CCCMoleculePropertySet(DatasetFile data, double d[])
+	public CCCPropertySet(DatasetFile data, double d[])
 	{
 		super("ccc", "ccc", "ccc description");
 		setDoubleValues(data, ArrayUtil.toDoubleArray(d));
 	}
 
 	@Override
-	public MoleculePropertySet getMoleculePropertySet()
+	public CompoundPropertySet getCompoundPropertySet()
 	{
 		return this;
 	}
@@ -58,7 +58,7 @@ public class CCCMoleculePropertySet extends AbstractMoleculeProperty implements 
 	}
 
 	@Override
-	public MoleculeProperty get(DatasetFile d, int index)
+	public CompoundProperty get(DatasetFile d, int index)
 	{
 		return this;
 	}

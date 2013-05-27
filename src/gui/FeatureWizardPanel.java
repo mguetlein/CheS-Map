@@ -55,18 +55,18 @@ import data.fragments.MatchEngine;
 import data.fragments.StructuralFragmentProperties;
 import data.fragments.StructuralFragments;
 import data.obdesc.OBDescriptorProperty;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.Type;
+import dataInterface.CompoundPropertySet;
+import dataInterface.CompoundPropertySetUtil;
 import dataInterface.FragmentPropertySet;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculeProperty.Type;
-import dataInterface.MoleculePropertySet;
-import dataInterface.MoleculePropertySetUtil;
 
 public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWorkflowProvider
 {
-	Selector<MoleculePropertySet> selector;
+	Selector<CompoundPropertySet> selector;
 	JLabel numFeaturesLabel;
 	LinkButton loadFeaturesButton = new LinkButton("Load");
-	MoleculePropertyPanel moleculePropertyPanel;
+	CompoundPropertyPanel compoundPropertyPanel;
 	JScrollPane propertyScroll;
 
 	DatasetFile dataset = null;
@@ -150,10 +150,10 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		builder.append(fragmentProperties.getSummaryPanel(wizard), 2);
 		propsPanel = builder.getPanel();
 
-		moleculePropertyPanel = new MoleculePropertyPanel(this, wizard);
+		compoundPropertyPanel = new CompoundPropertyPanel(this, wizard);
 		structuralFragmentPropsContainer = new JPanel(new BorderLayout());
 		JPanel combinedPropertyPanel = new JPanel(new BorderLayout());
-		combinedPropertyPanel.add(moleculePropertyPanel, BorderLayout.NORTH);
+		combinedPropertyPanel.add(compoundPropertyPanel, BorderLayout.NORTH);
 		combinedPropertyPanel.add(structuralFragmentPropsContainer, BorderLayout.CENTER);
 		combinedPropertyPanel.setBorder(new EmptyBorder(2, 2, 2, 2));
 		propertyScroll = WizardComponentFactory.getVerticalScrollPane(combinedPropertyPanel);
@@ -171,10 +171,10 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 
 	private void createSelector()
 	{
-		selector = new Selector<MoleculePropertySet>(MoleculePropertySet.class, ROOT,
+		selector = new Selector<CompoundPropertySet>(CompoundPropertySet.class, ROOT,
 				(ScreenSetup.SETUP.isWizardSpaceSmall() ? 6 : 12))
 		{
-			public Icon getIcon(MoleculePropertySet elem)
+			public Icon getIcon(CompoundPropertySet elem)
 			{
 				ImageIcon warningIcon = null;
 				ImageIcon typeIcon = null;
@@ -182,7 +182,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 				if (elem.getBinary() != null && !elem.getBinary().isFound())
 					warningIcon = ImageLoader.ERROR;
 
-				MoleculeProperty.Type type = MoleculePropertySetUtil.getType(elem);
+				CompoundProperty.Type type = CompoundPropertySetUtil.getType(elem);
 				if (type == Type.NUMERIC)
 					typeIcon = ImageLoader.NUMERIC;
 				else if (type == Type.NOMINAL)
@@ -202,13 +202,13 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			}
 
 			@Override
-			public boolean isValid(MoleculePropertySet elem)
+			public boolean isValid(CompoundPropertySet elem)
 			{
 				if (elem.getBinary() != null && !elem.getBinary().isFound())
 					return false;
 				if ((!elem.isSizeDynamic() || elem.isComputed(dataset)) && elem.getSize(dataset) == 0)
 					return false;
-				return MoleculePropertySetUtil.getType(elem) != null;
+				return CompoundPropertySetUtil.getType(elem) != null;
 			}
 
 			@Override
@@ -223,7 +223,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			}
 
 			@Override
-			public String getString(MoleculePropertySet elem)
+			public String getString(CompoundPropertySet elem)
 			{
 				if (elem.isSizeDynamic() && !elem.isComputed(dataset))
 					return elem + " (? features)";
@@ -265,14 +265,14 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			{
 				if (selector.getHighlightedElement() != null)
 				{
-					moleculePropertyPanel.setSelectedPropertySet(selector.getHighlightedElement());
+					compoundPropertyPanel.setSelectedPropertySet(selector.getHighlightedElement());
 					structuralFragmentPropsContainer.removeAll();
 					structuralFragmentPropsContainer.revalidate();
 					structuralFragmentPropsContainer.repaint();
 				}
 				else
 				{
-					moleculePropertyPanel.setSelectedPropertySet(null);
+					compoundPropertyPanel.setSelectedPropertySet(null);
 					updateFeatureProperties(selector.getHighlightedCategory());
 				}
 			}
@@ -287,7 +287,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 				b.append("Could not add the following feature(s)");
 				for (Object o : (List<?>) evt.getNewValue())
 					b.append("* " + o);
-				List<MoleculePropertySet> set = (List<MoleculePropertySet>) evt.getNewValue();
+				List<CompoundPropertySet> set = (List<CompoundPropertySet>) evt.getNewValue();
 				if (set.get(0).getBinary() != null && !set.get(0).getBinary().isFound())
 					b.append(BinHandler.getBinaryComponent(set.get(0).getBinary(), wizard));
 				else
@@ -325,9 +325,9 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			{
 				if (e.getKeyChar() == '#')
 				{
-					MoleculePropertySet p = (MoleculePropertySet) selector.getHighlightedElement();
+					CompoundPropertySet p = (CompoundPropertySet) selector.getHighlightedElement();
 					Settings.LOGGER.info("toggle type for " + p);
-					moleculePropertyPanel.toggleType();
+					compoundPropertyPanel.toggleType();
 				}
 			}
 		});
@@ -380,13 +380,13 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			}
 		});
 
-		moleculePropertyPanel.addPropertyChangeListener(new PropertyChangeListener()
+		compoundPropertyPanel.addPropertyChangeListener(new PropertyChangeListener()
 		{
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
-				if (evt.getPropertyName().equals(MoleculePropertyPanel.PROPERTY_TYPE_CHANGED)
-						|| evt.getPropertyName().equals(MoleculePropertyPanel.PROPERTY_CACHED_FEATURE_LOADED))
+				if (evt.getPropertyName().equals(CompoundPropertyPanel.PROPERTY_TYPE_CHANGED)
+						|| evt.getPropertyName().equals(CompoundPropertyPanel.PROPERTY_CACHED_FEATURE_LOADED))
 					update();
 			}
 		});
@@ -431,7 +431,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			//cdk sub categories
 			info = Settings.text("features.cdk.desc", Settings.CDK_STRING);
 		}
-		moleculePropertyPanel.showInfoText(info);
+		compoundPropertyPanel.showInfoText(info);
 		if (props == null)
 			structuralFragmentPropsContainer.removeAll();
 		else
@@ -441,7 +441,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 	}
 
 	int selectedPropertyIndex = 0;
-	List<MoleculeProperty> selectedProperties = new ArrayList<MoleculeProperty>();
+	List<CompoundProperty> selectedProperties = new ArrayList<CompoundProperty>();
 	FeatureInfo featureInfo;
 	Messages msg;
 
@@ -456,7 +456,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		boolean slowFeaturesSelected = false;
 		msg = null;
 		featureInfo = new FeatureInfo();
-		for (MoleculePropertySet set : selector.getSelected())
+		for (CompoundPropertySet set : selector.getSelected())
 		{
 			featureInfo.featuresSelected = true;
 			if (set.isSizeDynamic() && !set.isComputed(dataset))
@@ -492,7 +492,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			wizard.update();
 
 		if (selector.getHighlightedElement() != null)
-			moleculePropertyPanel.setSelectedPropertySet(selector.getHighlightedElement());
+			compoundPropertyPanel.setSelectedPropertySet(selector.getHighlightedElement());
 	}
 
 	public FeatureInfo getFeatureInfo()
@@ -536,7 +536,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			else
 				msg += "probably high.";
 			//						+ " Try precomputing the features in the feature wizard step" + " by pressing '"
-			//						+ MoleculePropertyPanel.LOAD_FEATURE_VALUES + "').";
+			//						+ CompoundPropertyPanel.LOAD_FEATURE_VALUES + "').";
 			return msg;
 		}
 	}
@@ -554,11 +554,11 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		if (wizard == null)
 			return;
 
-		moleculePropertyPanel.setDataset(dataset);
+		compoundPropertyPanel.setDataset(dataset);
 
 		selfUpdate = true;
 
-		MoleculePropertySet[] selected = selector.getSelected();
+		CompoundPropertySet[] selected = selector.getSelected();
 		selector.clearElements();
 
 		IntegratedProperty[] integrated = dataset.getIntegratedProperties(true);
@@ -571,7 +571,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		selector.addElements(STRUCTURAL_FRAGMENTS);
 		selector.addElementList(STRUCTURAL_FRAGMENTS, StructuralFragments.instance.getSets());
 
-		for (MoleculePropertySet m : getFeaturesFromMappingWorkflow(PropHandler.getProperties(), false))
+		for (CompoundPropertySet m : getFeaturesFromMappingWorkflow(PropHandler.getProperties(), false))
 			selector.setSelected(m);
 
 		selector.setSelected(selected);
@@ -581,7 +581,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 	}
 
 	@Override
-	public MoleculePropertySet[] getFeaturesFromMappingWorkflow(Properties props, boolean storeToSettings)
+	public CompoundPropertySet[] getFeaturesFromMappingWorkflow(Properties props, boolean storeToSettings)
 	{
 		for (Property p : StructuralFragmentProperties.getProperties())
 			p.loadOrResetToDefault(props);
@@ -596,7 +596,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 				p.put(PropHandler.getProperties());
 		}
 
-		List<MoleculePropertySet> features = new ArrayList<MoleculePropertySet>();
+		List<CompoundPropertySet> features = new ArrayList<CompoundPropertySet>();
 
 		String integratedFeatures = (String) props.get(propKeyIntegrated);
 		List<String> selection = StringUtil.split(integratedFeatures);
@@ -604,7 +604,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		{
 			int index = string.lastIndexOf('#');
 			if (index == -1)
-				throw new Error("no type in serialized molecule prop");
+				throw new Error("no type in serialized compound prop");
 			Type t = Type.valueOf(string.substring(index + 1));
 			String feat = string.substring(0, index);
 
@@ -626,7 +626,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		{
 			int index = string.lastIndexOf('#');
 			if (index == -1)
-				throw new Error("no type in serialized molecule prop");
+				throw new Error("no type in serialized compound prop");
 			Type t = Type.valueOf(string.substring(index + 1));
 			String feat = string.substring(0, index);
 			OBDescriptorProperty p = OBDescriptorProperty.fromString(feat, t);
@@ -642,7 +642,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 				features.add(d);
 		}
 
-		return ArrayUtil.toArray(MoleculePropertySet.class, features);
+		return ArrayUtil.toArray(CompoundPropertySet.class, features);
 	}
 
 	private String propKeyIntegrated = "features-integrated";
@@ -662,7 +662,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			else
 				PropHandler.remove(propKeyCDK);
 
-		MoleculePropertySet[] obFeats = selector.getSelected(OB_FEATURES);
+		CompoundPropertySet[] obFeats = selector.getSelected(OB_FEATURES);
 		if (obFeats.length > 0)
 		{
 			String[] serilizedOBFeats = new String[obFeats.length];
@@ -683,7 +683,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			fragmentProperties.store();
 	}
 
-	private void putIntegratedToProps(MoleculePropertySet[] integratedProps, Properties props)
+	private void putIntegratedToProps(CompoundPropertySet[] integratedProps, Properties props)
 	{
 		if (integratedProps.length > 0)
 		{
@@ -702,7 +702,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		return msg;
 	}
 
-	public MoleculePropertySet[] getSelectedFeatures()
+	public CompoundPropertySet[] getSelectedFeatures()
 	{
 		return selector.getSelected();
 	}

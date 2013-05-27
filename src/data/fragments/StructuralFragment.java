@@ -1,7 +1,7 @@
 package data.fragments;
 
 import dataInterface.AbstractFragmentProperty;
-import dataInterface.MoleculePropertySet;
+import dataInterface.CompoundPropertySet;
 
 public class StructuralFragment extends AbstractFragmentProperty
 {
@@ -14,7 +14,7 @@ public class StructuralFragment extends AbstractFragmentProperty
 	}
 
 	@Override
-	public MoleculePropertySet getMoleculePropertySet()
+	public CompoundPropertySet getCompoundPropertySet()
 	{
 		return set;
 	}

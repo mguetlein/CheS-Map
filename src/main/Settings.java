@@ -202,8 +202,6 @@ public class Settings
 
 	public static String CONTACT = "Martin Gütlein (ches-mapper@informatik.uni-freiburg.de)";
 
-	public static String SMSD_STRING = "The Small Molecule Subgraph Detector (SMSD) (see http://www.ebi.ac.uk/thornton-srv/software/SMSD, integrated into CDK)";
-
 	// ------------------ TMP/RESULT-FILE SUPPORT ---------------------------------------------
 
 	public static String[] getFragmentFiles()

@@ -13,7 +13,7 @@ import alg.cluster.DatasetClusterer;
 import data.ComputeMCS;
 import data.DatasetFile;
 import dataInterface.ClusterData;
-import dataInterface.MoleculeProperty;
+import dataInterface.CompoundProperty;
 import dataInterface.SubstructureSmartsType;
 
 public class MCSAligner extends Abstract3DAligner
@@ -37,7 +37,7 @@ public class MCSAligner extends Abstract3DAligner
 	}
 
 	@Override
-	public void algin(DatasetFile dataset, List<ClusterData> clusters, List<MoleculeProperty> features)
+	public void algin(DatasetFile dataset, List<ClusterData> clusters, List<CompoundProperty> features)
 	{
 		ComputeMCS.computeMCS(dataset, clusters);
 		if (!TaskProvider.isRunning())

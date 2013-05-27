@@ -21,7 +21,7 @@ public class ComputeMCS
 	{
 		int count = 0;
 
-		IMolecule allMols[] = dataset.getMolecules(false);
+		IMolecule allMols[] = dataset.getCompounds(false);
 
 		for (ClusterData c : clusters)
 		{

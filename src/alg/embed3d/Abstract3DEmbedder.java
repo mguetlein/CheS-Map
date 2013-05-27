@@ -17,9 +17,9 @@ import util.ValueFileCache;
 import alg.AbstractAlgorithm;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
-import dataInterface.MolecularPropertyOwner;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculePropertyUtil;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertyUtil;
+import dataInterface.CompoundPropertyOwner;
 
 public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedder
 {
@@ -33,7 +33,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	private double rSquare = -Double.MAX_VALUE;
 	private double ccc = -Double.MAX_VALUE;
 
-	//	private MoleculeProperty cccProp;
+	//	private CompoundProperty cccProp;
 
 	@Override
 	public final List<Vector3f> getPositions()
@@ -54,16 +54,16 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	}
 
 	//	@Override
-	//	public MoleculeProperty getCCCProperty()
+	//	public CompoundProperty getCCCProperty()
 	//	{
 	//		return cccProp;
 	//	}
 
 	//	@Override
-	//	public MoleculePropertyEmbedQuality getEmbedQuality(MoleculeProperty p, DatasetFile dataset,
-	//			List<MolecularPropertyOwner> instances)
+	//	public CompoundPropertyEmbedQuality getEmbedQuality(CompoundProperty p, DatasetFile dataset,
+	//			List<CompoundPropertyOwner> instances)
 	//	{
-	//		return new MoleculePropertyEmbedQuality(p, positions, instances, dataset);
+	//		return new CompoundPropertyEmbedQuality(p, positions, instances, dataset);
 	//	}
 
 	@Override
@@ -77,21 +77,21 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		return m;
 	}
 
-	protected abstract List<Vector3f> embed(DatasetFile dataset, List<MolecularPropertyOwner> instances,
-			List<MoleculeProperty> features) throws Exception;
+	protected abstract List<Vector3f> embed(DatasetFile dataset, List<CompoundPropertyOwner> instances,
+			List<CompoundProperty> features) throws Exception;
 
 	protected abstract String getShortName();
 
 	protected abstract double[][] getFeatureDistanceMatrix();
 
-	public void embedDataset(DatasetFile dataset, List<MolecularPropertyOwner> instances,
-			List<MoleculeProperty> features) throws Exception
+	public void embedDataset(DatasetFile dataset, List<CompoundPropertyOwner> instances,
+			List<CompoundProperty> features) throws Exception
 	{
 		String basename = dataset.getShortName()
 				+ "."
 				+ getShortName()
 				+ "."
-				+ MoleculePropertyUtil.getSetMD5(features,
+				+ CompoundPropertyUtil.getSetMD5(features,
 						dataset.getMD5() + " " + PropertyUtil.getPropertyMD5(getProperties()));
 		String embedFilename = Settings.destinationFile(dataset, basename + ".embed");
 		String rSquareFilename = Settings.destinationFile(dataset, basename + ".rSquare");
@@ -138,7 +138,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 			//				cccPropValues = EmbedUtil.computeCCCs(positions, instances, features, dataset);
 			//			ValueFileCache.writeCacheDouble2(cccPropFilename, ArrayUtil.toList(cccPropValues));
 		}
-		//		cccProp = new CCCMoleculePropertySet(dataset, cccPropValues);
+		//		cccProp = new CCCCompoundPropertySet(dataset, cccPropValues);
 
 		if (positions.size() != instances.size())
 			throw new IllegalStateException("illegal num positions " + positions.size() + " " + instances.size());

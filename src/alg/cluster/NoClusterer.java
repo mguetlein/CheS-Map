@@ -11,7 +11,7 @@ import data.ClusterDataImpl;
 import data.DatasetFile;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
-import dataInterface.MoleculeProperty;
+import dataInterface.CompoundProperty;
 
 public class NoClusterer extends AbstractAlgorithm implements DatasetClusterer
 {
@@ -41,7 +41,7 @@ public class NoClusterer extends AbstractAlgorithm implements DatasetClusterer
 	}
 
 	@Override
-	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
+	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<CompoundProperty> features)
 	{
 		clusters = new ArrayList<ClusterData>();
 		ClusterDataImpl c = new ClusterDataImpl();

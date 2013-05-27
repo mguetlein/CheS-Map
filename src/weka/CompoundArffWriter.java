@@ -5,17 +5,17 @@ import java.util.List;
 
 import main.Settings;
 import data.DatasetFile;
-import dataInterface.MolecularPropertyOwner;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculeProperty.Type;
-import dataInterface.MoleculePropertyUtil;
+import dataInterface.CompoundPropertyOwner;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.Type;
+import dataInterface.CompoundPropertyUtil;
 
 public class CompoundArffWriter implements ArffWritable
 {
-	public static File writeArffFile(DatasetFile dataset, List<MolecularPropertyOwner> compounds,
-			List<MoleculeProperty> features)
+	public static File writeArffFile(DatasetFile dataset, List<CompoundPropertyOwner> compounds,
+			List<CompoundProperty> features)
 	{
-		String enc = MoleculePropertyUtil.getSetMD5(features, dataset.getMD5());
+		String enc = CompoundPropertyUtil.getSetMD5(features, dataset.getMD5());
 		String arffFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + enc + ".arff");
 		File file = new File(arffFile);
 		if (!Settings.CACHING_ENABLED || !file.exists())
@@ -28,16 +28,16 @@ public class CompoundArffWriter implements ArffWritable
 		return file;
 	}
 
-	List<MolecularPropertyOwner> compounds;
-	List<MoleculeProperty> features;
+	List<CompoundPropertyOwner> compounds;
+	List<CompoundProperty> features;
 	boolean sparse = true;
 
-	private CompoundArffWriter(List<MolecularPropertyOwner> compounds, List<MoleculeProperty> features)
+	private CompoundArffWriter(List<CompoundPropertyOwner> compounds, List<CompoundProperty> features)
 	{
 		this.compounds = compounds;
 		this.features = features;
 
-		for (MoleculeProperty p : features)
+		for (CompoundProperty p : features)
 			if (p.getType() == Type.NUMERIC)
 			{
 				sparse = false;

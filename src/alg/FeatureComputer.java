@@ -4,15 +4,15 @@ import java.util.List;
 
 import data.DatasetFile;
 import dataInterface.CompoundData;
-import dataInterface.MoleculeProperty;
+import dataInterface.CompoundProperty;
 
 public interface FeatureComputer
 {
 	public void computeFeatures(DatasetFile dataset);
 
-	public List<MoleculeProperty> getFeatures();
+	public List<CompoundProperty> getFeatures();
 
-	public List<MoleculeProperty> getProperties();
+	public List<CompoundProperty> getProperties();
 
 	public List<CompoundData> getCompounds();
 }

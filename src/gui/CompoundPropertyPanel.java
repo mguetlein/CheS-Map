@@ -48,20 +48,20 @@ import com.jgoodies.forms.layout.FormLayout;
 import data.DatasetFile;
 import data.FeatureLoader;
 import dataInterface.FragmentPropertySet;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculeProperty.Type;
-import dataInterface.MoleculePropertySet;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.Type;
+import dataInterface.CompoundPropertySet;
 import freechart.AbstractFreeChartPanel;
 import freechart.BarPlotPanel;
 import freechart.HistogramPanel;
 
-public class MoleculePropertyPanel extends JPanel
+public class CompoundPropertyPanel extends JPanel
 {
 	public static final String PROPERTY_TYPE_CHANGED = "PROPERTY_TYPE_CHANGED";
 	public static final String PROPERTY_CACHED_FEATURE_LOADED = "PROPERTY_CACHED_FEATURE_LOADED";
 
 	private int selectedPropertyIndex = 0;
-	private MoleculePropertySet selectedPropertySet;
+	private CompoundPropertySet selectedPropertySet;
 
 	MoreTextPanel descPanel = new MoreTextPanel();
 	JPanel cardPanel = new JPanel(new CardLayout());
@@ -91,7 +91,7 @@ public class MoleculePropertyPanel extends JPanel
 
 	JPanel fragmentProps;
 
-	public MoleculePropertyPanel(FeatureWizardPanel featurePanel, Window owner)
+	public CompoundPropertyPanel(FeatureWizardPanel featurePanel, Window owner)
 	{
 		fragmentProps = featurePanel.getFragmentPropPanel().getSummaryPanel(owner);
 		buildLayout();
@@ -161,7 +161,7 @@ public class MoleculePropertyPanel extends JPanel
 
 	public void toggleType()
 	{
-		MoleculeProperty p = selectedPropertySet.get(dataset, selectedPropertyIndex);
+		CompoundProperty p = selectedPropertySet.get(dataset, selectedPropertyIndex);
 		if (p.getType() == Type.NOMINAL)
 			setType(Type.NUMERIC);
 		else
@@ -173,7 +173,7 @@ public class MoleculePropertyPanel extends JPanel
 		if (selectedPropertySet != null && selectedPropertySet.get(dataset, selectedPropertyIndex).getType() != type
 				&& selectedPropertySet.get(dataset, selectedPropertyIndex).isTypeAllowed(type))
 		{
-			MoleculeProperty p = selectedPropertySet.get(dataset, selectedPropertyIndex);
+			CompoundProperty p = selectedPropertySet.get(dataset, selectedPropertyIndex);
 			p.setType(type);
 			firePropertyChange(PROPERTY_TYPE_CHANGED, false, true);
 			loadComputedOrCachedProperty();
@@ -236,7 +236,7 @@ public class MoleculePropertyPanel extends JPanel
 				//load(true);
 				showCard("loading", loadingPanel);
 				FeatureLoader.instance.loadFeature(selectedPropertySet, dataset,
-						(Window) MoleculePropertyPanel.this.getTopLevelAncestor());
+						(Window) CompoundPropertyPanel.this.getTopLevelAncestor());
 			}
 		});
 
@@ -262,7 +262,7 @@ public class MoleculePropertyPanel extends JPanel
 
 	private JTable rawDataTable()
 	{
-		final MoleculeProperty selectedProperty = selectedPropertySet.get(dataset, selectedPropertyIndex);
+		final CompoundProperty selectedProperty = selectedPropertySet.get(dataset, selectedPropertyIndex);
 		Object o[];
 		Double n[] = null;
 		String[] c = new String[] { "Index", selectedPropertySet.get(dataset, selectedPropertyIndex).toString() };
@@ -318,7 +318,7 @@ public class MoleculePropertyPanel extends JPanel
 		return table;
 	}
 
-	private void updatePlotPanel(MoleculePropertySet prop, int propIndex)
+	private void updatePlotPanel(CompoundPropertySet prop, int propIndex)
 	{
 		selfUpdate = true;
 		comboBox.removeAllItems();
@@ -351,7 +351,7 @@ public class MoleculePropertyPanel extends JPanel
 		JPanel p = null;
 		if (prop.getSize(dataset) > 0)
 		{
-			MoleculeProperty selectedProperty = prop.get(dataset, propIndex);
+			CompoundProperty selectedProperty = prop.get(dataset, propIndex);
 			nominalFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NOMINAL));
 			numericFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NUMERIC));
 
@@ -365,7 +365,7 @@ public class MoleculePropertyPanel extends JPanel
 
 			rawDataLink.setEnabled(true);
 
-			MoleculeProperty.Type type = selectedProperty.getType();
+			CompoundProperty.Type type = selectedProperty.getType();
 			if (type == Type.NOMINAL)
 			{
 				nominalFeatureButton.setSelected(true);
@@ -450,7 +450,7 @@ public class MoleculePropertyPanel extends JPanel
 			return;
 		loading.add(dataset);
 
-		final MoleculePropertySet prop = selectedPropertySet;
+		final CompoundPropertySet prop = selectedPropertySet;
 		final int propIndex = selectedPropertyIndex;
 
 		Thread th = new Thread(new Runnable()
@@ -496,7 +496,7 @@ public class MoleculePropertyPanel extends JPanel
 		cardPanel.setVisible(true);
 	}
 
-	public void setSelectedPropertySet(MoleculePropertySet prop)
+	public void setSelectedPropertySet(CompoundPropertySet prop)
 	{
 		Settings.LOGGER.info("updating selected prop: " + prop);
 
@@ -530,7 +530,7 @@ public class MoleculePropertyPanel extends JPanel
 		}
 	}
 
-	public MoleculePropertySet getSelectedPropertySet()
+	public CompoundPropertySet getSelectedPropertySet()
 	{
 		return selectedPropertySet;
 	}

@@ -3,9 +3,9 @@ package data.cdk;
 import java.util.HashMap;
 
 import util.ArrayUtil;
-import dataInterface.AbstractMoleculeProperty;
+import dataInterface.AbstractCompoundProperty;
 
-public class CDKProperty extends AbstractMoleculeProperty
+public class CDKProperty extends AbstractCompoundProperty
 {
 	private CDKDescriptor desc;
 	private int index;
@@ -53,7 +53,7 @@ public class CDKProperty extends AbstractMoleculeProperty
 	}
 
 	@Override
-	public CDKPropertySet getMoleculePropertySet()
+	public CDKPropertySet getCompoundPropertySet()
 	{
 		return new CDKPropertySet(desc);
 	}

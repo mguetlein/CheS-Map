@@ -23,7 +23,7 @@ import data.CDKSmartsHandler;
 import data.DatasetFile;
 import data.OpenBabelSmartsHandler;
 import dataInterface.FragmentPropertySet;
-import dataInterface.MoleculeProperty.Type;
+import dataInterface.CompoundProperty.Type;
 
 public class StructuralFragmentSet extends FragmentPropertySet
 {

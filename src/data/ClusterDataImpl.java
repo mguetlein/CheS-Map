@@ -14,9 +14,9 @@ import util.ListUtil;
 import data.fragments.MatchEngine;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
-import dataInterface.MolecularPropertyOwner;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculeProperty.Type;
+import dataInterface.CompoundPropertyOwner;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.Type;
 import dataInterface.SubstructureSmartsType;
 
 public class ClusterDataImpl implements ClusterData
@@ -29,8 +29,8 @@ public class ClusterDataImpl implements ClusterData
 	private DistanceMatrix<CompoundData> compoundDistances;
 	private HashMap<SubstructureSmartsType, String> substructureSmarts = new HashMap<SubstructureSmartsType, String>();
 	private HashMap<SubstructureSmartsType, MatchEngine> substructureSmartsEngine = new HashMap<SubstructureSmartsType, MatchEngine>();
-	private HashMap<MoleculeProperty, ArraySummary> values = new HashMap<MoleculeProperty, ArraySummary>();
-	private HashMap<MoleculeProperty, ArraySummary> normalizedValues = new HashMap<MoleculeProperty, ArraySummary>();
+	private HashMap<CompoundProperty, ArraySummary> values = new HashMap<CompoundProperty, ArraySummary>();
+	private HashMap<CompoundProperty, ArraySummary> normalizedValues = new HashMap<CompoundProperty, ArraySummary>();
 	private boolean containsNotClusteredCompounds = false;
 
 	public String getName()
@@ -118,12 +118,12 @@ public class ClusterDataImpl implements ClusterData
 		substructureSmartsEngine.put(type, engine);
 	}
 
-	private ArraySummary getSummaryValue(MoleculeProperty p, boolean normalized)
+	private ArraySummary getSummaryValue(CompoundProperty p, boolean normalized)
 	{
 		if (p.getType() != Type.NUMERIC && normalized)
 			throw new IllegalStateException();
 
-		HashMap<MoleculeProperty, ArraySummary> map;
+		HashMap<CompoundProperty, ArraySummary> map;
 		if (normalized)
 			map = normalizedValues;
 		else
@@ -153,7 +153,7 @@ public class ClusterDataImpl implements ClusterData
 		return map.get(p);
 	}
 
-	public Double getDoubleValue(MoleculeProperty p)
+	public Double getDoubleValue(CompoundProperty p)
 	{
 		if (p.getType() != Type.NUMERIC)
 			throw new IllegalStateException();
@@ -161,32 +161,32 @@ public class ClusterDataImpl implements ClusterData
 	}
 
 	@SuppressWarnings("unchecked")
-	public String getStringValue(MoleculeProperty p)
+	public String getStringValue(CompoundProperty p)
 	{
 		if (p.getType() != Type.NOMINAL)
 			throw new IllegalStateException();
 		return ((CountedSet<String>) getSummaryValue(p, false)).values().get(0);
 	}
 
-	public Double getNormalizedValue(MoleculeProperty p)
+	public Double getNormalizedValue(CompoundProperty p)
 	{
 		return ((DoubleArraySummary) getSummaryValue(p, true)).getMedian();
 	}
 
-	public String getSummaryStringValue(MoleculeProperty p)
+	public String getSummaryStringValue(CompoundProperty p)
 	{
 		return getSummaryValue(p, false).toString();
 	}
 
-	public int numMissingValues(MoleculeProperty p)
+	public int numMissingValues(CompoundProperty p)
 	{
 		return getSummaryValue(p, false).getNumNull();
 	}
 
-	public DistanceMatrix<CompoundData> getCompoundDistances(List<MoleculeProperty> props)
+	public DistanceMatrix<CompoundData> getCompoundDistances(List<CompoundProperty> props)
 	{
 		if (compoundDistances == null)
-			compoundDistances = DistanceUtil.computeDistances(ListUtil.cast(MolecularPropertyOwner.class, compounds),
+			compoundDistances = DistanceUtil.computeDistances(ListUtil.cast(CompoundPropertyOwner.class, compounds),
 					props).cast(CompoundData.class);
 		return compoundDistances;
 	}

@@ -27,7 +27,7 @@ import alg.cluster.DatasetClusterer;
 import alg.embed3d.ThreeDEmbedder;
 import data.ClusteringData;
 import data.DatasetFile;
-import dataInterface.MoleculePropertySet;
+import dataInterface.CompoundPropertySet;
 
 public class MappingWorkflow
 {
@@ -149,7 +149,7 @@ public class MappingWorkflow
 				workflowMappingProps, true);
 		FeatureWizardPanel f = new FeatureWizardPanel();
 		f.updateIntegratedFeatures(dataset);
-		MoleculePropertySet features[] = f.getFeaturesFromMappingWorkflow(workflowMappingProps, true);
+		CompoundPropertySet features[] = f.getFeaturesFromMappingWorkflow(workflowMappingProps, true);
 		DatasetClusterer clusterer = (DatasetClusterer) new ClusterWizardPanel().getAlgorithmFromMappingWorkflow(
 				workflowMappingProps, true);
 		ThreeDEmbedder embedder = (ThreeDEmbedder) new EmbedWizardPanel().getAlgorithmFromMappingWorkflow(

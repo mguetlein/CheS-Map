@@ -21,9 +21,9 @@ import alg.cluster.AbstractDatasetClusterer;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
 import dataInterface.CompoundData;
-import dataInterface.MolecularPropertyOwner;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculePropertyUtil;
+import dataInterface.CompoundPropertyOwner;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertyUtil;
 
 public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 {
@@ -42,7 +42,7 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 	public static String TOO_FEW_UNIQUE_DATA_POINTS = "Too few unique data points, add features or decrease number of clusters.";
 
 	@Override
-	protected List<Integer[]> cluster(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
+	protected List<Integer[]> cluster(DatasetFile dataset, List<CompoundData> compounds, List<CompoundProperty> features)
 			throws IOException
 	{
 		File tmp = File.createTempFile(dataset.getShortName(), "cluster");
@@ -50,15 +50,15 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 		try
 		{
 			String propsMD5 = PropertyUtil.getPropertyMD5(getProperties());
-			String datasetMD5 = MoleculePropertyUtil.getSetMD5(features, dataset.getMD5());
+			String datasetMD5 = CompoundPropertyUtil.getSetMD5(features, dataset.getMD5());
 
 			String featureTableFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + datasetMD5
 					+ ".features.table");
 			if (!Settings.CACHING_ENABLED || !new File(featureTableFile).exists())
 				ExportRUtil.toRTable(
 						features,
-						MoleculePropertyUtil.valuesReplaceNullWithMedian(features,
-								ListUtil.cast(MolecularPropertyOwner.class, compounds), dataset), featureTableFile);
+						CompoundPropertyUtil.valuesReplaceNullWithMedian(features,
+								ListUtil.cast(CompoundPropertyOwner.class, compounds), dataset), featureTableFile);
 			else
 				Settings.LOGGER.info("load cached features from " + featureTableFile);
 

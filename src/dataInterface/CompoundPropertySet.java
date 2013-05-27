@@ -3,7 +3,7 @@ package dataInterface;
 import gui.binloc.Binary;
 import data.DatasetFile;
 
-public interface MoleculePropertySet
+public interface CompoundPropertySet
 {
 	public boolean isComputed(DatasetFile dataset);
 
@@ -17,11 +17,11 @@ public interface MoleculePropertySet
 
 	public int getSize(DatasetFile d);
 
-	public MoleculeProperty get(DatasetFile d, int index);
+	public CompoundProperty get(DatasetFile d, int index);
 
 	public String getDescription();
 
-	public MoleculeProperty.Type getType();
+	public CompoundProperty.Type getType();
 
 	public Binary getBinary();
 

@@ -16,11 +16,11 @@ import util.ListUtil;
 import util.ValueFileCache;
 import data.DatasetFile;
 import data.FeatureService;
-import dataInterface.AbstractMoleculeProperty;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculePropertySet;
+import dataInterface.AbstractCompoundProperty;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertySet;
 
-public class OBDescriptorProperty extends AbstractMoleculeProperty implements MoleculePropertySet
+public class OBDescriptorProperty extends AbstractCompoundProperty implements CompoundPropertySet
 {
 	private static OBDescriptorProperty[] descriptors;
 
@@ -94,7 +94,7 @@ public class OBDescriptorProperty extends AbstractMoleculeProperty implements Mo
 	}
 
 	@Override
-	public MoleculePropertySet getMoleculePropertySet()
+	public CompoundPropertySet getCompoundPropertySet()
 	{
 		return this;
 	}
@@ -195,7 +195,7 @@ public class OBDescriptorProperty extends AbstractMoleculeProperty implements Mo
 	}
 
 	@Override
-	public MoleculeProperty get(DatasetFile d, int index)
+	public CompoundProperty get(DatasetFile d, int index)
 	{
 		if (index != 0)
 			throw new IllegalStateException();

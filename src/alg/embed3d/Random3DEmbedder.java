@@ -13,8 +13,8 @@ import main.Settings;
 import util.Vector3fUtil;
 import alg.AbstractAlgorithm;
 import data.DatasetFile;
-import dataInterface.MolecularPropertyOwner;
-import dataInterface.MoleculeProperty;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertyOwner;
 
 public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedder
 {
@@ -50,16 +50,16 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	}
 
 	//	@Override
-	//	public MoleculeProperty getCCCProperty()
+	//	public CompoundProperty getCCCProperty()
 	//	{
 	//		return null;
 	//	}
 
 	//	@Override
-	//	public MoleculePropertyEmbedQuality getEmbedQuality(MoleculeProperty p, DatasetFile dataset,
+	//	public CompoundPropertyEmbedQuality getEmbedQuality(CompoundProperty p, DatasetFile dataset,
 	//			List<MolecularPropertyOwner> instances)
 	//	{
-	//		return new MoleculePropertyEmbedQuality(p, positions, instances, dataset);
+	//		return new CompoundPropertyEmbedQuality(p, positions, instances, dataset);
 	//	}
 
 	IntegerProperty randomSeed = new IntegerProperty("Random seed", "Random embedding - Random seed", 1);
@@ -97,8 +97,7 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	}
 
 	@Override
-	public void embedDataset(DatasetFile dataset, List<MolecularPropertyOwner> instances,
-			List<MoleculeProperty> features)
+	public void embedDataset(DatasetFile dataset, List<CompoundPropertyOwner> instances, List<CompoundProperty> features)
 	{
 		positions = getPositions(instances.size());
 		if (instances.size() > 2)

@@ -14,7 +14,7 @@ import util.ArrayUtil;
 import alg.AlgorithmException;
 import data.DatasetFile;
 import dataInterface.CompoundData;
-import dataInterface.MoleculeProperty;
+import dataInterface.CompoundProperty;
 
 public class ManualClusterer extends AbstractDatasetClusterer
 {
@@ -47,14 +47,14 @@ public class ManualClusterer extends AbstractDatasetClusterer
 	}
 
 	@Override
-	protected List<Integer[]> cluster(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
+	protected List<Integer[]> cluster(DatasetFile dataset, List<CompoundData> compounds, List<CompoundProperty> features)
 			throws Exception
 	{
-		MoleculeProperty clusterProp = dataset.getIntegratedClusterProperty();
+		CompoundProperty clusterProp = dataset.getIntegratedClusterProperty();
 		if (clusterProp == null)
 			throw new AlgorithmException.ClusterException(this, "No feature with name including 'cluster' found");
 		List<Integer[]> clusterAssignment = new ArrayList<Integer[]>();
-		List<Integer[]> moleculeAssignment = new ArrayList<Integer[]>();
+		List<Integer[]> compoundAssignment = new ArrayList<Integer[]>();
 
 		try
 		{
@@ -73,9 +73,9 @@ public class ManualClusterer extends AbstractDatasetClusterer
 					clusterAssignment.add(intVals);
 					for (Integer clazz : intVals)
 					{
-						while (moleculeAssignment.size() <= clazz)
-							moleculeAssignment.add(new Integer[0]);
-						moleculeAssignment.set(clazz, ArrayUtil.concat(Integer.class, moleculeAssignment.get(clazz),
+						while (compoundAssignment.size() <= clazz)
+							compoundAssignment.add(new Integer[0]);
+						compoundAssignment.set(clazz, ArrayUtil.concat(Integer.class, compoundAssignment.get(clazz),
 								new Integer[] { compoundIndex }));
 					}
 				}
@@ -97,10 +97,10 @@ public class ManualClusterer extends AbstractDatasetClusterer
 					if (i == -1)
 						throw new Error("should never happen");
 					clusterAssignment.add(new Integer[] { i });
-					while (moleculeAssignment.size() <= i)
-						moleculeAssignment.add(new Integer[0]);
-					moleculeAssignment
-							.set(i, ArrayUtil.concat(Integer.class, moleculeAssignment.get(i),
+					while (compoundAssignment.size() <= i)
+						compoundAssignment.add(new Integer[0]);
+					compoundAssignment
+							.set(i, ArrayUtil.concat(Integer.class, compoundAssignment.get(i),
 									new Integer[] { compoundIndex }));
 				}
 			}
@@ -109,8 +109,8 @@ public class ManualClusterer extends AbstractDatasetClusterer
 		if (ignoreSingletons.getValue())
 		{
 			List<Integer> remClazz = new ArrayList<Integer>();
-			for (int c = 0; c < moleculeAssignment.size(); c++)
-				if (moleculeAssignment.get(c).length < 2)
+			for (int c = 0; c < compoundAssignment.size(); c++)
+				if (compoundAssignment.get(c).length < 2)
 					remClazz.add(c);
 			System.out.println("removing " + remClazz.size() + " singleton clusters");
 			if (remClazz.size() > 0)
@@ -136,7 +136,7 @@ public class ManualClusterer extends AbstractDatasetClusterer
 		//				clusterAssignment.add(new Integer[0]);
 		//			for (int clusterPropertyIndex = 0; clusterPropertyIndex < clusterProps.length; clusterPropertyIndex++)
 		//			{
-		//				MoleculeProperty p = clusterProps[clusterPropertyIndex];
+		//				CompoundProperty p = clusterProps[clusterPropertyIndex];
 		//				for (int compoundIndex = 0; compoundIndex < compounds.size(); compoundIndex++)
 		//				{
 		//					CompoundData m = compounds.get(compoundIndex);

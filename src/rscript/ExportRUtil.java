@@ -8,12 +8,12 @@ import java.util.List;
 import main.Settings;
 import util.ArrayUtil;
 import util.ObjectUtil;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculeProperty.Type;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.Type;
 
 public class ExportRUtil
 {
-	public static void toRTable(Iterable<MoleculeProperty> features, List<String[]> featureValues,
+	public static void toRTable(Iterable<CompoundProperty> features, List<String[]> featureValues,
 			String destinationFile)
 	{
 		Settings.LOGGER.info("store features in " + destinationFile);
@@ -21,7 +21,7 @@ public class ExportRUtil
 		// transpose
 		List<String[]> featureValues1 = new ArrayList<String[]>();
 		for (@SuppressWarnings("unused")
-		MoleculeProperty feature : features)
+		CompoundProperty feature : features)
 			featureValues1.add(new String[featureValues.size()]);
 		for (int i = 0; i < featureValues.size(); i++)
 			for (int j = 0; j < featureValues1.size(); j++)
@@ -31,7 +31,7 @@ public class ExportRUtil
 		List<String> featureNames2 = new ArrayList<String>();
 		List<String[]> featureValues2 = new ArrayList<String[]>();
 		int count = 0;
-		for (MoleculeProperty feature : features)
+		for (CompoundProperty feature : features)
 		{
 			if (feature.getType() != Type.NOMINAL
 					|| (feature.getNominalDomain().length == 2 && feature.getNominalDomain()[0].equals("0") && feature

@@ -1,6 +1,6 @@
 package dataInterface;
 
-public interface MolecularPropertyOwner
+public interface CompoundPropertyOwner
 {
 	/**
 	 * only supported for numeric props, may be null, mean for clusters
@@ -8,7 +8,7 @@ public interface MolecularPropertyOwner
 	 * @param p
 	 * @return
 	 */
-	public Double getDoubleValue(MoleculeProperty p);
+	public Double getDoubleValue(CompoundProperty p);
 
 	/**
 	 * only supported for nominal props, string value, most-frequent value for clusters
@@ -16,7 +16,7 @@ public interface MolecularPropertyOwner
 	 * @param p
 	 * @return
 	 */
-	public String getStringValue(MoleculeProperty p);
+	public String getStringValue(CompoundProperty p);
 
 	/**
 	 * supported for non-numeric structures as well 
@@ -24,6 +24,6 @@ public interface MolecularPropertyOwner
 	 * @param p
 	 * @return
 	 */
-	public Double getNormalizedValue(MoleculeProperty p);
+	public Double getNormalizedValue(CompoundProperty p);
 
 }

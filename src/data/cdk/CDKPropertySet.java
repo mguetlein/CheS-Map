@@ -21,11 +21,11 @@ import util.FileUtil.UnexpectedNumColsException;
 import util.StringUtil;
 import util.ValueFileCache;
 import data.DatasetFile;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculeProperty.Type;
-import dataInterface.MoleculePropertySet;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.Type;
+import dataInterface.CompoundPropertySet;
 
-public class CDKPropertySet implements MoleculePropertySet
+public class CDKPropertySet implements CompoundPropertySet
 {
 	public static final CDKPropertySet[] DESCRIPTORS = new CDKPropertySet[CDKDescriptor.CDK_DESCRIPTORS.length];
 	public static final CDKPropertySet[] NUMERIC_DESCRIPTORS = new CDKPropertySet[CDKDescriptor.CDK_NUMERIC_DESCRIPTORS.length];
@@ -58,7 +58,7 @@ public class CDKPropertySet implements MoleculePropertySet
 	}
 
 	@Override
-	public MoleculeProperty get(DatasetFile dataset, int index)
+	public CompoundProperty get(DatasetFile dataset, int index)
 	{
 		return CDKProperty.create(desc, index);
 	}
@@ -138,7 +138,7 @@ public class CDKPropertySet implements MoleculePropertySet
 		if (isComputed(dataset))
 			throw new IllegalStateException();
 
-		IMolecule mols[] = dataset.getMolecules();
+		IMolecule mols[] = dataset.getCompounds();
 
 		String cache = cacheFile(dataset);
 

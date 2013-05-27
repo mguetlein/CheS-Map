@@ -22,8 +22,8 @@ import data.ClusterDataImpl;
 import data.DatasetFile;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculePropertyUtil;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertyUtil;
 
 public abstract class AbstractDatasetClusterer extends AbstractAlgorithm implements DatasetClusterer
 {
@@ -79,14 +79,14 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 	}
 
 	protected abstract List<Integer[]> cluster(DatasetFile dataset, List<CompoundData> compounds,
-			List<MoleculeProperty> features) throws Exception;
+			List<CompoundProperty> features) throws Exception;
 
 	protected abstract String getShortName();
 
-	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<MoleculeProperty> features)
+	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<CompoundProperty> features)
 			throws Exception
 	{
-		String datasetFeaturesClusterpropsMD5 = MoleculePropertyUtil.getSetMD5(features, dataset.getMD5() + " "
+		String datasetFeaturesClusterpropsMD5 = CompoundPropertyUtil.getSetMD5(features, dataset.getMD5() + " "
 				+ PropertyUtil.getPropertyMD5(getProperties()));
 
 		String filename = Settings.destinationFile(dataset, dataset.getShortName() + "." + getShortName() + "."
@@ -115,7 +115,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 				ValueFileCache.writeCacheInteger(filename, clusterAssignements);
 		}
 
-		HashMap<Integer, List<Integer>> modelToCluster = new HashMap<Integer, List<Integer>>();
+		HashMap<Integer, List<Integer>> compoundToCluster = new HashMap<Integer, List<Integer>>();
 
 		boolean multiAssignment = false;
 		for (int m = 0; m < clusterAssignements.size(); m++)
@@ -128,11 +128,11 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 							+ ArrayUtil.toString(clusterIndices));
 				multiAssignment |= clusterIndices.length > 1;
 
-				List<Integer> clusterList = modelToCluster.get(m);
+				List<Integer> clusterList = compoundToCluster.get(m);
 				if (clusterList == null)
 				{
 					clusterList = new ArrayList<Integer>();
-					modelToCluster.put(m, clusterList);
+					compoundToCluster.put(m, clusterList);
 				}
 				for (Integer c : clusterIndices)
 					clusterList.add(c);
@@ -147,7 +147,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 		//			{
 		//				List<Integer> cluster = new ArrayList<Integer>();
 		//				cluster.add(clusterAssignements.get(i));
-		//				modelToCluster.put(i, cluster);
+		//				compoundToCluster.put(i, cluster);
 		//			}
 		//		else
 		//		{
@@ -157,16 +157,16 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 		//			{
 		//				clusterFound = false;
 		//				int clusterMask = ((int) Math.pow(2, clusterIndex));
-		//				for (int modelIndex = 0; modelIndex < clusterAssignements.size(); modelIndex++)
+		//				for (int compoundIndex = 0; compoundIndex < clusterAssignements.size(); compoundIndex++)
 		//				{
-		//					BinaryFlag flag = new BinaryFlag(clusterAssignements.get(modelIndex));
+		//					BinaryFlag flag = new BinaryFlag(clusterAssignements.get(compoundIndex));
 		//					if (flag.isSet(clusterMask))
 		//					{
-		//						List<Integer> clusterList = modelToCluster.get(modelIndex);
+		//						List<Integer> clusterList = compoundToCluster.get(compoundIndex);
 		//						if (clusterList == null)
 		//						{
 		//							clusterList = new ArrayList<Integer>();
-		//							modelToCluster.put(modelIndex, clusterList);
+		//							compoundToCluster.put(compoundIndex, clusterList);
 		//						}
 		//						clusterList.add(clusterIndex);
 		//						clusterFound = true;
@@ -179,11 +179,11 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 		//create cluster objects and add compounds to clusters
 		clusters = new ArrayList<ClusterData>();
 		HashMap<Integer, ClusterDataImpl> map = new HashMap<Integer, ClusterDataImpl>();
-		for (int modelIndex = 0; modelIndex < clusterAssignements.size(); modelIndex++)
+		for (int compoundIndex = 0; compoundIndex < clusterAssignements.size(); compoundIndex++)
 		{
-			if (modelToCluster.containsKey(modelIndex))
+			if (compoundToCluster.containsKey(compoundIndex))
 			{
-				for (Integer clusterIndex : modelToCluster.get(modelIndex))
+				for (Integer clusterIndex : compoundToCluster.get(compoundIndex))
 				{
 					ClusterDataImpl c = map.get(clusterIndex);
 					if (c == null)
@@ -192,7 +192,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 						clusters.add(c);
 						map.put(clusterIndex, c);
 					}
-					c.addCompound(compounds.get(modelIndex));
+					c.addCompound(compounds.get(compoundIndex));
 				}
 			}
 		}
@@ -213,7 +213,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 		ClusterDataImpl unclusteredCompounds = null;
 		for (int j = 0; j < compounds.size(); j++)
 		{
-			if (modelToCluster.get(j) == null || modelToCluster.get(j).size() == 0)
+			if (compoundToCluster.get(j) == null || compoundToCluster.get(j).size() == 0)
 			{
 				if (unclusteredCompounds == null)
 				{

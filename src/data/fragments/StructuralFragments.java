@@ -17,7 +17,7 @@ import util.ListUtil;
 import data.CDKSmartsHandler;
 import data.cdkfingerprints.CDKFingerprintSet;
 import data.obfingerprints.OBFingerprintSet;
-import dataInterface.AbstractMoleculeProperty;
+import dataInterface.AbstractCompoundProperty;
 import dataInterface.FragmentPropertySet;
 
 public class StructuralFragments
@@ -42,7 +42,7 @@ public class StructuralFragments
 	public void reset(String showWarningForFile)
 	{
 		fragmentList.clear();
-		AbstractMoleculeProperty.clearPropertyOfType(StructuralFragment.class);
+		AbstractCompoundProperty.clearPropertyOfType(StructuralFragment.class);
 
 		for (OBFingerprintSet fp : OBFingerprintSet.FINGERPRINTS)
 			fragmentList.add(fp);

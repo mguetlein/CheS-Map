@@ -21,8 +21,8 @@ import weka.core.Instance;
 import weka.core.Instances;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
-import dataInterface.MolecularPropertyOwner;
-import dataInterface.MoleculeProperty;
+import dataInterface.CompoundPropertyOwner;
+import dataInterface.CompoundProperty;
 
 public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 {
@@ -42,8 +42,8 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 	}
 
 	@Override
-	public List<Vector3f> embed(DatasetFile dataset, List<MolecularPropertyOwner> instances,
-			List<MoleculeProperty> features) throws Exception
+	public List<Vector3f> embed(DatasetFile dataset, List<CompoundPropertyOwner> instances,
+			List<CompoundProperty> features) throws Exception
 	{
 		WekaPropertyUtil.setProperties(pca, properties);
 

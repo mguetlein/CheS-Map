@@ -209,9 +209,9 @@ public class DatasetFile
 			if (!TaskProvider.isRunning())
 				return;
 			TaskProvider.verbose("Creating 2D structures");
-			FeatureService.writeMoleculesToSDFFile(this, Settings.destinationSDFFile(this));
+			FeatureService.writeCompoundsToSDFFile(this, Settings.destinationSDFFile(this));
 			this.setSDFPath(Settings.destinationSDFFile(this), false);
-			this.updateMoleculesStructure(false);
+			this.updateCompoundStructure(false);
 		}
 	}
 
@@ -220,19 +220,19 @@ public class DatasetFile
 		return featureService.numCompounds(this);
 	}
 
-	public void updateMoleculesStructure(boolean threeD)
+	public void updateCompoundStructure(boolean threeD)
 	{
-		featureService.updateMoleculesStructure(this, threeD);
+		featureService.updateCompoundStructure(this, threeD);
 	}
 
-	public IMolecule[] getMolecules()
+	public IMolecule[] getCompounds()
 	{
-		return featureService.getMolecules(this);
+		return featureService.getCompounds(this);
 	}
 
-	public IMolecule[] getMolecules(boolean loadHydrogen)
+	public IMolecule[] getCompounds(boolean loadHydrogen)
 	{
-		return featureService.getMolecules(this, loadHydrogen);
+		return featureService.getCompounds(this, loadHydrogen);
 	}
 
 	// -------------------------------

@@ -6,16 +6,16 @@ import java.util.List;
 import main.TaskProvider;
 import alg.FeatureComputer;
 import dataInterface.CompoundData;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculeProperty.Type;
-import dataInterface.MoleculePropertySet;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.Type;
+import dataInterface.CompoundPropertySet;
 
 public class DefaultFeatureComputer implements FeatureComputer
 {
-	MoleculePropertySet moleculePropertySets[];
+	CompoundPropertySet compoundPropertySets[];
 
-	List<MoleculeProperty> features;
-	List<MoleculeProperty> properties;
+	List<CompoundProperty> features;
+	List<CompoundProperty> properties;
 	List<CompoundData> compounds;
 
 	public DefaultFeatureComputer()
@@ -23,26 +23,26 @@ public class DefaultFeatureComputer implements FeatureComputer
 		this(null);
 	}
 
-	public DefaultFeatureComputer(MoleculePropertySet moleculePropertySets[])
+	public DefaultFeatureComputer(CompoundPropertySet compoundPropertySets[])
 	{
-		this.moleculePropertySets = moleculePropertySets;
+		this.compoundPropertySets = compoundPropertySets;
 	}
 
 	@Override
 	public void computeFeatures(DatasetFile dataset)
 	{
-		features = new ArrayList<MoleculeProperty>();
-		properties = new ArrayList<MoleculeProperty>();
+		features = new ArrayList<CompoundProperty>();
+		properties = new ArrayList<CompoundProperty>();
 		compounds = new ArrayList<CompoundData>();
 
 		int numCompounds = dataset.numCompounds();
 
-		List<MoleculeProperty> props = new ArrayList<MoleculeProperty>();
+		List<CompoundProperty> props = new ArrayList<CompoundProperty>();
 
 		int count = 0;
-		for (MoleculePropertySet propSet : moleculePropertySets)
+		for (CompoundPropertySet propSet : compoundPropertySets)
 		{
-			TaskProvider.update("Computing feature " + (count + 1) + "/" + moleculePropertySets.length + " : "
+			TaskProvider.update("Computing feature " + (count + 1) + "/" + compoundPropertySets.length + " : "
 					+ propSet.toString());
 
 			if (propSet instanceof IntegratedProperty)
@@ -82,7 +82,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 
 		String[] smiles = dataset.getSmiles();
 
-		for (MoleculeProperty p : props)
+		for (CompoundProperty p : props)
 		{
 			Double d[] = null;
 			String s[] = null;
@@ -109,7 +109,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 					c = (CompoundDataImpl) compounds.get(i);
 				else
 				{
-					c = new CompoundDataImpl(smiles[i], dataset.getMolecules()[i]);
+					c = new CompoundDataImpl(smiles[i], dataset.getCompounds()[i]);
 					c.setIndex(i);
 					compounds.add(c);
 				}
@@ -126,13 +126,13 @@ public class DefaultFeatureComputer implements FeatureComputer
 	}
 
 	@Override
-	public List<MoleculeProperty> getFeatures()
+	public List<CompoundProperty> getFeatures()
 	{
 		return features;
 	}
 
 	@Override
-	public List<MoleculeProperty> getProperties()
+	public List<CompoundProperty> getProperties()
 	{
 		return properties;
 	}

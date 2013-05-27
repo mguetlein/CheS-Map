@@ -98,22 +98,22 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 	private boolean alignWithCDK(DatasetFile dataset, ClusterData cluster, int index, SubstructureSmartsType type)
 	{
 		int compoundIndices[] = new int[cluster.getSize()];
-		IMolecule molecules[] = new IMolecule[cluster.getSize()];
+		IMolecule compounds[] = new IMolecule[cluster.getSize()];
 		String smarts = cluster.getSubstructureSmarts(type);
 
 		for (int k = 0; k < cluster.getSize(); k++)
 		{
 			CompoundData comp = cluster.getCompounds().get(k);
 			compoundIndices[k] = comp.getIndex();
-			molecules[k] = dataset.getMolecules(false)[comp.getIndex()];
+			compounds[k] = dataset.getCompounds(false)[comp.getIndex()];
 		}
 		try
 		{
-			MultiKabschAlignement.align(molecules, smarts);
+			MultiKabschAlignement.align(compounds, smarts);
 			String clusterFile = cluster.getFilename();
 			String alignedStructures = Settings.destinationFile(dataset, FileUtil.getFilename(clusterFile, false)
 					+ ".cdk.aligned.sdf");
-			FeatureService.writeMoleculesToSDFFile(dataset, alignedStructures, compoundIndices, true);
+			FeatureService.writeCompoundsToSDFFile(dataset, alignedStructures, compoundIndices, true);
 			alignedFiles[index] = alignedStructures;
 			return true;
 		}

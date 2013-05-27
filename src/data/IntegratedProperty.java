@@ -2,11 +2,11 @@ package data;
 
 import gui.binloc.Binary;
 import util.DoubleKeyHashMap;
-import dataInterface.AbstractMoleculeProperty;
-import dataInterface.MoleculeProperty;
-import dataInterface.MoleculePropertySet;
+import dataInterface.AbstractCompoundProperty;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertySet;
 
-public class IntegratedProperty extends AbstractMoleculeProperty implements MoleculePropertySet
+public class IntegratedProperty extends AbstractCompoundProperty implements CompoundPropertySet
 {
 	String property;
 	private boolean usedForMapping;
@@ -63,7 +63,7 @@ public class IntegratedProperty extends AbstractMoleculeProperty implements Mole
 	}
 
 	@Override
-	public MoleculeProperty get(DatasetFile dataset, int index)
+	public CompoundProperty get(DatasetFile dataset, int index)
 	{
 		if (index != 0)
 			throw new Error("only one prop available");
@@ -71,7 +71,7 @@ public class IntegratedProperty extends AbstractMoleculeProperty implements Mole
 	}
 
 	@Override
-	public MoleculePropertySet getMoleculePropertySet()
+	public CompoundPropertySet getCompoundPropertySet()
 	{
 		return this;
 	}

@@ -50,11 +50,11 @@ import util.ArrayUtil;
 import util.FileUtil;
 import util.FileUtil.UnexpectedNumColsException;
 import util.ValueFileCache;
-import dataInterface.MoleculeProperty.Type;
+import dataInterface.CompoundProperty.Type;
 
 public class FeatureService
 {
-	private HashMap<DatasetFile, IMolecule[]> fileToMolecules = new HashMap<DatasetFile, IMolecule[]>();
+	private HashMap<DatasetFile, IMolecule[]> fileToCompounds = new HashMap<DatasetFile, IMolecule[]>();
 	private HashMap<DatasetFile, Boolean> fileHas3D = new HashMap<DatasetFile, Boolean>();
 	private HashMap<DatasetFile, LinkedHashSet<IntegratedProperty>> integratedProperties = new HashMap<DatasetFile, LinkedHashSet<IntegratedProperty>>();
 	private HashMap<DatasetFile, IntegratedProperty> integratedSmiles = new HashMap<DatasetFile, IntegratedProperty>();
@@ -104,14 +104,14 @@ public class FeatureService
 
 	public boolean isLoaded(DatasetFile dataset)
 	{
-		return (fileToMolecules.get(dataset) != null);
+		return (fileToCompounds.get(dataset) != null);
 	}
 
 	public void clear(DatasetFile dataset)
 	{
-		if (fileToMolecules.get(dataset) != null)
+		if (fileToCompounds.get(dataset) != null)
 		{
-			fileToMolecules.remove(dataset);
+			fileToCompounds.remove(dataset);
 			fileHas3D.remove(dataset);
 			integratedProperties.remove(dataset);
 		}
@@ -287,9 +287,9 @@ public class FeatureService
 		}
 	}
 
-	public synchronized void updateMoleculesStructure(DatasetFile dataset, boolean threeD)
+	public synchronized void updateCompoundStructure(DatasetFile dataset, boolean threeD)
 	{
-		if (fileToMolecules.get(dataset) == null)
+		if (fileToCompounds.get(dataset) == null)
 			throw new IllegalStateException();
 
 		Settings.LOGGER.info("read compounds structures fom file '" + dataset.getSDFPath(threeD) + "' ");
@@ -319,7 +319,7 @@ public class FeatureService
 			}
 			IMolecule res[] = new IMolecule[mols.size()];
 			mols.toArray(res);
-			fileToMolecules.put(dataset, res);
+			fileToCompounds.put(dataset, res);
 		}
 		catch (Exception e)
 		{
@@ -357,7 +357,7 @@ public class FeatureService
 
 	public synchronized void loadDataset(DatasetFile dataset, boolean loadHydrogen) throws Exception
 	{
-		if (fileToMolecules.get(dataset) == null)
+		if (fileToCompounds.get(dataset) == null)
 		{
 			Settings.LOGGER.info("read dataset file '" + dataset.getLocalPath() + "' with cdk");
 			TaskProvider.verbose("Parsing file with CDK");
@@ -398,7 +398,7 @@ public class FeatureService
 				reader.close();
 			}
 
-			List<Integer> illegalMolecules = new ArrayList<Integer>();
+			List<Integer> illegalCompounds = new ArrayList<Integer>();
 			HashMap<IntegratedProperty, List<Object>> propVals = new HashMap<IntegratedProperty, List<Object>>();
 
 			for (IAtomContainer iAtomContainer : list)
@@ -421,7 +421,7 @@ public class FeatureService
 				IMolecule mol = (IMolecule) iAtomContainer;
 				if (!TaskProvider.isRunning())
 					return;
-				TaskProvider.verbose("Loaded " + (mCount + 1) + "/" + list.size() + " molecules");
+				TaskProvider.verbose("Loaded " + (mCount + 1) + "/" + list.size() + " compounds");
 
 				Map<Object, Object> props = mol.getProperties();
 				for (IntegratedProperty p : integratedProperties.get(dataset))
@@ -459,17 +459,17 @@ public class FeatureService
 				// }
 
 				if (mol.getAtomCount() == 0)
-					illegalMolecules.add(mCount);
-				// TaskProvider.task().warning("Could not load molecule (" + mCount + ")", "<not details available>");
+					illegalCompounds.add(mCount);
+				// TaskProvider.task().warning("Could not load compound (" + mCount + ")", "<not details available>");
 				mols.add(mol);
 				mCount++;
 			}
 
-			if (illegalMolecules.size() > 0)
+			if (illegalCompounds.size() > 0)
 			{
-				Settings.LOGGER.warn("Could not read " + illegalMolecules.size() + "/" + mols.size() + " molecules");
-				if (mols.size() > illegalMolecules.size())
-					throw new IllegalCompoundsException(illegalMolecules);
+				Settings.LOGGER.warn("Could not read " + illegalCompounds.size() + "/" + mols.size() + " compounds");
+				if (mols.size() > illegalCompounds.size())
+					throw new IllegalCompoundsException(illegalCompounds);
 				else
 					throw new IllegalStateException("Could not read any compounds");
 			}
@@ -515,7 +515,7 @@ public class FeatureService
 
 			IMolecule res[] = new IMolecule[mols.size()];
 			mols.toArray(res);
-			fileToMolecules.put(dataset, res);
+			fileToCompounds.put(dataset, res);
 
 			// Settings.LOGGER.println("integrated properties in file: "
 			// + CollectionUtil.toString(integratedProperties.get(dataset)));
@@ -524,20 +524,20 @@ public class FeatureService
 
 	public int numCompounds(DatasetFile dataset)
 	{
-		return fileToMolecules.get(dataset).length;
+		return fileToCompounds.get(dataset).length;
 	}
 
-	public IMolecule[] getMolecules(DatasetFile dataset)
+	public IMolecule[] getCompounds(DatasetFile dataset)
 	{
-		return getMolecules(dataset, true);
+		return getCompounds(dataset, true);
 	}
 
-	public IMolecule[] getMolecules(DatasetFile dataset, boolean loadHydrogen)
+	public IMolecule[] getCompounds(DatasetFile dataset, boolean loadHydrogen)
 	{
 		try
 		{
 			loadDataset(dataset, loadHydrogen);
-			return fileToMolecules.get(dataset);
+			return fileToCompounds.get(dataset);
 		}
 		catch (Exception e)
 		{
@@ -557,7 +557,7 @@ public class FeatureService
 				{
 					if (sg == null)
 						sg = new SmilesGenerator();
-					smiles[i] = sg.createSMILES(dataset.getMolecules()[i]);
+					smiles[i] = sg.createSMILES(dataset.getCompounds()[i]);
 				}
 			return smiles;
 		}
@@ -582,9 +582,9 @@ public class FeatureService
 			{
 				Settings.LOGGER.info("compute smiles.. ");
 				SmilesGenerator sg = new SmilesGenerator();
-				smiles = new String[dataset.getMolecules().length];
+				smiles = new String[dataset.getCompounds().length];
 				int i = 0;
-				for (IMolecule m : dataset.getMolecules())
+				for (IMolecule m : dataset.getCompounds())
 					smiles[i++] = sg.createSMILES(m);
 				Settings.LOGGER.info(" ..done, store: " + smilesFile);
 				ValueFileCache.writeCacheString(smilesFile, smiles);
@@ -602,7 +602,7 @@ public class FeatureService
 		{
 			boolean has3D = false;
 
-			IMolecule mols[] = fileToMolecules.get(dataset);
+			IMolecule mols[] = fileToCompounds.get(dataset);
 			for (IMolecule iMolecule : mols)
 			{
 				for (int i = 0; i < iMolecule.getAtomCount(); i++)
@@ -628,7 +628,7 @@ public class FeatureService
 		{
 			SDFWriter writer = new SDFWriter(new FileOutputStream(threeDFilename));
 
-			IMolecule mols[] = dataset.getMolecules();
+			IMolecule mols[] = dataset.getCompounds();
 			ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), forcefield);
 			for (IMolecule iMolecule : mols)
 			{
@@ -639,7 +639,7 @@ public class FeatureService
 				}
 				catch (Exception e)
 				{
-					TaskProvider.warning("Could not build 3D for molecule", e);
+					TaskProvider.warning("Could not build 3D for compound", e);
 				}
 				molecule = (IMolecule) AtomContainerManipulator.removeHydrogens(molecule);
 				writer.write(molecule);
@@ -667,12 +667,12 @@ public class FeatureService
 	 * @throws CDKException
 	 * @throws IOException
 	 */
-	public static void writeMoleculesToSDFFile(DatasetFile dataset, String sdfFile) throws CDKException, IOException
+	public static void writeCompoundsToSDFFile(DatasetFile dataset, String sdfFile) throws CDKException, IOException
 	{
 		int compoundIndices[] = new int[dataset.numCompounds()];
 		for (int i = 0; i < compoundIndices.length; i++)
 			compoundIndices[i] = i;
-		writeMoleculesToSDFFile(dataset, sdfFile, compoundIndices, false);
+		writeCompoundsToSDFFile(dataset, sdfFile, compoundIndices, false);
 	}
 
 	/**
@@ -685,7 +685,7 @@ public class FeatureService
 	 * @throws CDKException
 	 * @throws IOException
 	 */
-	public static void writeMoleculesToSDFFile(DatasetFile dataset, String sdfFile, int compoundIndices[],
+	public static void writeCompoundsToSDFFile(DatasetFile dataset, String sdfFile, int compoundIndices[],
 			boolean overwrite) throws CDKException, IOException
 	{
 		if (dataset.numCompounds() < compoundIndices.length)
@@ -700,7 +700,7 @@ public class FeatureService
 
 			for (int cIndex : compoundIndices)
 			{
-				IMolecule molecule = dataset.getMolecules()[cIndex];
+				IMolecule molecule = dataset.getCompounds()[cIndex];
 
 				IMoleculeSet oldSet = ConnectivityChecker.partitionIntoMolecules(molecule);
 				AtomContainer newSet = new AtomContainer();
