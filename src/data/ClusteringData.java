@@ -13,6 +13,7 @@ public class ClusteringData
 	private String name;
 	private String fullName;
 	private String sdfFilename;
+	private String origLocalPath;
 
 	private List<CompoundProperty> features = new ArrayList<CompoundProperty>();
 	private List<CompoundProperty> properties = new ArrayList<CompoundProperty>();
@@ -46,11 +47,12 @@ public class ClusteringData
 
 	// --------------------------------------------
 
-	public ClusteringData(String name, String fullName, String sdfFilename)
+	public ClusteringData(DatasetFile dataset)
 	{
-		this.name = name;
-		this.fullName = fullName;
-		this.sdfFilename = sdfFilename;
+		name = dataset.getName();
+		fullName = dataset.getFullName();
+		sdfFilename = dataset.getSDFPath(true);
+		origLocalPath = dataset.isLocal() ? dataset.getLocalPath() : null;
 	}
 
 	public String getName()
@@ -172,6 +174,11 @@ public class ClusteringData
 	public String getEmbedQuality()
 	{
 		return embedQuality;
+	}
+
+	public String getOrigLocalPath()
+	{
+		return origLocalPath;
 	}
 
 	//	public CompoundProperty getEmbeddingQualityProperty()

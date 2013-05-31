@@ -75,8 +75,7 @@ public class CheSMapping
 					if (!dataset.getSDFPath(true).equals(dataset.getSDFPath(false)))
 						dataset.updateCompoundStructure(true);
 
-					ClusteringData clustering = new ClusteringData(dataset.getName(), dataset.getFullName(),
-							dataset.getSDFPath(true));
+					ClusteringData clustering = new ClusteringData(dataset);
 
 					if (!TaskProvider.isRunning())
 						return;
