@@ -156,11 +156,15 @@ public class BinHandler
 
 	public static void locateBinarys()
 	{
+		if (bins == null)
+			throw new IllegalStateException("init first");
 		BinaryLocator.locate(bins);
 	}
 
 	public static void showBinaryDialog(Binary select, Window owner)
 	{
+		if (bins == null)
+			throw new IllegalStateException("init first");
 		locateBinarys();
 		new BinaryLocatorDialog(owner, "External Programs", Settings.TITLE, bins, select);
 		for (Binary binary : bins)
