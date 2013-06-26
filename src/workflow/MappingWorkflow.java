@@ -11,22 +11,35 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
+import main.BinHandler;
 import main.CheSMapping;
 import main.PropHandler;
 import main.Settings;
+import util.ArrayUtil;
 import util.FileUtil;
 import alg.align3d.ThreeDAligner;
 import alg.build3d.ThreeDBuilder;
 import alg.cluster.DatasetClusterer;
 import alg.embed3d.ThreeDEmbedder;
-import data.ClusteringData;
+import alg.embed3d.WekaPCA3DEmbedder;
 import data.DatasetFile;
+import data.IntegratedProperty;
+import data.cdk.CDKPropertySet;
+import data.obdesc.OBDescriptorProperty;
+import data.obfingerprints.FingerprintType;
+import data.obfingerprints.OBFingerprintSet;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
 
 public class MappingWorkflow
@@ -64,10 +77,17 @@ public class MappingWorkflow
 		PropHandler.storeProperties();
 	}
 
+	/**
+	 * stores the properties in a file
+	 * 
+	 * @param workflowMappingProps
+	 * @param outfile
+	 */
 	public static void exportMappingWorkflowToFile(Properties workflowMappingProps, String outfile)
 	{
 		try
 		{
+			Settings.LOGGER.info("Stored workflow to file: " + outfile);
 			BufferedWriter writer = new BufferedWriter(new FileWriter(new File(outfile)));
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			BufferedOutputStream out = new BufferedOutputStream(baos);
@@ -85,6 +105,102 @@ public class MappingWorkflow
 	}
 
 	/**
+	 * for selecting descriptor groups as in feature-wizard via string (i.e. command-line)
+	 */
+	public enum DescriptorCategory
+	{
+		integrated, cdk, ob, obFP2, obFP3, obFP4, obMACCS;
+	}
+
+	/**
+	 * creates hash-map with features (HashMap<String, CompoundPropertySet[]> features) as needed by feature-wizard panel
+	 */
+	public static class DescriptorSelection
+	{
+		List<DescriptorCategory> feats;
+		String excludeIntegrated[];
+
+		public DescriptorSelection(String featString)
+		{
+			feats = new ArrayList<DescriptorCategory>();
+			for (String featStr : featString.split(","))
+				feats.add(DescriptorCategory.valueOf(featStr));
+			if (feats.contains(null) || feats.size() == 0)
+				throw new IllegalArgumentException(featString);
+		}
+
+		public DescriptorSelection(DescriptorCategory... feats)
+		{
+			this.feats = ArrayUtil.toList(feats);
+		}
+
+		public static DescriptorSelection filteredIntegrated(String[] excludeIntegrated)
+		{
+			DescriptorSelection f = new DescriptorSelection(DescriptorCategory.integrated);
+			f.excludeIntegrated = excludeIntegrated;
+			return f;
+		}
+
+		private CompoundProperty[] filterNotSuited(CompoundProperty[] set, boolean onlyNumeric, String[] exclude)
+		{
+			List<CompoundProperty> feats = new ArrayList<CompoundProperty>();
+			for (int i = 0; i < set.length; i++)
+			{
+				if ((onlyNumeric && set[i].getType() == Type.NUMERIC)
+						|| (!onlyNumeric && (set[i].isTypeAllowed(Type.NUMERIC) || set[i].getType() == Type.NOMINAL)))
+				{
+					if (exclude == null || ArrayUtil.indexOf(exclude, set[i].getName()) == -1)
+						feats.add(set[i]);
+				}
+			}
+			return ArrayUtil.toArray(CompoundProperty.class, feats);
+		}
+
+		public HashMap<String, CompoundPropertySet[]> getFeatures(DatasetFile dataset)
+		{
+			HashMap<String, CompoundPropertySet[]> features = new HashMap<String, CompoundPropertySet[]>();
+
+			if (feats.contains(DescriptorCategory.integrated))
+				features.put(
+						FeatureWizardPanel.INTEGRATED_FEATURES,
+						ArrayUtil.cast(IntegratedProperty.class,
+								filterNotSuited(dataset.getIntegratedProperties(false), false, excludeIntegrated)));
+
+			if (feats.contains(DescriptorCategory.cdk))
+			{
+				List<CDKPropertySet> feats = new ArrayList<CDKPropertySet>();
+				for (CDKPropertySet p : CDKPropertySet.NUMERIC_DESCRIPTORS)
+					if (!p.getNameIncludingParams().equals("Ionization Potential"))
+						feats.add(p);
+				features.put(FeatureWizardPanel.CDK_FEATURES, ArrayUtil.toArray(feats));
+			}
+
+			OBFingerprintSet obFP[] = new OBFingerprintSet[0];
+			if (feats.contains(DescriptorCategory.obFP2))
+				obFP = ArrayUtil.concat(OBFingerprintSet.class, obFP, new OBFingerprintSet[] { new OBFingerprintSet(
+						FingerprintType.FP2) });
+			if (feats.contains(DescriptorCategory.obFP3))
+				obFP = ArrayUtil.concat(OBFingerprintSet.class, obFP, new OBFingerprintSet[] { new OBFingerprintSet(
+						FingerprintType.FP3) });
+			if (feats.contains(DescriptorCategory.obFP4))
+				obFP = ArrayUtil.concat(OBFingerprintSet.class, obFP, new OBFingerprintSet[] { new OBFingerprintSet(
+						FingerprintType.FP4) });
+			if (feats.contains(DescriptorCategory.obMACCS))
+				obFP = ArrayUtil.concat(OBFingerprintSet.class, obFP, new OBFingerprintSet[] { new OBFingerprintSet(
+						FingerprintType.MACCS) });
+			if (obFP.length > 0)
+				features.put(FeatureWizardPanel.STRUCTURAL_FRAGMENTS, obFP);
+
+			if (feats.contains(DescriptorCategory.ob))
+				features.put(
+						FeatureWizardPanel.OB_FEATURES,
+						ArrayUtil.cast(OBDescriptorProperty.class,
+								filterNotSuited(OBDescriptorProperty.getDescriptors(true), true, null)));
+			return features;
+		}
+	}
+
+	/**
 	 * creates a mapping-workflow that can be stored in a file, or used as input for the wizard
 	 * 
 	 * @param datasetFile
@@ -93,8 +209,8 @@ public class MappingWorkflow
 	 * @param clusterer
 	 * @return
 	 */
-	public static Properties createMappingWorkflow(String datasetFile, String[] featureNames,
-			boolean selectAllInternalFeatures, DatasetClusterer clusterer)
+	public static Properties createMappingWorkflow(String datasetFile, DescriptorSelection featureSelection,
+			DatasetClusterer clusterer, ThreeDEmbedder embedder)
 	{
 		Properties props = new Properties();
 
@@ -103,15 +219,19 @@ public class MappingWorkflow
 		if (datasetProvider.getDatasetFile() == null)
 			throw new IllegalArgumentException("Could not load dataset file: " + datasetFile);
 
-		if (featureNames != null && featureNames.length > 0 || selectAllInternalFeatures)
+		if (featureSelection != null)
 		{
 			FeatureWizardPanel features = new FeatureWizardPanel();
 			features.updateIntegratedFeatures(datasetProvider.getDatasetFile());
-			features.exportFeaturesToMappingWorkflow(featureNames, selectAllInternalFeatures, props);
+			features.exportFeaturesToMappingWorkflow(featureSelection.getFeatures(datasetProvider.getDatasetFile()),
+					props);
 		}
 
 		ClusterWizardPanel cluster = new ClusterWizardPanel();
 		cluster.exportAlgorithmToMappingWorkflow(clusterer, props);
+
+		EmbedWizardPanel emb = new EmbedWizardPanel();
+		emb.exportAlgorithmToMappingWorkflow(embedder, props);
 
 		return props;
 	}
@@ -132,7 +252,35 @@ public class MappingWorkflow
 	}
 
 	/**
-	 * creates a mapping (result form ches-mapper-wizard) from properties, this stores the mapping-workflow in the ches-mapp-prop-file
+	 * loads the worklow from a file, and creates a mapping (resulst from ches-mapper-wizard)
+	 * can be used to directly start the viewer
+	 * this stores the mapping-workflow in the ches-mapp-prop-file
+	 * 
+	 * @param workflowFile
+	 * @return
+	 */
+	public static CheSMapping createMappingFromMappingWorkflow(String workflowFile)
+	{
+		try
+		{
+			File f = new File(workflowFile);
+			Properties props = new Properties();
+			FileInputStream in = new FileInputStream(f);
+			props.load(in);
+			in.close();
+			return createMappingFromMappingWorkflow(props, f.getParent());
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/**
+	 * creates a mapping (result form ches-mapper-wizard) from properties
+	 * can be used to directly start the viewer
+	 * this stores the mapping-workflow in the ches-mapp-prop-file
 	 * 
 	 * @param workflowMappingProps
 	 * @param alternateDatasetDir
@@ -160,13 +308,47 @@ public class MappingWorkflow
 		return new CheSMapping(dataset, features, clusterer, builder, embedder, aligner);
 	}
 
+	/**
+	 * creates a workflow using the specified dataset-file and all integrated features
+	 * stores the workflow in a file
+	 * 
+	 * @param datasetFile
+	 * @param workflowOutfile
+	 */
+	public static void createAndStoreMappingWorkflow(String datasetFile, String workflowOutfile)
+	{
+		createAndStoreMappingWorkflow(datasetFile, workflowOutfile, null);
+	}
+
+	/**
+	 * creates a workflow using the specified dataset-file and all integrated features (apart from the excluded features)
+	 * stores the workflow in a file
+	 * 
+	 * @param datasetFile
+	 * @param workflowOutfile
+	 * @param ignoreIntegratedFeatures
+	 */
+	public static void createAndStoreMappingWorkflow(String datasetFile, String workflowOutfile,
+			String[] ignoreIntegratedFeatures)
+	{
+		Properties props = createMappingWorkflow(datasetFile,
+				DescriptorSelection.filteredIntegrated(ignoreIntegratedFeatures), null, WekaPCA3DEmbedder.INSTANCE);
+		MappingWorkflow.exportMappingWorkflowToFile(props, workflowOutfile);
+	}
+
 	public static void main(String args[])
 	{
+		PropHandler.init(true);
+		BinHandler.init();
+		//		System.getenv().put("CM_BABEL_PATH", "/home/martin/opentox-ruby/openbabel-2.2.3/bin/babel");
+
 		//		String input = Settings.destinationFile("knime_input.csv");
 		String input = "/home/martin/data/caco2.sdf";
-		Properties props = MappingWorkflow.createMappingWorkflow(input, null, true, null);
+		Properties props = MappingWorkflow.createMappingWorkflow(input, new DescriptorSelection(DescriptorCategory.ob),
+				null, null);
 		CheSMapping mapping = MappingWorkflow.createMappingFromMappingWorkflow(props, "");
-		ClusteringData data = mapping.doMapping();
+		mapping.doMapping();
+		//		ClusteringData data = mapping.doMapping();
 
 		//		exportMappingWorkflowToFile(createMappingWorkflow("/home/martin/data/caco2.sdf", new String[] { "logD", "rgyr",
 		//				"HCPSA", "fROTB" }, null));

@@ -48,10 +48,11 @@ import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.FormLayout;
 
+import connect.ChEMBLSearch;
 import data.DatasetFile;
 import data.FeatureService.IllegalCompoundsException;
 
-public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWorkflowProvider
+public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWorkflowProvider, DatasetLoader
 {
 	JTextField textField;
 	JFileChooser chooser;
@@ -101,9 +102,11 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 
 		block = wizard;
 		DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout(
-				"pref,5dlu,pref:grow(0.99),5dlu,right:p:grow(0.01)"));
+				"pref,5dlu,pref:grow(0.99),5dlu,right:p:grow(0.01),5dlu,right:p:grow(0.01)"));
+		int allCols = 7;
 		builder.append(new JLabel(
-				"Select dataset file (Copy a http link into the textfield to load a dataset from the internet):"), 5);
+				"Select dataset file (Copy a http link into the textfield to load a dataset from the internet):"),
+				allCols);
 		builder.nextLine();
 		textField = new JTextField(45);
 		textField.getDocument().addDocumentListener(new DocumentAdapter()
@@ -158,7 +161,22 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 			}
 		});
 		builder.append(search);
+
+		JButton chemblSearch = new JButton("Search ChEMBL");
+		ActionListener al = new ActionListener()
+		{
+
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				String f = Settings.destinationFile("chembl-search");
+				ChEMBLSearch.searchDialog(DatasetWizardPanel.this.wizard, f, DatasetWizardPanel.this, true);
+			}
+		};
+		chemblSearch.addActionListener(al);
+		builder.append(chemblSearch);
 		builder.nextLine();
+
 		String dir = PropHandler.get(propKeyDataset);
 		oldDatasets = new Vector<DatasetFile>();
 		if (dir != null)
@@ -218,7 +236,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 		hide.setHorizontalAlignement(SwingConstants.RIGHT);
 		hide.setBorder(new EmptyBorder(10, 0, 10, 0));
 		hide.addComponent(scroll);
-		builder.append(hide, 5);
+		builder.append(hide, allCols);
 		builder.nextLine();
 
 		buttonLoad = new JButton("Load Dataset");
@@ -232,7 +250,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 			}
 		});
 
-		builder.append(ButtonBarFactory.buildRightAlignedBar(buttonLoad), 5);
+		builder.append(ButtonBarFactory.buildRightAlignedBar(buttonLoad), allCols);
 		builder.nextLine();
 
 		//		builder.appendParagraphGapRow();

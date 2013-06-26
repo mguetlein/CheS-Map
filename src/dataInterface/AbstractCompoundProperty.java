@@ -189,7 +189,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 		normalizedLogValues.put(dataset, normalizedLog);
 		DoubleArraySummary sum = DoubleArraySummary.create(normalized);
 		median.put(dataset, sum.getMedian());
-		distinct.put(dataset, sum.getNum());
+		distinct.put(dataset, sum.getNumDistinct());
 		Boolean integerValue = true;
 		for (Double d : vals)
 			if (d != null && Math.round(d) != d)

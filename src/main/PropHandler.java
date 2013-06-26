@@ -24,7 +24,7 @@ public class PropHandler
 	private static PropHandler instance()
 	{
 		if (INSTANCE == null)
-			init(true);
+			throw new IllegalStateException("init first!");
 		return INSTANCE;
 	}
 

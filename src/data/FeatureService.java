@@ -158,8 +158,16 @@ public class FeatureService
 						if (columnIndex == 0)
 						{
 							if (value == null)
-								throw new IllegalArgumentException("Empty " + (smiles ? "smiles " : "inchi")
-										+ " in row " + (rowIndex + 1));
+							{
+								//								throw new IllegalArgumentException("Empty " + (smiles ? "smiles" : "inchi")
+								//										+ " in row " + (rowIndex + 1));
+								System.err.println("Empty " + (smiles ? "smiles" : "inchi") + " in row "
+										+ (rowIndex + 1));
+								if (smiles)
+									value = "C12CC2C1";
+								else
+									value = "InChI=1S/C4H6/c1-3-2-4(1)3/h3-4H,1-2H2";
+							}
 							smilesInchiContent.append(value + " ");
 						}
 						props.get(propNames.get(columnIndex)).add(value);

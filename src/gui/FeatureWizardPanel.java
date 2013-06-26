@@ -16,6 +16,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -49,6 +50,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import data.DatasetFile;
 import data.FeatureLoader;
+import data.FeatureService;
 import data.IntegratedProperty;
 import data.cdk.CDKPropertySet;
 import data.fragments.MatchEngine;
@@ -654,39 +656,24 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 	@Override
 	public void proceed()
 	{
-		putIntegratedToProps(selector.getSelected(INTEGRATED_FEATURES), PropHandler.getProperties());
+		HashMap<String, CompoundPropertySet[]> selected = new HashMap<String, CompoundPropertySet[]>();
+		selected.put(INTEGRATED_FEATURES, selector.getSelected(INTEGRATED_FEATURES));
+		selected.put(CDK_FEATURES, selector.getSelected(CDK_FEATURES));
+		selected.put(OB_FEATURES, selector.getSelected(OB_FEATURES));
+		selected.put(STRUCTURAL_FRAGMENTS, selector.getSelected(STRUCTURAL_FRAGMENTS));
+		putToProps(selected, PropHandler.getProperties());
 
-		if (CDKPropertySet.NUMERIC_DESCRIPTORS.length > 0)
-			if (selector.getSelected(CDK_FEATURES).length > 0)
-				PropHandler.put(propKeyCDK, ArrayUtil.toCSVString(selector.getSelected(CDK_FEATURES), true));
-			else
-				PropHandler.remove(propKeyCDK);
-
-		CompoundPropertySet[] obFeats = selector.getSelected(OB_FEATURES);
-		if (obFeats.length > 0)
-		{
-			String[] serilizedOBFeats = new String[obFeats.length];
-			for (int i = 0; i < serilizedOBFeats.length; i++)
-				serilizedOBFeats[i] = obFeats[i] + "#" + obFeats[i].getType();
-			PropHandler.put(propKeyOB, ArrayUtil.toCSVString(serilizedOBFeats, true));
-		}
-		else
-			PropHandler.remove(propKeyOB);
-
-		if (selector.getSelected(STRUCTURAL_FRAGMENTS).length > 0)
-			PropHandler.put(propKeyFragments, ArrayUtil.toCSVString(selector.getSelected(STRUCTURAL_FRAGMENTS), true));
-		else
-			PropHandler.remove(propKeyFragments);
 		PropHandler.storeProperties();
-
 		if (fragmentProperties != null)
 			fragmentProperties.store();
 	}
 
-	private void putIntegratedToProps(CompoundPropertySet[] integratedProps, Properties props)
+	private void putToProps(HashMap<String, CompoundPropertySet[]> features, Properties props)
 	{
-		if (integratedProps.length > 0)
+		if (features.containsKey(INTEGRATED_FEATURES) && features.get(INTEGRATED_FEATURES).length > 0)
 		{
+			IntegratedProperty[] integratedProps = ArrayUtil.cast(IntegratedProperty.class,
+					features.get(INTEGRATED_FEATURES));
 			String[] serilizedProps = new String[integratedProps.length];
 			for (int i = 0; i < serilizedProps.length; i++)
 				serilizedProps[i] = integratedProps[i] + "#" + integratedProps[i].getType();
@@ -694,6 +681,31 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		}
 		else
 			props.remove(propKeyIntegrated);
+
+		if (CDKPropertySet.NUMERIC_DESCRIPTORS.length > 0)
+		{
+			if (features.containsKey(CDK_FEATURES) && features.get(CDK_FEATURES).length > 0)
+				props.put(propKeyCDK, ArrayUtil.toCSVString(features.get(CDK_FEATURES), true));
+			else
+				props.remove(propKeyCDK);
+		}
+
+		if (features.containsKey(OB_FEATURES) && features.get(OB_FEATURES).length > 0)
+		{
+			OBDescriptorProperty[] obFeats = ArrayUtil.cast(OBDescriptorProperty.class, features.get(OB_FEATURES));
+			String[] serilizedOBFeats = new String[obFeats.length];
+			for (int i = 0; i < serilizedOBFeats.length; i++)
+				serilizedOBFeats[i] = obFeats[i] + "#" + obFeats[i].getType();
+			props.put(propKeyOB, ArrayUtil.toCSVString(serilizedOBFeats, true));
+		}
+		else
+			props.remove(propKeyOB);
+
+		if (features.containsKey(STRUCTURAL_FRAGMENTS) && features.get(STRUCTURAL_FRAGMENTS).length > 0)
+			props.put(propKeyFragments, ArrayUtil.toCSVString(features.get(STRUCTURAL_FRAGMENTS), true));
+		else
+			props.remove(propKeyFragments);
+
 	}
 
 	@Override
@@ -725,45 +737,73 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 	}
 
 	@Override
-	public void exportFeaturesToMappingWorkflow(String[] featureNames, boolean selectAllInternalFeatures,
-			Properties props)
+	public void exportFeaturesToMappingWorkflow(HashMap<String, CompoundPropertySet[]> features, Properties props)
 	{
-		IntegratedProperty[] availableIntegratedProps = dataset.getIntegratedProperties(false);
-		if (featureNames != null && featureNames.length > 0 && selectAllInternalFeatures)
-			throw new IllegalArgumentException("either specify features manually, or select all internal features");
-		if (selectAllInternalFeatures)
-		{
-			List<String> features = new ArrayList<String>();
-			for (int i = 0; i < availableIntegratedProps.length; i++)
-				if (availableIntegratedProps[i].isTypeAllowed(Type.NUMERIC)
-						|| availableIntegratedProps[i].getType() == Type.NOMINAL)
-					features.add(availableIntegratedProps[i].getName());
-			featureNames = ArrayUtil.toArray(String.class, features);
-		}
-		IntegratedProperty[] selectedIntegratedProps = new IntegratedProperty[featureNames.length];
-		int index = 0;
-		for (String featureName : featureNames)
-		{
-			IntegratedProperty match = null;
-			for (IntegratedProperty availableProp : availableIntegratedProps)
+		for (CompoundPropertySet[] feats : features.values())
+			for (CompoundPropertySet feature : feats)
 			{
-				if (availableProp.getName().equals(featureName))
+				if (feature instanceof IntegratedProperty || feature instanceof OBDescriptorProperty)
 				{
-					match = availableProp;
-					break;
+					CompoundProperty feat = (CompoundProperty) feature;
+					if (feature instanceof IntegratedProperty)
+					{
+						if (FeatureService.guessNominalFeatureType(feat.numDistinctValues(dataset),
+								dataset.numCompounds(), feat.isTypeAllowed(Type.NUMERIC)))
+							feat.setType(Type.NOMINAL);
+						else
+							feat.setType(Type.NUMERIC);
+					}
+					else if (feature instanceof OBDescriptorProperty)
+					{
+						if (feat.isTypeAllowed(Type.NUMERIC))
+							feat.setType(Type.NUMERIC);
+					}
+					if (feature.getType() == null)
+						throw new IllegalArgumentException("probably not suited: " + feat);
 				}
 			}
-			if (match == null)
-				throw new IllegalArgumentException("could not find property: " + featureName + " in "
-						+ ArrayUtil.toString(availableIntegratedProps));
-			if (match.isTypeAllowed(Type.NUMERIC))
-				match.setType(Type.NUMERIC);
-			else if (match.getType() != Type.NOMINAL)
-				throw new IllegalArgumentException("probably not suited: " + featureName);
-			selectedIntegratedProps[index++] = match;
-		}
-		putIntegratedToProps(selectedIntegratedProps, props);
+		putToProps(features, props);
 	}
+
+	//	public void exportFeaturesToMappingWorkflow(String[] featureNames, boolean selectAllInternalFeatures,
+	//			Properties props)
+	//	{
+	//		IntegratedProperty[] availableIntegratedProps = dataset.getIntegratedProperties(false);
+	//		if (featureNames != null && featureNames.length > 0 && selectAllInternalFeatures)
+	//			throw new IllegalArgumentException("either specify features manually, or select all internal features");
+	//		if (selectAllInternalFeatures)
+	//		{
+	//			List<String> features = new ArrayList<String>();
+	//			for (int i = 0; i < availableIntegratedProps.length; i++)
+	//				if (availableIntegratedProps[i].isTypeAllowed(Type.NUMERIC)
+	//						|| availableIntegratedProps[i].getType() == Type.NOMINAL)
+	//					features.add(availableIntegratedProps[i].getName());
+	//			featureNames = ArrayUtil.toArray(String.class, features);
+	//		}
+	//		IntegratedProperty[] selectedIntegratedProps = new IntegratedProperty[featureNames.length];
+	//		int index = 0;
+	//		for (String featureName : featureNames)
+	//		{
+	//			IntegratedProperty match = null;
+	//			for (IntegratedProperty availableProp : availableIntegratedProps)
+	//			{
+	//				if (availableProp.getName().equals(featureName))
+	//				{
+	//					match = availableProp;
+	//					break;
+	//				}
+	//			}
+	//			if (match == null)
+	//				throw new IllegalArgumentException("could not find property: " + featureName + " in "
+	//						+ ArrayUtil.toString(availableIntegratedProps));
+	//			if (match.isTypeAllowed(Type.NUMERIC))
+	//				match.setType(Type.NUMERIC);
+	//			else if (match.getType() != Type.NOMINAL)
+	//				throw new IllegalArgumentException("probably not suited: " + featureName);
+	//			selectedIntegratedProps[index++] = match;
+	//		}
+	//		putIntegratedToProps(selectedIntegratedProps, props);
+	//	}
 
 	@Override
 	public void exportSettingsToMappingWorkflow(Properties props)

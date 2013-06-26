@@ -3,8 +3,6 @@ package gui;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
-import java.io.FileInputStream;
-import java.util.Properties;
 
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -132,64 +130,48 @@ public class CheSMapperWizard extends WizardDialog
 		{
 			PropHandler.put("workflow-import-dir", f.getParent());
 			PropHandler.storeProperties();
-			Properties props = null;
-			try
+			Thread th = new Thread(new Runnable()
 			{
-				props = new Properties();
-				FileInputStream in = new FileInputStream(f);
-				props.load(in);
-				in.close();
-			}
-			catch (Exception e)
-			{
-				e.printStackTrace();
-			}
-			if (props != null)
-			{
-				final Properties fProps = props;
-				Thread th = new Thread(new Runnable()
+				@Override
+				public void run()
 				{
-					@Override
-					public void run()
+					try
 					{
-						try
+						SwingUtilities.invokeLater(new Runnable()
 						{
-							SwingUtilities.invokeLater(new Runnable()
+							@Override
+							public void run()
 							{
-								@Override
-								public void run()
-								{
-									CheSMapperWizard.this.block("create worflow");
-								}
-							});
-							// do not do this in AWT event thread, this will cause errors
-							chesMapping = MappingWorkflow.createMappingFromMappingWorkflow(fProps, f.getParent());
-						}
-						finally
-						{
-							SwingUtilities.invokeLater(new Runnable()
-							{
-								@Override
-								public void run()
-								{
-									CheSMapperWizard.this.unblock("create worflow");
-								}
-							});
-						}
-						if (chesMapping != null)
-							SwingUtilities.invokeLater(new Runnable()
-							{
-								@Override
-								public void run()
-								{
-									close(RETURN_VALUE_IMPORT);
-								}
-							});
+								CheSMapperWizard.this.block("create worflow");
+							}
+						});
+						// do not do this in AWT event thread, this will cause errors
+						chesMapping = MappingWorkflow.createMappingFromMappingWorkflow(f.getAbsolutePath());
 					}
+					finally
+					{
+						SwingUtilities.invokeLater(new Runnable()
+						{
+							@Override
+							public void run()
+							{
+								CheSMapperWizard.this.unblock("create worflow");
+							}
+						});
+					}
+					if (chesMapping != null)
+						SwingUtilities.invokeLater(new Runnable()
+						{
+							@Override
+							public void run()
+							{
+								close(RETURN_VALUE_IMPORT);
+							}
+						});
+				}
 
-				});
-				th.start();
-			}
+			});
+			th.start();
 		}
 	}
 
@@ -227,7 +209,6 @@ public class CheSMapperWizard extends WizardDialog
 	{
 		return chesMapping;
 	}
-
 
 	public static void main(String args[])
 	{

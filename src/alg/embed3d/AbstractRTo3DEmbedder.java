@@ -15,7 +15,7 @@ import javax.vecmath.Vector3f;
 import main.BinHandler;
 import main.Settings;
 
-import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import rscript.ExportRUtil;
 import rscript.RScriptUtil;
@@ -24,8 +24,8 @@ import util.ExternalToolUtil;
 import util.FileUtil;
 import alg.AlgorithmException.EmbedException;
 import data.DatasetFile;
-import dataInterface.CompoundPropertyOwner;
 import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertyOwner;
 import dataInterface.CompoundPropertyUtil;
 
 public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
