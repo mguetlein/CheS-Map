@@ -30,6 +30,7 @@ import util.FileUtil;
 import alg.align3d.ThreeDAligner;
 import alg.build3d.ThreeDBuilder;
 import alg.cluster.DatasetClusterer;
+import alg.cluster.NoClusterer;
 import alg.embed3d.ThreeDEmbedder;
 import alg.embed3d.WekaPCA3DEmbedder;
 import data.DatasetFile;
@@ -104,6 +105,16 @@ public class MappingWorkflow
 		}
 	}
 
+	public static DatasetClusterer clustererFromName(String clusterer)
+	{
+		for (DatasetClusterer a : DatasetClusterer.CLUSTERERS)
+			if (a.getName().equals(clusterer))
+				return a;
+		if (clusterer != null && clusterer.length() > 0)
+			throw new IllegalArgumentException("Dataset clusterer not found: " + clusterer);
+		return null;
+	}
+
 	/**
 	 * for selecting descriptor groups as in feature-wizard via string (i.e. command-line)
 	 */
@@ -122,23 +133,24 @@ public class MappingWorkflow
 
 		public DescriptorSelection(String featString)
 		{
+			this(featString, null);
+		}
+
+		public DescriptorSelection(String featString, String excludeIntegrated)
+		{
 			feats = new ArrayList<DescriptorCategory>();
 			for (String featStr : featString.split(","))
 				feats.add(DescriptorCategory.valueOf(featStr));
 			if (feats.contains(null) || feats.size() == 0)
 				throw new IllegalArgumentException(featString);
+
+			if (excludeIntegrated != null)
+				this.excludeIntegrated = excludeIntegrated.split(",");
 		}
 
 		public DescriptorSelection(DescriptorCategory... feats)
 		{
 			this.feats = ArrayUtil.toList(feats);
-		}
-
-		public static DescriptorSelection filteredIntegrated(String[] excludeIntegrated)
-		{
-			DescriptorSelection f = new DescriptorSelection(DescriptorCategory.integrated);
-			f.excludeIntegrated = excludeIntegrated;
-			return f;
 		}
 
 		private CompoundProperty[] filterNotSuited(CompoundProperty[] set, boolean onlyNumeric, String[] exclude)
@@ -198,6 +210,18 @@ public class MappingWorkflow
 								filterNotSuited(OBDescriptorProperty.getDescriptors(true), true, null)));
 			return features;
 		}
+	}
+
+	/**
+	 * creates a mapping-workflow that can be stored in a file, or used as input for the wizard
+	 * 
+	 * @param datasetFile
+	 * @param featureSelection
+	 * @return
+	 */
+	public static Properties createMappingWorkflow(String datasetFile, DescriptorSelection featureSelection)
+	{
+		return createMappingWorkflow(datasetFile, featureSelection, null, WekaPCA3DEmbedder.INSTANCE_NO_PROBS);
 	}
 
 	/**
@@ -283,6 +307,19 @@ public class MappingWorkflow
 	 * this stores the mapping-workflow in the ches-mapp-prop-file
 	 * 
 	 * @param workflowMappingProps
+	 * @return
+	 */
+	public static CheSMapping createMappingFromMappingWorkflow(Properties workflowMappingProps)
+	{
+		return createMappingFromMappingWorkflow(workflowMappingProps, System.getProperty("user.home"));
+	}
+
+	/**
+	 * creates a mapping (result form ches-mapper-wizard) from properties
+	 * can be used to directly start the viewer
+	 * this stores the mapping-workflow in the ches-mapp-prop-file
+	 * 
+	 * @param workflowMappingProps
 	 * @param alternateDatasetDir
 	 * @return
 	 */
@@ -317,11 +354,12 @@ public class MappingWorkflow
 	 */
 	public static void createAndStoreMappingWorkflow(String datasetFile, String workflowOutfile)
 	{
-		createAndStoreMappingWorkflow(datasetFile, workflowOutfile, null);
+		createAndStoreMappingWorkflow(datasetFile, workflowOutfile, new DescriptorSelection(
+				DescriptorCategory.integrated), NoClusterer.INSTANCE);
 	}
 
 	/**
-	 * creates a workflow using the specified dataset-file and all integrated features (apart from the excluded features)
+	 * creates a workflow using the specified dataset-file and the selected features
 	 * stores the workflow in a file
 	 * 
 	 * @param datasetFile
@@ -329,10 +367,9 @@ public class MappingWorkflow
 	 * @param ignoreIntegratedFeatures
 	 */
 	public static void createAndStoreMappingWorkflow(String datasetFile, String workflowOutfile,
-			String[] ignoreIntegratedFeatures)
+			DescriptorSelection features, DatasetClusterer clusterer)
 	{
-		Properties props = createMappingWorkflow(datasetFile,
-				DescriptorSelection.filteredIntegrated(ignoreIntegratedFeatures), null, WekaPCA3DEmbedder.INSTANCE);
+		Properties props = createMappingWorkflow(datasetFile, features, clusterer, WekaPCA3DEmbedder.INSTANCE);
 		MappingWorkflow.exportMappingWorkflowToFile(props, workflowOutfile);
 	}
 
@@ -353,4 +390,5 @@ public class MappingWorkflow
 		//		exportMappingWorkflowToFile(createMappingWorkflow("/home/martin/data/caco2.sdf", new String[] { "logD", "rgyr",
 		//				"HCPSA", "fROTB" }, null));
 	}
+
 }

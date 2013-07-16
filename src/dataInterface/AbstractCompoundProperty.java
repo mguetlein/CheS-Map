@@ -5,9 +5,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import util.ArrayUtil;
+import util.CountedSet;
 import util.DoubleArraySummary;
 import util.ToStringComparator;
 import data.DatasetFile;
@@ -150,6 +150,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	private HashMap<DatasetFile, Double[]> normalizedValues = new HashMap<DatasetFile, Double[]>();
 	private HashMap<DatasetFile, Double[]> normalizedLogValues = new HashMap<DatasetFile, Double[]>();
 	private HashMap<DatasetFile, Double> median = new HashMap<DatasetFile, Double>();
+	private HashMap<DatasetFile, String> modeNonNull = new HashMap<DatasetFile, String>();
 	private HashMap<DatasetFile, Integer> missing = new HashMap<DatasetFile, Integer>();
 	private HashMap<DatasetFile, Integer> distinct = new HashMap<DatasetFile, Integer>();
 	private HashMap<DatasetFile, Boolean> isInteger = new HashMap<DatasetFile, Boolean>();
@@ -202,15 +203,22 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 
 	private void setDomainAndNumDistinct(DatasetFile dataset, String values[])
 	{
-		Set<String> distinctValues = ArrayUtil.getDistinctValues(values);
-		if (distinctValues.contains(null))
-			distinctValues.remove(null);
-		int numDistinct = distinctValues.size();
-		String dom[] = new String[distinctValues.size()];
-		distinctValues.toArray(dom);
-		Arrays.sort(dom, new ToStringComparator());
-		domain = dom;
-		distinct.put(dataset, numDistinct);
+		CountedSet<String> set = CountedSet.create(values);
+		set.remove(null);
+		if (set.size() == 0)
+		{
+			domain = new String[0];
+			distinct.put(dataset, 0);
+			modeNonNull.put(dataset, null);
+		}
+		else
+		{
+			String dom[] = ArrayUtil.toArray(set.values());
+			Arrays.sort(dom, new ToStringComparator());
+			domain = dom;
+			distinct.put(dataset, set.size());
+			modeNonNull.put(dataset, set.values().get(0));
+		}
 	}
 
 	private DatasetFile mappedDataset;
@@ -308,6 +316,16 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 			return isInteger.get(dataset);
 		else
 			return null;
+	}
+
+	@Override
+	public String getModeNonNull(DatasetFile dataset)
+	{
+		if (getType() == Type.NUMERIC)
+			throw new IllegalStateException();
+		if (!modeNonNull.containsKey(dataset))
+			throw new Error("values not yet set");
+		return modeNonNull.get(dataset);
 	}
 
 }

@@ -20,8 +20,8 @@ import main.Settings;
 import main.TaskProvider;
 
 import org.openscience.cdk.AtomContainer;
+import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.ChemFile;
-import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.aromaticity.CDKHueckelAromaticityDetector;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.exception.NoSuchAtomTypeException;
@@ -41,6 +41,8 @@ import org.openscience.cdk.io.SMILESReader;
 import org.openscience.cdk.layout.StructureDiagramGenerator;
 import org.openscience.cdk.modeling.builder3d.ModelBuilder3D;
 import org.openscience.cdk.modeling.builder3d.TemplateHandler3D;
+import org.openscience.cdk.silent.SilentChemObjectBuilder;
+import org.openscience.cdk.smiles.FixBondOrdersTool;
 import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
@@ -49,6 +51,7 @@ import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 import util.ArrayUtil;
 import util.FileUtil;
 import util.FileUtil.UnexpectedNumColsException;
+import util.ListUtil;
 import util.ValueFileCache;
 import dataInterface.CompoundProperty.Type;
 
@@ -128,6 +131,7 @@ public class FeatureService
 			boolean inchi = false;
 			FileUtil.CSVFile csvFile = FileUtil.readCSV(f.getAbsolutePath());
 			int rowIndex = 0;
+			List<Integer> emptySmiles = new ArrayList<Integer>();
 			for (String line[] : csvFile.content)
 			{
 				if (rowIndex == 0)
@@ -159,10 +163,7 @@ public class FeatureService
 						{
 							if (value == null)
 							{
-								//								throw new IllegalArgumentException("Empty " + (smiles ? "smiles" : "inchi")
-								//										+ " in row " + (rowIndex + 1));
-								System.err.println("Empty " + (smiles ? "smiles" : "inchi") + " in row "
-										+ (rowIndex + 1));
+								emptySmiles.add(rowIndex + 1);
 								if (smiles)
 									value = "C12CC2C1";
 								else
@@ -182,6 +183,10 @@ public class FeatureService
 				}
 				rowIndex++;
 			}
+			if (emptySmiles.size() > 0)
+				Settings.LOGGER.warn("Empty " + (smiles ? "smiles" : "inchi") + " in row/s "
+						+ ListUtil.toString(emptySmiles));
+
 			List<IAtomContainer> list;
 			if (smiles)
 			{
@@ -211,7 +216,7 @@ public class FeatureService
 			{
 				System.err.println("wrong num molecules checking smarts");
 				rowIndex = 0;
-				SmilesParser smilesParser = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+				SmilesParser smilesParser = new SmilesParser(SilentChemObjectBuilder.getInstance());
 				for (String smilesString : smilesInchiContent.toString().split("\n"))
 				{
 					smilesString = smilesString.trim();
@@ -705,6 +710,7 @@ public class FeatureService
 
 			SDFWriter writer = new SDFWriter(new FileOutputStream(tmpFile));
 			StructureDiagramGenerator sdg = new StructureDiagramGenerator();
+			FixBondOrdersTool fix = new FixBondOrdersTool();
 
 			for (int cIndex : compoundIndices)
 			{
@@ -714,20 +720,34 @@ public class FeatureService
 				AtomContainer newSet = new AtomContainer();
 				for (int i = 0; i < oldSet.getMoleculeCount(); i++)
 				{
+					IMolecule mol;
 					try
 					{
 						sdg.setMolecule(oldSet.getMolecule(i));
 						sdg.generateCoordinates();
-						newSet.add(AtomContainerManipulator.removeHydrogens(sdg.getMolecule()));
+						mol = sdg.getMolecule();
 					}
 					catch (Exception e)
 					{
 						Settings.LOGGER.error(e);
-						newSet.add(AtomContainerManipulator.removeHydrogens(oldSet.getMolecule(i)));
+						mol = oldSet.getMolecule(i);
 					}
+					mol = (IMolecule) AtomContainerManipulator.removeHydrogens(mol);
+					try
+					{
+						mol = fix.kekuliseAromaticRings(mol);
+					}
+					catch (Exception e)
+					{
+						Settings.LOGGER.error(e);
+					}
+					newSet.add(mol);
+
 					if (!TaskProvider.isRunning())
 						return;
 				}
+				if (molecule.getProperty("SMIdbNAME") != null) // set identifier in sdf file (title) with identifier in SMI file (SMIdbNAME)
+					newSet.setProperty(CDKConstants.TITLE, molecule.getProperty("SMIdbNAME"));
 				writer.write(newSet);
 				if (!TaskProvider.isRunning())
 					return;

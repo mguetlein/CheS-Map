@@ -44,6 +44,8 @@ public interface CompoundProperty
 
 	public Double getNormalizedMedian(DatasetFile dataset);
 
+	public String getModeNonNull(DatasetFile dataset);
+
 	public int numMissingValues(DatasetFile dataset);
 
 	public int numDistinctValues(DatasetFile dataset);

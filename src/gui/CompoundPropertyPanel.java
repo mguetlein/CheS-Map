@@ -47,10 +47,10 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import data.DatasetFile;
 import data.FeatureLoader;
-import dataInterface.FragmentPropertySet;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
+import dataInterface.FragmentPropertySet;
 import freechart.AbstractFreeChartPanel;
 import freechart.BarPlotPanel;
 import freechart.HistogramPanel;

@@ -61,15 +61,28 @@ public class ManualClusterer extends AbstractDatasetClusterer
 			for (int compoundIndex = 0; compoundIndex < compounds.size(); compoundIndex++)
 			{
 				CompoundData m = compounds.get(compoundIndex);
-				String val = m.getStringValue(clusterProp);
-				if (val != null && val.trim().length() > 0)
+
+				Integer intVals[] = null;
+				if (clusterProp.isInteger(dataset))
 				{
-					String vals[] = val.trim().split(",");
-					Integer intVals[] = new Integer[vals.length];
-					for (int i = 0; i < intVals.length; i++)
+					if (m.getDoubleValue(clusterProp) != null)
+						intVals = new Integer[] { m.getDoubleValue(clusterProp).intValue() };
+				}
+				else
+				{
+					String val = m.getStringValue(clusterProp);
+					if (val != null && val.trim().length() > 0)
 					{
-						intVals[i] = Integer.parseInt(vals[i]);
+						String vals[] = val.trim().split(",");
+						intVals = new Integer[vals.length];
+						for (int i = 0; i < intVals.length; i++)
+						{
+							intVals[i] = Integer.parseInt(vals[i]);
+						}
 					}
+				}
+				if (intVals != null && intVals.length > 0)
+				{
 					clusterAssignment.add(intVals);
 					for (Integer clazz : intVals)
 					{

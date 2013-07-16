@@ -219,7 +219,12 @@ public class EmbedUtil
 						throw new Error();
 					if (feature.getNominalDomain().length == 2 && feature.getNominalDomain()[0].equals("0")
 							&& feature.getNominalDomain()[1].equals("1"))
-						v_i.add(Double.parseDouble(instances.get(i).getStringValue(features.get(k))));
+					{
+						if (instances.get(i).getStringValue(features.get(k)) == null)
+							v_i.add(Double.parseDouble(feature.getModeNonNull(dataset)));
+						else
+							v_i.add(Double.parseDouble(instances.get(i).getStringValue(features.get(k))));
+					}
 					else
 					{
 						for (String val : feature.getNominalDomain())

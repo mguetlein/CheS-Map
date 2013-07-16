@@ -11,9 +11,11 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -36,24 +38,66 @@ import org.openscience.cdk.renderer.generators.IGeneratorParameter;
 import org.openscience.cdk.renderer.visitor.AWTDrawVisitor;
 import org.openscience.cdk.smiles.SmilesParser;
 
+import util.StringUtil;
 import util.SwingUtil;
 
 public class CDKCompoundIcon
 {
 
-	public static ImageIcon createIcon(IMolecule iMolecule, boolean black) throws CDKException
+	public static void createIcons(DatasetFile d, String outdir)
+	{
+		int w = 200;
+		int h = 200;
+		int c = 0;
+		for (IMolecule m : d.getCompounds())
+		{
+			String file = outdir + "/" + StringUtil.getMD5(d.getSmiles()[c]) + ".png";
+			//String file = outdir + "/" + d.getSmiles()[c] + ".png";
+			if (!new File(file).exists())
+			{
+				try
+				{
+					ImageIcon img = createIcon(m, false, w, h, Layout.horizontal);
+					BufferedImage bi = new BufferedImage(img.getIconWidth(), img.getIconHeight(),
+							BufferedImage.TYPE_INT_RGB);
+					Graphics2D g2 = bi.createGraphics();
+					g2.drawImage(img.getImage(), 0, 0, null);
+					g2.dispose();
+					ImageIO.write(bi, "png", new File(file));
+				}
+				catch (Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+			c++;
+		}
+	}
+
+	public static MultiImageIcon createIcon(IMolecule iMolecule, boolean black) throws CDKException
+	{
+		return createIcon(iMolecule, black, 120, 160, Layout.vertical);
+	}
+
+	public static MultiImageIcon createIcon(IMolecule iMolecule, boolean black, int width, int height, Layout layout)
+			throws CDKException
 	{
 		IMoleculeSet set = ConnectivityChecker.partitionIntoMolecules(iMolecule);
 		List<ImageIcon> icons = new ArrayList<ImageIcon>();
 		for (int i = 0; i < set.getAtomContainerCount(); i++)
 		{
-			icons.add(createIcon(set.getMolecule(i), black, 120,
-					(int) Math.round(160 / (double) set.getAtomContainerCount())));
+			if (layout == Layout.vertical)
+				icons.add(createIconDissconnected(set.getMolecule(i), black, width,
+						(int) Math.round(height / (double) set.getAtomContainerCount())));
+			else
+				icons.add(createIconDissconnected(set.getMolecule(i), black,
+						(int) Math.round(width / (double) set.getAtomContainerCount()), height));
 		}
-		return new MultiImageIcon(icons, Layout.vertical, Orientation.center, 2);
+		return new MultiImageIcon(icons, layout, Orientation.center, 2);
 	}
 
-	public static ImageIcon createIcon(IMolecule iMolecule, boolean black, int width, int height) throws CDKException
+	private static ImageIcon createIconDissconnected(IMolecule iMolecule, boolean black, int width, int height)
+			throws CDKException
 	{
 		Color fColor = black ? Color.WHITE : Color.BLACK;
 		Color bColor = black ? Color.BLACK : Color.WHITE;
@@ -81,14 +125,17 @@ public class CDKCompoundIcon
 					((BasicSceneGenerator.ForegroundColor) parameter).setValue(fColor);
 				else if (parameter instanceof BasicBondGenerator.DefaultBondColor)
 					((BasicBondGenerator.DefaultBondColor) parameter).setValue(fColor);
-				else if (parameter instanceof BasicBondGenerator.BondLength)
-					((BasicBondGenerator.BondLength) parameter).setValue(20.0);
-				else if (parameter instanceof BasicBondGenerator.BondWidth)
-					((BasicBondGenerator.BondWidth) parameter).setValue(2.0);
-				else if (parameter instanceof BasicSceneGenerator.Margin)
-					((BasicSceneGenerator.Margin) parameter).setValue(6.0);
 				else if (parameter instanceof BasicAtomGenerator.AtomColorer)
 					((BasicAtomGenerator.AtomColorer) parameter).setValue(cpkAtomColors);
+				else if (Math.min(width, height) <= 120)
+				{
+					if (parameter instanceof BasicBondGenerator.BondLength)
+						((BasicBondGenerator.BondLength) parameter).setValue(20.0);
+					else if (parameter instanceof BasicBondGenerator.BondWidth)
+						((BasicBondGenerator.BondWidth) parameter).setValue(2.0);
+					else if (parameter instanceof BasicSceneGenerator.Margin)
+						((BasicSceneGenerator.Margin) parameter).setValue(6.0);
+				}
 			}
 		}
 		renderer.setup(iMolecule, drawArea);
@@ -106,6 +153,7 @@ public class CDKCompoundIcon
 		double sx = width / (double) origWidth;
 		double sy = height / (double) origHeight;
 		double scale = Math.min(Math.min(sx, sy), 1);
+		//double scale = Math.min(sx, sy);
 		int scaledWidth = (int) (origWidth * scale);
 		int scaledHeight = (int) (origHeight * scale);
 		BufferedImage resizedImage = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB);
@@ -120,23 +168,33 @@ public class CDKCompoundIcon
 		return new ImageIcon(resizedImage);
 	}
 
-	public static void main(String args[]) throws CDKException
+	public static void main(String args[]) throws Exception
 	{
 		//IMolecule iMolecule = MoleculeFactory.make123Triazole();
 		//String smiles = "BrN1C(=O)CCC1=O";
 		String smiles = "C=C-Cl.BrN1C(=O)CCC1=O";
+		//String smiles = "c1ccccc1";
 		SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
 		IMolecule iMolecule = sp.parseSmiles(smiles);
 
 		JPanel pB = new JPanel();
 		pB.setBackground(Color.black);
 		//		pB.setBorder(new EmptyBorder(50, 50, 50, 50));
-		pB.add(new JLabel(createIcon(iMolecule, true)));
+		pB.add(new JLabel(createIcon(iMolecule, true, 200, 300, Layout.vertical)));
 
 		JPanel pW = new JPanel();
 		pW.setBackground(Color.white);
 		//		pW.setBorder(new EmptyBorder(50, 50, 50, 50));
-		pW.add(new JLabel(createIcon(iMolecule, false)));
+		MultiImageIcon img = createIcon(iMolecule, false, 300, 200, Layout.horizontal);
+		pW.add(new JLabel(img));
+
+		//		BufferedImage bi = new BufferedImage(img.getIconWidth(), img.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+		//		System.out.println(img.getIconWidth() + " " + img.getIconHeight());
+		//		Graphics2D g2 = ((BufferedImage) img.getImage()).createGraphics();
+		//
+		//		g2.drawImage(img.getImage(), 0, 0, null);
+		//		g2.dispose();
+		ImageIO.write(((BufferedImage) img.getImage()), "png", new File("/tmp/image.png"));
 
 		JPanel p = new JPanel();
 		p.add(pB);
