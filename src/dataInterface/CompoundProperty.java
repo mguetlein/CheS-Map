@@ -1,5 +1,6 @@
 package dataInterface;
 
+import gui.property.ColorGradient;
 import data.DatasetFile;
 import data.fragments.MatchEngine;
 
@@ -55,4 +56,13 @@ public interface CompoundProperty
 	public void setMappedDataset(DatasetFile dataset);
 
 	public Boolean isIntegerInMappedDataset();
+
+	public boolean isLogHighlightingEnabled();
+
+	public void setLogHighlightingEnabled(boolean log);
+
+	public ColorGradient getHighlightColorGradient();
+
+	public void setHighlightColorGradient(ColorGradient grad);
+
 }

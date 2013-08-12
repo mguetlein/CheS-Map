@@ -1,5 +1,7 @@
 package dataInterface;
 
+import gui.property.ColorGradient;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,6 +26,9 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	String[] domain;
 	protected String smarts;
 	protected MatchEngine matchEngine;
+
+	private boolean logEnabled = false;
+	private ColorGradient colorGradient = null;
 
 	private static HashMap<String, AbstractCompoundProperty> uniqueNames = new HashMap<String, AbstractCompoundProperty>();
 
@@ -326,6 +331,38 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 		if (!modeNonNull.containsKey(dataset))
 			throw new Error("values not yet set");
 		return modeNonNull.get(dataset);
+	}
+
+	@Override
+	public boolean isLogHighlightingEnabled()
+	{
+		if (getType() != Type.NUMERIC)
+			throw new IllegalStateException();
+		return logEnabled;
+	}
+
+	@Override
+	public void setLogHighlightingEnabled(boolean log)
+	{
+		if (getType() != Type.NUMERIC)
+			throw new IllegalStateException();
+		this.logEnabled = log;
+	}
+
+	@Override
+	public ColorGradient getHighlightColorGradient()
+	{
+		if (getType() != Type.NUMERIC)
+			throw new IllegalStateException();
+		return colorGradient;
+	}
+
+	@Override
+	public void setHighlightColorGradient(ColorGradient colorGradient)
+	{
+		if (getType() != Type.NUMERIC)
+			throw new IllegalStateException();
+		this.colorGradient = colorGradient;
 	}
 
 }
