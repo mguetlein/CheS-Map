@@ -457,7 +457,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 						if (res == JOptionPane.YES_OPTION)
 						{
 							if (d.getFileExtension().matches("(?i)sdf"))
-								SDFUtil.filter_exclude(d.getSDFPath(false), cleanedFile, e.illegalCompounds);
+								SDFUtil.filter_exclude(d.getSDFPath(false), cleanedFile, e.illegalCompounds, false);
 							else if (d.getFileExtension().matches("(?i)csv"))
 							{
 								String all = FileUtil.readStringFromFile(d.getLocalPath());

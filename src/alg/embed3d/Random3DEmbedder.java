@@ -49,11 +49,11 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 		return ccc;
 	}
 
-	//	@Override
-	//	public CompoundProperty getCCCProperty()
-	//	{
-	//		return null;
-	//	}
+	@Override
+	public CompoundProperty getCCCProperty()
+	{
+		return null;
+	}
 
 	//	@Override
 	//	public CompoundPropertyEmbedQuality getEmbedQuality(CompoundProperty p, DatasetFile dataset,

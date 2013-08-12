@@ -30,7 +30,8 @@ public class ClusteringData
 
 	private String embedQuality;
 
-	//	private CompoundProperty embedQualityProperty;
+	private CompoundProperty embedQualityProperty;
+
 	//	private HashMap<CompoundProperty, CompoundPropertyEmbedQuality> embedQualityPerProp = new HashMap<CompoundProperty, CompoundPropertyEmbedQuality>();
 
 	// --------------------------------------------
@@ -181,15 +182,15 @@ public class ClusteringData
 		return origLocalPath;
 	}
 
-	//	public CompoundProperty getEmbeddingQualityProperty()
-	//	{
-	//		return embedQualityProperty;
-	//	}
-	//
-	//	public void setEmbeddingQualityProperty(CompoundProperty embedQualityProperty)
-	//	{
-	//		this.embedQualityProperty = embedQualityProperty;
-	//	}
+	public CompoundProperty getEmbeddingQualityProperty()
+	{
+		return embedQualityProperty;
+	}
+
+	public void setEmbeddingQualityProperty(CompoundProperty embedQualityProperty)
+	{
+		this.embedQualityProperty = embedQualityProperty;
+	}
 	//
 	//	public void setEmbeddingQuality(CompoundProperty p, CompoundPropertyEmbedQuality embedQuality)
 	//	{

@@ -124,9 +124,13 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 				Settings.LOGGER.info("3d already computed: " + finalFile);
 			threeDFilename = finalFile;
 		}
-		catch (IOException e1)
+		catch (IOException e)
 		{
-			Settings.LOGGER.error(e1);
+			Settings.LOGGER.error(e);
+		}
+		finally
+		{
+			running = false;
 		}
 	}
 

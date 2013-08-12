@@ -9,6 +9,7 @@ import java.util.HashMap;
 import main.Settings;
 import rscript.RScriptUtil;
 import alg.cluster.ClusterApproach;
+import alg.r.DistanceProperty;
 
 public class CascadeKMeansRClusterer extends AbstractRClusterer
 {
@@ -42,13 +43,17 @@ public class CascadeKMeansRClusterer extends AbstractRClusterer
 	{
 		String s = "args <- commandArgs(TRUE)\n";
 		s += RScriptUtil.installAndLoadPackage("vegan");
+		s += distance.loadPackage() + "\n";
 		s += "df = read.table(args[1])\n";
 		s += "if(" + maxK.getValue() + " < " + minK.getValue() + ") stop(\"min > max\")\n";
 		s += "maxK <- min(" + maxK.getValue() + ",nrow(unique(df)))\n";
 		s += "maxK <- min(maxK,nrow(df)-1)\n"; // somehow the maximum value for maxK is n-1 for cascade 
 		s += "if(maxK < " + minK.getValue() + ") stop(\"" + TOO_FEW_UNIQUE_DATA_POINTS + "\")\n";
 		s += "print(maxK)\n";
-		s += "ccas <- cascadeKM(df, " + minK.getValue() + ", maxK, iter = " + restart.getValue() + ", criterion = \""
+		s += "d <- " + distance.computeDistance("df") + "\n";
+		s += "dm <- as.matrix(d)\n";
+		s += "dm[is.na(dm)] = 0\n";
+		s += "ccas <- cascadeKM(dm, " + minK.getValue() + ", maxK, iter = " + restart.getValue() + ", criterion = \""
 				+ critMap.get(criterion.getValue().toString()) + "\")\n";
 		s += "max <- max.col(ccas$results)[2]\n";
 		s += "print(ccas$results)\n";
@@ -66,16 +71,17 @@ public class CascadeKMeansRClusterer extends AbstractRClusterer
 		critMap.put(ssi, "ssi");
 	}
 
-	IntegerProperty minK = new IntegerProperty("minimum number of clusters (inf.gr)", 2);
-	IntegerProperty maxK = new IntegerProperty("maximum number of clusters (sup.gr)", 15);
-	IntegerProperty restart = new IntegerProperty("number of restarts (iter)", 30);
-	SelectProperty criterion = new SelectProperty("criterion to select the best partition (criterion)", new String[] {
+	DistanceProperty distance = new DistanceProperty(getName());
+	IntegerProperty minK = new IntegerProperty("Minimum number of clusters (inf.gr)", 2);
+	IntegerProperty maxK = new IntegerProperty("Maximum number of clusters (sup.gr)", 15);
+	IntegerProperty restart = new IntegerProperty("Number of restarts (iter)", 30);
+	SelectProperty criterion = new SelectProperty("Criterion to select the best partition (criterion)", new String[] {
 			calinski, ssi }, calinski);
 
 	@Override
 	public Property[] getProperties()
 	{
-		return new Property[] { minK, maxK, restart, criterion };
+		return new Property[] { distance, minK, maxK, restart, criterion };
 	}
 
 	@Override

@@ -11,6 +11,7 @@ import java.util.List;
 import javax.vecmath.Vector3f;
 
 import main.Settings;
+import util.ArrayUtil;
 import util.DoubleUtil;
 import util.FileUtil;
 import util.ValueFileCache;
@@ -33,7 +34,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	private double rSquare = -Double.MAX_VALUE;
 	private double ccc = -Double.MAX_VALUE;
 
-	//	private CompoundProperty cccProp;
+	private CompoundProperty cccProp;
 
 	@Override
 	public final List<Vector3f> getPositions()
@@ -53,11 +54,11 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		return ccc;
 	}
 
-	//	@Override
-	//	public CompoundProperty getCCCProperty()
-	//	{
-	//		return cccProp;
-	//	}
+	@Override
+	public CompoundProperty getCCCProperty()
+	{
+		return cccProp;
+	}
 
 	//	@Override
 	//	public CompoundPropertyEmbedQuality getEmbedQuality(CompoundProperty p, DatasetFile dataset,
@@ -96,11 +97,11 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		String embedFilename = Settings.destinationFile(dataset, basename + ".embed");
 		String rSquareFilename = Settings.destinationFile(dataset, basename + ".rSquare");
 		String cccFilename = Settings.destinationFile(dataset, basename + ".ccc");
-		//		String cccPropFilename = Settings.destinationFile(dataset, basename + ".cccProp");
-		//		double cccPropValues[];
+		String cccPropFilename = Settings.destinationFile(dataset, basename + ".cccProp");
+		double cccPropValues[];
 
 		if (Settings.CACHING_ENABLED && new File(embedFilename).exists() && new File(rSquareFilename).exists()
-				&& new File(cccFilename).exists())// && new File(cccPropFilename).exists())
+				&& new File(cccFilename).exists() && new File(cccPropFilename).exists())
 		{
 			Settings.LOGGER.info("Read cached embedding results from: " + embedFilename);
 			positions = ValueFileCache.readCachePosition2(embedFilename, instances.size());
@@ -108,8 +109,8 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 			rSquare = DoubleUtil.parseDouble(FileUtil.readStringFromFile(rSquareFilename));
 			Settings.LOGGER.info("Read cached embedding ccc from: " + cccFilename);
 			ccc = DoubleUtil.parseDouble(FileUtil.readStringFromFile(cccFilename));
-			//			Settings.LOGGER.info("Read cached embedding ccc property from: " + cccPropFilename);
-			//			cccPropValues = ArrayUtil.toPrimitiveDoubleArray(ValueFileCache.readCacheDouble2(cccPropFilename));
+			Settings.LOGGER.info("Read cached embedding ccc property from: " + cccPropFilename);
+			cccPropValues = ArrayUtil.toPrimitiveDoubleArray(ValueFileCache.readCacheDouble2(cccPropFilename));
 		}
 		else
 		{
@@ -132,13 +133,13 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 			Settings.LOGGER.info("store embedding ccc to: " + cccFilename);
 			FileUtil.writeStringToFile(cccFilename, ccc + "");
 
-			//			if (d != null)
-			//				cccPropValues = EmbedUtil.computeCCCs(positions, d);
-			//			else
-			//				cccPropValues = EmbedUtil.computeCCCs(positions, instances, features, dataset);
-			//			ValueFileCache.writeCacheDouble2(cccPropFilename, ArrayUtil.toList(cccPropValues));
+			if (d != null)
+				cccPropValues = EmbedUtil.computeCCCs(positions, d);
+			else
+				cccPropValues = EmbedUtil.computeCCCs(positions, instances, features, dataset);
+			ValueFileCache.writeCacheDouble2(cccPropFilename, ArrayUtil.toList(cccPropValues));
 		}
-		//		cccProp = new CCCCompoundPropertySet(dataset, cccPropValues);
+		cccProp = CCCPropertySet.create(dataset, cccPropValues, basename);
 
 		if (positions.size() != instances.size())
 			throw new IllegalStateException("illegal num positions " + positions.size() + " " + instances.size());

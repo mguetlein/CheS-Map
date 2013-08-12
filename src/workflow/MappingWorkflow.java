@@ -36,6 +36,7 @@ import alg.embed3d.WekaPCA3DEmbedder;
 import data.DatasetFile;
 import data.IntegratedProperty;
 import data.cdk.CDKPropertySet;
+import data.fragments.StructuralFragmentProperties;
 import data.obdesc.OBDescriptorProperty;
 import data.obfingerprints.FingerprintType;
 import data.obfingerprints.OBFingerprintSet;
@@ -130,6 +131,7 @@ public class MappingWorkflow
 	{
 		List<DescriptorCategory> feats;
 		String excludeIntegrated[];
+		boolean matchFingerprints;
 
 		public DescriptorSelection(String featString)
 		{
@@ -151,6 +153,11 @@ public class MappingWorkflow
 		public DescriptorSelection(DescriptorCategory... feats)
 		{
 			this.feats = ArrayUtil.toList(feats);
+		}
+
+		public void setMatchFingerprints(boolean matchFingerprints)
+		{
+			this.matchFingerprints = matchFingerprints;
 		}
 
 		private CompoundProperty[] filterNotSuited(CompoundProperty[] set, boolean onlyNumeric, String[] exclude)
@@ -185,6 +192,30 @@ public class MappingWorkflow
 					if (!p.getNameIncludingParams().equals("Ionization Potential"))
 						feats.add(p);
 				features.put(FeatureWizardPanel.CDK_FEATURES, ArrayUtil.toArray(feats));
+			}
+
+			if (feats.contains(DescriptorCategory.obFP2) || feats.contains(DescriptorCategory.obFP3)
+					|| feats.contains(DescriptorCategory.obFP4) || feats.contains(DescriptorCategory.obMACCS))
+			{
+				if (matchFingerprints)
+				{
+					StructuralFragmentProperties.setSkipOmniFragments(false);
+					StructuralFragmentProperties.setMinFrequency(1);
+					System.out
+							.println("matching fingerprints, set min frequency to 1 and do not skip features omni features");
+				}
+				else
+				{
+					StructuralFragmentProperties.setSkipOmniFragments(true);
+					StructuralFragmentProperties
+							.setMinFrequency(Math.max(1, Math.min(10, dataset.numCompounds() / 10)));
+					System.out.println("set min frequency to " + StructuralFragmentProperties.getMinFrequency());
+				}
+
+				Settings.LOGGER.info("before computing structural fragment "
+						+ StructuralFragmentProperties.getMatchEngine() + " "
+						+ StructuralFragmentProperties.getMinFrequency() + " "
+						+ StructuralFragmentProperties.isSkipOmniFragments());
 			}
 
 			OBFingerprintSet obFP[] = new OBFingerprintSet[0];

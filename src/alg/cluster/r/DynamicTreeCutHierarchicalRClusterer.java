@@ -5,7 +5,9 @@ import gui.property.Property;
 import gui.property.SelectProperty;
 import main.Settings;
 import rscript.RScriptUtil;
+import util.StringLineAdder;
 import alg.cluster.ClusterApproach;
+import alg.r.DistanceProperty;
 
 public class DynamicTreeCutHierarchicalRClusterer extends AbstractRClusterer
 {
@@ -38,26 +40,31 @@ public class DynamicTreeCutHierarchicalRClusterer extends AbstractRClusterer
 	@Override
 	protected String getRScriptCode()
 	{
-		return "args <- commandArgs(TRUE)\n" //
-				+ RScriptUtil.installAndLoadPackage("dynamicTreeCut")//
-				+ "df = read.table(args[1])\n" //
-				+ "d <- dist(df, method = \"euclidean\")\n" //
-				+ "fit <- hclust(d, method=\"" + method.getValue()
-				+ "\")\n" //
-				+ "cut = cutreeDynamic(fit, method = \"hybrid\", distM = as.matrix(d), minClusterSize = "
-				+ minClusterSize.getValue() + ")\n" //
-				+ "print(cut)\n" //
-				+ "write.table(cut,args[2])\n";
+		StringLineAdder s = new StringLineAdder();
+		s.add("args <- commandArgs(TRUE)");
+		s.add(RScriptUtil.installAndLoadPackage("dynamicTreeCut"));
+		s.add(distance.loadPackage());
+		s.add("df = read.table(args[1])");
+		s.add("d <- " + distance.computeDistance("df"));
+		s.add("fit <- hclust(d, method=\"" + method.getValue() + "\")");
+		s.add("dm <- as.matrix(d)");
+		s.add("dm[is.na(dm)] = 0");
+		s.add("cut = cutreeDynamic(fit, method = \"hybrid\", distM = dm, minClusterSize = " + minClusterSize.getValue()
+				+ ")");
+		s.add("print(cut)");
+		s.add("write.table(cut,args[2])");
+		return s.toString();
 	}
 
+	DistanceProperty distance = new DistanceProperty(getName());
 	IntegerProperty minClusterSize = new IntegerProperty(
-			"minimum number of compounds in each cluster (minClusterSize)", 10);
-	SelectProperty method = new SelectProperty("the agglomeration method to be used (method)", methods, methods[0]);
+			"Minimum number of compounds in each cluster (minClusterSize)", 10);
+	SelectProperty method = new SelectProperty("The agglomeration method to be used (method)", methods, methods[0]);
 
 	@Override
 	public Property[] getProperties()
 	{
-		return new Property[] { minClusterSize, method };
+		return new Property[] { distance, minClusterSize, method };
 	}
 
 }

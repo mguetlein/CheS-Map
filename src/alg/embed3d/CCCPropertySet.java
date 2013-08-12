@@ -1,7 +1,10 @@
 package alg.embed3d;
 
 import gui.binloc.Binary;
-import util.ArrayUtil;
+
+import java.util.HashMap;
+
+import main.Settings;
 import data.DatasetFile;
 import dataInterface.AbstractCompoundProperty;
 import dataInterface.CompoundProperty;
@@ -9,10 +12,22 @@ import dataInterface.CompoundPropertySet;
 
 public class CCCPropertySet extends AbstractCompoundProperty implements CompoundPropertySet
 {
-	public CCCPropertySet(DatasetFile data, double d[])
+	private static HashMap<String, CCCPropertySet> map = new HashMap<String, CCCPropertySet>();
+
+	public static CCCPropertySet create(DatasetFile data, double d[], String uniqNameSuffix)
 	{
-		super("ccc", "ccc", "ccc description");
-		setDoubleValues(data, ArrayUtil.toDoubleArray(d));
+		if (!map.containsKey(uniqNameSuffix))
+			map.put(uniqNameSuffix, new CCCPropertySet(data, d, uniqNameSuffix));
+		return map.get(uniqNameSuffix);
+	}
+
+	private CCCPropertySet(DatasetFile data, double d[], String uniqNameSuffix)
+	{
+		super(Settings.text("props.ccc"), "ccc." + uniqNameSuffix, Settings.text("props.ccc.desc"));
+		Double s[] = new Double[d.length];
+		for (int i = 0; i < s.length; i++)
+			s[i] = 1 - d[i];
+		setDoubleValues(data, s);
 	}
 
 	@Override

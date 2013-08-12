@@ -706,6 +706,8 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		else
 			props.remove(propKeyFragments);
 
+		for (Property p : StructuralFragmentProperties.getProperties())
+			p.put(props);
 	}
 
 	@Override

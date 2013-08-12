@@ -360,11 +360,11 @@ public class EmbedUtil
 	//		Double d;
 	//		CompoundProperty feature;
 	//		List<Vector3f> positions;
-	//		List<MolecularPropertyOwner> instances;
+	//		List<CompoundPropertyOwner> instances;
 	//		DatasetFile dataset;
 	//
 	//		public CompoundPropertyEmbedQuality(CompoundProperty feature, List<Vector3f> positions,
-	//				List<MolecularPropertyOwner> instances, DatasetFile dataset)
+	//				List<CompoundPropertyOwner> instances, DatasetFile dataset)
 	//		{
 	//			this.feature = feature;
 	//			this.positions = positions;

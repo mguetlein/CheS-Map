@@ -4,6 +4,7 @@ import gui.binloc.Binary;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import main.Settings;
@@ -219,6 +220,10 @@ public class CDKPropertySet implements CompoundPropertySet
 				if (!TaskProvider.isRunning())
 					return false;
 			}
+
+			for (int j = 0; j < getSize(); j++)
+				checkForBugs(j, vv.get(j));
+
 			Settings.LOGGER.info("writing cdk props to: " + cache);
 			ValueFileCache.writeCacheDouble(cache, vv);
 		}
@@ -226,6 +231,47 @@ public class CDKPropertySet implements CompoundPropertySet
 			CDKProperty.create(desc, j).setDoubleValues(dataset, vv.get(j));
 
 		return true;
+	}
+
+	private void checkForBugs(int index, Double values[])
+	{
+		HashMap<String, Double[]> filter = new HashMap<String, Double[]>();
+		filter.put("ATSc1", new Double[] { null, 100.0 });
+		filter.put("ATSc2", new Double[] { -100.0, null });
+		filter.put("ATSc3", new Double[] { null, 10.0 });
+		filter.put("BCUTc-1l", new Double[] { -0.5, null });
+		filter.put("BCUTc-1h", new Double[] { null, 1.0 });
+		filter.put("ECCEN", new Double[] { 0.0, 100000.0 });
+		filter.put("topoShape", new Double[] { null, 1.0 });
+		filter.put("Weta1.unity", new Double[] { null, 2.0 });
+		filter.put("Weta2.unity", new Double[] { null, 1.0 });
+		filter.put("WD.unity", new Double[] { null, 3.0 });
+		filter.put("WPATH", new Double[] { null, 100000.0 });
+		for (String f : filter.keySet())
+		{
+			if (desc.getFeatureName(index).equals(f))
+			{
+				System.out.println("checking " + f);
+				Double min = filter.get(f)[0];
+				Double max = filter.get(f)[1];
+				for (int i = 0; i < values.length; i++)
+				{
+					if (values[i] != null)
+					{
+						if (min != null && values[i] < min)
+						{
+							System.out.println("filtering " + f + " " + values[i] + " should not be < " + min);
+							values[i] = null;
+						}
+						else if (max != null && values[i] > max)
+						{
+							System.out.println("filtering " + f + " " + values[i] + " should not be > " + max);
+							values[i] = null;
+						}
+					}
+				}
+			}
+		}
 	}
 
 	@Override

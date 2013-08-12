@@ -148,11 +148,11 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 			String alignedStructures = Settings.destinationFile(dataset, FileUtil.getFilename(clusterFile, false)
 					+ ".ob.aligned.sdf");
 
-			SDFUtil.filter(clusterFile, tmpFirst.getAbsolutePath(), new int[] { 0 });
+			SDFUtil.filter(clusterFile, tmpFirst.getAbsolutePath(), new int[] { 0 }, true);
 			int remainderIndices[] = new int[cluster.getCompounds().size() - 1];
 			for (int j = 0; j < remainderIndices.length; j++)
 				remainderIndices[j] = (j + 1);
-			SDFUtil.filter(clusterFile, tmpRemainder.getAbsolutePath(), remainderIndices);
+			SDFUtil.filter(clusterFile, tmpRemainder.getAbsolutePath(), remainderIndices, true);
 
 			ExternalToolUtil.run("obfit", new String[] { BinHandler.BABEL_BINARY.getSisterCommandLocation("obfit"),
 					cluster.getSubstructureSmarts(type), tmpFirst.getAbsolutePath(), tmpRemainder.getAbsolutePath() },

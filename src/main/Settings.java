@@ -143,6 +143,7 @@ public class Settings
 	public static String STRUCTURAL_FRAGMENT_DIR = BASE_DIR + File.separator + "structural_fragments";
 	public static String MODIFIED_BABEL_DATA_DIR = BASE_DIR + File.separator + "babel_data";
 	public static String R_LIB_DIR = BASE_DIR + File.separator + "r_libs";
+	public static String BABEL_3D_CACHE = BASE_DIR + File.separator + "babel3d";
 
 	public static final Logger LOGGER;
 

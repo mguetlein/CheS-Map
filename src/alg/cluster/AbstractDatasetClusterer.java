@@ -242,7 +242,8 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 			{
 				// already loaded file may be overwritten, clear
 				DatasetFile.clearFilesWith3DSDF(clusterFile);
-				SDFUtil.filter(dataset.getSDFPath(true), clusterFile, ((ClusterDataImpl) c).calculateCompoundIndices());
+				SDFUtil.filter(dataset.getSDFPath(true), clusterFile, ((ClusterDataImpl) c).calculateCompoundIndices(),
+						true);
 			}
 			else
 				Settings.LOGGER.info("cluster already stored: " + clusterFile);

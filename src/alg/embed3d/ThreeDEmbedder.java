@@ -37,6 +37,6 @@ public interface ThreeDEmbedder extends Algorithm
 
 	public boolean isLocalMapping();
 
-	//	public CompoundProperty getCCCProperty();
+	public CompoundProperty getCCCProperty();
 
 }

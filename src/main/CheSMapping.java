@@ -276,11 +276,14 @@ public class CheSMapping
 				TaskProvider.warning(msg, Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
 				clustering.setEmbedQuality("poor" + details);
 			}
-
-			//			for (int i = 0; i < clustering.getNumCompounds(true); i++)
-			//				((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(emb.getCCCProperty(), emb
-			//						.getCCCProperty().getDoubleValues(dataset)[i]);
-			//			clustering.setEmbeddingQualityProperty(emb.getCCCProperty());
+			if (emb.getCCCProperty() != null)
+			{
+				for (int i = 0; i < clustering.getNumCompounds(true); i++)
+					((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(emb.getCCCProperty(), emb
+							.getCCCProperty().getDoubleValues(dataset)[i]);
+				emb.getCCCProperty().setMappedDataset(dataset);
+				clustering.setEmbeddingQualityProperty(emb.getCCCProperty());
+			}
 		}
 		else
 			clustering.setEmbedQuality("n/a");

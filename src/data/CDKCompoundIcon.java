@@ -20,6 +20,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import main.Settings;
+
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.ConnectivityChecker;
@@ -61,15 +63,20 @@ public class CDKCompoundIcon
 					BufferedImage bi = new BufferedImage(img.getIconWidth(), img.getIconHeight(),
 							BufferedImage.TYPE_INT_RGB);
 					Graphics2D g2 = bi.createGraphics();
+					g2.setColor(Color.white);
+					g2.fillRect(0, 0, img.getIconWidth(), img.getIconHeight());
 					g2.drawImage(img.getImage(), 0, 0, null);
 					g2.dispose();
 					ImageIO.write(bi, "png", new File(file));
+					Settings.LOGGER.info("created 2D depiction file: " + file);
 				}
 				catch (Exception e)
 				{
 					e.printStackTrace();
 				}
 			}
+			else
+				Settings.LOGGER.info("2D depiction already exists: " + file);
 			c++;
 		}
 	}
@@ -172,29 +179,30 @@ public class CDKCompoundIcon
 	{
 		//IMolecule iMolecule = MoleculeFactory.make123Triazole();
 		//String smiles = "BrN1C(=O)CCC1=O";
-		String smiles = "C=C-Cl.BrN1C(=O)CCC1=O";
+		//		String smiles = "C=C-Cl.BrN1C(=O)CCC1=O";
+		String smiles = "[NH-]=[N+]=[NH-].[Na+]";
 		//String smiles = "c1ccccc1";
 		SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
 		IMolecule iMolecule = sp.parseSmiles(smiles);
 
 		JPanel pB = new JPanel();
-		pB.setBackground(Color.black);
+		pB.setBackground(Color.DARK_GRAY);
 		//		pB.setBorder(new EmptyBorder(50, 50, 50, 50));
 		pB.add(new JLabel(createIcon(iMolecule, true, 200, 300, Layout.vertical)));
 
 		JPanel pW = new JPanel();
-		pW.setBackground(Color.white);
+		pW.setBackground(Color.LIGHT_GRAY);
 		//		pW.setBorder(new EmptyBorder(50, 50, 50, 50));
 		MultiImageIcon img = createIcon(iMolecule, false, 300, 200, Layout.horizontal);
 		pW.add(new JLabel(img));
 
-		//		BufferedImage bi = new BufferedImage(img.getIconWidth(), img.getIconHeight(), BufferedImage.TYPE_INT_RGB);
-		//		System.out.println(img.getIconWidth() + " " + img.getIconHeight());
-		//		Graphics2D g2 = ((BufferedImage) img.getImage()).createGraphics();
-		//
-		//		g2.drawImage(img.getImage(), 0, 0, null);
-		//		g2.dispose();
-		ImageIO.write(((BufferedImage) img.getImage()), "png", new File("/tmp/image.png"));
+		BufferedImage bi = new BufferedImage(img.getIconWidth(), img.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2 = bi.createGraphics();
+		g2.setColor(Color.white);
+		g2.fillRect(0, 0, img.getIconWidth(), img.getIconHeight());
+		g2.drawImage(img.getImage(), 0, 0, null);
+		g2.dispose();
+		ImageIO.write(bi, "png", new File("/tmp/delme.png"));
 
 		JPanel p = new JPanel();
 		p.add(pB);

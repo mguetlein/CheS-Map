@@ -3,7 +3,7 @@ package alg.build3d;
 import gui.binloc.Binary;
 import main.BinHandler;
 import main.Settings;
-import util.ExternalToolUtil;
+import babel.OBWrapper;
 import data.DatasetFile;
 
 public class OpenBabel3DBuilder extends AbstractReal3DBuilder
@@ -17,8 +17,12 @@ public class OpenBabel3DBuilder extends AbstractReal3DBuilder
 	@Override
 	public void build3D(DatasetFile datasetFile, String outfile)
 	{
-		ExternalToolUtil.run("obgen3d", new String[] { BinHandler.BABEL_BINARY.getLocation(), "--gen3d", "-d", "-isdf",
-				datasetFile.getSDFPath(false), "-osdf", outfile });
+		if (datasetFile.getLocalPath() != null && datasetFile.getLocalPath().endsWith(".smi"))
+			OBWrapper.compute3DfromSmiles(BinHandler.BABEL_BINARY.getLocation(), Settings.BABEL_3D_CACHE,
+					datasetFile.getLocalPath(), outfile);
+		else
+			OBWrapper.compute3DfromSDF(BinHandler.BABEL_BINARY.getLocation(), Settings.BABEL_3D_CACHE,
+					datasetFile.getSDFPath(false), outfile);
 	}
 
 	@Override

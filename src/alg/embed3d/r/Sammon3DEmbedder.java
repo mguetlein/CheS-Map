@@ -5,12 +5,12 @@ import gui.Messages;
 import gui.property.DoubleProperty;
 import gui.property.IntegerProperty;
 import gui.property.Property;
-import gui.property.SelectProperty;
 import main.Settings;
 import rscript.RScriptUtil;
 import util.StringLineAdder;
 import alg.cluster.DatasetClusterer;
 import alg.embed3d.AbstractRTo3DEmbedder;
+import alg.r.DistanceProperty;
 import data.DatasetFile;
 
 public class Sammon3DEmbedder extends AbstractRTo3DEmbedder
@@ -54,21 +54,7 @@ public class Sammon3DEmbedder extends AbstractRTo3DEmbedder
 			"Initial value of the step size constant in diagonal Newton method (magic)", 0.2);
 	DoubleProperty tol = new DoubleProperty("Tolerance for stopping, in units of stress (tol)", 0.0001, 0.0, 1.0,
 			0.00001);
-	SelectProperty dist_sim = new SelectProperty("Distance / similarity measure",
-			new String[] { "Braun-Blanquet (similarity)", "Chi-squared (similarity)", "correlation (similarity)",
-					"cosine (similarity)", "Cramer (similarity)", "Dice (similarity)", "eJaccard (similarity)",
-					"Fager (similarity)", "Faith (similarity)", "fJaccard (similarity)", "Gower (similarity)",
-					"Hamman (similarity)", "Jaccard (similarity)", "Kulczynski1 (similarity)",
-					"Kulczynski2 (similarity)", "Michael (similarity)", "Mountford (similarity)",
-					"Mozley (similarity)", "Ochiai (similarity)", "Pearson (similarity)", "Phi (similarity)",
-					"Phi-squared (similarity)", "Russel (similarity)", "simple matching (similarity)",
-					"Simpson (similarity)", "Stiles (similarity)", "Tanimoto (similarity)", "Tschuprow (similarity)",
-					"Yule (similarity)", "Yule2 (similarity)", "Bhjattacharyya (distance)", "Bray (distance)",
-					"Canberra (distance)", "Chord (distance)", "divergence (distance)", "Euclidean (distance)",
-					"Geodesic (distance)", "Hellinger (distance)", "Kullback (distance)", "Levenshtein (distance)",
-					"Mahalanobis (distance)", "Manhattan (distance)", "Minkowski (distance)", "Podani (distance)",
-					"Soergel (distance)", "supremum (distance)", "Wave (distance)", "Whittaker (distance)" },
-			"Euclidean (distance)");
+	DistanceProperty dist_sim = new DistanceProperty(getName());
 
 	@Override
 	public Property[] getProperties()
@@ -79,37 +65,27 @@ public class Sammon3DEmbedder extends AbstractRTo3DEmbedder
 	@Override
 	protected String getRScriptCode()
 	{
-		String dist_sim = this.dist_sim.getValue().toString();
-		String dist_sim_method = null;
+		//		String dist_sim = this.dist_sim.getValue().toString();
+		//		String dist_sim_method = null;
 		String dist_sim_str = null;
-		if (dist_sim.endsWith("(distance)"))
-		{
-			dist_sim_method = dist_sim.replace(" (distance)", "");
-			dist_sim_str = ",dist_method=\"" + dist_sim_method + "\"";
-		}
-		else if (dist_sim.endsWith("(similarity)"))
-		{
-			dist_sim_method = dist_sim.replace(" (similarity)", "");
-			dist_sim_str = ",sim_method=\"" + dist_sim_method + "\"";
-		}
+		if (dist_sim.isDistanceSelected())
+			dist_sim_str = "dist_method=\"" + dist_sim.getSelectedDistance() + "\"";
 		else
-			throw new Error("WTF");
+			dist_sim_str = "sim_method=\"" + dist_sim.getSelectedSimilarity() + "\"";
 
 		StringLineAdder s = new StringLineAdder();
 		s.add("args <- commandArgs(TRUE)");
 		s.add(RScriptUtil.installAndLoadPackage("MASS"));
-		s.add(RScriptUtil.installAndLoadPackage("proxy"));
+		s.add(dist_sim.loadPackage());
 		s.add(rCode);
 		s.add("df = read.table(args[1])");
 		//s.add("save.image(\"/tmp/image.R\")");
 		s.add("res <- sammon_duplicates(df, k=3, niter=" + niter.getValue() + ", magic=" + magic.getValue() + ", tol="
-				+ tol.getValue() + " " + dist_sim_str + " )");
+				+ tol.getValue() + ", " + dist_sim_str + " )");
+
 		s.add("print(head(res))");
 		s.add("write.table(res,args[2])");
-		if (dist_sim.endsWith("(distance)"))
-			s.add("write.table(as.matrix(dist(df, method=\"" + dist_sim_method + "\")),args[3])");
-		else
-			s.add("write.table(as.matrix(pr_simil2dist(simil(df, method=\"" + dist_sim_method + "\"))),args[3])");
+		s.add("write.table(as.matrix(" + dist_sim.computeDistance("df") + "),args[3])");
 		return s.toString();
 	}
 
