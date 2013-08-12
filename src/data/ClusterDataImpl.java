@@ -122,7 +122,7 @@ public class ClusterDataImpl implements ClusterData
 	public void remove(int indices[])
 	{
 		Arrays.sort(indices);
-		for (int i = indices.length - 1; i > 0; i--)
+		for (int i = indices.length - 1; i >= 0; i--)
 			compounds.remove(indices[i]);
 		compoundDistances = null;
 		values.clear();
