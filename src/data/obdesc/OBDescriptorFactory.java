@@ -41,7 +41,8 @@ public class OBDescriptorFactory
 			try
 			{
 				descFile = File.createTempFile("babel", "desc");
-				ExternalToolUtil.run("babel", BinHandler.BABEL_BINARY.getLocation() + " -L descriptors", descFile);
+				ExternalToolUtil.run("babel",
+						new String[] { BinHandler.BABEL_BINARY.getLocation(), "-L", "descriptors" }, descFile);
 				String s = FileUtil.readStringFromFile(descFile.getAbsolutePath());
 
 				for (String s2 : s.split("\n"))
@@ -81,8 +82,8 @@ public class OBDescriptorFactory
 		try
 		{
 			descFile = File.createTempFile("babel", "desc");
-			ExternalToolUtil.run("babel", BinHandler.BABEL_BINARY.getLocation() + " -isdf " + sdfFile + " --append "
-					+ id + " -osmi", descFile);
+			ExternalToolUtil.run("babel", new String[] { BinHandler.BABEL_BINARY.getLocation(), "-isdf", sdfFile,
+					"--append", id, "-osmi", descFile.getAbsolutePath() });
 			String s = FileUtil.readStringFromFile(descFile.getAbsolutePath());
 			String lines[] = s.split("\n");
 			String vals[] = new String[lines.length];

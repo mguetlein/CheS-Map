@@ -626,6 +626,8 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		selection = StringUtil.split(obFeatures);
 		for (String string : selection)
 		{
+			if (string == null)
+				continue;
 			int index = string.lastIndexOf('#');
 			if (index == -1)
 				throw new Error("no type in serialized compound prop");

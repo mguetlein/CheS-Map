@@ -4,7 +4,6 @@ import gui.LinkButton;
 import gui.binloc.Binary;
 import gui.binloc.BinaryLocator;
 import gui.binloc.BinaryLocatorDialog;
-import io.ExternalTool;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -13,27 +12,24 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.JComponent;
 
 import util.FileUtil;
 import util.ImageLoader;
 import util.OSUtil;
+import babel.OBWrapper;
 
 public class BinHandler
 {
 	public static Binary BABEL_BINARY = new Binary("babel", "CM_BABEL_PATH", Settings.OPENBABEL_STRING);
 	public static Binary RSCRIPT_BINARY = new Binary("Rscript", "CM_RSCRIPT_PATH", Settings.R_STRING);
+	public static OBWrapper OB_WRAPPER = new OBWrapper(Settings.LOGGER);
 
 	private static String babelVersion = null;
-
 	private static List<Binary> bins;
 
 	public static void init()
@@ -73,35 +69,7 @@ public class BinHandler
 		if (!BABEL_BINARY.isFound())
 			throw new IllegalStateException();
 		if (babelVersion == null)
-		{
-			File bVersion = null;
-			try
-			{
-				bVersion = File.createTempFile("babel", "version");
-				ExternalTool ext = new ExternalTool(Settings.LOGGER);
-				ext.run("babel", BABEL_BINARY.getLocation() + " -V", bVersion, true);
-				BufferedReader b = new BufferedReader(new FileReader(bVersion));
-				String s;
-				Pattern pattern = Pattern.compile("^.*([0-9]+\\.[0-9]+\\.[0-9]+).*$");
-				while ((s = b.readLine()) != null)
-				{
-					Matcher matcher = pattern.matcher(s);
-					if (matcher.matches())
-					{
-						babelVersion = matcher.group(1);
-						break;
-					}
-				}
-			}
-			catch (Exception e)
-			{
-				Settings.LOGGER.error(e);
-			}
-			finally
-			{
-				bVersion.delete();
-			}
-		}
+			babelVersion = OB_WRAPPER.getVersion(BABEL_BINARY.getLocation());
 		return babelVersion;
 	}
 

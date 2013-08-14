@@ -14,22 +14,12 @@ public class ExternalToolUtil
 		return run(processName, cmd, null);
 	}
 
-	public static String run(String processName, String cmd)
-	{
-		return run(processName, cmd, null);
-	}
-
 	public static String run(String processName, String cmd[], File stdOutFile)
 	{
 		return run(processName, cmd, stdOutFile, null);
 	}
 
-	public static String run(String processName, String cmd, File stdOutFile)
-	{
-		return run(processName, cmd, stdOutFile, null);
-	}
-
-	public static String run(String processName, Object cmdStringOrArray, File stdOutFile, String env[])
+	public static String run(String processName, String cmd[], File stdOutFile, String env[])
 	{
 		ExternalTool ext = new ExternalTool(Settings.LOGGER)
 		{
@@ -45,11 +35,7 @@ public class ExternalToolUtil
 				Settings.LOGGER.warn(s);
 			}
 		};
-		Process p;
-		if (cmdStringOrArray instanceof String)
-			p = ext.run(processName, (String) cmdStringOrArray, stdOutFile, stdOutFile != null, env);
-		else
-			p = ext.run(processName, (String[]) cmdStringOrArray, stdOutFile, stdOutFile != null, env);
+		Process p = ext.run(processName, cmd, stdOutFile, stdOutFile != null, env);
 		while (true)
 		{
 			try

@@ -53,9 +53,9 @@ public class MCSAligner extends Abstract3DAligner
 
 	public static void main(String args[])
 	{
-		ExternalToolUtil
-				.run("obfit",
-						"obfit Oc1ccc(cc1)-c1cocc(:c:c)c1=O /tmp/first4154035072070520801sdf /tmp/remainder4312806650036993699sdf > /tmp/structural_cluster_3.aligned.sdf");
+		ExternalToolUtil.run("obfit", new String[] { "obfit", "Oc1ccc(cc1)-c1cocc(:c:c)c1=O",
+				"/tmp/first4154035072070520801sdf", "/tmp/remainder4312806650036993699sdf", ">",
+				"/tmp/structural_cluster_3.aligned.sdf" });
 	}
 
 	@Override
