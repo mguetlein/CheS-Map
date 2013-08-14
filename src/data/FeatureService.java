@@ -67,16 +67,9 @@ public class FeatureService
 	{
 	}
 
-	public IntegratedProperty[] getIntegratedProperties(DatasetFile dataset, boolean includingSmiles)
+	public IntegratedProperty[] getIntegratedProperties(DatasetFile dataset)
 	{
-		int offset = (!includingSmiles && integratedSmiles.containsKey(dataset)) ? -1 : 0;
-		IntegratedProperty p[] = new IntegratedProperty[integratedProperties.get(dataset).size() + offset];
-		int i = 0;
-		for (IntegratedProperty pp : integratedProperties.get(dataset))
-			if (includingSmiles || !pp.equals(integratedSmiles.get(dataset)))
-				p[i++] = pp;
-		//		Arrays.sort(p, new ToStringComparator());
-		return p;
+		return ArrayUtil.toArray(integratedProperties.get(dataset));
 	}
 
 	public IntegratedProperty getIntegratedClusterProperty(DatasetFile dataset)
@@ -421,10 +414,11 @@ public class FeatureService
 				{
 					IntegratedProperty p = IntegratedProperty.create(key.toString(), dataset);
 					integratedProperties.get(dataset).add(p);
-					if (key.toString().equals("STRUCTURE_SMILES"))
+					if (key.toString().equals("STRUCTURE_SMILES") || key.toString().equals("SMILES"))
+					{
 						integratedSmiles.put(dataset, p);
-					else if (key.toString().equals("SMILES"))
-						integratedSmiles.put(dataset, p);
+						p.setSmiles(true);
+					}
 				}
 				if (!TaskProvider.isRunning())
 					return;

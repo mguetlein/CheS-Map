@@ -284,6 +284,20 @@ public class CheSMapping
 				emb.getCCCProperty().setMappedDataset(dataset);
 				clustering.setEmbeddingQualityProperty(emb.getCCCProperty());
 			}
+
+			//			List<CompoundProperty> distanceTo = new ArrayList<CompoundProperty>();
+			//			int i = 0;
+			//			for (CompoundData c : clustering.getCompounds())
+			//			{
+			//				DistanceToProperty p = new DistanceToProperty(dataset, c.getIndex() + "", i, emb.getPositions());
+			//				p.setMappedDataset(dataset);
+			//				for (int j = 0; j < clustering.getNumCompounds(true); j++)
+			//					((CompoundDataImpl) clustering.getCompounds().get(j)).setDoubleValue(p,
+			//							p.getDoubleValues(dataset)[j]);
+			//				distanceTo.add(p);
+			//				i++;
+			//			}
+			//			clustering.setDistanceToProperties(distanceTo);
 		}
 		else
 			clustering.setEmbedQuality("n/a");

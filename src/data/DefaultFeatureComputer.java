@@ -71,7 +71,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 
 		TaskProvider.update("Num features computed: " + features.size());
 
-		for (IntegratedProperty p : dataset.getIntegratedProperties(true))
+		for (IntegratedProperty p : dataset.getIntegratedProperties())
 			if (!props.contains(p))
 			{
 				p.setUsedForMapping(false);

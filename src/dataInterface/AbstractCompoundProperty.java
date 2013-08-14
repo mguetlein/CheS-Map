@@ -20,6 +20,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	protected String name;
 	private String uniqueName;
 	protected String description;
+	private boolean isSmiles;
 
 	Type type;
 	HashSet<Type> types = new HashSet<Type>(ArrayUtil.toList(Type.values()));
@@ -99,6 +100,17 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	public void setType(Type type)
 	{
 		this.type = type;
+	}
+
+	@Override
+	public boolean isSmiles()
+	{
+		return isSmiles;
+	}
+
+	public void setSmiles(boolean isSmiles)
+	{
+		this.isSmiles = isSmiles;
 	}
 
 	@Override

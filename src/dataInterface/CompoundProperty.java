@@ -17,6 +17,8 @@ public interface CompoundProperty
 
 	public Type getType();
 
+	public boolean isSmiles();
+
 	public void setType(Type type);
 
 	public boolean isTypeAllowed(Type type);

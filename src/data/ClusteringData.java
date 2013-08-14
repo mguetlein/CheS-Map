@@ -31,6 +31,7 @@ public class ClusteringData
 	private String embedQuality;
 
 	private CompoundProperty embedQualityProperty;
+	private List<CompoundProperty> distanceToProperties;
 
 	//	private HashMap<CompoundProperty, CompoundPropertyEmbedQuality> embedQualityPerProp = new HashMap<CompoundProperty, CompoundPropertyEmbedQuality>();
 
@@ -191,6 +192,7 @@ public class ClusteringData
 	{
 		this.embedQualityProperty = embedQualityProperty;
 	}
+
 	//
 	//	public void setEmbeddingQuality(CompoundProperty p, CompoundPropertyEmbedQuality embedQuality)
 	//	{
@@ -201,4 +203,15 @@ public class ClusteringData
 	//	{
 	//		return embedQualityPerProp.get(p);
 	//	}
+
+	public List<CompoundProperty> getDistanceToProperties()
+	{
+		return distanceToProperties;
+	}
+
+	public void setDistanceToProperties(List<CompoundProperty> distanceToProperties)
+	{
+		this.distanceToProperties = distanceToProperties;
+	}
+
 }

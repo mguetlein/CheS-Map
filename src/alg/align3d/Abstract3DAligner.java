@@ -19,6 +19,7 @@ import org.openscience.cdk.interfaces.IMolecule;
 
 import util.ExternalToolUtil;
 import util.FileUtil;
+import util.StringUtil;
 import alg.AbstractAlgorithm;
 import alg.cluster.DatasetClusterer;
 import data.ClusterDataImpl;
@@ -58,6 +59,8 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 		for (ClusterData cluster : clusters)
 		{
 			boolean aligned = false;
+			String destFile = null;
+
 			if (cluster.getCompounds().size() < 2)
 			{
 				// dont give a warning, single compound clusters cannot be aligned
@@ -69,33 +72,46 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 			}
 			else
 			{
-				TaskProvider.update("Aligning cluster " + (count + 1) + "/" + clusters.size() + " according to "
-						+ cluster.getSubstructureSmarts(type));
-				if (cluster.getSubstructureSmartsMatchEngine(type) == MatchEngine.CDK)
-					aligned = alignWithCDK(dataset, cluster, count, type);
-				else if (cluster.getSubstructureSmartsMatchEngine(type) == MatchEngine.OpenBabel)
-					aligned = alignWithOpenBabel(dataset, cluster, count, type);
+				destFile = Settings.destinationFile(
+						dataset,
+						FileUtil.getFilename(cluster.getFilename(), false) + "."
+								+ StringUtil.getMD5(cluster.getSubstructureSmarts(type)) + "."
+								+ cluster.getSubstructureSmartsMatchEngine(type) + ".aligned.sdf");
+
+				if (Settings.CACHING_ENABLED && new File(destFile).exists())
+				{
+					Settings.LOGGER.info("3D aligned file already exists: " + destFile);
+					aligned = true;
+				}
 				else
-					throw new IllegalStateException();
+				{
+					TaskProvider.update("Aligning cluster " + (count + 1) + "/" + clusters.size() + " according to "
+							+ cluster.getSubstructureSmarts(type));
+					if (cluster.getSubstructureSmartsMatchEngine(type) == MatchEngine.CDK)
+						aligned = alignWithCDK(dataset, cluster, count, type, destFile);
+					else if (cluster.getSubstructureSmartsMatchEngine(type) == MatchEngine.OpenBabel)
+						aligned = alignWithOpenBabel(dataset, cluster, count, type, destFile);
+					else
+						throw new IllegalStateException();
+				}
 			}
 
 			if (aligned)
 			{
 				((ClusterDataImpl) cluster).setAlignAlgorithm(getName());
-				if (alignedFiles[count] == null)
-					throw new IllegalStateException();
+				alignedFiles[count] = destFile;
 			}
 			else
 			{
 				((ClusterDataImpl) cluster).setAlignAlgorithm(NoAligner.getNameStatic());
-				if (alignedFiles[count] != null)
-					throw new IllegalStateException();
+				alignedFiles[count] = null;
 			}
 			count++;
 		}
 	}
 
-	private boolean alignWithCDK(DatasetFile dataset, ClusterData cluster, int index, SubstructureSmartsType type)
+	private boolean alignWithCDK(DatasetFile dataset, ClusterData cluster, int index, SubstructureSmartsType type,
+			String destFile)
 	{
 		int compoundIndices[] = new int[cluster.getSize()];
 		IMolecule compounds[] = new IMolecule[cluster.getSize()];
@@ -110,22 +126,21 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 		try
 		{
 			MultiKabschAlignement.align(compounds, smarts);
-			String clusterFile = cluster.getFilename();
-			String alignedStructures = Settings.destinationFile(dataset, FileUtil.getFilename(clusterFile, false)
-					+ ".cdk.aligned.sdf");
-			FeatureService.writeCompoundsToSDFFile(dataset, alignedStructures, compoundIndices, true);
-			alignedFiles[index] = alignedStructures;
+			FeatureService.writeCompoundsToSDFFile(dataset, destFile, compoundIndices, true);
 			return true;
 		}
 		catch (Exception e)
 		{
 			Settings.LOGGER.error(e);
 			TaskProvider.warning(getName() + " failed on cluster " + (index + 1), e.getMessage());
+			if (new File(destFile).exists())
+				new File(destFile).delete();
 			return false;
 		}
 	}
 
-	private boolean alignWithOpenBabel(DatasetFile dataset, ClusterData cluster, int index, SubstructureSmartsType type)
+	private boolean alignWithOpenBabel(DatasetFile dataset, ClusterData cluster, int index,
+			SubstructureSmartsType type, String destFile)
 	{
 		String clusterFile = cluster.getFilename();
 		File tmpFirst = null;
@@ -145,8 +160,6 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 			}
 			// String alignedStructures = FileUtil.getParent(clusterFile) + File.separator
 			// + FileUtil.getFilename(clusterFile, false) + ".aligned.sdf";
-			String alignedStructures = Settings.destinationFile(dataset, FileUtil.getFilename(clusterFile, false)
-					+ ".ob.aligned.sdf");
 
 			SDFUtil.filter(clusterFile, tmpFirst.getAbsolutePath(), new int[] { 0 }, true);
 			int remainderIndices[] = new int[cluster.getCompounds().size() - 1];
@@ -158,15 +171,13 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 					cluster.getSubstructureSmarts(type), tmpFirst.getAbsolutePath(), tmpRemainder.getAbsolutePath() },
 					tmpAligned);
 
-			DatasetFile.clearFilesWith3DSDF(alignedStructures);
-
-			FileUtil.join(tmpFirst.getAbsolutePath(), tmpAligned.getAbsolutePath(), alignedStructures);
+			DatasetFile.clearFilesWith3DSDF(destFile);
+			FileUtil.join(tmpFirst.getAbsolutePath(), tmpAligned.getAbsolutePath(), destFile);
 			// if (SDFUtil.countCompounds(alignedStructures) != SDFUtil.countCompounds(clusterFile))
 			// throw new IllegalStateException(alignedStructures + " "
 			// + SDFUtil.countCompounds(alignedStructures) + " != " + clusterFile + " "
 			// + SDFUtil.countCompounds(clusterFile));
 
-			alignedFiles[index] = alignedStructures;
 			return true;
 		}
 		catch (ExternalToolError e)
@@ -183,6 +194,8 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 							"--filter", "\"s='" + cluster.getSubstructureSmarts(type) + "'\"" });
 			//						//convert error to runtime-exception, to not abort the mapping
 			//						throw new RuntimeException(e.getMessage(), e.getCause());
+			if (new File(destFile).exists())
+				new File(destFile).delete();
 			return false;
 		}
 		finally

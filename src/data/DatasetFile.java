@@ -167,9 +167,9 @@ public class DatasetFile
 
 	final static FeatureService featureService = new FeatureService();
 
-	public IntegratedProperty[] getIntegratedProperties(boolean includingSmiles)
+	public IntegratedProperty[] getIntegratedProperties()
 	{
-		return featureService.getIntegratedProperties(this, includingSmiles);
+		return featureService.getIntegratedProperties(this);
 	}
 
 	public IntegratedProperty getIntegratedClusterProperty()

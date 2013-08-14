@@ -563,7 +563,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		CompoundPropertySet[] selected = selector.getSelected();
 		selector.clearElements();
 
-		IntegratedProperty[] integrated = dataset.getIntegratedProperties(true);
+		IntegratedProperty[] integrated = dataset.getIntegratedProperties();
 		selector.addElementList(INTEGRATED_FEATURES, integrated);
 		for (CDKPropertySet p : CDKPropertySet.NUMERIC_DESCRIPTORS)
 			for (String clazz : p.getDictionaryClass())

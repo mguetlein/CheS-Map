@@ -1,5 +1,6 @@
 package data;
 
+import java.io.File;
 import java.util.List;
 
 import main.Settings;
@@ -10,6 +11,7 @@ import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.isomorphism.MCSComputer;
 import org.openscience.cdk.smiles.SmilesGenerator;
 
+import util.FileUtil;
 import alg.align3d.ThreeDAligner;
 import data.fragments.MatchEngine;
 import dataInterface.ClusterData;
@@ -25,41 +27,56 @@ public class ComputeMCS
 
 		for (ClusterData c : clusters)
 		{
-			if (MCSComputer.DEBUG)
-				Settings.LOGGER.info("\n\n");
+			String cacheFile = Settings.destinationFile(dataset, FileUtil.getFilename(c.getFilename(), false) + ".mcs");
 
-			TaskProvider.update("Computing MCS for cluster " + (++count) + "/" + clusters.size());
+			String smarts = null;
+			if (Settings.CACHING_ENABLED && new File(cacheFile).exists())
+			{
+				Settings.LOGGER.info("Read cached mcs from: " + cacheFile);
+				smarts = FileUtil.readStringFromFile(cacheFile);
+				if (smarts.equals("null"))
+					smarts = null;
+			}
+			else
+			{
+				if (MCSComputer.DEBUG)
+					Settings.LOGGER.info("\n\n");
 
-			IMolecule mols[] = new IMolecule[c.getSize()];
-			for (int i = 0; i < mols.length; i++)
-				mols[i] = allMols[c.getCompounds().get(i).getIndex()];
-			IAtomContainer mcsMolecule = null;
-			try
-			{
-				mcsMolecule = MCSComputer.computeMCS(mols, ThreeDAligner.MIN_NUM_ATOMS);
+				TaskProvider.update("Computing MCS for cluster " + (++count) + "/" + clusters.size());
+
+				IMolecule mols[] = new IMolecule[c.getSize()];
+				for (int i = 0; i < mols.length; i++)
+					mols[i] = allMols[c.getCompounds().get(i).getIndex()];
+				IAtomContainer mcsMolecule = null;
+				try
+				{
+					mcsMolecule = MCSComputer.computeMCS(mols, ThreeDAligner.MIN_NUM_ATOMS);
+				}
+				catch (Exception e)
+				{
+					Settings.LOGGER.error(e);
+				}
+				if (mcsMolecule != null)
+				{
+					SmilesGenerator g = new SmilesGenerator(true, true);
+					smarts = g.createSMILES(mcsMolecule);
+					//HACK: otherwhise CDK cannot rematch the smarts 
+					smarts = smarts.replaceAll("\\[nH\\]", "n");
+
+					//				Settings.LOGGER.println("non aromatic");
+					//				g = new SmilesGenerator();
+					//				Settings.LOGGER.println(g.createSMILES(mcsMolecule));
+				}
+				if (MCSComputer.DEBUG)
+					Settings.LOGGER.info("\n\n");
+				FileUtil.writeStringToFile(cacheFile, smarts == null ? "null" : smarts);
 			}
-			catch (Exception e)
+			if (smarts != null)
 			{
-				Settings.LOGGER.error(e);
-			}
-			if (mcsMolecule != null)
-			{
-				SmilesGenerator g = new SmilesGenerator(true, true);
-				String smiles = g.createSMILES(mcsMolecule);
-				//HACK: otherwhise CDK cannot rematch the smarts 
-				smiles = smiles.replaceAll("\\[nH\\]", "n");
-				((ClusterDataImpl) c).setSubstructureSmarts(SubstructureSmartsType.MCS, smiles);
+				((ClusterDataImpl) c).setSubstructureSmarts(SubstructureSmartsType.MCS, smarts);
 				((ClusterDataImpl) c).setSubstructureSmartsMatchEngine(SubstructureSmartsType.MCS, MatchEngine.CDK);
-
 				Settings.LOGGER.info("MCSMolecule: " + c.getSubstructureSmarts(SubstructureSmartsType.MCS));
-
-				//				Settings.LOGGER.println("non aromatic");
-				//				g = new SmilesGenerator();
-				//				Settings.LOGGER.println(g.createSMILES(mcsMolecule));
 			}
-			if (MCSComputer.DEBUG)
-				Settings.LOGGER.info("\n\n");
 		}
-
 	}
 }

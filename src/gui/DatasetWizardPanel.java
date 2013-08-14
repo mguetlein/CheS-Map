@@ -309,7 +309,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 			else
 			{
 				labelFile.setText(dataset.getFullName());
-				labelProps.setText(dataset.getIntegratedProperties(true).length + "");
+				labelProps.setText(dataset.getIntegratedProperties().length + "");
 				labelSize.setText(dataset.numCompounds() + "");
 				label3D.setText(dataset.has3D() + "");
 				if (oldDatasets.indexOf(dataset) == -1)

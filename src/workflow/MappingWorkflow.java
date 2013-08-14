@@ -164,14 +164,11 @@ public class MappingWorkflow
 		{
 			List<CompoundProperty> feats = new ArrayList<CompoundProperty>();
 			for (int i = 0; i < set.length; i++)
-			{
-				if ((onlyNumeric && set[i].getType() == Type.NUMERIC)
-						|| (!onlyNumeric && (set[i].isTypeAllowed(Type.NUMERIC) || set[i].getType() == Type.NOMINAL)))
-				{
-					if (exclude == null || ArrayUtil.indexOf(exclude, set[i].getName()) == -1)
-						feats.add(set[i]);
-				}
-			}
+				if (!set[i].isSmiles())
+					if ((onlyNumeric && set[i].getType() == Type.NUMERIC)
+							|| (!onlyNumeric && (set[i].isTypeAllowed(Type.NUMERIC) || set[i].getType() == Type.NOMINAL)))
+						if (exclude == null || ArrayUtil.indexOf(exclude, set[i].getName()) == -1)
+							feats.add(set[i]);
 			return ArrayUtil.toArray(CompoundProperty.class, feats);
 		}
 
@@ -183,7 +180,7 @@ public class MappingWorkflow
 				features.put(
 						FeatureWizardPanel.INTEGRATED_FEATURES,
 						ArrayUtil.cast(IntegratedProperty.class,
-								filterNotSuited(dataset.getIntegratedProperties(false), false, excludeIntegrated)));
+								filterNotSuited(dataset.getIntegratedProperties(), false, excludeIntegrated)));
 
 			if (feats.contains(DescriptorCategory.cdk))
 			{
