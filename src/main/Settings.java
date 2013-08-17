@@ -104,7 +104,7 @@ public class Settings
 		}
 	}
 
-	// ------------------ TMP/RESULT-FILE SUPPORT ---------------------------------------------
+	// ------------------ TMP/RESULT-FILE SUPPORT --------------------------------------------
 
 	public static String BUILD_DATE = null;
 	static
