@@ -3,6 +3,9 @@ package alg.build3d;
 import gui.binloc.Binary;
 import main.BinHandler;
 import main.Settings;
+import main.TaskProvider;
+import babel.OBWrapper;
+import babel.OBWrapper.Aborter;
 import data.DatasetFile;
 
 public class OpenBabel3DBuilder extends AbstractReal3DBuilder
@@ -16,12 +19,20 @@ public class OpenBabel3DBuilder extends AbstractReal3DBuilder
 	@Override
 	public void build3D(DatasetFile datasetFile, String outfile)
 	{
+		Aborter aborter = new OBWrapper.Aborter()
+		{
+			@Override
+			public boolean abort()
+			{
+				return !TaskProvider.isRunning();
+			}
+		};
 		if (datasetFile.getLocalPath() != null && datasetFile.getLocalPath().endsWith(".smi"))
-			BinHandler.OB_WRAPPER.compute3DfromSmiles(BinHandler.BABEL_BINARY.getLocation(), Settings.BABEL_3D_CACHE,
-					datasetFile.getLocalPath(), outfile);
+			BinHandler.getOBWrapper().compute3DfromSmiles(Settings.BABEL_3D_CACHE, datasetFile.getLocalPath(), outfile,
+					aborter);
 		else
-			BinHandler.OB_WRAPPER.compute3DfromSDF(BinHandler.BABEL_BINARY.getLocation(), Settings.BABEL_3D_CACHE,
-					datasetFile.getSDFPath(false), outfile);
+			BinHandler.getOBWrapper().compute3DfromSDF(Settings.BABEL_3D_CACHE, datasetFile.getSDFPath(false), outfile,
+					aborter);
 	}
 
 	@Override

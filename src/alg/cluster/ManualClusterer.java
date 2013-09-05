@@ -12,6 +12,7 @@ import java.util.List;
 import main.Settings;
 import util.ArrayUtil;
 import alg.AlgorithmException;
+import alg.DistanceMeasure;
 import data.DatasetFile;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
@@ -62,7 +63,7 @@ public class ManualClusterer extends AbstractDatasetClusterer
 			{
 				CompoundData m = compounds.get(compoundIndex);
 
-				Integer intVals[] = null;
+				Integer intVals[] = new Integer[0];
 				if (clusterProp.isInteger(dataset))
 				{
 					if (m.getDoubleValue(clusterProp) != null)
@@ -81,14 +82,14 @@ public class ManualClusterer extends AbstractDatasetClusterer
 						}
 					}
 				}
-				if (intVals != null && intVals.length > 0)
+				clusterAssignment.add(intVals);
+				if (intVals.length > 0)
 				{
-					clusterAssignment.add(intVals);
-					for (Integer clazz : intVals)
+					for (Integer clus : intVals)
 					{
-						while (compoundAssignment.size() <= clazz)
+						while (compoundAssignment.size() <= clus)
 							compoundAssignment.add(new Integer[0]);
-						compoundAssignment.set(clazz, ArrayUtil.concat(Integer.class, compoundAssignment.get(clazz),
+						compoundAssignment.set(clus, ArrayUtil.concat(Integer.class, compoundAssignment.get(clus),
 								new Integer[] { compoundIndex }));
 					}
 				}
@@ -200,6 +201,12 @@ public class ManualClusterer extends AbstractDatasetClusterer
 		//			m.add(Message.infoMessage(Settings.text("cluster.manual.multipleClusterFeatures",
 		//					dataset.getIntegratedClusterProperties().length + "")));
 		return m;
+	}
+
+	@Override
+	public DistanceMeasure getDistanceMeasure()
+	{
+		return DistanceMeasure.UNKNOWN_DISTANCE;
 	}
 
 }
