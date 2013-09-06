@@ -121,7 +121,7 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 		{
 			CompoundData comp = cluster.getCompounds().get(k);
 			compoundIndices[k] = comp.getIndex();
-			compounds[k] = dataset.getCompounds(false)[comp.getIndex()];
+			compounds[k] = dataset.getCompounds()[comp.getIndex()];
 		}
 		try
 		{

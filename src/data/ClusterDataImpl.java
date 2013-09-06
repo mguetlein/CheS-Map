@@ -9,14 +9,11 @@ import util.ArraySummary;
 import util.CountedSet;
 import util.DistanceMatrix;
 import util.DoubleArraySummary;
-import util.HashMapUtil;
-import util.ListUtil;
 import data.fragments.MatchEngine;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
-import dataInterface.CompoundPropertyOwner;
 import dataInterface.SubstructureSmartsType;
 
 public class ClusterDataImpl implements ClusterData
@@ -30,7 +27,6 @@ public class ClusterDataImpl implements ClusterData
 	private HashMap<SubstructureSmartsType, String> substructureSmarts = new HashMap<SubstructureSmartsType, String>();
 	private HashMap<SubstructureSmartsType, MatchEngine> substructureSmartsEngine = new HashMap<SubstructureSmartsType, MatchEngine>();
 	private HashMap<CompoundProperty, ArraySummary> values = new HashMap<CompoundProperty, ArraySummary>();
-	private HashMap<CompoundProperty, ArraySummary> normalizedValues = new HashMap<CompoundProperty, ArraySummary>();
 	private boolean containsNotClusteredCompounds = false;
 
 	public String getName()
@@ -126,31 +122,19 @@ public class ClusterDataImpl implements ClusterData
 			compounds.remove(indices[i]);
 		compoundDistances = null;
 		values.clear();
-		normalizedValues.clear();
 	}
 
-	private ArraySummary getSummaryValue(CompoundProperty p, boolean normalized)
+	private ArraySummary getSummaryValue(CompoundProperty p)
 	{
-		if (p.getType() != Type.NUMERIC && normalized)
-			throw new IllegalStateException();
-
-		HashMap<CompoundProperty, ArraySummary> map;
-		if (normalized)
-			map = normalizedValues;
-		else
-			map = values;
-		if (map.get(p) == null)
+		if (values.get(p) == null)
 		{
-			if (p.getType() == Type.NUMERIC || normalized)
+			if (p.getType() == Type.NUMERIC)
 			{
 				Double vals[] = new Double[getSize()];
 				int i = 0;
 				for (CompoundData c : compounds)
-					if (normalized)
-						vals[i++] = c.getNormalizedValue(p);
-					else
-						vals[i++] = c.getDoubleValue(p);
-				map.put(p, DoubleArraySummary.create(Arrays.asList(vals)));
+					vals[i++] = c.getDoubleValue(p);
+				values.put(p, DoubleArraySummary.create(Arrays.asList(vals)));
 			}
 			else
 			{
@@ -158,17 +142,17 @@ public class ClusterDataImpl implements ClusterData
 				int i = 0;
 				for (CompoundData c : compounds)
 					vals[i++] = c.getStringValue(p);
-				map.put(p, CountedSet.create(Arrays.asList(vals)));
+				values.put(p, CountedSet.create(Arrays.asList(vals)));
 			}
 		}
-		return map.get(p);
+		return values.get(p);
 	}
 
 	public Double getDoubleValue(CompoundProperty p)
 	{
 		if (p.getType() != Type.NUMERIC)
 			throw new IllegalStateException();
-		return ((DoubleArraySummary) getSummaryValue(p, false)).getMedian();
+		return ((DoubleArraySummary) getSummaryValue(p)).getMedian();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -176,38 +160,50 @@ public class ClusterDataImpl implements ClusterData
 	{
 		if (p.getType() != Type.NOMINAL)
 			throw new IllegalStateException();
-		return ((CountedSet<String>) getSummaryValue(p, false)).values().get(0);
+		return ((CountedSet<String>) getSummaryValue(p)).values().get(0);
 	}
 
-	public Double getNormalizedValue(CompoundProperty p)
+	@Override
+	public String getFormattedValue(CompoundProperty p)
 	{
-		return ((DoubleArraySummary) getSummaryValue(p, true)).getMedian();
+		return getSummaryStringValue(p, false);
 	}
 
-	public String getSummaryStringValue(CompoundProperty p)
+	public String getSummaryStringValue(CompoundProperty p, boolean html)
 	{
-		return getSummaryValue(p, false).toString();
+		if (p.isSmartsProperty())
+		{
+			CountedSet<String> set = getNominalSummary(p).copy();
+			if (set.contains("1"))
+				set.rename("1", "match");
+			if (set.contains("0"))
+				set.rename("0", "no-match");
+			return set.toString(html);
+			//			return "matches " + set.getCount("1") + "/" + set.sum();
+		}
+		else
+			return getSummaryValue(p).toString(html);
+	}
+
+	@SuppressWarnings("unchecked")
+	public CountedSet<String> getNominalSummary(CompoundProperty p)
+	{
+		if (p.getType() == Type.NUMERIC)
+			throw new IllegalArgumentException();
+		else
+			return (CountedSet<String>) getSummaryValue(p);
 	}
 
 	public int numMissingValues(CompoundProperty p)
 	{
-		return getSummaryValue(p, false).getNumNull();
+		return getSummaryValue(p).getNumNull();
 	}
 
 	public DistanceMatrix<CompoundData> getCompoundDistances(List<CompoundProperty> props)
 	{
 		if (compoundDistances == null)
-			compoundDistances = DistanceUtil.computeDistances(ListUtil.cast(CompoundPropertyOwner.class, compounds),
-					props).cast(CompoundData.class);
+			compoundDistances = DistanceUtil.computeDistances(compounds, props).cast(CompoundData.class);
 		return compoundDistances;
-	}
-
-	public String getValuesString(boolean normalized)
-	{
-		if (normalized)
-			return HashMapUtil.toString(values);
-		else
-			return HashMapUtil.toString(normalizedValues);
 	}
 
 	@Override

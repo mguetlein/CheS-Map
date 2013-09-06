@@ -8,6 +8,8 @@ import javax.vecmath.Vector3f;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IMolecule;
 
+import util.StringUtil;
+import dataInterface.AbstractFragmentProperty;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
@@ -18,7 +20,7 @@ public class CompoundDataImpl implements CompoundData
 	private int index;
 	private HashMap<CompoundProperty, String> stringValues = new HashMap<CompoundProperty, String>();
 	private HashMap<CompoundProperty, Double> doubleValues = new HashMap<CompoundProperty, Double>();
-	private HashMap<CompoundProperty, Double> normalizedValues = new HashMap<CompoundProperty, Double>();
+	private HashMap<CompoundProperty, Double> normalizedValuesCompleteDataset = new HashMap<CompoundProperty, Double>();
 	private String smiles;
 	private IMolecule iMolecule;
 
@@ -60,11 +62,12 @@ public class CompoundDataImpl implements CompoundData
 		stringValues.put(p, v);
 	}
 
-	public void setNormalizedValue(CompoundProperty p, Double v)
+	public void setNormalizedValueCompleteDataset(CompoundProperty p, Double v)
 	{
-		normalizedValues.put(p, v);
+		normalizedValuesCompleteDataset.put(p, v);
 	}
 
+	@Override
 	public Double getDoubleValue(CompoundProperty p)
 	{
 		if (p.getType() != Type.NUMERIC)
@@ -72,6 +75,7 @@ public class CompoundDataImpl implements CompoundData
 		return doubleValues.get(p);
 	}
 
+	@Override
 	public String getStringValue(CompoundProperty p)
 	{
 		if (p.getType() == Type.NUMERIC)
@@ -79,11 +83,28 @@ public class CompoundDataImpl implements CompoundData
 		return stringValues.get(p);
 	}
 
-	public Double getNormalizedValue(CompoundProperty p)
+	@Override
+	public Double getNormalizedValueCompleteDataset(CompoundProperty p)
 	{
 		if (p.getType() != Type.NUMERIC)
 			throw new IllegalStateException();
-		return normalizedValues.get(p);
+		return normalizedValuesCompleteDataset.get(p);
+	}
+
+	@Override
+	public String getFormattedValue(CompoundProperty property)
+	{
+		if (property.getType() == Type.NUMERIC)
+			if (getDoubleValue(property) == null)
+				return "null";
+			else if (property.isIntegerInMappedDataset())
+				return StringUtil.formatDouble(getDoubleValue(property), 0);
+			else
+				return StringUtil.formatDouble(getDoubleValue(property));
+		else if (property.isSmartsProperty())
+			return AbstractFragmentProperty.getFormattedSmartsValue(getStringValue(property));
+		else
+			return getStringValue(property) + "";
 	}
 
 	@Override

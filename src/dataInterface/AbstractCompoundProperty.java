@@ -199,6 +199,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 			throw new IllegalStateException();
 		if (doubleValues.containsKey(dataset))
 			throw new IllegalStateException();
+		vals = ArrayUtil.replaceNaN(vals, null);
 		Double normalized[] = ArrayUtil.normalize(vals, false);
 		setMissing(dataset, normalized);
 		Double normalizedLog[] = ArrayUtil.normalizeLog(vals, false);

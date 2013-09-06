@@ -27,7 +27,7 @@ public class BinHandler
 {
 	public static Binary BABEL_BINARY = new Binary("babel", "CM_BABEL_PATH", Settings.OPENBABEL_STRING);
 	public static Binary RSCRIPT_BINARY = new Binary("Rscript", "CM_RSCRIPT_PATH", Settings.R_STRING);
-	public static OBWrapper OB_WRAPPER = new OBWrapper(Settings.LOGGER);
+	private static OBWrapper OB_WRAPPER;
 
 	private static String babelVersion = null;
 	private static List<Binary> bins;
@@ -64,12 +64,20 @@ public class BinHandler
 		}
 	}
 
+	public static OBWrapper getOBWrapper()
+	{
+		if (OB_WRAPPER == null)
+			OB_WRAPPER = new OBWrapper(BABEL_BINARY.getLocation(), BABEL_BINARY.getSisterCommandLocation("obabel"),
+					Settings.LOGGER);
+		return OB_WRAPPER;
+	}
+
 	public static String getOpenBabelVersion()
 	{
 		if (!BABEL_BINARY.isFound())
 			throw new IllegalStateException();
 		if (babelVersion == null)
-			babelVersion = OB_WRAPPER.getVersion(BABEL_BINARY.getLocation());
+			babelVersion = getOBWrapper().getVersion();
 		return babelVersion;
 	}
 

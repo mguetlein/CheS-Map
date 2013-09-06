@@ -8,6 +8,7 @@ import gui.property.Property;
 import main.Settings;
 import rscript.RScriptUtil;
 import util.StringLineAdder;
+import alg.DistanceMeasure;
 import alg.cluster.DatasetClusterer;
 import alg.embed3d.AbstractRTo3DEmbedder;
 import alg.r.DistanceProperty;
@@ -169,5 +170,11 @@ public class Sammon3DEmbedder extends AbstractRTo3DEmbedder
 			return TOO_FEW_UNIQUE_DATA_POINTS;
 		else
 			return null;
+	}
+
+	@Override
+	public DistanceMeasure getDistanceMeasure()
+	{
+		return dist_sim.getDistanceMeasure();
 	}
 }

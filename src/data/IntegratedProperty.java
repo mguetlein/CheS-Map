@@ -135,4 +135,5 @@ public class IntegratedProperty extends AbstractCompoundProperty implements Comp
 	{
 		return false;
 	}
+
 }

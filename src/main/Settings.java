@@ -200,6 +200,7 @@ public class Settings
 	public static String HOMEPAGE = "http://ches-mapper.org";
 	public static String HOMEPAGE_RUNTIME = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki/index.php?title=Supported_Formats,_Dataset_Size_and_Algorithm_Runtimes";
 	public static String HOMEPAGE_DOCUMENTATION = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki";
+	public static String HOMEPAGE_SPECIFICITY = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki/index.php?title=Working_with_the_3D_Viewer#Sorting_of_feature_values";
 
 	public static String CONTACT = "Martin Gütlein (ches-mapper@informatik.uni-freiburg.de)";
 

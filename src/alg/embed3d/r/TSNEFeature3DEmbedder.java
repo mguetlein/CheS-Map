@@ -8,6 +8,7 @@ import main.Settings;
 import rscript.RScriptUtil;
 import util.MessageUtil;
 import util.StringLineAdder;
+import alg.DistanceMeasure;
 import alg.cluster.DatasetClusterer;
 import alg.embed3d.AbstractRTo3DEmbedder;
 import data.DatasetFile;
@@ -121,5 +122,11 @@ public class TSNEFeature3DEmbedder extends AbstractRTo3DEmbedder
 	public boolean isLocalMapping()
 	{
 		return true;
+	}
+
+	@Override
+	public DistanceMeasure getDistanceMeasure()
+	{
+		return DistanceMeasure.EUCLIDEAN_DISTANCE;
 	}
 }

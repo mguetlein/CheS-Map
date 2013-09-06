@@ -24,4 +24,6 @@ public interface Algorithm
 	public Property getRandomSeedProperty();
 
 	public Property getRandomRestartProperty();
+
+	public void update(DatasetFile dataset);
 }

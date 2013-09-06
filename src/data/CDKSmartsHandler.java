@@ -40,7 +40,7 @@ public class CDKSmartsHandler implements SmartsHandler
 	}
 
 	@Override
-	public List<boolean[]> match(List<String> smarts, DatasetFile dataset)
+	public List<boolean[]> match(List<String> smarts, List<Integer> minNumMatches, DatasetFile dataset)
 	{
 		List<boolean[]> matchList = new ArrayList<boolean[]>();
 
@@ -72,7 +72,8 @@ public class CDKSmartsHandler implements SmartsHandler
 					try
 					{
 						queryTool.setSmarts(smarts.get(s));
-						matchList.get(s)[m] = queryTool.matches(mols[m]);
+						matchList.get(s)[m] = queryTool.matches(mols[m]) ? queryTool.countMatches() > minNumMatches
+								.get(s) : false;
 					}
 					catch (Exception e)
 					{

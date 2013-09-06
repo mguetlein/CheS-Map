@@ -6,6 +6,6 @@ import data.DatasetFile;
 
 public interface SmartsHandler
 {
-	public List<boolean[]> match(List<String> smarts, DatasetFile dataset);
+	public List<boolean[]> match(List<String> smarts, List<Integer> minNumMatches, DatasetFile dataset);
 
 }

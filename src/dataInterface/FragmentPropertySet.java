@@ -21,4 +21,5 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 	}
 
 	protected abstract void updateFragments();
+
 }

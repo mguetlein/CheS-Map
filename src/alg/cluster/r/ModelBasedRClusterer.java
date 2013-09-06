@@ -2,6 +2,7 @@ package alg.cluster.r;
 
 import main.Settings;
 import rscript.RScriptUtil;
+import alg.DistanceMeasure;
 
 class ModelBasedRClusterer extends AbstractRClusterer
 {
@@ -40,5 +41,11 @@ class ModelBasedRClusterer extends AbstractRClusterer
 				+ "res <- Mclust(df)\n" + "print(res$classification)\n" + "\n" + "print(res$loglik)\n"
 				+ "\n"
 				+ "write.table(res$classification,args[2])\n";
+	}
+
+	@Override
+	public DistanceMeasure getDistanceMeasure()
+	{
+		return DistanceMeasure.UNKNOWN_DISTANCE;
 	}
 }

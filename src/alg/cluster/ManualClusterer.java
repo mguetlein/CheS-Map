@@ -5,6 +5,7 @@ import gui.Message;
 import gui.Messages;
 import gui.property.BooleanProperty;
 import gui.property.Property;
+import gui.property.SelectProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +17,14 @@ import alg.DistanceMeasure;
 import data.DatasetFile;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.Type;
 
 public class ManualClusterer extends AbstractDatasetClusterer
 {
 	public static final ManualClusterer INSTANCE = new ManualClusterer();
 	private boolean isDisjoint;
 
+	SelectProperty clusterFeature = new SelectProperty("Cluster feature", null, null);
 	BooleanProperty ignoreSingletons = new BooleanProperty("Ignore singelton clusters", false);
 
 	public ManualClusterer()
@@ -44,16 +47,31 @@ public class ManualClusterer extends AbstractDatasetClusterer
 	@Override
 	public Property[] getProperties()
 	{
-		return new Property[] { ignoreSingletons };
+		return new Property[] { clusterFeature, ignoreSingletons };
+	}
+
+	@Override
+	public void update(DatasetFile dataset)
+	{
+		if (dataset.getIntegratedProperties().length > 0)
+			clusterFeature.reset(ArrayUtil.toStringArray(dataset.getIntegratedProperties()));
+		else
+			clusterFeature.reset(null);
 	}
 
 	@Override
 	protected List<Integer[]> cluster(DatasetFile dataset, List<CompoundData> compounds, List<CompoundProperty> features)
 			throws Exception
 	{
-		CompoundProperty clusterProp = dataset.getIntegratedClusterProperty();
+		CompoundProperty clusterProp = null;
+		for (CompoundProperty c : dataset.getIntegratedProperties())
+			if (c.toString().equals(clusterFeature.getValue().toString()))
+			{
+				clusterProp = c;
+				break;
+			}
 		if (clusterProp == null)
-			throw new AlgorithmException.ClusterException(this, "No feature with name including 'cluster' found");
+			throw new AlgorithmException.ClusterException(this, "No internal feature selected");
 		List<Integer[]> clusterAssignment = new ArrayList<Integer[]>();
 		List<Integer[]> compoundAssignment = new ArrayList<Integer[]>();
 
@@ -64,7 +82,7 @@ public class ManualClusterer extends AbstractDatasetClusterer
 				CompoundData m = compounds.get(compoundIndex);
 
 				Integer intVals[] = new Integer[0];
-				if (clusterProp.isInteger(dataset))
+				if (clusterProp.getType() == Type.NUMERIC && clusterProp.isInteger(dataset))
 				{
 					if (m.getDoubleValue(clusterProp) != null)
 						intVals = new Integer[] { m.getDoubleValue(clusterProp).intValue() };
@@ -192,11 +210,11 @@ public class ManualClusterer extends AbstractDatasetClusterer
 	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
 		Messages m = super.getMessages(dataset, featureInfo, clusterer);
-		if (dataset.getIntegratedClusterProperty() == null)
-			m.add(Message.errorMessage(Settings.text("cluster.manual.noClusterFeatureFound")));
-		else
-			m.add(Message.infoMessage(Settings.text("cluster.manual.clusterFeatureFound", dataset
-					.getIntegratedClusterProperty().getName())));
+		if (clusterFeature.getValue().toString().equals(SelectProperty.EMPTY))
+			m.add(Message.errorMessage(Settings.text("cluster.manual.noIntegratedProperties")));
+		//		else
+		//			m.add(Message.infoMessage(Settings.text("cluster.manual.clusterFeatureSelected", clusterFeature.getValue()
+		//					.toString())));
 		//		else if (dataset.getIntegratedClusterProperties().length > 1)
 		//			m.add(Message.infoMessage(Settings.text("cluster.manual.multipleClusterFeatures",
 		//					dataset.getIntegratedClusterProperties().length + "")));

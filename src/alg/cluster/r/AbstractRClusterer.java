@@ -15,13 +15,11 @@ import rscript.ExportRUtil;
 import rscript.RScriptUtil;
 import util.ExternalToolUtil;
 import util.FileUtil;
-import util.ListUtil;
 import alg.AlgorithmException.ClusterException;
 import alg.cluster.AbstractDatasetClusterer;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
 import dataInterface.CompoundData;
-import dataInterface.CompoundPropertyOwner;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundPropertyUtil;
 
@@ -55,10 +53,9 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 			String featureTableFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + datasetMD5
 					+ ".features.table");
 			if (!Settings.CACHING_ENABLED || !new File(featureTableFile).exists())
-				ExportRUtil.toRTable(
-						features,
-						CompoundPropertyUtil.valuesReplaceNullWithMedian(features,
-								ListUtil.cast(CompoundPropertyOwner.class, compounds), dataset), featureTableFile);
+				ExportRUtil.toRTable(features,
+						CompoundPropertyUtil.valuesReplaceNullWithMedian(features, compounds, dataset),
+						featureTableFile);
 			else
 				Settings.LOGGER.info("load cached features from " + featureTableFile);
 

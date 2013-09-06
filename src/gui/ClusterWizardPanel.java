@@ -31,7 +31,7 @@ public class ClusterWizardPanel extends GenericWizardPanel
 {
 	boolean canProceed = false;
 	private static IntegerProperty min = new IntegerProperty("minNumClusters", 2, 1, Integer.MAX_VALUE);
-	private static IntegerProperty max = new IntegerProperty("maxNumClusters", 10, 1, Integer.MAX_VALUE);
+	private static IntegerProperty max = new IntegerProperty("maxNumClusters", 5, 1, Integer.MAX_VALUE);
 	private static Property[] DEFAULT_CLUSTERER_PROPS = new Property[] { min, max };
 	static
 	{

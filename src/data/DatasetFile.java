@@ -198,12 +198,7 @@ public class DatasetFile
 
 	public void loadDataset() throws Exception
 	{
-		loadDataset(true);
-	}
-
-	public void loadDataset(boolean loadHydrogen) throws Exception
-	{
-		featureService.loadDataset(this, loadHydrogen);
+		featureService.loadDataset(this);
 		if (getSDFPath(false) == null)
 		{
 			if (!TaskProvider.isRunning())
@@ -228,11 +223,6 @@ public class DatasetFile
 	public IMolecule[] getCompounds()
 	{
 		return featureService.getCompounds(this);
-	}
-
-	public IMolecule[] getCompounds(boolean loadHydrogen)
-	{
-		return featureService.getCompounds(this, loadHydrogen);
 	}
 
 	// -------------------------------

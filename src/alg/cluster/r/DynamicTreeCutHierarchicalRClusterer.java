@@ -6,6 +6,7 @@ import gui.property.SelectProperty;
 import main.Settings;
 import rscript.RScriptUtil;
 import util.StringLineAdder;
+import alg.DistanceMeasure;
 import alg.cluster.ClusterApproach;
 import alg.r.DistanceProperty;
 
@@ -65,6 +66,12 @@ public class DynamicTreeCutHierarchicalRClusterer extends AbstractRClusterer
 	public Property[] getProperties()
 	{
 		return new Property[] { distance, minClusterSize, method };
+	}
+
+	@Override
+	public DistanceMeasure getDistanceMeasure()
+	{
+		return distance.getDistanceMeasure();
 	}
 
 }

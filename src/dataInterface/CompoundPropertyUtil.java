@@ -29,11 +29,11 @@ public class CompoundPropertyUtil
 		return distinctValues.size();
 	}
 
-	public static List<String[]> valuesReplaceNullWithMedian(List<CompoundProperty> props,
-			List<CompoundPropertyOwner> values, DatasetFile dataset)
+	public static List<String[]> valuesReplaceNullWithMedian(List<CompoundProperty> props, List<CompoundData> values,
+			DatasetFile dataset)
 	{
 		List<String[]> v = new ArrayList<String[]>();
-		for (CompoundPropertyOwner vv : values)
+		for (CompoundData vv : values)
 		{
 			String d[] = new String[props.size()];
 			int count = 0;
@@ -41,11 +41,11 @@ public class CompoundPropertyUtil
 			{
 				if (p.getType() == Type.NUMERIC)
 				{
-					Double val = vv.getNormalizedValue(p);
+					Double val = vv.getNormalizedValueCompleteDataset(p);
 					if (val == null)
 						d[count++] = p.getNormalizedMedian(dataset) + "";
 					else
-						d[count++] = vv.getNormalizedValue(p) + "";
+						d[count++] = val + "";
 				}
 				else
 					d[count++] = vv.getStringValue(p);
@@ -58,19 +58,52 @@ public class CompoundPropertyUtil
 	private static HashMap<CompoundProperty, Color[]> mapping = new HashMap<CompoundProperty, Color[]>();
 
 	private static Color[] AVAILABLE_COLORS = FreeChartUtil.BRIGHT_COLORS;
+
 	static
 	{
-		Color col = AVAILABLE_COLORS[0];
-		AVAILABLE_COLORS[0] = AVAILABLE_COLORS[1];
-		AVAILABLE_COLORS[1] = col;
+		//start with blue instead of red
+		AVAILABLE_COLORS[0] = getLowValueColor();
+		AVAILABLE_COLORS[1] = FreeChartUtil.BRIGHT_RED;
 	}
 
-	public static Color getColor(int index)
+	public static Color getClusterColor(int index)
 	{
-		//		if (index + 1 > AVAILABLE_COLORS.length)
-		//			return Color.GRAY;
-		//		else
 		return AVAILABLE_COLORS[index % AVAILABLE_COLORS.length];
+	}
+
+	public static Color getHighValueColor()
+	{
+		return FreeChartUtil.BRIGHT_RED; //Color.RED;
+	}
+
+	public static Color getLowValueColor()
+	{
+		return new Color(100, 100, 255);
+	}
+
+	public static Color getNumericChartColor()
+	{
+		return getLowValueColor();
+	}
+
+	public static Color getNumericChartHighlightColor()
+	{
+		return FreeChartUtil.BRIGHT_RED;
+	}
+
+	public static Color getNullValueColor()
+	{
+		return Color.DARK_GRAY;
+	}
+
+	public static Color getSmartsColorMatch()
+	{
+		return getHighValueColor();
+	}
+
+	public static Color getSmartsColorNoMatch()
+	{
+		return getLowValueColor();
 	}
 
 	public static Color[] getNominalColors(CompoundProperty p)
@@ -81,14 +114,19 @@ public class CompoundPropertyUtil
 		if (!mapping.containsKey(p))
 		{
 			Color col[];
-			if (p.getNominalDomain().length > AVAILABLE_COLORS.length)
-			{
-				Color gray[] = new Color[p.getNominalDomain().length - AVAILABLE_COLORS.length];
-				Arrays.fill(gray, Color.GRAY);
-				col = ArrayUtil.concat(AVAILABLE_COLORS, gray);
-			}
+			if (p.isSmartsProperty())
+				col = new Color[] { getLowValueColor(), getHighValueColor() };
 			else
-				col = Arrays.copyOfRange(AVAILABLE_COLORS, 0, p.getNominalDomain().length);
+			{
+				if (p.getNominalDomain().length > AVAILABLE_COLORS.length)
+				{
+					Color gray[] = new Color[p.getNominalDomain().length - AVAILABLE_COLORS.length];
+					Arrays.fill(gray, Color.GRAY);
+					col = ArrayUtil.concat(AVAILABLE_COLORS, gray);
+				}
+				else
+					col = Arrays.copyOfRange(AVAILABLE_COLORS, 0, p.getNominalDomain().length);
+			}
 			mapping.put(p, col);
 		}
 		return mapping.get(p);

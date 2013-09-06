@@ -314,6 +314,8 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel imple
 
 	public void update(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
+		getSelectedAlgorithm().update(dataset);
+
 		if (!isSimpleSelected() && !binaryFound)
 			msg = Messages.errorMessage(""); // error is obvious (there is a error icon in the binary panel)
 		else

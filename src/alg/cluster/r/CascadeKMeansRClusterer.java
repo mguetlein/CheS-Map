@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 import main.Settings;
 import rscript.RScriptUtil;
+import alg.DistanceMeasure;
 import alg.cluster.ClusterApproach;
 import alg.r.DistanceProperty;
 
@@ -95,4 +96,9 @@ public class CascadeKMeansRClusterer extends AbstractRClusterer
 		return minK.getMinValue();
 	}
 
+	@Override
+	public DistanceMeasure getDistanceMeasure()
+	{
+		return distance.getDistanceMeasure();
+	}
 }

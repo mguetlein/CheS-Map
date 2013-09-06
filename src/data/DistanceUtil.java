@@ -4,13 +4,14 @@ import java.util.List;
 
 import util.ArrayUtil;
 import util.DistanceMatrix;
-import dataInterface.CompoundPropertyOwner;
+import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
+import dataInterface.CompoundPropertyOwner;
 
 public class DistanceUtil
 {
-	public static double distance(CompoundPropertyOwner c1, CompoundPropertyOwner c2, List<CompoundProperty> props)
+	public static double distance(CompoundData c1, CompoundData c2, List<CompoundProperty> props)
 	{
 		double d1[] = new double[props.size()];
 		double d2[] = new double[props.size()];
@@ -19,8 +20,8 @@ public class DistanceUtil
 		{
 			if (p.getType() == Type.NUMERIC)
 			{
-				d1[count] = c1.getNormalizedValue(p);
-				d2[count++] = c2.getNormalizedValue(p);
+				d1[count] = c1.getNormalizedValueCompleteDataset(p);
+				d2[count++] = c2.getNormalizedValueCompleteDataset(p);
 			}
 			else
 			{
@@ -34,7 +35,7 @@ public class DistanceUtil
 		return ArrayUtil.euclDistance(d1, d2);
 	}
 
-	public static DistanceMatrix<CompoundPropertyOwner> computeDistances(List<CompoundPropertyOwner> instances,
+	public static DistanceMatrix<CompoundPropertyOwner> computeDistances(List<CompoundData> instances,
 			List<CompoundProperty> props)
 	{
 		DistanceMatrix<CompoundPropertyOwner> m = new DistanceMatrix<CompoundPropertyOwner>();

@@ -2,6 +2,7 @@ package alg.embed3d.r;
 
 import main.Settings;
 import util.StringLineAdder;
+import alg.DistanceMeasure;
 import alg.embed3d.AbstractRTo3DEmbedder;
 
 public class PCAFeature3DEmbedder extends AbstractRTo3DEmbedder
@@ -77,6 +78,12 @@ public class PCAFeature3DEmbedder extends AbstractRTo3DEmbedder
 	protected String getErrorDescription(String errorOut)
 	{
 		return null;
+	}
+
+	@Override
+	public DistanceMeasure getDistanceMeasure()
+	{
+		return DistanceMeasure.EUCLIDEAN_DISTANCE;
 	}
 
 }

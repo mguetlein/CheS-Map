@@ -36,6 +36,7 @@ import alg.embed3d.WekaPCA3DEmbedder;
 import data.DatasetFile;
 import data.IntegratedProperty;
 import data.cdk.CDKPropertySet;
+import data.fminer.FminerPropertySet;
 import data.fragments.StructuralFragmentProperties;
 import data.obdesc.OBDescriptorProperty;
 import data.obfingerprints.FingerprintType;
@@ -43,6 +44,7 @@ import data.obfingerprints.OBFingerprintSet;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
+import dataInterface.FragmentPropertySet;
 
 public class MappingWorkflow
 {
@@ -121,7 +123,7 @@ public class MappingWorkflow
 	 */
 	public enum DescriptorCategory
 	{
-		integrated, cdk, ob, obFP2, obFP3, obFP4, obMACCS;
+		integrated, cdk, ob, obFP2, obFP3, obFP4, obMACCS, fminer;
 	}
 
 	/**
@@ -131,14 +133,16 @@ public class MappingWorkflow
 	{
 		List<DescriptorCategory> feats;
 		String excludeIntegrated[];
-		boolean matchFingerprints;
+		String nominalIntegrated[];
+		int fpMinFreq = -1;
+		boolean fpSkipOmnipresent = true;
 
 		public DescriptorSelection(String featString)
 		{
-			this(featString, null);
+			this(featString, null, null);
 		}
 
-		public DescriptorSelection(String featString, String excludeIntegrated)
+		public DescriptorSelection(String featString, String excludeIntegrated, String nominalIntegrated)
 		{
 			feats = new ArrayList<DescriptorCategory>();
 			for (String featStr : featString.split(","))
@@ -148,6 +152,8 @@ public class MappingWorkflow
 
 			if (excludeIntegrated != null)
 				this.excludeIntegrated = excludeIntegrated.split(",");
+			if (nominalIntegrated != null)
+				this.nominalIntegrated = nominalIntegrated.split(",");
 		}
 
 		public DescriptorSelection(DescriptorCategory... feats)
@@ -155,12 +161,14 @@ public class MappingWorkflow
 			this.feats = ArrayUtil.toList(feats);
 		}
 
-		public void setMatchFingerprints(boolean matchFingerprints)
+		public void setFingerprintSettings(int minFrequency, boolean skipOmnipresent)
 		{
-			this.matchFingerprints = matchFingerprints;
+			this.fpMinFreq = minFrequency;
+			this.fpSkipOmnipresent = skipOmnipresent;
 		}
 
-		private CompoundProperty[] filterNotSuited(CompoundProperty[] set, boolean onlyNumeric, String[] exclude)
+		private CompoundProperty[] filterNotSuited(CompoundProperty[] set, boolean onlyNumeric, String[] exclude,
+				String[] nominal)
 		{
 			List<CompoundProperty> feats = new ArrayList<CompoundProperty>();
 			for (int i = 0; i < set.length; i++)
@@ -169,6 +177,9 @@ public class MappingWorkflow
 							|| (!onlyNumeric && (set[i].isTypeAllowed(Type.NUMERIC) || set[i].getType() == Type.NOMINAL)))
 						if (exclude == null || ArrayUtil.indexOf(exclude, set[i].getName()) == -1)
 							feats.add(set[i]);
+			for (CompoundProperty c : set)
+				if (ArrayUtil.indexOf(nominal, c.getName()) != -1)
+					c.setType(Type.NOMINAL);
 			return ArrayUtil.toArray(CompoundProperty.class, feats);
 		}
 
@@ -177,10 +188,10 @@ public class MappingWorkflow
 			HashMap<String, CompoundPropertySet[]> features = new HashMap<String, CompoundPropertySet[]>();
 
 			if (feats.contains(DescriptorCategory.integrated))
-				features.put(
-						FeatureWizardPanel.INTEGRATED_FEATURES,
-						ArrayUtil.cast(IntegratedProperty.class,
-								filterNotSuited(dataset.getIntegratedProperties(), false, excludeIntegrated)));
+				features.put(FeatureWizardPanel.INTEGRATED_FEATURES, ArrayUtil
+						.cast(IntegratedProperty.class,
+								filterNotSuited(dataset.getIntegratedProperties(), false, excludeIntegrated,
+										nominalIntegrated)));
 
 			if (feats.contains(DescriptorCategory.cdk))
 			{
@@ -192,50 +203,44 @@ public class MappingWorkflow
 			}
 
 			if (feats.contains(DescriptorCategory.obFP2) || feats.contains(DescriptorCategory.obFP3)
-					|| feats.contains(DescriptorCategory.obFP4) || feats.contains(DescriptorCategory.obMACCS))
+					|| feats.contains(DescriptorCategory.obFP4) || feats.contains(DescriptorCategory.obMACCS)
+					|| feats.contains(DescriptorCategory.fminer))
 			{
-				if (matchFingerprints)
-				{
-					StructuralFragmentProperties.setSkipOmniFragments(false);
-					StructuralFragmentProperties.setMinFrequency(1);
-					System.out
-							.println("matching fingerprints, set min frequency to 1 and do not skip features omni features");
-				}
-				else
-				{
-					StructuralFragmentProperties.setSkipOmniFragments(true);
-					StructuralFragmentProperties
-							.setMinFrequency(Math.max(1, Math.min(10, dataset.numCompounds() / 10)));
-					System.out.println("set min frequency to " + StructuralFragmentProperties.getMinFrequency());
-				}
-
+				if (fpMinFreq == -1)
+					fpMinFreq = Math.max(1, Math.min(10, dataset.numCompounds() / 10));
+				StructuralFragmentProperties.setMinFrequency(fpMinFreq);
+				StructuralFragmentProperties.setSkipOmniFragments(fpSkipOmnipresent);
+				System.out.println("set min frequency to " + StructuralFragmentProperties.getMinFrequency());
 				Settings.LOGGER.info("before computing structural fragment "
 						+ StructuralFragmentProperties.getMatchEngine() + " "
 						+ StructuralFragmentProperties.getMinFrequency() + " "
 						+ StructuralFragmentProperties.isSkipOmniFragments());
 			}
 
-			OBFingerprintSet obFP[] = new OBFingerprintSet[0];
+			FragmentPropertySet fps[] = new FragmentPropertySet[0];
 			if (feats.contains(DescriptorCategory.obFP2))
-				obFP = ArrayUtil.concat(OBFingerprintSet.class, obFP, new OBFingerprintSet[] { new OBFingerprintSet(
+				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
 						FingerprintType.FP2) });
-			if (feats.contains(DescriptorCategory.obFP3))
-				obFP = ArrayUtil.concat(OBFingerprintSet.class, obFP, new OBFingerprintSet[] { new OBFingerprintSet(
-						FingerprintType.FP3) });
-			if (feats.contains(DescriptorCategory.obFP4))
-				obFP = ArrayUtil.concat(OBFingerprintSet.class, obFP, new OBFingerprintSet[] { new OBFingerprintSet(
-						FingerprintType.FP4) });
-			if (feats.contains(DescriptorCategory.obMACCS))
-				obFP = ArrayUtil.concat(OBFingerprintSet.class, obFP, new OBFingerprintSet[] { new OBFingerprintSet(
-						FingerprintType.MACCS) });
-			if (obFP.length > 0)
-				features.put(FeatureWizardPanel.STRUCTURAL_FRAGMENTS, obFP);
+			//			if (feats.contains(DescriptorCategory.obFP3))
+			//				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
+			//						FingerprintType.FP3) });
+			//			if (feats.contains(DescriptorCategory.obFP4))
+			//				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
+			//						FingerprintType.FP4) });
+			//			if (feats.contains(DescriptorCategory.obMACCS))
+			//				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
+			//						FingerprintType.MACCS) });
+			if (feats.contains(DescriptorCategory.fminer))
+				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
+						new FragmentPropertySet[] { new FminerPropertySet() });
+			if (fps.length > 0)
+				features.put(FeatureWizardPanel.STRUCTURAL_FRAGMENTS, fps);
 
 			if (feats.contains(DescriptorCategory.ob))
 				features.put(
 						FeatureWizardPanel.OB_FEATURES,
 						ArrayUtil.cast(OBDescriptorProperty.class,
-								filterNotSuited(OBDescriptorProperty.getDescriptors(true), true, null)));
+								filterNotSuited(OBDescriptorProperty.getDescriptors(true), true, null, null)));
 			return features;
 		}
 	}
@@ -397,7 +402,23 @@ public class MappingWorkflow
 	public static void createAndStoreMappingWorkflow(String datasetFile, String workflowOutfile,
 			DescriptorSelection features, DatasetClusterer clusterer)
 	{
+		createAndStoreMappingWorkflow(datasetFile, workflowOutfile, features, clusterer, null);
+	}
+
+	public static void createAndStoreMappingWorkflow(String datasetFile, String workflowOutfile,
+			DescriptorSelection features, DatasetClusterer clusterer, String additionalExplictProperties)
+	{
 		Properties props = createMappingWorkflow(datasetFile, features, clusterer, WekaPCA3DEmbedder.INSTANCE);
+		if (additionalExplictProperties != null)
+		{
+			for (String p : additionalExplictProperties.split(","))
+			{
+				String keyValue[] = p.split("=");
+				if (keyValue.length != 2)
+					throw new IllegalArgumentException(p);
+				props.setProperty(keyValue[0], keyValue[1]);
+			}
+		}
 		MappingWorkflow.exportMappingWorkflowToFile(props, workflowOutfile);
 	}
 

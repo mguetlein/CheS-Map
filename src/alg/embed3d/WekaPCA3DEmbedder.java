@@ -19,9 +19,10 @@ import weka.WekaPropertyUtil;
 import weka.attributeSelection.PrincipalComponents;
 import weka.core.Instance;
 import weka.core.Instances;
+import alg.DistanceMeasure;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
-import dataInterface.CompoundPropertyOwner;
+import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 
 public class WekaPCA3DEmbedder extends Abstract3DEmbedder
@@ -38,14 +39,30 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 		if (properties != null)
 			this.properties = properties;
 		else
-			this.properties = WekaPropertyUtil.getProperties(pca);
+			this.properties = WekaPropertyUtil.getProperties(pca, new String[0], new WekaPropertyUtil.DefaultChanger()
+			{
+				@Override
+				public String getName()
+				{
+					return "centerData";
+				}
+
+				@Override
+				public Object getAlternateDefaultValue()
+				{
+					return true;
+				}
+			});
 	}
 
 	@Override
-	public List<Vector3f> embed(DatasetFile dataset, List<CompoundPropertyOwner> instances,
-			List<CompoundProperty> features) throws Exception
+	public List<Vector3f> embed(DatasetFile dataset, List<CompoundData> instances, List<CompoundProperty> features)
+			throws Exception
 	{
-		WekaPropertyUtil.setProperties(pca, properties);
+		if (this == INSTANCE_NO_PROBS)
+			pca.setCenterData(true);
+		else
+			WekaPropertyUtil.setProperties(pca, properties);
 
 		File f = CompoundArffWriter.writeArffFile(dataset, instances, features);
 		BufferedReader reader = new BufferedReader(new FileReader(f));
@@ -100,7 +117,7 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 	@Override
 	public String getShortName()
 	{
-		return "pca_weka";
+		return "pca_weka2"; //default is now center
 	}
 
 	@Override
@@ -124,4 +141,9 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 		return false;
 	}
 
+	@Override
+	public DistanceMeasure getDistanceMeasure()
+	{
+		return DistanceMeasure.EUCLIDEAN_DISTANCE;
+	}
 }

@@ -5,13 +5,14 @@ import java.util.List;
 import javax.vecmath.Vector3f;
 
 import alg.Algorithm;
+import alg.DistanceMeasure;
 import alg.embed3d.r.PCAFeature3DEmbedder;
 import alg.embed3d.r.SMACOF3DEmbedder;
 import alg.embed3d.r.Sammon3DEmbedder;
 import alg.embed3d.r.TSNEFeature3DEmbedder;
 import data.DatasetFile;
+import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundPropertyOwner;
 
 public interface ThreeDEmbedder extends Algorithm
 {
@@ -21,7 +22,7 @@ public interface ThreeDEmbedder extends Algorithm
 
 	public boolean requiresFeatures();
 
-	public void embedDataset(DatasetFile dataset, List<CompoundPropertyOwner> instances, List<CompoundProperty> features)
+	public void embedDataset(DatasetFile dataset, List<CompoundData> instances, List<CompoundProperty> features)
 			throws Exception;
 
 	public List<Vector3f> getPositions();
@@ -38,5 +39,7 @@ public interface ThreeDEmbedder extends Algorithm
 	public boolean isLocalMapping();
 
 	public CompoundProperty getCCCProperty();
+
+	public DistanceMeasure getDistanceMeasure();
 
 }

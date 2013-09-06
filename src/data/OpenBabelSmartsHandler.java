@@ -1,144 +1,27 @@
 package data;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import main.BinHandler;
 import main.Settings;
-import main.TaskProvider;
-import util.ArrayUtil;
-import util.ExternalToolUtil;
+import babel.OBSmartsMatcher;
 import dataInterface.SmartsHandler;
 
 public class OpenBabelSmartsHandler implements SmartsHandler
 {
-
-	public static String FP = "FPCHES";
-	private boolean registered = false;
+	OBSmartsMatcher obSmartsMatcher;
 
 	@Override
-	public List<boolean[]> match(List<String> smarts, DatasetFile dataset)
+	public List<boolean[]> match(List<String> smarts, List<Integer> minNumMatches, DatasetFile dataset)
 	{
-		if (!registered)
-			registerFP();
-		createFPFile(smarts);
-		return matchSmarts(smarts, dataset);
-	}
-
-	private String getFPFile()
-	{
-		return BinHandler.getOBFileModified(FP + ".txt");
-	}
-
-	private void registerFP()
-	{
-		String file = BinHandler.getOBFileModified("plugindefines.txt");
-		try
-		{
-			boolean found = false;
-			if (new File(file).exists())
-			{
-				BufferedReader buffy = new BufferedReader(new FileReader(file));
-				String line = null;
-				while ((line = buffy.readLine()) != null)
-					if (line.contains(getFPFile()))
-					{
-						found = true;
-						break;
-					}
-				buffy.close();
-			}
-			if (!found)
-			{
-				BufferedWriter out = new BufferedWriter(new FileWriter(file, true));
-				out.write("\n\nPatternFP\n" + FP + "\n" + getFPFile() + "\n\n");
-				out.close();
-			}
-			registered = true;
-		}
-		catch (IOException e)
-		{
-			Settings.LOGGER.error(e);
-		}
-	}
-
-	private void createFPFile(List<String> smarts)
-	{
-		try
-		{
-			BufferedWriter out = new BufferedWriter(new FileWriter(getFPFile()));
-			out.write("#Comments after SMARTS\n");
-			int i = 0;
-			for (String smart : smarts)
-			{
-				out.write("  " + i + ":('" + smart + "',0) # " + i + "\n");
-				i++;
-			}
-			out.close();
-		}
-		catch (IOException e)
-		{
-			Settings.LOGGER.error(e);
-		}
-	}
-
-	private List<boolean[]> matchSmarts(List<String> smarts, DatasetFile dataset)
-	{
-		List<boolean[]> l = new ArrayList<boolean[]>();
-		for (int i = 0; i < smarts.size(); i++)
-			l.add(new boolean[dataset.numCompounds()]);
-
-		File tmp = null;
-		try
-		{
-			tmp = File.createTempFile(dataset.getShortName(), "OBsmarts");
-			String cmd[] = { BinHandler.BABEL_BINARY.getLocation(), "-isdf", dataset.getSDFPath(false), "-ofpt", "-xf",
-					FP, "-xs" };
-			TaskProvider.verbose("Running babel: " + ArrayUtil.toString(cmd, " ", "", ""));
-			ExternalToolUtil.run("ob-fingerprints", cmd, tmp, new String[] { "BABEL_DATADIR="
-					+ Settings.MODIFIED_BABEL_DATA_DIR });
-			TaskProvider.verbose("Parsing smarts");
-			BufferedReader buffy = new BufferedReader(new FileReader(tmp));
-			String line = null;
-			int compoundIndex = -1;
-			while ((line = buffy.readLine()) != null)
-			{
-				if (line.startsWith(">"))
-				{
-					compoundIndex++;
-					line = line.replaceAll("^>[^\\s]*", "").trim();
-				}
-				if (line.length() > 0)
-				{
-					// Settings.LOGGER.warn("frags: " + line);
-					boolean minFreq = false;
-					for (String s : line.split("\\t"))
-					{
-						if (s.trim().length() == 0)
-							continue;
-						if (minFreq && s.matches("^\\*[2-4].*"))
-							s = s.substring(2);
-						int smartsIndex = Integer.parseInt(s.split(":")[0]);
-						l.get(smartsIndex)[compoundIndex] = true;
-						minFreq = s.matches(".*>(\\s)*[1-3].*");
-					}
-				}
-			}
-		}
-		catch (Exception e)
-		{
-			throw new Error("Error while matching smarts with OpenBabel: " + e.getMessage(), e);
-		}
-		finally
-		{
-			tmp.delete();
-		}
-		return l;
+		if (obSmartsMatcher == null)
+			obSmartsMatcher = new OBSmartsMatcher(BinHandler.BABEL_BINARY.getLocation(),
+					Settings.MODIFIED_BABEL_DATA_DIR, Settings.LOGGER);
+		String file;
+		if (dataset.getLocalPath() != null && dataset.getLocalPath().endsWith(".smi"))
+			file = dataset.getLocalPath();
+		else
+			file = dataset.getSDFPath(false);
+		return obSmartsMatcher.match(smarts, minNumMatches, file, dataset.numCompounds());
 	}
 }

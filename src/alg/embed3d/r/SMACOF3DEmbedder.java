@@ -8,6 +8,7 @@ import main.Settings;
 import rscript.RScriptUtil;
 import util.MessageUtil;
 import util.StringLineAdder;
+import alg.DistanceMeasure;
 import alg.cluster.DatasetClusterer;
 import alg.embed3d.AbstractRTo3DEmbedder;
 import data.DatasetFile;
@@ -100,5 +101,11 @@ public class SMACOF3DEmbedder extends AbstractRTo3DEmbedder
 	protected String getErrorDescription(String errorOut)
 	{
 		return null;
+	}
+
+	@Override
+	public DistanceMeasure getDistanceMeasure()
+	{
+		return DistanceMeasure.EUCLIDEAN_DISTANCE;
 	}
 }

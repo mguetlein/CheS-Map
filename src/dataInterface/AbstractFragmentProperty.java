@@ -33,4 +33,9 @@ public abstract class AbstractFragmentProperty extends AbstractCompoundProperty
 	{
 		return freq.get(d);
 	}
+
+	public static String getFormattedSmartsValue(String value)
+	{
+		return value.equals("1") ? "match" : "no-match";
+	}
 }

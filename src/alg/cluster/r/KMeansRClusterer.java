@@ -3,6 +3,7 @@ package alg.cluster.r;
 import gui.property.IntegerProperty;
 import gui.property.Property;
 import main.Settings;
+import alg.DistanceMeasure;
 import alg.cluster.ClusterApproach;
 import alg.r.DistanceProperty;
 
@@ -75,5 +76,11 @@ public class KMeansRClusterer extends AbstractRClusterer
 	public Property getFixedNumClustersProperty()
 	{
 		return k;
+	}
+
+	@Override
+	public DistanceMeasure getDistanceMeasure()
+	{
+		return distance.getDistanceMeasure();
 	}
 }

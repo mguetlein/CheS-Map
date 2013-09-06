@@ -14,7 +14,6 @@ import java.util.List;
 
 import main.Settings;
 import main.TaskProvider;
-import util.ListUtil;
 import util.MessageUtil;
 import weka.CascadeSimpleKMeans;
 import weka.CompoundArffWriter;
@@ -27,9 +26,9 @@ import weka.clusterers.FarthestFirst;
 import weka.clusterers.HierarchicalClusterer;
 import weka.clusterers.SimpleKMeans;
 import weka.core.Instances;
+import alg.DistanceMeasure;
 import data.DatasetFile;
 import dataInterface.CompoundData;
-import dataInterface.CompoundPropertyOwner;
 import dataInterface.CompoundProperty;
 
 public class WekaClusterer extends AbstractDatasetClusterer
@@ -160,8 +159,7 @@ public class WekaClusterer extends AbstractDatasetClusterer
 		WekaPropertyUtil.setProperties(wekaClusterer, properties);
 
 		TaskProvider.verbose("Converting data to arff-format");
-		File f = CompoundArffWriter.writeArffFile(dataset, ListUtil.cast(CompoundPropertyOwner.class, compounds),
-				features);
+		File f = CompoundArffWriter.writeArffFile(dataset, compounds, features);
 
 		try
 		{
@@ -256,6 +254,12 @@ public class WekaClusterer extends AbstractDatasetClusterer
 	public Clusterer getWekaClusterer()
 	{
 		return wekaClusterer;
+	}
+
+	@Override
+	public DistanceMeasure getDistanceMeasure()
+	{
+		return DistanceMeasure.EUCLIDEAN_DISTANCE;
 	}
 
 }

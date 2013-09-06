@@ -7,6 +7,7 @@ import java.util.List;
 
 import main.Settings;
 import alg.AbstractAlgorithm;
+import alg.DistanceMeasure;
 import data.ClusterDataImpl;
 import data.DatasetFile;
 import dataInterface.ClusterData;
@@ -89,4 +90,9 @@ public class NoClusterer extends AbstractAlgorithm implements DatasetClusterer
 		return true;
 	}
 
+	@Override
+	public DistanceMeasure getDistanceMeasure()
+	{
+		return DistanceMeasure.UNKNOWN_DISTANCE;
+	}
 }

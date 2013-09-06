@@ -24,7 +24,7 @@ public class OBDescriptorProperty extends AbstractCompoundProperty implements Co
 {
 	private static OBDescriptorProperty[] descriptors;
 
-	public static OBDescriptorProperty[] getDescriptors(boolean forceReload)
+	public synchronized static OBDescriptorProperty[] getDescriptors(boolean forceReload)
 	{
 		if (descriptors == null || forceReload)
 		{
@@ -83,7 +83,7 @@ public class OBDescriptorProperty extends AbstractCompoundProperty implements Co
 
 	public static OBDescriptorProperty fromString(String toString, Type type)
 	{
-		for (OBDescriptorProperty d : descriptors)
+		for (OBDescriptorProperty d : getDescriptors(false))
 			if (d.getName().equals(toString))
 			{
 				if (type != null)

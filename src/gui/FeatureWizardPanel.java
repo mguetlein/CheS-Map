@@ -40,6 +40,7 @@ import util.ArrayUtil;
 import util.DoubleImageIcon;
 import util.FileUtil;
 import util.ImageLoader;
+import util.ListUtil;
 import util.MessageUtil;
 import util.StringUtil;
 import util.WizardComponentFactory;
@@ -53,7 +54,6 @@ import data.FeatureLoader;
 import data.FeatureService;
 import data.IntegratedProperty;
 import data.cdk.CDKPropertySet;
-import data.fragments.MatchEngine;
 import data.fragments.StructuralFragmentProperties;
 import data.fragments.StructuralFragments;
 import data.obdesc.OBDescriptorProperty;
@@ -216,9 +216,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			@Override
 			public ImageIcon getCategoryIcon(String name)
 			{
-				if (!BinHandler.BABEL_BINARY.isFound()
-						&& ((STRUCTURAL_FRAGMENTS.equals(name) && StructuralFragmentProperties.getMatchEngine() == MatchEngine.OpenBabel) || OB_FEATURES
-								.equals(name)))
+				if (OB_FEATURES.equals(name) && !BinHandler.BABEL_BINARY.isFound())
 					return ImageLoader.ERROR;
 				else
 					return null;
@@ -589,7 +587,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			p.loadOrResetToDefault(props);
 		if (storeToSettings)
 		{
-			for (String propKey : allPropKeys)
+			for (String propKey : propKeys)
 				if (props.containsKey(propKey))
 					PropHandler.put(propKey, (String) props.get(propKey));
 				else
@@ -612,6 +610,18 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 
 			IntegratedProperty p = IntegratedProperty.fromString(feat, t, dataset);
 			features.add(p);
+		}
+
+		String typedIntegratedFeatures = (String) props.get(propKeyIntegratedType);
+		selection = StringUtil.split(typedIntegratedFeatures);
+		for (String string : selection)
+		{
+			int index = string.lastIndexOf('#');
+			if (index == -1)
+				throw new Error("no type in serialized compound prop");
+			Type t = Type.valueOf(string.substring(index + 1));
+			String feat = string.substring(0, index);
+			IntegratedProperty.fromString(feat, t, dataset);
 		}
 
 		String cdkFeatures = (String) props.get(propKeyCDK);
@@ -653,7 +663,8 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 	private String propKeyCDK = "features-cdk";
 	private String propKeyOB = "features-ob";
 	private String propKeyFragments = "features-fragments";
-	private String[] allPropKeys = { propKeyIntegrated, propKeyCDK, propKeyOB, propKeyFragments };
+	private String propKeyIntegratedType = "feature-type";
+	private String[] propKeys = { propKeyIntegrated, propKeyCDK, propKeyOB, propKeyFragments, propKeyIntegratedType };
 
 	@Override
 	public void proceed()
@@ -676,13 +687,23 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		{
 			IntegratedProperty[] integratedProps = ArrayUtil.cast(IntegratedProperty.class,
 					features.get(INTEGRATED_FEATURES));
-			String[] serilizedProps = new String[integratedProps.length];
-			for (int i = 0; i < serilizedProps.length; i++)
-				serilizedProps[i] = integratedProps[i] + "#" + integratedProps[i].getType();
-			props.put(propKeyIntegrated, ArrayUtil.toCSVString(serilizedProps, true));
+			String[] serializedProps = new String[integratedProps.length];
+			for (int i = 0; i < serializedProps.length; i++)
+				serializedProps[i] = integratedProps[i] + "#" + integratedProps[i].getType();
+			props.put(propKeyIntegrated, ArrayUtil.toCSVString(serializedProps, true));
 		}
 		else
 			props.remove(propKeyIntegrated);
+
+		if (dataset.getIntegratedProperties().length > 0)
+		{
+			List<String> serializedProps = new ArrayList<String>();
+			for (CompoundProperty p : dataset.getIntegratedProperties())
+				if (ArrayUtil.indexOf(features.get(INTEGRATED_FEATURES), p) == -1 && p.getType() != null)
+					serializedProps.add(p + "#" + p.getType());
+			if (serializedProps.size() > 0)
+				props.put(propKeyIntegratedType, ArrayUtil.toCSVString(ListUtil.toArray(serializedProps), true));
+		}
 
 		if (CDKPropertySet.NUMERIC_DESCRIPTORS.length > 0)
 		{
@@ -812,7 +833,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 	@Override
 	public void exportSettingsToMappingWorkflow(Properties props)
 	{
-		for (String propKey : allPropKeys)
+		for (String propKey : propKeys)
 			if (PropHandler.containsKey(propKey))
 				props.put(propKey, PropHandler.get(propKey));
 		for (Property p : StructuralFragmentProperties.getProperties())

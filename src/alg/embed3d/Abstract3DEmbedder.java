@@ -18,8 +18,8 @@ import util.ValueFileCache;
 import alg.AbstractAlgorithm;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
+import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundPropertyOwner;
 import dataInterface.CompoundPropertyUtil;
 
 public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedder
@@ -78,14 +78,14 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		return m;
 	}
 
-	protected abstract List<Vector3f> embed(DatasetFile dataset, List<CompoundPropertyOwner> instances,
+	protected abstract List<Vector3f> embed(DatasetFile dataset, List<CompoundData> instances,
 			List<CompoundProperty> features) throws Exception;
 
 	protected abstract String getShortName();
 
 	protected abstract double[][] getFeatureDistanceMatrix();
 
-	public void embedDataset(DatasetFile dataset, List<CompoundPropertyOwner> instances, List<CompoundProperty> features)
+	public void embedDataset(DatasetFile dataset, List<CompoundData> instances, List<CompoundProperty> features)
 			throws Exception
 	{
 		String basename = dataset.getShortName()

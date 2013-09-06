@@ -12,11 +12,6 @@ import main.TaskProvider;
 
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.qsar.IMolecularDescriptor;
-import org.openscience.cdk.qsar.result.DoubleArrayResult;
-import org.openscience.cdk.qsar.result.DoubleResult;
-import org.openscience.cdk.qsar.result.IDescriptorResult;
-import org.openscience.cdk.qsar.result.IntegerArrayResult;
-import org.openscience.cdk.qsar.result.IntegerResult;
 
 import util.FileUtil.UnexpectedNumColsException;
 import util.StringUtil;
@@ -179,31 +174,12 @@ public class CDKPropertySet implements CompoundPropertySet
 				{
 					try
 					{
-						IDescriptorResult res = descriptor.calculate(mols[i]).getValue();
-						if (res instanceof IntegerResult)
-							vv.get(0)[i] = (double) ((IntegerResult) res).intValue();
-						else if (res instanceof DoubleResult)
-							vv.get(0)[i] = ((DoubleResult) res).doubleValue();
-						else if (res instanceof DoubleArrayResult)
-						{
-							if (getSize() != ((DoubleArrayResult) res).length())
-								throw new IllegalStateException("num feature values wrong for '" + this + "' : "
-										+ getSize() + " != " + ((DoubleArrayResult) res).length());
-							for (int j = 0; j < getSize(); j++)
-								vv.get(j)[i] = ((DoubleArrayResult) res).get(j);
-						}
-						else if (res instanceof IntegerArrayResult)
-						{
-							if (getSize() != ((IntegerArrayResult) res).length())
-								throw new IllegalStateException("num feature values wrong for '" + this + "' : "
-										+ getSize() + " != " + ((IntegerArrayResult) res).length());
-							for (int j = 0; j < getSize(); j++)
-								vv.get(j)[i] = (double) ((IntegerArrayResult) res).get(j);
-						}
-						else
-							throw new IllegalStateException("Unknown idescriptor result value for '" + this + "' : "
-									+ res.getClass());
-
+						Double d[] = desc.computeDescriptor(mols[i]);
+						if (getSize() != d.length)
+							throw new IllegalStateException("num feature values wrong for '" + this + "' : "
+									+ getSize() + " != " + d.length);
+						for (int j = 0; j < d.length; j++)
+							vv.get(j)[i] = d[j];
 					}
 					catch (Throwable e)
 					{

@@ -6,6 +6,7 @@ import java.util.List;
 
 import util.ArrayUtil;
 import alg.Algorithm;
+import alg.DistanceMeasure;
 import alg.cluster.r.AbstractRClusterer;
 import data.DatasetFile;
 import dataInterface.ClusterData;
@@ -32,4 +33,6 @@ public interface DatasetClusterer extends Algorithm
 	public ClusterApproach getClusterApproach();
 
 	public Property getDistanceFunctionProperty();
+
+	public DistanceMeasure getDistanceMeasure();
 }

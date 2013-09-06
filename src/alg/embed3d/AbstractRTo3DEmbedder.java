@@ -24,8 +24,8 @@ import util.ExternalToolUtil;
 import util.FileUtil;
 import alg.AlgorithmException.EmbedException;
 import data.DatasetFile;
+import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundPropertyOwner;
 import dataInterface.CompoundPropertyUtil;
 
 public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
@@ -41,7 +41,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 	protected abstract String getErrorDescription(String errorOut);
 
 	@Override
-	public List<Vector3f> embed(DatasetFile dataset, final List<CompoundPropertyOwner> instances,
+	public List<Vector3f> embed(DatasetFile dataset, final List<CompoundData> instances,
 			final List<CompoundProperty> features) throws IOException
 	{
 		processMessages.clear();

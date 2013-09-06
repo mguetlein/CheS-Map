@@ -5,6 +5,7 @@ import gui.property.Property;
 import gui.property.SelectProperty;
 import main.Settings;
 import weka.clusterers.HierarchicalClusterer;
+import alg.DistanceMeasure;
 import alg.cluster.ClusterApproach;
 import alg.r.DistanceProperty;
 
@@ -65,5 +66,11 @@ public class HierarchicalRClusterer extends AbstractRClusterer
 	public Property getFixedNumClustersProperty()
 	{
 		return k;
+	}
+
+	@Override
+	public DistanceMeasure getDistanceMeasure()
+	{
+		return distance.getDistanceMeasure();
 	}
 }

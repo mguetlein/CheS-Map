@@ -2,6 +2,7 @@ package alg.r;
 
 import gui.property.SelectProperty;
 import rscript.RScriptUtil;
+import alg.DistanceMeasure;
 
 public class DistanceProperty extends SelectProperty
 {
@@ -24,6 +25,14 @@ public class DistanceProperty extends SelectProperty
 	public DistanceProperty(String uniqSuffix)
 	{
 		super(NAME, NAME + uniqSuffix, DISTANCES, DEFAULT_DISTANCE);
+	}
+
+	public DistanceMeasure getDistanceMeasure()
+	{
+		if (isSimilaritySelected())
+			return new DistanceMeasure(getSelectedSimilarity());
+		else
+			return new DistanceMeasure(getSelectedDistance());
 	}
 
 	public boolean isDistanceSelected()

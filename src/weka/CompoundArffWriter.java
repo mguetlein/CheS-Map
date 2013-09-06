@@ -5,15 +5,14 @@ import java.util.List;
 
 import main.Settings;
 import data.DatasetFile;
-import dataInterface.CompoundPropertyOwner;
+import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertyUtil;
 
 public class CompoundArffWriter implements ArffWritable
 {
-	public static File writeArffFile(DatasetFile dataset, List<CompoundPropertyOwner> compounds,
-			List<CompoundProperty> features)
+	public static File writeArffFile(DatasetFile dataset, List<CompoundData> compounds, List<CompoundProperty> features)
 	{
 		String enc = CompoundPropertyUtil.getSetMD5(features, dataset.getMD5());
 		String arffFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + enc + ".arff");
@@ -28,11 +27,11 @@ public class CompoundArffWriter implements ArffWritable
 		return file;
 	}
 
-	List<CompoundPropertyOwner> compounds;
+	List<CompoundData> compounds;
 	List<CompoundProperty> features;
 	boolean sparse = true;
 
-	private CompoundArffWriter(List<CompoundPropertyOwner> compounds, List<CompoundProperty> features)
+	private CompoundArffWriter(List<CompoundData> compounds, List<CompoundProperty> features)
 	{
 		this.compounds = compounds;
 		this.features = features;
@@ -97,7 +96,7 @@ public class CompoundArffWriter implements ArffWritable
 	{
 		if (features.get(attribute).getType() == Type.NUMERIC)
 		{
-			Double v = compounds.get(instance).getNormalizedValue(features.get(attribute));
+			Double v = compounds.get(instance).getNormalizedValueCompleteDataset(features.get(attribute));
 			if (v == null)
 				return "?";
 			else

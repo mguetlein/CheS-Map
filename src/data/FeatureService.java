@@ -1,5 +1,7 @@
 package data;
 
+import io.SDFUtil;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -69,7 +71,7 @@ public class FeatureService
 
 	public IntegratedProperty[] getIntegratedProperties(DatasetFile dataset)
 	{
-		return ArrayUtil.toArray(integratedProperties.get(dataset));
+		return ArrayUtil.toArray(IntegratedProperty.class, integratedProperties.get(dataset));
 	}
 
 	public IntegratedProperty getIntegratedClusterProperty(DatasetFile dataset)
@@ -361,7 +363,7 @@ public class FeatureService
 		}
 	}
 
-	public synchronized void loadDataset(DatasetFile dataset, boolean loadHydrogen) throws Exception
+	public synchronized void loadDataset(DatasetFile dataset) throws Exception
 	{
 		if (fileToCompounds.get(dataset) == null)
 		{
@@ -414,7 +416,8 @@ public class FeatureService
 				{
 					IntegratedProperty p = IntegratedProperty.create(key.toString(), dataset);
 					integratedProperties.get(dataset).add(p);
-					if (key.toString().equals("STRUCTURE_SMILES") || key.toString().equals("SMILES"))
+					if (key.toString().toUpperCase().equals("STRUCTURE_SMILES")
+							|| key.toString().toUpperCase().equals("SMILES"))
 					{
 						integratedSmiles.put(dataset, p);
 						p.setSmiles(true);
@@ -475,6 +478,13 @@ public class FeatureService
 			if (illegalCompounds.size() > 0)
 			{
 				Settings.LOGGER.warn("Could not read " + illegalCompounds.size() + "/" + mols.size() + " compounds");
+				if (dataset.getLocalPath().endsWith(".sdf"))
+				{
+					String sdf[] = SDFUtil.readSdf(dataset.getLocalPath());
+					for (Integer i : illegalCompounds)
+						Settings.LOGGER
+								.warn("Could not read compund with index '" + i + "':\n>>>\n" + sdf[i] + "\n<<<");
+				}
 				if (mols.size() > illegalCompounds.size())
 					throw new IllegalCompoundsException(illegalCompounds);
 				else
@@ -536,14 +546,9 @@ public class FeatureService
 
 	public IMolecule[] getCompounds(DatasetFile dataset)
 	{
-		return getCompounds(dataset, true);
-	}
-
-	public IMolecule[] getCompounds(DatasetFile dataset, boolean loadHydrogen)
-	{
 		try
 		{
-			loadDataset(dataset, loadHydrogen);
+			loadDataset(dataset);
 			return fileToCompounds.get(dataset);
 		}
 		catch (Exception e)
@@ -633,7 +638,8 @@ public class FeatureService
 	{
 		try
 		{
-			SDFWriter writer = new SDFWriter(new FileOutputStream(threeDFilename));
+			if (new File(threeDFilename).exists())
+				new File(threeDFilename).delete();
 
 			IMolecule mols[] = dataset.getCompounds();
 			ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), forcefield);
@@ -649,12 +655,15 @@ public class FeatureService
 					TaskProvider.warning("Could not build 3D for compound", e);
 				}
 				molecule = (IMolecule) AtomContainerManipulator.removeHydrogens(molecule);
+
+				SDFWriter writer = new SDFWriter(new FileOutputStream(threeDFilename, true));
 				writer.write(molecule);
+				writer.close();
 
 				if (!TaskProvider.isRunning())
 					return;
 			}
-			writer.close();
+
 		}
 		catch (CDKException e)
 		{

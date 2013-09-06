@@ -5,7 +5,6 @@ import java.util.List;
 
 import javax.vecmath.Vector3f;
 
-import util.ListUtil;
 import util.StringUtil;
 import alg.FeatureComputer;
 import alg.align3d.NoAligner;
@@ -23,7 +22,6 @@ import data.DefaultFeatureComputer;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundPropertyOwner;
 import dataInterface.CompoundPropertySet;
 import dataInterface.CompoundPropertyUtil;
 
@@ -39,6 +37,9 @@ public class CheSMapping
 	Random3DEmbedder randomEmbedder = Random3DEmbedder.INSTANCE;
 	NoClusterer noClusterer = NoClusterer.INSTANCE;
 	ThreeDAligner noAligner = NoAligner.INSTANCE;
+
+	DatasetClusterer usedClusterer;
+	ThreeDEmbedder usedEmbedder;
 
 	public CheSMapping(DatasetFile dataset, CompoundPropertySet features[], DatasetClusterer datasetClusterer,
 			ThreeDBuilder threeDGenerator, ThreeDEmbedder threeDEmbedder, ThreeDAligner threeDAligner)
@@ -104,6 +105,12 @@ public class CheSMapping
 							+ clustering.getClusters().size() + ")");
 					embedDataset(dataset, clustering, featuresWithInfo);
 
+					if (usedClusterer != noClusterer && usedEmbedder != randomEmbedder
+							&& !usedClusterer.getDistanceMeasure().equals(usedEmbedder.getDistanceMeasure()))
+						TaskProvider.warning(Settings.text("mapping.incomp.distances"), Settings.text(
+								"mapping.incomp.distances.desc", usedClusterer.getDistanceMeasure() + "",
+								usedEmbedder.getDistanceMeasure() + ""));
+
 					if (!TaskProvider.isRunning())
 						return;
 					TaskProvider.update(50, "3D align compounds");
@@ -161,16 +168,16 @@ public class CheSMapping
 
 	private void clusterDataset(DatasetFile dataset, ClusteringData clustering, List<CompoundProperty> featuresWithInfo)
 	{
-		DatasetClusterer clusterer = datasetClusterer;
+		usedClusterer = datasetClusterer;
 		clusterException = null;
-		if (dataset.numCompounds() == 1 && !(clusterer instanceof NoClusterer))
+		if (dataset.numCompounds() == 1 && !(usedClusterer instanceof NoClusterer))
 		{
 			TaskProvider
 
 					.warning(
 							"Could not cluster dataset, dataset has only one compound",
 							"Clustering divides a dataset into clusters (i.e. into subsets of compounds). There is only one compound in the dataset.");
-			clusterer = noClusterer;
+			usedClusterer = noClusterer;
 		}
 		else if (datasetClusterer.requiresFeatures() && featuresWithInfo.size() == 0)
 		{
@@ -180,39 +187,39 @@ public class CheSMapping
 							"Could not cluster dataset, as every compound has equal feature values",
 							"Clustering divides a dataset into clusters (i.e. into subsets of compounds), according to the feature values of the compounds. "
 									+ "The compounds have equal feature values for each feature, and cannot be distinguished by the clusterer.");
-			clusterer = noClusterer;
+			usedClusterer = noClusterer;
 		}
 		try
 		{
-			clusterer.clusterDataset(dataset, clustering.getCompounds(), featuresWithInfo);
+			usedClusterer.clusterDataset(dataset, clustering.getCompounds(), featuresWithInfo);
 		}
 		catch (Exception e)
 		{
 			clusterException = e;
 			Settings.LOGGER.error(e);
-			if (clusterer == noClusterer)
+			if (usedClusterer == noClusterer)
 				throw new Error("internal error: no clusterer should not fail!", e);
-			TaskProvider.warning(clusterer.getName() + " failed on clustering dataset", e.getMessage());
-			clusterer = noClusterer;
+			TaskProvider.warning(usedClusterer.getName() + " failed on clustering dataset", e.getMessage());
+			usedClusterer = noClusterer;
 			noClusterer.clusterDataset(dataset, clustering.getCompounds(), featuresWithInfo);
 		}
-		for (ClusterData c : clusterer.getClusters())
+		for (ClusterData c : usedClusterer.getClusters())
 			clustering.addCluster(c);
-		clustering.setClusterAlgorithm(clusterer.getName());
-		clustering.setClusterAlgorithmDistjoint(clusterer.isDisjointClusterer());
+		clustering.setClusterAlgorithm(usedClusterer.getName());
+		clustering.setClusterAlgorithmDistjoint(usedClusterer.isDisjointClusterer());
 	}
 
 	@SuppressWarnings("unchecked")
 	private void embedDataset(DatasetFile dataset, ClusteringData clustering, List<CompoundProperty> featuresWithInfo)
 	{
 		embedderException = null;
-		ThreeDEmbedder emb = threeDEmbedder;
-		if (dataset.numCompounds() == 1 && !(emb instanceof Random3DEmbedder))
+		usedEmbedder = threeDEmbedder;
+		if (dataset.numCompounds() == 1 && !(usedEmbedder instanceof Random3DEmbedder))
 		{
 			TaskProvider.warning("Could not embedd dataset, dataset has only one compound",
 					"3D Embedding uses feature values to embedd compounds in 3D space, with similar compounds close to each other. "
 							+ "There is only one compound in the dataset.");
-			emb = randomEmbedder;
+			usedEmbedder = randomEmbedder;
 		}
 		else if (threeDEmbedder.requiresFeatures() && featuresWithInfo.size() == 0)
 		{
@@ -222,67 +229,66 @@ public class CheSMapping
 							"Could not embedd dataset, as every compound has equal feature values, CheS-Mapper uses random positions",
 							"3D Embedding uses feature values to embedd compounds in 3D space, with similar compounds close to each other. "
 									+ "The compounds have equal feature values for each feature, and cannot be distinguished by the embedder.");
-			emb = randomEmbedder;
+			usedEmbedder = randomEmbedder;
 		}
 		try
 		{
-			emb.embedDataset(dataset, ListUtil.cast(CompoundPropertyOwner.class, clustering.getCompounds()),
-					featuresWithInfo);
+			usedEmbedder.embedDataset(dataset, clustering.getCompounds(), featuresWithInfo);
 		}
 		catch (Exception e)
 		{
 			embedderException = e;
 			Settings.LOGGER.error(e);
-			if (emb == randomEmbedder)
+			if (usedEmbedder == randomEmbedder)
 				throw new Error("internal error: random embedder should not fail!", e);
-			TaskProvider.warning(emb.getName() + " failed on embedding dataset, CheS-Mapper uses random positions",
-					e.getMessage());
-			emb = randomEmbedder;
-			randomEmbedder.embedDataset(dataset, ListUtil.cast(CompoundPropertyOwner.class, clustering.getCompounds()),
-					featuresWithInfo);
+			TaskProvider.warning(usedEmbedder.getName()
+					+ " failed on embedding dataset, CheS-Mapper uses random positions", e.getMessage());
+			usedEmbedder = randomEmbedder;
+			randomEmbedder.embedDataset(dataset, clustering.getCompounds(), featuresWithInfo);
 		}
 
 		//		if (emb.getProcessMessages() != null && emb.getProcessMessages().containsWarning())
 		//			TaskProvider.warning("Warning from 3D Embedding " + emb.getName(),
 		//					emb.getProcessMessages().getMessage(MessageType.Warning).getString());
 
-		clustering.setEmbedAlgorithm(emb.getName());
+		clustering.setEmbedAlgorithm(usedEmbedder.getName());
 
 		if (dataset.numCompounds() > 2)
 		{
-			double rSquare = emb.getRSquare();
-			double ccc = emb.getCCC();
+			double rSquare = usedEmbedder.getRSquare();
+			double ccc = usedEmbedder.getCCC();
 			Settings.LOGGER.info("r-square: " + rSquare + ", ccc: " + ccc);
 			String formRSquare = StringUtil.formatDouble(rSquare, 2);
-			String formCCC = StringUtil.formatDouble(emb.getCCC(), 2);
-			String details = " (r^2: " + formRSquare + ", CCC: " + formCCC + ")";
-
-			if (rSquare >= 0.9)
+			String formCCC = StringUtil.formatDouble(usedEmbedder.getCCC(), 2);
+			String details = " (CCC: " + formCCC + ", r^2: " + formRSquare + ")";
+			String warnMsg = null;
+			if (ccc >= 0.9)
 				clustering.setEmbedQuality("excellent" + details);
-			else if (rSquare >= 0.7)
+			else if (ccc >= 0.7)
 				clustering.setEmbedQuality("good" + details);
-			else if (rSquare >= 0.5)
+			else if (ccc >= 0.5)
 			{
-				TaskProvider.warning("The embedding quality is moderate" + details,
-						Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
+				warnMsg = "The embedding quality is moderate" + details;
 				clustering.setEmbedQuality("moderate" + details);
 			}
 			else
-			// < 0.5 
-			{
-				String msg = "The embedding quality is poor" + details;
-				if (emb instanceof Random3DEmbedder)
-					msg = "Random embedding applied, 3D positions do not reflect feature values" + details;
-				TaskProvider.warning(msg, Settings.text("embed.info.r-square", Settings.text("embed.r.sammon")));
+			{ // < 0.5
+				warnMsg = "The embedding quality is poor" + details;
 				clustering.setEmbedQuality("poor" + details);
 			}
-			if (emb.getCCCProperty() != null)
+			if (warnMsg != null)
+			{
+				if (usedEmbedder instanceof Random3DEmbedder)
+					warnMsg = "Random embedding applied, 3D positions do not reflect feature values" + details;
+				TaskProvider.warning(warnMsg, Settings.text("embed.info.quality", Settings.text("embed.r.sammon")));
+			}
+			if (usedEmbedder.getCCCProperty() != null)
 			{
 				for (int i = 0; i < clustering.getNumCompounds(true); i++)
-					((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(emb.getCCCProperty(), emb
-							.getCCCProperty().getDoubleValues(dataset)[i]);
-				emb.getCCCProperty().setMappedDataset(dataset);
-				clustering.setEmbeddingQualityProperty(emb.getCCCProperty());
+					((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(usedEmbedder.getCCCProperty(),
+							usedEmbedder.getCCCProperty().getDoubleValues(dataset)[i]);
+				usedEmbedder.getCCCProperty().setMappedDataset(dataset);
+				clustering.setEmbeddingQualityProperty(usedEmbedder.getCCCProperty());
 			}
 
 			//			List<CompoundProperty> distanceTo = new ArrayList<CompoundProperty>();
@@ -309,7 +315,7 @@ public class CheSMapping
 		//							ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds())));
 
 		int cCount = 0;
-		for (Vector3f v : emb.getPositions())
+		for (Vector3f v : usedEmbedder.getPositions())
 			((CompoundDataImpl) clustering.getCompounds().get(cCount++)).setPosition(v);
 		for (ClusterData c : clustering.getClusters())
 			for (CompoundData co : c.getCompounds())

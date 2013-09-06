@@ -14,6 +14,7 @@ import util.ArrayUtil;
 import util.FileUtil;
 import util.FileUtil.CSVFile;
 import util.ListUtil;
+import util.StringUtil;
 import data.CDKSmartsHandler;
 import data.cdkfingerprints.CDKFingerprintSet;
 import data.obfingerprints.OBFingerprintSet;
@@ -24,12 +25,21 @@ public class StructuralFragments
 {
 	List<FragmentPropertySet> fragmentList = new ArrayList<FragmentPropertySet>();
 
-	private static final String[] included = new String[] { "DNA.csv", "Phospholipidosis.csv", "Protein.csv",
-			"ToxTree_BB_CarcMutRules.csv", "ToxTree_BiodgeradationRules.csv", "ToxTree_CramerRules.csv",
-			"ToxTree_CramerRulesWithExtensions.csv", "ToxTree_EyeIrritationRules.csv", "ToxTree_FuncRules.csv",
-			"ToxTree_Kroes1Tree.csv", "ToxTree_MichaelAcceptorRules.csv", "ToxTree_MICRules.csv",
-			"ToxTree_SicretRules.csv", "ToxTree_SkinSensitisationPlugin.csv", "ToxTree_SMARTCYPPlugin.csv",
-			"ToxTree_VerhaarScheme2.csv", "ToxTree_VerhaarScheme.csv" };
+	private static final String[] included = new String[] { "patterns.csv", "SMARTS_InteLigand.csv", "MACCS.csv",
+			"DNA.csv", "Phospholipidosis.csv", "Protein.csv", "ToxTree_BB_CarcMutRules.csv",
+			"ToxTree_BiodgeradationRules.csv", "ToxTree_CramerRules.csv", "ToxTree_CramerRulesWithExtensions.csv",
+			"ToxTree_EyeIrritationRules.csv", "ToxTree_FuncRules.csv", "ToxTree_Kroes1Tree.csv",
+			"ToxTree_MichaelAcceptorRules.csv", "ToxTree_MICRules.csv", "ToxTree_SicretRules.csv",
+			"ToxTree_SkinSensitisationPlugin.csv", "ToxTree_SMARTCYPPlugin.csv", "ToxTree_VerhaarScheme2.csv",
+			"ToxTree_VerhaarScheme.csv" };
+
+	private static HashMap<String, String> nameSuffixes = new HashMap<String, String>();
+	{
+		nameSuffixes.put("patterns", "(OpenBabel FP3)");
+		nameSuffixes.put("SMARTS_InteLigand", "(OpenBabel FP4)");
+		nameSuffixes.put("MACCS", "(OpenBabel MACCS)");
+	}
+
 	public static StructuralFragments instance = new StructuralFragments();
 
 	private StructuralFragments()
@@ -50,8 +60,26 @@ public class StructuralFragments
 		for (CDKFingerprintSet fp : CDKFingerprintSet.FINGERPRINTS)
 			fragmentList.add(fp);
 
+		//		fragmentList.add(new FminerPropertySet());
+
 		String files[] = Settings.getFragmentFiles();
 		Arrays.sort(files);
+		for (int i = included.length - 1; i >= 0; i--)
+		{
+			int idx = -1;
+			for (int j = 0; j < files.length; j++)
+				if (files[j].contains(included[i]))
+				{
+					idx = j;
+					break;
+				}
+			if (idx == -1)
+				throw new IllegalArgumentException(included[i] + " not in " + ArrayUtil.toString(files));
+			String tmp = files[idx];
+			files[idx] = files[i];
+			files[i] = tmp;
+		}
+
 		for (String filename : files)
 		{
 			try
@@ -64,11 +92,8 @@ public class StructuralFragments
 				CSVFile csv = FileUtil.readCSV(filename, ",");
 				for (String[] line : csv.content)
 				{
-					if (line.length != 2)
-						throw new IllegalStateException("Illegal substructure format in file: '" + filename
-								+ "'\nin line '" + a.get(MatchEngine.CDK).size()
-								+ "' (should be <name>,\"<smarts>\"), line:\n" + ArrayUtil.toString(line));
-					else
+
+					if (line.length == 2 || (line.length == 3 && StringUtil.isInteger(line[2])))
 					{
 						boolean match = true;
 						String name = line[0];
@@ -90,11 +115,16 @@ public class StructuralFragments
 						}
 						for (MatchEngine m : MatchEngine.values())
 						{
-							a.get(m)
-									.add(new StructuralFragment(finalName, m, FileUtil.getFilename(filename, false),
-											line[1]));
+							a.get(m).add(
+									new StructuralFragment(finalName, m, FileUtil.getFilename(filename, false),
+											line[1], line.length == 2 ? 0 : Integer.parseInt(line[2])));
 						}
 					}
+					else
+						throw new IllegalStateException("Illegal substructure format in file: '" + filename
+								+ "'\nin line '" + a.get(MatchEngine.CDK).size()
+								+ "' (should be <name>,\"<smarts>\"[,num-matches]), line:\n" + ArrayUtil.toString(line)
+								+ " " + line.length);
 					if (FileUtil.getFilename(filename).equals(showWarningForFile))
 						if (!CDKSmartsHandler.isSMARTS(line[1]))
 							warnings += "Not a valid SMARTS string: '" + line[1] + "'\n";
@@ -105,7 +135,10 @@ public class StructuralFragments
 							+ showWarningForFile + "':\n" + warnings, "Warnings while parsing SMARTS file",
 							JOptionPane.WARNING_MESSAGE);
 
-				String name = "Smarts file: " + FileUtil.getFilename(filename, false);
+				String fname = FileUtil.getFilename(filename, false);
+				String name = "Smarts list: " + fname;
+				if (nameSuffixes.containsKey(fname))
+					name += " " + nameSuffixes.get(fname);
 				String desc = "Num smarts strings: " + a.get(MatchEngine.CDK).size();
 				desc += "\nLocation: " + filename;
 				String comments = ListUtil.toString(csv.comments, "\n");

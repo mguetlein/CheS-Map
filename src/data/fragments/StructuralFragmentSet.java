@@ -183,6 +183,9 @@ public class StructuralFragmentSet extends FragmentPropertySet
 		List<String> smarts = new ArrayList<String>();
 		for (StructuralFragment fragment : fragments.get(StructuralFragmentProperties.getMatchEngine()))
 			smarts.add(fragment.getSmarts());
+		List<Integer> minNumMatches = new ArrayList<Integer>();
+		for (StructuralFragment fragment : fragments.get(StructuralFragmentProperties.getMatchEngine()))
+			minNumMatches.add(fragment.getMinNumMatches());
 
 		String smartsMatchFile = getSmartsMatchCacheFile(dataset);
 
@@ -202,9 +205,9 @@ public class StructuralFragmentSet extends FragmentPropertySet
 		if (matches == null)
 		{
 			if (StructuralFragmentProperties.getMatchEngine() == MatchEngine.CDK)
-				matches = new CDKSmartsHandler().match(smarts, dataset);
+				matches = new CDKSmartsHandler().match(smarts, minNumMatches, dataset);
 			else if (StructuralFragmentProperties.getMatchEngine() == MatchEngine.OpenBabel)
-				matches = new OpenBabelSmartsHandler().match(smarts, dataset);
+				matches = new OpenBabelSmartsHandler().match(smarts, minNumMatches, dataset);
 			else
 				throw new Error("illegal match engine");
 			if (!TaskProvider.isRunning())

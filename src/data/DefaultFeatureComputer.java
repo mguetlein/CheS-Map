@@ -117,7 +117,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 				if (p.getType() == Type.NUMERIC)
 				{
 					c.setDoubleValue(p, d[i]);
-					c.setNormalizedValue(p, n[i]);
+					c.setNormalizedValueCompleteDataset(p, n[i]);
 				}
 				else
 					c.setStringValue(p, s[i]);

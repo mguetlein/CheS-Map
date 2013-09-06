@@ -12,9 +12,10 @@ import javax.vecmath.Vector3f;
 import main.Settings;
 import util.Vector3fUtil;
 import alg.AbstractAlgorithm;
+import alg.DistanceMeasure;
 import data.DatasetFile;
+import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundPropertyOwner;
 
 public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedder
 {
@@ -97,7 +98,7 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	}
 
 	@Override
-	public void embedDataset(DatasetFile dataset, List<CompoundPropertyOwner> instances, List<CompoundProperty> features)
+	public void embedDataset(DatasetFile dataset, List<CompoundData> instances, List<CompoundProperty> features)
 	{
 		positions = getPositions(instances.size());
 		if (instances.size() > 2)
@@ -160,4 +161,9 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 		return false;
 	}
 
+	@Override
+	public DistanceMeasure getDistanceMeasure()
+	{
+		return DistanceMeasure.UNKNOWN_DISTANCE;
+	}
 }

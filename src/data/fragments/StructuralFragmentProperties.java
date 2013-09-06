@@ -7,13 +7,15 @@ import gui.property.SelectProperty;
 
 import java.beans.PropertyChangeListener;
 
+import main.BinHandler;
+
 public class StructuralFragmentProperties
 {
 	private IntegerProperty minFreqProp = new IntegerProperty("Minimum frequency", "Minimum frequency", 10, 1,
 			Integer.MAX_VALUE);
 	private BooleanProperty skipOmniProp = new BooleanProperty("Skip fragments that match all compounds", true);
 	private SelectProperty matchEngine = new SelectProperty("Smarts matching software for smarts files",
-			MatchEngine.values(), MatchEngine.OpenBabel);
+			MatchEngine.values(), BinHandler.BABEL_BINARY.isFound() ? MatchEngine.OpenBabel : MatchEngine.CDK);
 
 	Property[] fragmentProps = new Property[] { minFreqProp, skipOmniProp, matchEngine };
 

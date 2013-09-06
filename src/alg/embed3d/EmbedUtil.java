@@ -13,6 +13,7 @@ import util.DoubleArraySummary;
 import util.ObjectUtil;
 import util.Vector3fUtil;
 import data.DatasetFile;
+import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertyOwner;
@@ -28,7 +29,7 @@ public class EmbedUtil
 		return computeRSquare(d1, d2);
 	}
 
-	public static double computeRSquare(List<Vector3f> positions, List<CompoundPropertyOwner> instances,
+	public static double computeRSquare(List<Vector3f> positions, List<CompoundData> instances,
 			List<CompoundProperty> features, DatasetFile dataset)
 	{
 		return computeRSquare(positions, euclMatrix(instances, features, dataset));
@@ -72,7 +73,7 @@ public class EmbedUtil
 		return computeCCC(d1, d2);
 	}
 
-	public static double computeCCC(List<Vector3f> positions, List<CompoundPropertyOwner> instances,
+	public static double computeCCC(List<Vector3f> positions, List<CompoundData> instances,
 			List<CompoundProperty> features, DatasetFile dataset)
 	{
 		return computeCCC(positions, euclMatrix(instances, features, dataset));
@@ -87,7 +88,7 @@ public class EmbedUtil
 		return computeCCCs(d1, d2);
 	}
 
-	public static double[] computeCCCs(List<Vector3f> positions, List<CompoundPropertyOwner> instances,
+	public static double[] computeCCCs(List<Vector3f> positions, List<CompoundData> instances,
 			List<CompoundProperty> features, DatasetFile dataset)
 	{
 		return computeCCCs(positions, euclMatrix(instances, features, dataset));
@@ -195,7 +196,7 @@ public class EmbedUtil
 		//		Settings.LOGGER.println(ArrayUtil.toString(d));
 	}
 
-	private static double[][] euclMatrix(List<CompoundPropertyOwner> instances, List<CompoundProperty> features,
+	private static double[][] euclMatrix(List<CompoundData> instances, List<CompoundProperty> features,
 			DatasetFile dataset)
 	{
 		HashMap<CompoundPropertyOwner, double[]> vals = new HashMap<CompoundPropertyOwner, double[]>();
@@ -207,7 +208,7 @@ public class EmbedUtil
 				CompoundProperty feature = features.get(k);
 				if (feature.getType() == Type.NUMERIC)
 				{
-					Double v = instances.get(i).getNormalizedValue(feature);
+					Double v = instances.get(i).getNormalizedValueCompleteDataset(feature);
 					if (v == null)
 						v = feature.getNormalizedMedian(dataset);
 					v_i.add(v);

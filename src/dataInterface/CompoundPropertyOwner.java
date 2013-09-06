@@ -18,12 +18,5 @@ public interface CompoundPropertyOwner
 	 */
 	public String getStringValue(CompoundProperty p);
 
-	/**
-	 * supported for non-numeric structures as well 
-	 * 
-	 * @param p
-	 * @return
-	 */
-	public Double getNormalizedValue(CompoundProperty p);
-
+	public String getFormattedValue(CompoundProperty p);
 }
