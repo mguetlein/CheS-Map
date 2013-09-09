@@ -47,6 +47,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import data.DatasetFile;
 import data.FeatureLoader;
+import dataInterface.AbstractFragmentProperty;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
@@ -377,6 +378,9 @@ public class CompoundPropertyPanel extends JPanel
 				for (String o : values)
 					if (o != null)
 						counts.add((double) set.getCount(o));
+				for (int i = 0; i < values.size(); i++)
+					if (selectedProperty.isSmartsProperty())
+						values.set(i, AbstractFragmentProperty.getFormattedSmartsValue(values.get(i)));
 				p = new BarPlotPanel(null, "#compounds", counts, values);
 				((BarPlotPanel) p).setMaximumBarWidth(.35);
 			}
