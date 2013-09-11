@@ -34,7 +34,7 @@ public class Settings
 	{
 		try
 		{
-			Font font = new Font("Dialog", Font.PLAIN, (int) ScreenSetup.SETUP.getFontSize());
+			Font font = new Font("Dialog", Font.PLAIN, (int) ScreenSetup.INSTANCE.getFontSize());
 			UIDefaults uiDefaults = UIManager.getDefaults();
 			String comps[] = { "Label", "CheckBox", "List", "RadioButton", "Table", "TextField", "Button", "TextArea",
 					"Tree", "ToggleButton", "ComboBox", "Spinner", "TextPane", "Panel", "PopupMenu", "OptionPane",
@@ -53,7 +53,7 @@ public class Settings
 				uiDefaults.put(s + ".font", font.deriveFont(style));
 			}
 
-			if (ScreenSetup.SETUP.getFontSize() < 12)
+			if (ScreenSetup.INSTANCE.getFontSize() < 12)
 			{
 				uiDefaults.put("Button.margin", new InsetsUIResource(2, 8, 2, 8));
 			}
@@ -96,7 +96,7 @@ public class Settings
 
 	static
 	{
-		if (ScreenSetup.SETUP.getWizardSize().getWidth() <= 800)
+		if (ScreenSetup.INSTANCE.getWizardSize().getWidth() <= 800)
 		{
 			CHES_MAPPER_IMAGE = new ImageIcon(Settings.CHES_MAPPER_IMAGE.getImage().getScaledInstance(-1, 100,
 					Image.SCALE_SMOOTH));

@@ -32,7 +32,7 @@ public class ScreenSetup
 	public static final ScreenSetup SXGA_PLUS = new ScreenSetup(new EmptyBorder(0, 0, 0, 0), new Dimension(1400, 1050),
 			new Dimension(1024, 768), false, 15, false);
 
-	public static ScreenSetup SETUP = null;
+	public static ScreenSetup INSTANCE = null;
 
 	private ScreenSetup(Border wizardBorder, Dimension viewerFixedSize, Dimension wizardFixedSize, boolean antialiasOn,
 			int fontSize, boolean wizardUndecorated)
@@ -73,7 +73,7 @@ public class ScreenSetup
 		if (wizardSize == null)
 		{
 			Dimension d = new Dimension(1024, 768);
-			Dimension full = ScreenSetup.SETUP.getFullScreenSize();
+			Dimension full = ScreenSetup.INSTANCE.getFullScreenSize();
 			d.width = Math.min(full.width - 100, d.width);
 			d.height = Math.min(full.height - 100, d.height);
 			return d;

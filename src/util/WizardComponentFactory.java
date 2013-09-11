@@ -21,7 +21,7 @@ public class WizardComponentFactory
 	public static JScrollPane getVerticalScrollPane(final JComponent comp)
 	{
 		final JScrollPane scroll = new JScrollPane(comp);
-		if (!ScreenSetup.SETUP.isWizardSpaceSmall())
+		if (!ScreenSetup.INSTANCE.isWizardSpaceSmall())
 			scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		scroll.setBorder(new EmptyBorder(1, 1, 1, 0));
 		scroll.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener()

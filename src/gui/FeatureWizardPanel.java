@@ -174,7 +174,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 	private void createSelector()
 	{
 		selector = new Selector<CompoundPropertySet>(CompoundPropertySet.class, ROOT,
-				(ScreenSetup.SETUP.isWizardSpaceSmall() ? 6 : 12))
+				(ScreenSetup.INSTANCE.isWizardSpaceSmall() ? 6 : 12))
 		{
 			public Icon getIcon(CompoundPropertySet elem)
 			{

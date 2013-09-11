@@ -62,16 +62,16 @@ public class CheSMapperWizard extends WizardDialog
 
 		getRootPane().setDefaultButton(buttonFinish);
 
-		setSize(ScreenSetup.SETUP.getWizardSize());
+		setSize(ScreenSetup.INSTANCE.getWizardSize());
 		if (owner != null && owner.getRootPane().isShowing())
 			setLocationRelativeTo(owner);
 		else
-			ScreenSetup.SETUP.centerOnScreen(this);
+			ScreenSetup.INSTANCE.centerOnScreen(this);
 
 		try
 		{
-			if (ScreenSetup.SETUP.isWizardUndecorated())
-				setUndecorated(ScreenSetup.SETUP.isWizardUndecorated());
+			if (ScreenSetup.INSTANCE.isWizardUndecorated())
+				setUndecorated(ScreenSetup.INSTANCE.isWizardUndecorated());
 		}
 		catch (Exception e1)
 		{
@@ -82,7 +82,7 @@ public class CheSMapperWizard extends WizardDialog
 		{
 			public void componentMoved(ComponentEvent e)
 			{
-				ScreenSetup.SETUP.setScreen(ScreenUtil.getScreen(CheSMapperWizard.this));
+				ScreenSetup.INSTANCE.setScreen(ScreenUtil.getScreen(CheSMapperWizard.this));
 			}
 		});
 
@@ -95,7 +95,7 @@ public class CheSMapperWizard extends WizardDialog
 			}
 		}
 
-		((JComponent) getContentPane().getComponent(0)).setBorder(ScreenSetup.SETUP.getWizardBorder());
+		((JComponent) getContentPane().getComponent(0)).setBorder(ScreenSetup.INSTANCE.getWizardBorder());
 		setImportActive(true);
 
 		setVisible(true);

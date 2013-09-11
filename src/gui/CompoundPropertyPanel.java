@@ -415,7 +415,7 @@ public class CompoundPropertyPanel extends JPanel
 			if (p instanceof AbstractFreeChartPanel)
 			{
 				((AbstractFreeChartPanel) p).setIntegerTickUnits();
-				((AbstractFreeChartPanel) p).setFontSize(ScreenSetup.SETUP.getFontSize());
+				((AbstractFreeChartPanel) p).setFontSize(ScreenSetup.INSTANCE.getFontSize());
 				p.setOpaque(false);
 				p.setPreferredSize(new Dimension(300, 180));
 			}
