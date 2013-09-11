@@ -29,8 +29,10 @@ public class ScreenSetup
 			new Dimension(1024, 768), true, 12, false);
 	public static final ScreenSetup SMALL_SCREEN = new ScreenSetup(new EmptyBorder(0, 0, 0, 0),
 			new Dimension(824, 568), new Dimension(924, 668), false, 12, false);
+	public static final ScreenSetup SXGA_PLUS = new ScreenSetup(new EmptyBorder(0, 0, 0, 0), new Dimension(1400, 1050),
+			new Dimension(1024, 768), false, 15, false);
 
-	public static ScreenSetup SETUP = DEFAULT;
+	public static ScreenSetup SETUP = null;
 
 	private ScreenSetup(Border wizardBorder, Dimension viewerFixedSize, Dimension wizardFixedSize, boolean antialiasOn,
 			int fontSize, boolean wizardUndecorated)
@@ -116,5 +118,15 @@ public class ScreenSetup
 	public boolean isWizardSpaceSmall()
 	{
 		return getWizardSize().getHeight() <= 500 || fontSize > 12;
+	}
+
+	public boolean isFontSizeLarge()
+	{
+		return fontSize > 14;
+	}
+
+	public void setFontSize(int fontSize)
+	{
+		this.fontSize = fontSize;
 	}
 }

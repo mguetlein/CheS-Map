@@ -26,12 +26,17 @@ import dataInterface.FragmentPropertySet;
 
 public class OBFingerprintSet extends FragmentPropertySet
 {
-	public static final OBFingerprintSet[] FINGERPRINTS = new OBFingerprintSet[FingerprintType.values().length];
+	public static final OBFingerprintSet[] VISIBLE_FINGERPRINTS = new OBFingerprintSet[FingerprintType.visible_values().length];
+	public static final OBFingerprintSet[] HIDDEN_FINGERPRINTS = new OBFingerprintSet[FingerprintType.hidden_values().length];
+
 	static
 	{
 		int count = 0;
-		for (FingerprintType t : FingerprintType.values())
-			FINGERPRINTS[count++] = new OBFingerprintSet(t);
+		for (FingerprintType t : FingerprintType.visible_values())
+			VISIBLE_FINGERPRINTS[count++] = new OBFingerprintSet(t);
+		count = 0;
+		for (FingerprintType t : FingerprintType.hidden_values())
+			HIDDEN_FINGERPRINTS[count++] = new OBFingerprintSet(t);
 	}
 
 	FingerprintType type;
@@ -48,18 +53,18 @@ public class OBFingerprintSet extends FragmentPropertySet
 				name = Settings.text("features.struct.fp2");
 				description = Settings.text("features.struct.fp2.desc");
 				break;
-			//			case FP3:
-			//				name = Settings.text("features.struct.fp3");
-			//				description = Settings.text("features.struct.fp3.desc");
-			//				break;
-			//			case FP4:
-			//				name = Settings.text("features.struct.fp4");
-			//				description = Settings.text("features.struct.fp4.desc");
-			//				break;
-			//			case MACCS:
-			//				name = Settings.text("features.struct.maccs");
-			//				description = Settings.text("features.struct.maccs.desc");
-			//				break;
+			case FP3:
+				name = Settings.text("features.struct.fp3");
+				description = Settings.text("features.struct.fp3.desc");
+				break;
+			case FP4:
+				name = Settings.text("features.struct.fp4");
+				description = Settings.text("features.struct.fp4.desc");
+				break;
+			case MACCS:
+				name = Settings.text("features.struct.maccs");
+				description = Settings.text("features.struct.maccs.desc");
+				break;
 			default:
 				throw new Error("Unknown type");
 		}
@@ -232,15 +237,15 @@ public class OBFingerprintSet extends FragmentPropertySet
 				case FP2:
 					newF = parseFP2Fragment(line);
 					break;
-				//				case FP3:
-				//					newF = parseFP3Fragment(line);
-				//					break;
-				//				case FP4:
-				//					newF = parseFP4Fragment(line);
-				//					break;
-				//				case MACCS:
-				//					newF = parseMACCSFragment(line);
-				//					break;
+				case FP3:
+					newF = parseFP3Fragment(line);
+					break;
+				case FP4:
+					newF = parseFP4Fragment(line);
+					break;
+				case MACCS:
+					newF = parseMACCSFragment(line);
+					break;
 				default:
 					throw new Error("type not handled: " + type);
 			}

@@ -99,6 +99,8 @@ public class CompoundDataImpl implements CompoundData
 				return "null";
 			else if (property.isIntegerInMappedDataset())
 				return StringUtil.formatDouble(getDoubleValue(property), 0);
+			else if (property.hasSmallDoubleValuesInMappedDataset())
+				return StringUtil.formatDouble(getDoubleValue(property), 3);
 			else
 				return StringUtil.formatDouble(getDoubleValue(property));
 		else if (property.isSmartsProperty())

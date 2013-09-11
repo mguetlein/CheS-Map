@@ -67,4 +67,8 @@ public interface CompoundProperty
 
 	public void setHighlightColorGradient(ColorGradient grad);
 
+	public Boolean hasSmallDoubleValues(DatasetFile dataset);
+
+	public Boolean hasSmallDoubleValuesInMappedDataset();
+
 }

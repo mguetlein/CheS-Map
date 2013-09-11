@@ -182,7 +182,13 @@ public class ClusterDataImpl implements ClusterData
 			//			return "matches " + set.getCount("1") + "/" + set.sum();
 		}
 		else
-			return getSummaryValue(p).toString(html);
+		{
+			if (p.getType() == Type.NUMERIC && p.hasSmallDoubleValuesInMappedDataset())
+				return ((DoubleArraySummary) getSummaryValue(p)).toString(html, 3);
+			else
+				return getSummaryValue(p).toString(html);
+		}
+
 	}
 
 	@SuppressWarnings("unchecked")

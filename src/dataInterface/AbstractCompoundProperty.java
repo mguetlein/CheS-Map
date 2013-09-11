@@ -171,6 +171,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	private HashMap<DatasetFile, Integer> missing = new HashMap<DatasetFile, Integer>();
 	private HashMap<DatasetFile, Integer> distinct = new HashMap<DatasetFile, Integer>();
 	private HashMap<DatasetFile, Boolean> isInteger = new HashMap<DatasetFile, Boolean>();
+	private HashMap<DatasetFile, Boolean> hasSmallDoubleValues = new HashMap<DatasetFile, Boolean>();
 
 	public boolean isValuesSet(DatasetFile dataset)
 	{
@@ -217,6 +218,14 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 				break;
 			}
 		isInteger.put(dataset, integerValue);
+		Boolean smallDoubleValue = false;
+		for (Double d : vals)
+			if (d != null && d < 0.005 && d > -0.005)
+			{
+				smallDoubleValue = true;
+				break;
+			}
+		hasSmallDoubleValues.put(dataset, smallDoubleValue);
 	}
 
 	private void setDomainAndNumDistinct(DatasetFile dataset, String values[])
@@ -334,6 +343,21 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 			return isInteger.get(dataset);
 		else
 			return null;
+	}
+
+	@Override
+	public Boolean hasSmallDoubleValues(DatasetFile dataset)
+	{
+		if (hasSmallDoubleValues.containsKey(dataset))
+			return hasSmallDoubleValues.get(dataset);
+		else
+			return null;
+	}
+
+	@Override
+	public Boolean hasSmallDoubleValuesInMappedDataset()
+	{
+		return hasSmallDoubleValues(mappedDataset);
 	}
 
 	@Override

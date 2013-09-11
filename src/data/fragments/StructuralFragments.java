@@ -17,6 +17,7 @@ import util.ListUtil;
 import util.StringUtil;
 import data.CDKSmartsHandler;
 import data.cdkfingerprints.CDKFingerprintSet;
+import data.fminer.FminerPropertySet;
 import data.obfingerprints.OBFingerprintSet;
 import dataInterface.AbstractCompoundProperty;
 import dataInterface.FragmentPropertySet;
@@ -24,6 +25,7 @@ import dataInterface.FragmentPropertySet;
 public class StructuralFragments
 {
 	List<FragmentPropertySet> fragmentList = new ArrayList<FragmentPropertySet>();
+	List<FragmentPropertySet> extendedFragmentList = new ArrayList<FragmentPropertySet>();
 
 	private static final String[] included = new String[] { "patterns.csv", "SMARTS_InteLigand.csv", "MACCS.csv",
 			"DNA.csv", "Phospholipidosis.csv", "Protein.csv", "ToxTree_BB_CarcMutRules.csv",
@@ -54,13 +56,11 @@ public class StructuralFragments
 		fragmentList.clear();
 		AbstractCompoundProperty.clearPropertyOfType(StructuralFragment.class);
 
-		for (OBFingerprintSet fp : OBFingerprintSet.FINGERPRINTS)
+		for (OBFingerprintSet fp : OBFingerprintSet.VISIBLE_FINGERPRINTS)
 			fragmentList.add(fp);
 
 		for (CDKFingerprintSet fp : CDKFingerprintSet.FINGERPRINTS)
 			fragmentList.add(fp);
-
-		//		fragmentList.add(new FminerPropertySet());
 
 		String files[] = Settings.getFragmentFiles();
 		Arrays.sort(files);
@@ -156,6 +156,13 @@ public class StructuralFragments
 							JOptionPane.ERROR_MESSAGE);
 			}
 		}
+
+		extendedFragmentList.clear();
+		for (FragmentPropertySet f : fragmentList)
+			extendedFragmentList.add(f);
+		for (OBFingerprintSet fp : OBFingerprintSet.HIDDEN_FINGERPRINTS)
+			extendedFragmentList.add(fp);
+		extendedFragmentList.add(new FminerPropertySet());
 	}
 
 	public int getNumSets()
@@ -176,7 +183,7 @@ public class StructuralFragments
 
 	public FragmentPropertySet findFromString(String string)
 	{
-		for (FragmentPropertySet a : fragmentList)
+		for (FragmentPropertySet a : extendedFragmentList)
 		{
 			if (a.toString().equals(string))
 				return a;

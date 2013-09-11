@@ -221,15 +221,15 @@ public class MappingWorkflow
 			if (feats.contains(DescriptorCategory.obFP2))
 				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
 						FingerprintType.FP2) });
-			//			if (feats.contains(DescriptorCategory.obFP3))
-			//				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
-			//						FingerprintType.FP3) });
-			//			if (feats.contains(DescriptorCategory.obFP4))
-			//				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
-			//						FingerprintType.FP4) });
-			//			if (feats.contains(DescriptorCategory.obMACCS))
-			//				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
-			//						FingerprintType.MACCS) });
+			if (feats.contains(DescriptorCategory.obFP3))
+				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
+						FingerprintType.FP3) });
+			if (feats.contains(DescriptorCategory.obFP4))
+				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
+						FingerprintType.FP4) });
+			if (feats.contains(DescriptorCategory.obMACCS))
+				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
+						FingerprintType.MACCS) });
 			if (feats.contains(DescriptorCategory.fminer))
 				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
 						new FragmentPropertySet[] { new FminerPropertySet() });

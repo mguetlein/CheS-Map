@@ -699,7 +699,8 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		{
 			List<String> serializedProps = new ArrayList<String>();
 			for (CompoundProperty p : dataset.getIntegratedProperties())
-				if (ArrayUtil.indexOf(features.get(INTEGRATED_FEATURES), p) == -1 && p.getType() != null)
+				if ((!features.containsKey(INTEGRATED_FEATURES) || ArrayUtil.indexOf(features.get(INTEGRATED_FEATURES),
+						p) == -1) && p.getType() != null)
 					serializedProps.add(p + "#" + p.getType());
 			if (serializedProps.size() > 0)
 				props.put(propKeyIntegratedType, ArrayUtil.toCSVString(ListUtil.toArray(serializedProps), true));

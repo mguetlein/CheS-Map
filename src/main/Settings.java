@@ -34,11 +34,12 @@ public class Settings
 	{
 		try
 		{
-			Font font = new Font("Dialog", Font.PLAIN, ScreenSetup.SETUP.getFontSize());
+			Font font = new Font("Dialog", Font.PLAIN, (int) ScreenSetup.SETUP.getFontSize());
 			UIDefaults uiDefaults = UIManager.getDefaults();
 			String comps[] = { "Label", "CheckBox", "List", "RadioButton", "Table", "TextField", "Button", "TextArea",
 					"Tree", "ToggleButton", "ComboBox", "Spinner", "TextPane", "Panel", "PopupMenu", "OptionPane",
-					"ScrollPane", "MenuBar", "FormattedTextField" };
+					"ScrollPane", "MenuBar", "FormattedTextField", "MenuItem", "Menu", "CheckBoxMenuItem",
+					"RadioButtonMenuItem" };
 			for (String s : comps)
 			{
 				int style;
