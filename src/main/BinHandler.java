@@ -27,6 +27,33 @@ public class BinHandler
 {
 	public static Binary BABEL_BINARY = new Binary("babel", "CM_BABEL_PATH", Settings.OPENBABEL_STRING);
 	public static Binary RSCRIPT_BINARY = new Binary("Rscript", "CM_RSCRIPT_PATH", Settings.R_STRING);
+
+	public static class FminerBinary extends Binary
+	{
+		public FminerBinary()
+		{
+			super("fminer", "CM_FMINER_PATH", Settings.R_STRING);
+		}
+
+		public String getBBRCLib()
+		{
+			if (!isFound())
+				return null;
+			String bbrcLib = FileUtil.getParent(FileUtil.getParent(getLocation())) + "/libbbrc/libbbrc.so";
+			if (!new File(bbrcLib).exists())
+				bbrcLib = FileUtil.getParent(FileUtil.getParent(getLocation())) + "/libbbrc/bbrc.so";
+			if (!new File(bbrcLib).exists())
+			{
+				Settings.LOGGER.error("BBRC LIB not found, should be at " + bbrcLib + " , libbbrc.so not found either");
+				return null;
+			}
+			else
+				return bbrcLib;
+		}
+	}
+
+	public static FminerBinary FMINER_BINARY = new FminerBinary();
+
 	private static OBWrapper OB_WRAPPER;
 
 	private static String babelVersion = null;

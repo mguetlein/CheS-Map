@@ -1,6 +1,7 @@
 package data.fminer;
 
 import gui.binloc.Binary;
+import gui.binloc.BinaryLocator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,11 +45,16 @@ public class FminerPropertySet extends FragmentPropertySet
 	@Override
 	public boolean compute(DatasetFile dataset)
 	{
+		System.err.println("REMOVE FMINER LOCATE WHEN ADDED TO RELEASE AND TO OTHER BINARIES");
+		BinaryLocator.locate(BinHandler.FMINER_BINARY);
+		if (!BinHandler.FMINER_BINARY.isFound())
+			throw new Error("fminer not found at " + System.getenv().get(BinHandler.FMINER_BINARY.getEnvName()));
 		try
 		{
-			FminerWrapper fw = new FminerWrapper(Settings.LOGGER, "/home/martin/software/fminer2/fminer/fminer",
-					"/home/martin/software/fminer2/libbbrc/libbbrc.so", BinHandler.BABEL_BINARY.getLocation(),
-					dataset.getSmiles(), StructuralFragmentProperties.getMinFrequency());
+			FminerWrapper fw = new FminerWrapper(Settings.LOGGER, BinHandler.FMINER_BINARY.getLocation(),
+					BinHandler.FMINER_BINARY.getBBRCLib(), System.getenv().get("LD_LIBRARY_PATH"),
+					BinHandler.BABEL_BINARY.getLocation(), dataset.getSmiles(),
+					StructuralFragmentProperties.getMinFrequency());
 			List<FminerProperty> properties = new ArrayList<FminerProperty>();
 			for (int i = 0; i < fw.getSmarts().length; i++)
 			{
@@ -120,7 +126,7 @@ public class FminerPropertySet extends FragmentPropertySet
 	@Override
 	public Binary getBinary()
 	{
-		return null;
+		return BinHandler.FMINER_BINARY;
 	}
 
 	@Override
@@ -132,7 +138,6 @@ public class FminerPropertySet extends FragmentPropertySet
 	@Override
 	public String getNameIncludingParams()
 	{
-		// TODO
 		return "todo";
 	}
 

@@ -8,6 +8,7 @@ import java.util.Set;
 import main.BinHandler;
 import main.Settings;
 import util.ArrayUtil;
+import util.CollectionUtil;
 import util.ExternalToolUtil;
 import util.FileUtil;
 import dataInterface.CompoundProperty.Type;
@@ -30,7 +31,7 @@ public class OBDescriptorFactory
 			return null;
 	}
 
-	public static Set<String> getDescriptorIDs(boolean forceReload)
+	public synchronized static Set<String> getDescriptorIDs(boolean forceReload)
 	{
 		if (descriptors == null || forceReload)
 		{
@@ -52,6 +53,7 @@ public class OBDescriptorFactory
 					String descDescription = s2.substring(i).trim();
 					descriptors.put(desc, descDescription);
 				}
+				Settings.LOGGER.debug("babel descriptors: " + CollectionUtil.toString(descriptors.keySet()));
 			}
 			catch (Exception e)
 			{

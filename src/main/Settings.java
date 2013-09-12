@@ -194,6 +194,7 @@ public class Settings
 	public static String CDK_STRING = text("lib.cdk", CDK_VERSION);
 	public static String OPENBABEL_STRING = text("lib.openbabel");
 	public static String R_STRING = text("lib.r");
+	public static String FMINER_STRING = text("lib.fminer");
 	public static String WEKA_STRING = text("lib.weka", weka.core.Version.VERSION);
 
 	public static String VERSION_STRING = VERSION + ((BUILD_DATE != null) ? (", " + BUILD_DATE) : "");
