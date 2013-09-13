@@ -178,7 +178,7 @@ public class MappingWorkflow
 						if (exclude == null || ArrayUtil.indexOf(exclude, set[i].getName()) == -1)
 							feats.add(set[i]);
 			for (CompoundProperty c : set)
-				if (ArrayUtil.indexOf(nominal, c.getName()) != -1)
+				if (nominal != null && ArrayUtil.indexOf(nominal, c.getName()) != -1)
 					c.setType(Type.NOMINAL);
 			return ArrayUtil.toArray(CompoundProperty.class, feats);
 		}

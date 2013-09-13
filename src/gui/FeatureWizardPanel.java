@@ -629,7 +629,8 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		for (String string : selection)
 		{
 			CDKPropertySet d = CDKPropertySet.fromString(string);
-			features.add(d);
+			if (d != null)
+				features.add(d);
 		}
 
 		String obFeatures = (String) props.get(propKeyOB);

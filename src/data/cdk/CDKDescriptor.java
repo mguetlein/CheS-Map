@@ -51,7 +51,8 @@ public class CDKDescriptor
 				if (s.contains("descriptors.molecular"))
 					try
 					{
-						if (!s.toLowerCase().contains("alogp") && !s.toLowerCase().contains("aminoacidcount"))
+						if (!(Settings.CDK_SKIP_SOME_DESCRIPTORS && (s.toLowerCase().contains("alogp") || s
+								.toLowerCase().contains("aminoacidcount"))))
 							descriptorList.add((IMolecularDescriptor) Class.forName(s).newInstance());
 					}
 					catch (Exception e)
@@ -170,6 +171,7 @@ public class CDKDescriptor
 		for (CDKDescriptor desc : CDK_DESCRIPTORS)
 			if (desc.toString().equals(s))
 				return desc;
+		Settings.LOGGER.warn("illegal cdk-desc: " + s);
 		return null;
 	}
 

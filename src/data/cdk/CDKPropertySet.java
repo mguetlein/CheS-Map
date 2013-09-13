@@ -66,7 +66,10 @@ public class CDKPropertySet implements CompoundPropertySet
 
 	public static CDKPropertySet fromString(String s)
 	{
-		return new CDKPropertySet(CDKDescriptor.fromString(s));
+		CDKDescriptor desc = CDKDescriptor.fromString(s);
+		if (desc == null)
+			return null;
+		return new CDKPropertySet(desc);
 	}
 
 	public static CDKProperty fromFeatureName(String s)
