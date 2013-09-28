@@ -9,6 +9,7 @@ import main.TaskProvider;
 import org.openscience.cdk.interfaces.IMolecule;
 
 import util.FileUtil;
+import util.StringUtil;
 
 public class DatasetFile
 {
@@ -240,7 +241,7 @@ public class DatasetFile
 	public String getMD5()
 	{
 		if (md5 == null)
-			md5 = FileUtil.getMD5String(localPath);
+			md5 = StringUtil.getMD5(toString() + "." + FileUtil.getMD5String(localPath));
 		return md5;
 	}
 
