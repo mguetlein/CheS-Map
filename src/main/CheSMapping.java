@@ -284,7 +284,7 @@ public class CheSMapping
 			}
 			if (usedEmbedder.getCCCProperty() != null)
 			{
-				for (int i = 0; i < clustering.getNumCompounds(true); i++)
+				for (int i = 0; i < clustering.getNumCompounds(false); i++)
 					((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(usedEmbedder.getCCCProperty(),
 							usedEmbedder.getCCCProperty().getDoubleValues(dataset)[i]);
 				usedEmbedder.getCCCProperty().setMappedDataset(dataset);
