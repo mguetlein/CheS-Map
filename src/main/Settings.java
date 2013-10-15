@@ -90,6 +90,7 @@ public class Settings
 	public static Random RANDOM = new Random();
 	public static Boolean DBG = false;
 	public static Boolean CACHING_ENABLED = true;
+	public static Boolean DESC_MIXTURE_HANDLING = false;
 	public static ImageIcon CHES_MAPPER_IMAGE = ImageLoader.CHES_MAPPER;
 	public static ImageIcon CHES_MAPPER_ICON = ImageLoader.CHES_MAPPER_ICON;
 	public static ImageIcon OPENTOX_IMAGE = ImageLoader.OPENTOX;

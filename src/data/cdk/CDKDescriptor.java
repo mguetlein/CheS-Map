@@ -5,15 +5,12 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 
 import main.Settings;
 
-import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IMolecule;
-import org.openscience.cdk.interfaces.IMoleculeSet;
 import org.openscience.cdk.qsar.DescriptorEngine;
 import org.openscience.cdk.qsar.IDescriptor;
 import org.openscience.cdk.qsar.IMolecularDescriptor;
@@ -28,7 +25,6 @@ import org.openscience.cdk.qsar.result.IntegerArrayResult;
 import org.openscience.cdk.qsar.result.IntegerArrayResultType;
 import org.openscience.cdk.qsar.result.IntegerResult;
 import org.openscience.cdk.qsar.result.IntegerResultType;
-import org.openscience.cdk.smiles.SmilesGenerator;
 
 import util.ArrayUtil;
 
@@ -198,7 +194,7 @@ public class CDKDescriptor
 		return m;
 	}
 
-	public static Double[] computeDescriptor(IMolecularDescriptor descriptor, IAtomContainer mol)
+	private static Double[] computeDescriptor(IMolecularDescriptor descriptor, IAtomContainer mol)
 	{
 		IDescriptorResult res = descriptor.calculate(mol).getValue();
 		if (res instanceof IntegerResult)
@@ -224,70 +220,14 @@ public class CDKDescriptor
 					+ res.getClass());
 	}
 
-	private static HashMap<IMolecule, IMoleculeSet> stripped = new HashMap<IMolecule, IMoleculeSet>();
-	private static SmilesGenerator sg = new SmilesGenerator();
-
-	public static IMoleculeSet strip(IMolecule mol)
-	{
-		if (!stripped.containsKey(mol))
-		{
-			IMoleculeSet set = ConnectivityChecker.partitionIntoMolecules(mol);
-			boolean doCheck = false;
-			if (set.getAtomContainerCount() > 1)
-			{
-				System.err.println("\nset of size " + set.getAtomContainerCount() + " : " + sg.createSMILES(mol));
-				doCheck = true;
-			}
-			while (set.getAtomContainerCount() > 1)
-			{
-				int minNumAtoms = Integer.MAX_VALUE;
-				int maxNumAtoms = Integer.MIN_VALUE;
-				int minNumAtomsIndex = -1;
-				for (int i = 0; i < set.getAtomContainerCount(); i++)
-				{
-					int numAtoms = set.getAtomContainer(i).getAtomCount();
-					if (numAtoms > maxNumAtoms)
-						maxNumAtoms = numAtoms;
-					if (numAtoms < minNumAtoms)
-					{
-						minNumAtoms = numAtoms;
-						minNumAtomsIndex = i;
-					}
-				}
-				if (minNumAtoms <= 2 && maxNumAtoms >= 5)
-				{
-					System.err.println("removing " + sg.createSMILES(set.getAtomContainer(minNumAtomsIndex)));
-					set.removeAtomContainer(minNumAtomsIndex);
-				}
-				else
-					break;
-			}
-			if (doCheck)
-			{
-				System.err.print("remaining : ");
-				for (int i = 0; i < set.getAtomContainerCount(); i++)
-					System.err.print((i > 0 ? "." : "") + sg.createSMILES(set.getAtomContainer(i)));
-				System.err.println();
-			}
-			stripped.put(mol, set);
-		}
-		return stripped.get(mol);
-	}
-
 	public Double[] computeDescriptor(IMolecule mol)
 	{
 		return computeDescriptor(m, mol);
 	}
 
-	public static Double[] computeDescriptor(IMolecularDescriptor desc, IMolecule mol)
+	public Double[] computeDescriptor(IAtomContainer mol)
 	{
-		return computeDescriptor(desc, (IAtomContainer) mol);
-
-		//		IMoleculeSet set = strip(mol);
-		//		List<Double[]> results = new ArrayList<Double[]>();
-		//		for (int i = 0; i < set.getAtomContainerCount(); i++)
-		//			results.add(computeDescriptor(desc, set.getAtomContainer(i)));
-		//		return ArrayUtil.computeMean(results);
+		return computeDescriptor(m, mol);
 	}
 
 	public boolean isNumeric()

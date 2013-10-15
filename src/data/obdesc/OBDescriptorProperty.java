@@ -16,6 +16,7 @@ import util.ListUtil;
 import util.ValueFileCache;
 import data.DatasetFile;
 import data.FeatureService;
+import data.desc.DescriptorForMixturesHandler;
 import dataInterface.AbstractCompoundProperty;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundPropertySet;
@@ -135,7 +136,10 @@ public class OBDescriptorProperty extends AbstractCompoundProperty implements Co
 		}
 		if (vals == null)
 		{
-			vals = OBDescriptorFactory.compute(dataset.getSDFPath(false), descriptorID);
+			if (Settings.DESC_MIXTURE_HANDLING)
+				vals = DescriptorForMixturesHandler.computeOBDescriptor(dataset, descriptorID);
+			else
+				vals = OBDescriptorFactory.compute(dataset.getSDFPath(false), descriptorID);
 			Settings.LOGGER.info("writing ob descriptors to: " + cache);
 			ValueFileCache.writeCacheString(cache, vals);
 		}

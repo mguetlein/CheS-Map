@@ -17,6 +17,7 @@ import util.FileUtil.UnexpectedNumColsException;
 import util.StringUtil;
 import util.ValueFileCache;
 import data.DatasetFile;
+import data.desc.DescriptorForMixturesHandler;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
@@ -177,7 +178,11 @@ public class CDKPropertySet implements CompoundPropertySet
 				{
 					try
 					{
-						Double d[] = desc.computeDescriptor(mols[i]);
+						Double d[];
+						if (Settings.DESC_MIXTURE_HANDLING)
+							d = DescriptorForMixturesHandler.computeCDKDescriptor(desc, mols[i]);
+						else
+							d = desc.computeDescriptor(mols[i]);
 						if (getSize() != d.length)
 							throw new IllegalStateException("num feature values wrong for '" + this + "' : "
 									+ getSize() + " != " + d.length);
