@@ -132,6 +132,7 @@ public class MappingWorkflow
 	public static class DescriptorSelection
 	{
 		List<DescriptorCategory> feats;
+		String includeIntegrated[];
 		String excludeIntegrated[];
 		String nominalIntegrated[];
 		int fpMinFreq = -1;
@@ -139,10 +140,11 @@ public class MappingWorkflow
 
 		public DescriptorSelection(String featString)
 		{
-			this(featString, null, null);
+			this(featString, null, null, null);
 		}
 
-		public DescriptorSelection(String featString, String excludeIntegrated, String nominalIntegrated)
+		public DescriptorSelection(String featString, String includeIntegrated, String excludeIntegrated,
+				String nominalIntegrated)
 		{
 			feats = new ArrayList<DescriptorCategory>();
 			for (String featStr : featString.split(","))
@@ -150,6 +152,8 @@ public class MappingWorkflow
 			if (feats.contains(null) || feats.size() == 0)
 				throw new IllegalArgumentException(featString);
 
+			if (includeIntegrated != null)
+				this.includeIntegrated = includeIntegrated.split(",");
 			if (excludeIntegrated != null)
 				this.excludeIntegrated = excludeIntegrated.split(",");
 			if (nominalIntegrated != null)
@@ -167,16 +171,17 @@ public class MappingWorkflow
 			this.fpSkipOmnipresent = skipOmnipresent;
 		}
 
-		private CompoundProperty[] filterNotSuited(CompoundProperty[] set, boolean onlyNumeric, String[] exclude,
-				String[] nominal)
+		private CompoundProperty[] filterNotSuited(CompoundProperty[] set, boolean onlyNumeric, String[] include,
+				String[] exclude, String[] nominal)
 		{
 			List<CompoundProperty> feats = new ArrayList<CompoundProperty>();
 			for (int i = 0; i < set.length; i++)
 				if (!set[i].isSmiles())
 					if ((onlyNumeric && set[i].getType() == Type.NUMERIC)
 							|| (!onlyNumeric && (set[i].isTypeAllowed(Type.NUMERIC) || set[i].getType() == Type.NOMINAL)))
-						if (exclude == null || ArrayUtil.indexOf(exclude, set[i].getName()) == -1)
-							feats.add(set[i]);
+						if (include == null || ArrayUtil.indexOf(include, set[i].getName()) != -1)
+							if (exclude == null || ArrayUtil.indexOf(exclude, set[i].getName()) == -1)
+								feats.add(set[i]);
 			for (CompoundProperty c : set)
 				if (nominal != null && ArrayUtil.indexOf(nominal, c.getName()) != -1)
 					c.setType(Type.NOMINAL);
@@ -188,10 +193,10 @@ public class MappingWorkflow
 			HashMap<String, CompoundPropertySet[]> features = new HashMap<String, CompoundPropertySet[]>();
 
 			if (feats.contains(DescriptorCategory.integrated))
-				features.put(FeatureWizardPanel.INTEGRATED_FEATURES, ArrayUtil
-						.cast(IntegratedProperty.class,
-								filterNotSuited(dataset.getIntegratedProperties(), false, excludeIntegrated,
-										nominalIntegrated)));
+				features.put(FeatureWizardPanel.INTEGRATED_FEATURES, ArrayUtil.cast(
+						IntegratedProperty.class,
+						filterNotSuited(dataset.getIntegratedProperties(), false, includeIntegrated, excludeIntegrated,
+								nominalIntegrated)));
 
 			if (feats.contains(DescriptorCategory.cdk))
 			{
@@ -240,7 +245,7 @@ public class MappingWorkflow
 				features.put(
 						FeatureWizardPanel.OB_FEATURES,
 						ArrayUtil.cast(OBDescriptorProperty.class,
-								filterNotSuited(OBDescriptorProperty.getDescriptors(true), true, null, null)));
+								filterNotSuited(OBDescriptorProperty.getDescriptors(true), true, null, null, null)));
 			return features;
 		}
 	}

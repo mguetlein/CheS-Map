@@ -37,8 +37,8 @@ public class DescriptorForMixturesHandler
 				String msg = "computing descriptor for mixture from ";
 				for (int i = 0; i < set.getAtomContainerCount(); i++)
 					msg += sg.createSMILES(set.getAtomContainer(i)) + " ";
-				msg += ", instead of from " + sg.createSMILES(mol);
-				System.err.println(msg);
+				msg += "orig compound was " + sg.createSMILES(mol);
+				Settings.LOGGER.debug(msg);
 			}
 			for (int i = 0; i < set.getAtomContainerCount(); i++)
 				results.add(desc.computeDescriptor(set.getAtomContainer(i)));
@@ -65,7 +65,8 @@ public class DescriptorForMixturesHandler
 			{
 				mixture.put(mol, true);
 				if (DEBUG)
-					System.err.println("Mixture found: " + set.getAtomContainerCount() + " : " + sg.createSMILES(mol));
+					Settings.LOGGER.debug("Mixture found: " + set.getAtomContainerCount() + " : "
+							+ sg.createSMILES(mol));
 			}
 			else
 				mixture.put(mol, false);
@@ -88,7 +89,7 @@ public class DescriptorForMixturesHandler
 				if (minNumAtoms <= 5 && maxNumAtoms >= 6)
 				{
 					if (DEBUG)
-						System.err.println("removing ion/salt/acid "
+						Settings.LOGGER.debug("removing ion/salt/acid "
 								+ sg.createSMILES(set.getAtomContainer(minNumAtomsIndex)));
 					set.removeAtomContainer(minNumAtomsIndex);
 				}
@@ -97,10 +98,10 @@ public class DescriptorForMixturesHandler
 			}
 			if (DEBUG && mixture.get(mol))
 			{
-				System.err.print("remaining : ");
+				String s = "remaining : ";
 				for (int i = 0; i < set.getAtomContainerCount(); i++)
-					System.err.print((i > 0 ? "." : "") + sg.createSMILES(set.getAtomContainer(i)));
-				System.err.println();
+					s += (i > 0 ? "." : "") + sg.createSMILES(set.getAtomContainer(i));
+				Settings.LOGGER.debug(s);
 			}
 			split.put(mol, set);
 		}
@@ -124,9 +125,9 @@ public class DescriptorForMixturesHandler
 				Double cVals[] = new Double[splitIndices.get(i).length];
 				for (int j = 0; j < cVals.length; j++)
 					cVals[j] = dVals[splitIndices.get(i)[j]];
-				if (DEBUG)
-					System.err.println("computing descriptor for mixture from "
-							+ ArrayUtil.toString(splitIndices.get(i)) + ", instead of from " + i + " : "
+				if (DEBUG && isMixture(dataset.getCompounds()[i]))
+					Settings.LOGGER.debug("computing descriptor for mixture from "
+							+ ArrayUtil.toString(splitIndices.get(i)) + "orig compound was " + i + " : "
 							+ sg.createSMILES(dataset.getCompounds()[i]));
 				dRes[i] = ArrayUtil.getMean(ArrayUtil.toPrimitiveDoubleArray(ArrayUtil.removeNullValues(cVals)));
 			}
@@ -163,11 +164,11 @@ public class DescriptorForMixturesHandler
 					map.get(i)[j] = splitMols.size();
 					splitMols.add(set.getAtomContainer(j));
 				}
-				if (DEBUG)
-					System.err.println("single compound " + i + " split to " + ArrayUtil.toString(map.get(i)));
+				if (DEBUG && set.getAtomContainerCount() > 1)
+					Settings.LOGGER.debug("single compound " + i + " split to " + ArrayUtil.toString(map.get(i)));
 			}
 			if (DEBUG)
-				System.err.println("single mixtures (" + splitMols.size() + " singles from "
+				Settings.LOGGER.debug("single mixtures (" + splitMols.size() + " singles from "
 						+ dataset.getCompounds().length + " mols) stored in " + sdfDest);
 			try
 			{

@@ -54,6 +54,13 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 		return threeD.exists();
 	}
 
+	boolean autoCorrect = true;
+
+	public void disableAutocorrect()
+	{
+		autoCorrect = false;
+	}
+
 	@Override
 	public void build3D(final DatasetFile dataset)
 	{
@@ -111,7 +118,8 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 				build3D(dataset, tmpFile.getAbsolutePath());
 				running = false;
 
-				check3DSDFile(tmpFile.getAbsolutePath(), dataset.getSDFPath(false), tmpFile.getAbsolutePath());
+				if (autoCorrect)
+					check3DSDFile(tmpFile.getAbsolutePath(), dataset.getSDFPath(false), tmpFile.getAbsolutePath());
 
 				if (!TaskProvider.isRunning())
 					return;
@@ -134,58 +142,64 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 		}
 	}
 
+	static SDChecker sdCheck = new SDChecker()
+	{
+		@Override
+		public boolean invalid(String compoundString)
+		{
+			try
+			{
+				int numAtoms = -1;
+				for (String line : compoundString.split("\n"))
+					if (line.contains("V2000"))
+					{
+						numAtoms = Integer.parseInt(line.substring(0, 3).trim());
+						break;
+					}
+				if (numAtoms == -1)
+					throw new Exception("could not parse num atoms");
+				MDLV2000Reader reader = new MDLV2000Reader(new InputStreamReader(new ByteArrayInputStream(
+						compoundString.getBytes())));
+				IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
+				List<IAtomContainer> list = ChemFileManipulator.getAllAtomContainers(content);
+				if (list.size() != 1)
+					throw new Exception("Cannot parse compound");
+				if (list.get(0).getAtomCount() != numAtoms)
+					throw new Exception("Num atoms " + list.get(0).getAtomCount() + " != " + numAtoms);
+				for (int i = 0; i < list.get(0).getBondCount(); i++)
+				{
+					if (list.get(0).getBond(i).getAtomCount() != 2)
+						throw new Exception("Num atoms for bond is " + list.get(0).getBond(i).getAtomCount());
+					IAtom a = list.get(0).getBond(i).getAtom(0);
+					IAtom b = list.get(0).getBond(i).getAtom(1);
+					Point3d pa = a.getPoint3d();
+					if (pa == null)
+						pa = new Point3d(a.getPoint2d().x, a.getPoint2d().y, 0.0);
+					Point3d pb = b.getPoint3d();
+					if (pb == null)
+						pb = new Point3d(b.getPoint2d().x, b.getPoint2d().y, 0.0);
+					double d = pa.distance(pb);
+					if (d < 0.9 || d > 2.5)
+						throw new Exception("Distance between atoms is " + d);
+				}
+				return false;
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+				return true;
+			}
+		}
+	};
+
 	public static void check3DSDFile(String sdf3Dcorrupt, String sdf2Dcorrect, String sdfResult)
 	{
-		SDChecker sdCheck = new SDChecker()
-		{
-			@Override
-			public boolean invalid(String compoundString)
-			{
-				try
-				{
-					int numAtoms = -1;
-					for (String line : compoundString.split("\n"))
-						if (line.contains("V2000"))
-						{
-							numAtoms = Integer.parseInt(line.substring(0, 3).trim());
-							break;
-						}
-					if (numAtoms == -1)
-						throw new Exception("could not parse num atoms");
-					MDLV2000Reader reader = new MDLV2000Reader(new InputStreamReader(new ByteArrayInputStream(
-							compoundString.getBytes())));
-					IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
-					List<IAtomContainer> list = ChemFileManipulator.getAllAtomContainers(content);
-					if (list.size() != 1)
-						throw new Exception("Cannot parse compound");
-					if (list.get(0).getAtomCount() != numAtoms)
-						throw new Exception("Num atoms " + list.get(0).getAtomCount() + " != " + numAtoms);
-					for (int i = 0; i < list.get(0).getBondCount(); i++)
-					{
-						if (list.get(0).getBond(i).getAtomCount() != 2)
-							throw new Exception("Num atoms for bond is " + list.get(0).getBond(i).getAtomCount());
-						IAtom a = list.get(0).getBond(i).getAtom(0);
-						IAtom b = list.get(0).getBond(i).getAtom(1);
-						Point3d pa = a.getPoint3d();
-						if (pa == null)
-							pa = new Point3d(a.getPoint2d().x, a.getPoint2d().y, 0.0);
-						Point3d pb = b.getPoint3d();
-						if (pb == null)
-							pb = new Point3d(b.getPoint2d().x, b.getPoint2d().y, 0.0);
-						double d = pa.distance(pb);
-						if (d < 0.9 || d > 2.5)
-							throw new Exception("Distance between atoms is " + d);
-					}
-					return false;
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
-					return true;
-				}
-			}
-		};
 		SDFUtil.checkSDFile(sdf3Dcorrupt, sdf2Dcorrect, sdfResult, sdCheck);
+	}
+
+	public static void check3DSDFileExternal(String sdf3Dcorrupt, String smiFile, String sdfResult)
+	{
+		SDFUtil.checkSDFileExternal(sdf3Dcorrupt, smiFile, sdfResult, sdCheck);
 	}
 
 	@Override

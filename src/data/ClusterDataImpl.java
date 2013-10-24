@@ -20,6 +20,7 @@ public class ClusterDataImpl implements ClusterData
 {
 	private String name;
 	private String alignAlgorithm;
+	private int origIndex;
 	private String filename;
 	private String alignedFilename;
 	private List<CompoundData> compounds = new ArrayList<CompoundData>();
@@ -37,6 +38,16 @@ public class ClusterDataImpl implements ClusterData
 	public void setName(String name)
 	{
 		this.name = name;
+	}
+
+	public void setOrigIndex(int origIndex)
+	{
+		this.origIndex = origIndex;
+	}
+
+	public int getOrigIndex()
+	{
+		return origIndex;
 	}
 
 	public String getFilename()

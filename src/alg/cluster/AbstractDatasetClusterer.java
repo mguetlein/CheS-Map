@@ -247,6 +247,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 			}
 			else
 				Settings.LOGGER.info("cluster already stored: " + clusterFile);
+			((ClusterDataImpl) c).setOrigIndex(count);
 			((ClusterDataImpl) c).setName(clusterName(count++, c == unclusteredCompounds));
 			((ClusterDataImpl) c).setFilename(clusterFile);
 		}

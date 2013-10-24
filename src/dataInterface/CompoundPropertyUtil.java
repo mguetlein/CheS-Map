@@ -79,6 +79,7 @@ public class CompoundPropertyUtil
 	public static Color getLowValueColor()
 	{
 		return new Color(100, 100, 255);
+		//return FreeChartUtil.BRIGHT_BLUE;
 	}
 
 	public static Color getNumericChartColor()
@@ -118,14 +119,11 @@ public class CompoundPropertyUtil
 				col = new Color[] { getLowValueColor(), getHighValueColor() };
 			else
 			{
-				if (p.getNominalDomain().length > AVAILABLE_COLORS.length)
-				{
-					Color gray[] = new Color[p.getNominalDomain().length - AVAILABLE_COLORS.length];
-					Arrays.fill(gray, Color.GRAY);
-					col = ArrayUtil.concat(AVAILABLE_COLORS, gray);
-				}
-				else
-					col = Arrays.copyOfRange(AVAILABLE_COLORS, 0, p.getNominalDomain().length);
+				col = AVAILABLE_COLORS;
+				while (p.getNominalDomain().length > col.length)
+					col = ArrayUtil.concat(col, AVAILABLE_COLORS);
+				if (p.getNominalDomain().length < col.length)
+					col = Arrays.copyOfRange(col, 0, p.getNominalDomain().length);
 			}
 			mapping.put(p, col);
 		}

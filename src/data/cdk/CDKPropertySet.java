@@ -122,8 +122,10 @@ public class CDKPropertySet implements CompoundPropertySet
 
 	private String cacheFile(DatasetFile dataset)
 	{
-		return Settings.destinationFile(dataset,
-				dataset.getShortName() + "." + dataset.getMD5() + "." + StringUtil.encodeFilename(desc.toString()));
+		String s = dataset.getShortName() + "." + dataset.getMD5() + "." + StringUtil.encodeFilename(desc.toString());
+		if (Settings.DESC_MIXTURE_HANDLING)
+			s += ".mixt";
+		return Settings.destinationFile(dataset, s);
 	}
 
 	@Override

@@ -11,6 +11,8 @@ public interface ClusterData extends CompoundPropertyOwner
 
 	public String getFilename();
 
+	public int getOrigIndex();
+
 	public int getSize();
 
 	public List<CompoundData> getCompounds();

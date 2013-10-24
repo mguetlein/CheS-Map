@@ -48,6 +48,7 @@ public class NoClusterer extends AbstractAlgorithm implements DatasetClusterer
 		ClusterDataImpl c = new ClusterDataImpl();
 		c.setFilename(dataset.getSDFPath(true));
 		c.setName("Single cluster");
+		c.setOrigIndex(0);
 		//		c.setPosition(new Vector3f(0f, 0f, 0f));
 		for (CompoundData compound : compounds)
 			c.addCompound(compound);

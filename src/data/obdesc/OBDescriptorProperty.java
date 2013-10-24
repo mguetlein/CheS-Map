@@ -114,7 +114,10 @@ public class OBDescriptorProperty extends AbstractCompoundProperty implements Co
 
 	private String cacheFile(DatasetFile dataset)
 	{
-		return Settings.destinationFile(dataset, dataset.getShortName() + "." + dataset.getMD5() + "." + descriptorID);
+		String s = dataset.getShortName() + "." + dataset.getMD5() + "." + descriptorID;
+		if (Settings.DESC_MIXTURE_HANDLING)
+			s += ".mixt";
+		return Settings.destinationFile(dataset, s);
 	}
 
 	@Override
