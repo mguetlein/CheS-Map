@@ -30,4 +30,6 @@ public interface CompoundPropertySet
 	public String getNameIncludingParams();
 
 	public boolean isComputationSlow();
+
+	public boolean isSensitiveTo3D();
 }

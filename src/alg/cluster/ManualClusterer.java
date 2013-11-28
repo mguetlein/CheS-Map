@@ -22,7 +22,6 @@ import dataInterface.CompoundProperty.Type;
 public class ManualClusterer extends AbstractDatasetClusterer
 {
 	public static final ManualClusterer INSTANCE = new ManualClusterer();
-	private boolean isDisjoint;
 
 	SelectProperty clusterFeature = new SelectProperty("Cluster feature", null, null);
 	BooleanProperty ignoreSingletons = new BooleanProperty("Ignore singelton clusters", false);
@@ -115,7 +114,7 @@ public class ManualClusterer extends AbstractDatasetClusterer
 		}
 		catch (NumberFormatException e)
 		{
-			String domain[] = clusterProp.getNominalDomain();
+			String domain[] = clusterProp.getNominalDomain(dataset);
 
 			for (int compoundIndex = 0; compoundIndex < compounds.size(); compoundIndex++)
 			{
@@ -178,20 +177,7 @@ public class ManualClusterer extends AbstractDatasetClusterer
 		//				}
 		//			}
 		//		}
-		isDisjoint = true;
-		for (Integer[] clusters : clusterAssignment)
-			if (clusters.length > 1)
-			{
-				isDisjoint = false;
-				break;
-			}
 		return clusterAssignment;
-	}
-
-	@Override
-	public boolean isDisjointClusterer()
-	{
-		return isDisjoint;
 	}
 
 	@Override

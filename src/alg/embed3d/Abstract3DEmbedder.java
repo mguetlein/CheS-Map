@@ -3,7 +3,6 @@ package alg.embed3d;
 import gui.FeatureWizardPanel.FeatureInfo;
 import gui.Message;
 import gui.Messages;
-import gui.property.PropertyUtil;
 
 import java.io.File;
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.List;
 import javax.vecmath.Vector3f;
 
 import main.Settings;
+import main.TaskProvider;
 import util.ArrayUtil;
 import util.DoubleUtil;
 import util.FileUtil;
@@ -20,7 +20,6 @@ import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundPropertyUtil;
 
 public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedder
 {
@@ -88,16 +87,10 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	public void embedDataset(DatasetFile dataset, List<CompoundData> instances, List<CompoundProperty> features)
 			throws Exception
 	{
-		String basename = dataset.getShortName()
-				+ "."
-				+ getShortName()
-				+ "."
-				+ CompoundPropertyUtil.getSetMD5(features,
-						dataset.getMD5() + " " + PropertyUtil.getPropertyMD5(getProperties()));
-		String embedFilename = Settings.destinationFile(dataset, basename + ".embed");
-		String rSquareFilename = Settings.destinationFile(dataset, basename + ".rSquare");
-		String cccFilename = Settings.destinationFile(dataset, basename + ".ccc");
-		String cccPropFilename = Settings.destinationFile(dataset, basename + ".cccProp");
+		String embedFilename = dataset.getEmbeddingResultsFilePath("pos");
+		String rSquareFilename = dataset.getEmbeddingResultsFilePath("rSquare");
+		String cccFilename = dataset.getEmbeddingResultsFilePath("ccc");
+		String cccPropFilename = dataset.getEmbeddingResultsFilePath("cccProp");
 		double cccPropValues[];
 
 		if (Settings.CACHING_ENABLED && new File(embedFilename).exists() && new File(rSquareFilename).exists()
@@ -115,22 +108,26 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		else
 		{
 			positions = embed(dataset, instances, features);
-			Settings.LOGGER.info("store embedding results to: " + embedFilename);
+
+			TaskProvider.verbose("Store embedding results to: " + embedFilename);
 			ValueFileCache.writeCachePosition2(embedFilename, positions);
 
+			//			Settings.LOGGER.info("compute rSquare");
+			TaskProvider.verbose("Compute rSquare");
 			double d[][] = getFeatureDistanceMatrix();
 			if (d != null)
 				rSquare = EmbedUtil.computeRSquare(positions, d);
 			else
 				rSquare = EmbedUtil.computeRSquare(positions, instances, features, dataset);
-			Settings.LOGGER.info("store embedding rSquare to: " + rSquareFilename);
+			TaskProvider.verbose("Store embedding rSquare to: " + rSquareFilename);
 			FileUtil.writeStringToFile(rSquareFilename, rSquare + "");
 
+			TaskProvider.verbose("Compute ccc");
 			if (d != null)
 				ccc = EmbedUtil.computeCCC(positions, d);
 			else
 				ccc = EmbedUtil.computeCCC(positions, instances, features, dataset);
-			Settings.LOGGER.info("store embedding ccc to: " + cccFilename);
+			TaskProvider.verbose("Store embedding ccc to: " + cccFilename);
 			FileUtil.writeStringToFile(cccFilename, ccc + "");
 
 			if (d != null)
@@ -139,7 +136,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 				cccPropValues = EmbedUtil.computeCCCs(positions, instances, features, dataset);
 			ValueFileCache.writeCacheDouble2(cccPropFilename, ArrayUtil.toList(cccPropValues));
 		}
-		cccProp = CCCPropertySet.create(dataset, cccPropValues, basename);
+		cccProp = CCCPropertySet.create(dataset, cccPropValues, embedFilename);
 
 		if (positions.size() != instances.size())
 			throw new IllegalStateException("illegal num positions " + positions.size() + " " + instances.size());

@@ -13,6 +13,7 @@ import dataInterface.SubstructureSmartsType;
 public class NoAligner extends AbstractAlgorithm implements ThreeDAligner
 {
 	public static final NoAligner INSTANCE = new NoAligner();
+	private String file;
 
 	private NoAligner()
 	{
@@ -38,14 +39,15 @@ public class NoAligner extends AbstractAlgorithm implements ThreeDAligner
 	@Override
 	public void algin(DatasetFile dataset, List<ClusterData> clusters, List<CompoundProperty> features)
 	{
+		file = dataset.getSDFClustered();
 		for (ClusterData c : clusters)
-			((ClusterDataImpl) c).setAlignAlgorithm(getName());
+			((ClusterDataImpl) c).setAlignAlgorithm(getName(), false);
 	}
 
 	@Override
-	public String getAlginedClusterFile(int clusterIndex)
+	public String getAlignedSDFile()
 	{
-		return null;
+		return file;
 	}
 
 	@Override

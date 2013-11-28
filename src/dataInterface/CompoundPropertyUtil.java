@@ -55,8 +55,6 @@ public class CompoundPropertyUtil
 		return v;
 	}
 
-	private static HashMap<CompoundProperty, Color[]> mapping = new HashMap<CompoundProperty, Color[]>();
-
 	private static Color[] AVAILABLE_COLORS = FreeChartUtil.BRIGHT_COLORS;
 
 	static
@@ -107,12 +105,15 @@ public class CompoundPropertyUtil
 		return getLowValueColor();
 	}
 
+	private static HashMap<String, Color[]> mapping = new HashMap<String, Color[]>();
+
 	public static Color[] getNominalColors(CompoundProperty p)
 	{
 		if (p.getType() != Type.NOMINAL)
 			throw new IllegalArgumentException();
 
-		if (!mapping.containsKey(p))
+		String key = p.toString() + "#" + p.getNominalDomainInMappedDataset().hashCode();
+		if (!mapping.containsKey(key))
 		{
 			Color col[];
 			if (p.isSmartsProperty())
@@ -120,21 +121,22 @@ public class CompoundPropertyUtil
 			else
 			{
 				col = AVAILABLE_COLORS;
-				while (p.getNominalDomain().length > col.length)
+				while (p.getNominalDomainInMappedDataset().length > col.length)
 					col = ArrayUtil.concat(col, AVAILABLE_COLORS);
-				if (p.getNominalDomain().length < col.length)
-					col = Arrays.copyOfRange(col, 0, p.getNominalDomain().length);
+				if (p.getNominalDomainInMappedDataset().length < col.length)
+					col = Arrays.copyOfRange(col, 0, p.getNominalDomainInMappedDataset().length);
 			}
-			mapping.put(p, col);
+			mapping.put(key, col);
 		}
-		return mapping.get(p);
+		return mapping.get(key);
 	}
 
 	public static Color getNominalColor(CompoundProperty p, String val)
 	{
-		int index = ArrayUtil.indexOf(p.getNominalDomain(), val);
+		int index = ArrayUtil.indexOf(p.getNominalDomainInMappedDataset(), val);
 		if (index == -1)
-			throw new IllegalStateException(val + " not found in " + ArrayUtil.toString(p.getNominalDomain()));
+			throw new IllegalStateException(val + " not found in "
+					+ ArrayUtil.toString(p.getNominalDomainInMappedDataset()));
 		return getNominalColors(p)[index];
 	}
 

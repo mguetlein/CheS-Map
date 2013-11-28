@@ -111,11 +111,10 @@ public class DescriptorForMixturesHandler
 	public static String[] computeOBDescriptor(DatasetFile dataset, String id)
 	{
 		if (!hasMixture(dataset) || OBDescriptorFactory.getDescriptorDefaultType(id) != Type.NUMERIC)
-			return OBDescriptorFactory.compute(dataset.getSDFPath(false), id);
+			return OBDescriptorFactory.compute(dataset.getSDF(), id);
 		else
 		{
-			String sdfDestPath = Settings.destinationFile(dataset, dataset.getShortName() + "." + dataset.getMD5()
-					+ ".resMixt.sdf");
+			String sdfDestPath = Settings.destinationFile(dataset, "resMixt.sdf");
 			List<int[]> splitIndices = split(dataset, sdfDestPath);
 			String vals[] = OBDescriptorFactory.compute(sdfDestPath, id);
 			Double dVals[] = ArrayUtil.parseDoubleArray(vals);

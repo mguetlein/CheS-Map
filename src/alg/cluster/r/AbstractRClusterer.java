@@ -12,7 +12,6 @@ import java.util.List;
 import main.BinHandler;
 import main.Settings;
 import rscript.ExportRUtil;
-import rscript.RScriptUtil;
 import util.ExternalToolUtil;
 import util.FileUtil;
 import alg.AlgorithmException.ClusterException;
@@ -47,11 +46,7 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 		File rScript = null;
 		try
 		{
-			String propsMD5 = PropertyUtil.getPropertyMD5(getProperties());
-			String datasetMD5 = CompoundPropertyUtil.getSetMD5(features, dataset.getMD5());
-
-			String featureTableFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + datasetMD5
-					+ ".features.table");
+			String featureTableFile = dataset.getFeatureTableFilePath("arff");
 			if (!Settings.CACHING_ENABLED || !new File(featureTableFile).exists())
 				ExportRUtil.toRTable(features,
 						CompoundPropertyUtil.valuesReplaceNullWithMedian(features, compounds, dataset),
@@ -62,7 +57,9 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 			Settings.LOGGER.info("Using r-clusterer " + getName() + " with properties: "
 					+ PropertyUtil.toString(getProperties()));
 
-			rScript = new File(RScriptUtil.getScriptPath(getShortName() + propsMD5, getRScriptCode()));
+			rScript = File.createTempFile("rscript", "R");
+			FileUtil.writeStringToFile(rScript.getAbsolutePath(), getRScriptCode());
+
 			String errorOut = ExternalToolUtil.run(
 					getShortName(),
 					new String[] { BinHandler.RSCRIPT_BINARY.getLocation(), FileUtil.getAbsolutePathEscaped(rScript),

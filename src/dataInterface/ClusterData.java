@@ -9,7 +9,11 @@ public interface ClusterData extends CompoundPropertyOwner
 {
 	public String getName();
 
-	public String getFilename();
+	public List<Integer> getCompoundOrigIndices();
+
+	public void setCompoundClusterIndices(List<Integer> idx);
+
+	public List<Integer> getCompoundClusterIndices();
 
 	public int getOrigIndex();
 
@@ -34,4 +38,7 @@ public interface ClusterData extends CompoundPropertyOwner
 	public boolean containsNotClusteredCompounds();
 
 	public void remove(int indices[]);
+
+	public void setFilter(List<Integer> origIndices);
+
 }

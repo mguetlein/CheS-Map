@@ -40,10 +40,4 @@ public class CDK3DBuilder extends AbstractReal3DBuilder
 	{
 		return Settings.text("build3d.cdk.desc", Settings.CDK_STRING);
 	}
-
-	@Override
-	public String getInitials()
-	{
-		return "cdk_" + forcefield.getValue() + "_";
-	}
 }

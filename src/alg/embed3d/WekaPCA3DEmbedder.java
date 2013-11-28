@@ -13,6 +13,7 @@ import java.util.List;
 import javax.vecmath.Vector3f;
 
 import main.Settings;
+import main.TaskProvider;
 import util.MessageUtil;
 import weka.CompoundArffWriter;
 import weka.WekaPropertyUtil;
@@ -68,6 +69,7 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 		BufferedReader reader = new BufferedReader(new FileReader(f));
 		Instances data = new Instances(reader);
 
+		TaskProvider.verbose("Apply PCA");
 		pca.buildEvaluator(data);
 		resultData = pca.transformedData(data);
 

@@ -4,26 +4,25 @@ import java.io.File;
 import java.util.List;
 
 import main.Settings;
+import main.TaskProvider;
 import data.DatasetFile;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
-import dataInterface.CompoundPropertyUtil;
 
 public class CompoundArffWriter implements ArffWritable
 {
 	public static File writeArffFile(DatasetFile dataset, List<CompoundData> compounds, List<CompoundProperty> features)
 	{
-		String enc = CompoundPropertyUtil.getSetMD5(features, dataset.getMD5());
-		String arffFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + enc + ".arff");
+		String arffFile = dataset.getFeatureTableFilePath("arff");
 		File file = new File(arffFile);
 		if (!Settings.CACHING_ENABLED || !file.exists())
 		{
-			Settings.LOGGER.info("writing arff file: " + arffFile);
+			TaskProvider.verbose("writing arff file: " + arffFile);
 			ArffWriter.writeToArffFile(file, new CompoundArffWriter(compounds, features));
 		}
 		else
-			Settings.LOGGER.info("arff file already exists: " + arffFile);
+			TaskProvider.verbose("arff file already exists: " + arffFile);
 		return file;
 	}
 
@@ -72,7 +71,7 @@ public class CompoundArffWriter implements ArffWritable
 		else
 		{
 			String s = "{";
-			for (String o : features.get(attribute).getNominalDomain())
+			for (String o : features.get(attribute).getNominalDomainInMappedDataset())
 			{
 				if (o != null && o.length() > 1)
 					s += "\"" + o + "\",";

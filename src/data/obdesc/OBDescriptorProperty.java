@@ -114,10 +114,7 @@ public class OBDescriptorProperty extends AbstractCompoundProperty implements Co
 
 	private String cacheFile(DatasetFile dataset)
 	{
-		String s = dataset.getShortName() + "." + dataset.getMD5() + "." + descriptorID;
-		if (Settings.DESC_MIXTURE_HANDLING)
-			s += ".mixt";
-		return Settings.destinationFile(dataset, s);
+		return dataset.getFeatureValuesFilePath(this);
 	}
 
 	@Override
@@ -142,7 +139,7 @@ public class OBDescriptorProperty extends AbstractCompoundProperty implements Co
 			if (Settings.DESC_MIXTURE_HANDLING)
 				vals = DescriptorForMixturesHandler.computeOBDescriptor(dataset, descriptorID);
 			else
-				vals = OBDescriptorFactory.compute(dataset.getSDFPath(false), descriptorID);
+				vals = OBDescriptorFactory.compute(dataset.getSDF(), descriptorID);
 			Settings.LOGGER.info("writing ob descriptors to: " + cache);
 			ValueFileCache.writeCacheString(cache, vals);
 		}
@@ -224,11 +221,20 @@ public class OBDescriptorProperty extends AbstractCompoundProperty implements Co
 	@Override
 	public String getNameIncludingParams()
 	{
-		return getUniqueName() + "_" + getType();
+		String s = getUniqueName() + "_" + getType();
+		if (Settings.DESC_MIXTURE_HANDLING)
+			s += ".mixt";
+		return s;
 	}
 
 	@Override
 	public boolean isComputationSlow()
+	{
+		return false;
+	}
+
+	@Override
+	public boolean isSensitiveTo3D()
 	{
 		return false;
 	}

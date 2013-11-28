@@ -1,5 +1,7 @@
 package data;
 
+import gui.MultiImageIcon.Layout;
+
 import java.util.HashMap;
 
 import javax.swing.ImageIcon;
@@ -17,7 +19,7 @@ import dataInterface.CompoundProperty.Type;
 public class CompoundDataImpl implements CompoundData
 {
 	private Vector3f position;
-	private int index;
+	private int origIndex = -1;
 	private HashMap<CompoundProperty, String> stringValues = new HashMap<CompoundProperty, String>();
 	private HashMap<CompoundProperty, Double> doubleValues = new HashMap<CompoundProperty, Double>();
 	private HashMap<CompoundProperty, Double> normalizedValuesCompleteDataset = new HashMap<CompoundProperty, Double>();
@@ -42,14 +44,14 @@ public class CompoundDataImpl implements CompoundData
 		this.position = position;
 	}
 
-	public int getIndex()
+	public int getOrigIndex()
 	{
-		return index;
+		return origIndex;
 	}
 
-	public void setIndex(int index)
+	public void setOrigIndex(int origIndex)
 	{
-		this.index = index;
+		this.origIndex = origIndex;
 	}
 
 	public void setDoubleValue(CompoundProperty p, Double v)
@@ -115,20 +117,17 @@ public class CompoundDataImpl implements CompoundData
 		return smiles;
 	}
 
-	ImageIcon iconBlack;
-	ImageIcon iconWhite;
+	HashMap<String, ImageIcon> icons = new HashMap<String, ImageIcon>();
 
 	@Override
-	public ImageIcon getIcon(boolean black)
+	public ImageIcon getIcon(boolean black, int width, int height)
 	{
-		if ((black && iconBlack == null) || (!black && iconWhite == null))
+		String key = black + "#" + width + "#" + height;
+		if (!icons.containsKey(key))
 		{
 			try
 			{
-				if (black)
-					iconBlack = CDKCompoundIcon.createIcon(iMolecule, black);
-				else
-					iconWhite = CDKCompoundIcon.createIcon(iMolecule, black);
+				icons.put(key, CDKCompoundIcon.createIcon(iMolecule, black, width, height, Layout.vertical));
 			}
 			catch (CDKException e)
 			{
@@ -136,6 +135,6 @@ public class CompoundDataImpl implements CompoundData
 				e.printStackTrace();
 			}
 		}
-		return black ? iconBlack : iconWhite;
+		return icons.get(key);
 	}
 }

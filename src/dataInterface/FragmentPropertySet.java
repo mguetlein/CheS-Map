@@ -22,4 +22,10 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 
 	protected abstract void updateFragments();
 
+	@Override
+	public boolean isSensitiveTo3D()
+	{
+		return false;
+	}
+
 }

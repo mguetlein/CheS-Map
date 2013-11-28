@@ -24,7 +24,6 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 
 	Type type;
 	HashSet<Type> types = new HashSet<Type>(ArrayUtil.toList(Type.values()));
-	String[] domain;
 	protected String smarts;
 	protected MatchEngine matchEngine;
 
@@ -129,12 +128,6 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	}
 
 	@Override
-	public String[] getNominalDomain()
-	{
-		return domain;
-	}
-
-	@Override
 	public boolean isSmartsProperty()
 	{
 		return smarts != null && smarts.length() > 0;
@@ -162,6 +155,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 		this.matchEngine = matchEngine;
 	}
 
+	private HashMap<DatasetFile, String[]> domain = new HashMap<DatasetFile, String[]>();
 	private HashMap<DatasetFile, String[]> stringValues = new HashMap<DatasetFile, String[]>();
 	private HashMap<DatasetFile, Double[]> doubleValues = new HashMap<DatasetFile, Double[]>();
 	private HashMap<DatasetFile, Double[]> normalizedValues = new HashMap<DatasetFile, Double[]>();
@@ -232,9 +226,9 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	{
 		CountedSet<String> set = CountedSet.create(values);
 		set.remove(null);
-		if (set.size() == 0)
+		if (set.getNumValues() == 0)
 		{
-			domain = new String[0];
+			domain.put(dataset, new String[0]);
 			distinct.put(dataset, 0);
 			modeNonNull.put(dataset, null);
 		}
@@ -242,8 +236,8 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 		{
 			String dom[] = ArrayUtil.toArray(set.values());
 			Arrays.sort(dom, new ToStringComparator());
-			domain = dom;
-			distinct.put(dataset, set.size());
+			domain.put(dataset, dom);
+			distinct.put(dataset, set.getNumValues());
 			modeNonNull.put(dataset, set.values().get(0));
 		}
 	}
@@ -254,6 +248,20 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	public void setMappedDataset(DatasetFile dataset)
 	{
 		this.mappedDataset = dataset;
+	}
+
+	@Override
+	public String[] getNominalDomain(DatasetFile dataset)
+	{
+		if (!domain.containsKey(dataset))
+			throw new Error("values not yet set");
+		return domain.get(dataset);
+	}
+
+	@Override
+	public String[] getNominalDomainInMappedDataset()
+	{
+		return getNominalDomain(mappedDataset);
 	}
 
 	@Override

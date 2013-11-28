@@ -49,7 +49,7 @@ public class ManualAligner extends Abstract3DAligner
 			((ClusterDataImpl) c).setSubstructureSmartsMatchEngine(SubstructureSmartsType.MANUAL,
 					(MatchEngine) matchEngineProperty.getValue());
 		}
-		alignToSmarts(dataset, clusters, SubstructureSmartsType.MANUAL);
+		alignToSmarts(dataset, clusters);
 	}
 
 	@Override

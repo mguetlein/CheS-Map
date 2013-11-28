@@ -21,6 +21,7 @@ public class ExternalToolUtil
 
 	public static String run(String processName, String cmd[], File stdOutFile, String env[])
 	{
+		TaskProvider.verbose("Run " + processName);
 		ExternalTool ext = new ExternalTool(Settings.LOGGER)
 		{
 			protected void stdout(String s)

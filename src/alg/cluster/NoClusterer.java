@@ -17,6 +17,7 @@ import dataInterface.CompoundProperty;
 public class NoClusterer extends AbstractAlgorithm implements DatasetClusterer
 {
 	public static final NoClusterer INSTANCE = new NoClusterer();
+	private String sdf;
 
 	private NoClusterer()
 	{
@@ -44,15 +45,25 @@ public class NoClusterer extends AbstractAlgorithm implements DatasetClusterer
 	@Override
 	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<CompoundProperty> features)
 	{
+		sdf = dataset.getSDF3D();
 		clusters = new ArrayList<ClusterData>();
 		ClusterDataImpl c = new ClusterDataImpl();
-		c.setFilename(dataset.getSDFPath(true));
 		c.setName("Single cluster");
 		c.setOrigIndex(0);
-		//		c.setPosition(new Vector3f(0f, 0f, 0f));
 		for (CompoundData compound : compounds)
 			c.addCompound(compound);
 		clusters.add(c);
+
+		List<Integer> clusterIdx = new ArrayList<Integer>();
+		for (CompoundData comp : c.getCompounds())
+			clusterIdx.add(comp.getOrigIndex());
+		c.setCompoundClusterIndices(clusterIdx);
+	}
+
+	@Override
+	public String getClusterSDFile()
+	{
+		return sdf;
 	}
 
 	@Override

@@ -38,7 +38,6 @@ import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.smiles.smarts.SMARTSQueryTool;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
-import task.TaskImpl;
 import util.ArrayUtil;
 import util.StringUtil;
 
@@ -146,10 +145,6 @@ public class MultiKabschAlignement
 
 			String msg = "Align compound " + (m + 1) + "/" + molInfos.length + " to first compound";
 			TaskProvider.verbose(msg);
-			if (!TaskImpl.PRINT_VERBOSE)
-				Settings.LOGGER.info(msg);
-			else
-				Settings.LOGGER.info(msg);
 
 			if (DEBUG)
 			{

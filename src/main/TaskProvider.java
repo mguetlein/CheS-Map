@@ -22,12 +22,16 @@ public class TaskProvider
 	{
 		if (currentTask != null)
 			currentTask.verbose(verbose);
+		else
+			Settings.LOGGER.debug(verbose);
 	}
 
 	public static void update(String update)
 	{
 		if (currentTask != null)
 			currentTask.update(update);
+		else
+			Settings.LOGGER.info(update);
 	}
 
 	public static boolean isRunning()
@@ -42,6 +46,8 @@ public class TaskProvider
 	{
 		if (currentTask != null)
 			currentTask.update(i, update);
+		else
+			Settings.LOGGER.info(update);
 	}
 
 	public static void warning(String warningMessage, Throwable exception)

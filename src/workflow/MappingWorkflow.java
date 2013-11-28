@@ -202,7 +202,7 @@ public class MappingWorkflow
 			{
 				List<CDKPropertySet> feats = new ArrayList<CDKPropertySet>();
 				for (CDKPropertySet p : CDKPropertySet.NUMERIC_DESCRIPTORS)
-					if (!p.getNameIncludingParams().equals("Ionization Potential"))
+					if (!p.toString().equals("Ionization Potential"))
 						feats.add(p);
 				features.put(FeatureWizardPanel.CDK_FEATURES, ArrayUtil.toArray(feats));
 			}

@@ -4,7 +4,6 @@ import gui.MultiImageIcon;
 import gui.MultiImageIcon.Layout;
 import gui.MultiImageIcon.Orientation;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -54,7 +53,6 @@ public class CDKCompoundIcon
 		for (IMolecule m : d.getCompounds())
 		{
 			String file = outdir + "/" + StringUtil.getMD5(d.getSmiles()[c]) + ".png";
-			//String file = outdir + "/" + d.getSmiles()[c] + ".png";
 			if (!new File(file).exists())
 			{
 				try
@@ -81,25 +79,13 @@ public class CDKCompoundIcon
 		}
 	}
 
-	public static MultiImageIcon createIcon(IMolecule iMolecule, boolean black) throws CDKException
-	{
-		return createIcon(iMolecule, black, 120, 160, Layout.vertical);
-	}
-
 	public static MultiImageIcon createIcon(IMolecule iMolecule, boolean black, int width, int height, Layout layout)
 			throws CDKException
 	{
 		IMoleculeSet set = ConnectivityChecker.partitionIntoMolecules(iMolecule);
 		List<ImageIcon> icons = new ArrayList<ImageIcon>();
 		for (int i = 0; i < set.getAtomContainerCount(); i++)
-		{
-			if (layout == Layout.vertical)
-				icons.add(createIconDissconnected(set.getMolecule(i), black, width,
-						(int) Math.round(height / (double) set.getAtomContainerCount())));
-			else
-				icons.add(createIconDissconnected(set.getMolecule(i), black,
-						(int) Math.round(width / (double) set.getAtomContainerCount()), height));
-		}
+			icons.add(createIconDissconnected(set.getMolecule(i), black, width, height));
 		return new MultiImageIcon(icons, layout, Orientation.center, 2);
 	}
 
@@ -108,6 +94,7 @@ public class CDKCompoundIcon
 	{
 		Color fColor = black ? Color.WHITE : Color.BLACK;
 		Color bColor = black ? Color.BLACK : Color.WHITE;
+		bColor = new Color(bColor.getRed(), bColor.getGreen(), bColor.getBlue(), 125);
 
 		int origWidth = 1;
 		int origHeight = 1;
@@ -134,23 +121,25 @@ public class CDKCompoundIcon
 					((BasicBondGenerator.DefaultBondColor) parameter).setValue(fColor);
 				else if (parameter instanceof BasicAtomGenerator.AtomColorer)
 					((BasicAtomGenerator.AtomColorer) parameter).setValue(cpkAtomColors);
-				else if (Math.min(width, height) <= 120)
+				else if (Math.min(width, height) < 200)
 				{
-					if (parameter instanceof BasicBondGenerator.BondLength)
-						((BasicBondGenerator.BondLength) parameter).setValue(20.0);
-					else if (parameter instanceof BasicBondGenerator.BondWidth)
+					if (parameter instanceof BasicBondGenerator.BondWidth)
 						((BasicBondGenerator.BondWidth) parameter).setValue(2.0);
 					else if (parameter instanceof BasicSceneGenerator.Margin)
-						((BasicSceneGenerator.Margin) parameter).setValue(6.0);
+						((BasicSceneGenerator.Margin) parameter).setValue(12.0);
+					else if (parameter instanceof BasicBondGenerator.BondLength)
+						((BasicBondGenerator.BondLength) parameter).setValue(Math.max(20,
+								Math.min(40, Math.min(width, height) / 5.0)));
 				}
 			}
 		}
 		renderer.setup(iMolecule, drawArea);
 		Rectangle diagramRectangle = renderer.calculateDiagramBounds(iMolecule);
+		//System.err.println(diagramRectangle);
 		Rectangle result = renderer.shift(drawArea, diagramRectangle);
 		origHeight = (int) (result.getHeight() + result.y);
 		origWidth = (int) (result.getWidth() + result.x);
-		Image image = new BufferedImage(origWidth, origHeight, BufferedImage.TYPE_INT_RGB);
+		Image image = new BufferedImage(origWidth, origHeight, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g2 = (Graphics2D) image.getGraphics();
 		g2.setColor(bColor);
 		g2.fillRect(0, 0, origWidth, origHeight);
@@ -163,9 +152,9 @@ public class CDKCompoundIcon
 		//double scale = Math.min(sx, sy);
 		int scaledWidth = (int) (origWidth * scale);
 		int scaledHeight = (int) (origHeight * scale);
-		BufferedImage resizedImage = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB);
+		BufferedImage resizedImage = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = resizedImage.createGraphics();
-		g.setComposite(AlphaComposite.Src);
+		//g.setComposite(AlphaComposite.Src);
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -180,20 +169,22 @@ public class CDKCompoundIcon
 		//IMolecule iMolecule = MoleculeFactory.make123Triazole();
 		//String smiles = "BrN1C(=O)CCC1=O";
 		//		String smiles = "C=C-Cl.BrN1C(=O)CCC1=O";
-		String smiles = "[NH-]=[N+]=[NH-].[Na+]";
+		//		String smiles = "[NH-]=[N+]=[NH-].[Na+]";
+		String smiles = "COc(ccc(c1)[N+])c1[N+].[O-]S([O-])(=O)=O";
+		//String smiles = "COc(ccc(c1)[N+])c1[N+]";
 		//String smiles = "c1ccccc1";
 		SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
 		IMolecule iMolecule = sp.parseSmiles(smiles);
 
 		JPanel pB = new JPanel();
-		pB.setBackground(Color.DARK_GRAY);
+		pB.setBackground(Color.BLACK);
 		//		pB.setBorder(new EmptyBorder(50, 50, 50, 50));
-		pB.add(new JLabel(createIcon(iMolecule, true, 200, 300, Layout.vertical)));
+		pB.add(new JLabel(createIcon(iMolecule, true, 200, 200, Layout.vertical)));
 
 		JPanel pW = new JPanel();
-		pW.setBackground(Color.LIGHT_GRAY);
+		pW.setBackground(Color.WHITE);
 		//		pW.setBorder(new EmptyBorder(50, 50, 50, 50));
-		MultiImageIcon img = createIcon(iMolecule, false, 300, 200, Layout.horizontal);
+		MultiImageIcon img = createIcon(iMolecule, false, 400, 400, Layout.horizontal);
 		pW.add(new JLabel(img));
 
 		BufferedImage bi = new BufferedImage(img.getIconWidth(), img.getIconHeight(), BufferedImage.TYPE_INT_RGB);
@@ -208,5 +199,6 @@ public class CDKCompoundIcon
 		p.add(pB);
 		p.add(pW);
 		SwingUtil.showInDialog(p);
+		System.exit(0);
 	}
 }

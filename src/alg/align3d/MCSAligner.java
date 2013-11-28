@@ -42,7 +42,7 @@ public class MCSAligner extends Abstract3DAligner
 		ComputeMCS.computeMCS(dataset, clusters);
 		if (!TaskProvider.isRunning())
 			return;
-		alignToSmarts(dataset, clusters, SubstructureSmartsType.MCS);
+		alignToSmarts(dataset, clusters);
 	}
 
 	@Override

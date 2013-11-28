@@ -3,37 +3,38 @@ package data;
 import java.util.ArrayList;
 import java.util.List;
 
+import alg.align3d.ThreeDAligner;
+import alg.build3d.ThreeDBuilder;
+import alg.cluster.DatasetClusterer;
+import alg.embed3d.ThreeDEmbedder;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.SubstructureSmartsType;
 
 public class ClusteringData
 {
 	private String name;
 	private String fullName;
-	private String sdfFilename;
 	private String origLocalPath;
+	private String sdf; //input for jmol (3d, aligned)
+	private String origSDF; //orig file
 
 	private List<CompoundProperty> features = new ArrayList<CompoundProperty>();
 	private List<CompoundProperty> properties = new ArrayList<CompoundProperty>();
-	private List<SubstructureSmartsType> substructureSmartsTypes = new ArrayList<SubstructureSmartsType>();
 
 	private List<ClusterData> clusters = new ArrayList<ClusterData>();
 	private List<CompoundData> compounds = new ArrayList<CompoundData>();
 
 	private int numMultiClusteredCompounds = -1;
-
-	private String clusterAlgorithm;
-	private boolean isClusterAlgorithmDisjoint;
-	private String embedAlgorithm;
-
 	private String embedQuality;
 
 	private CompoundProperty embedQualityProperty;
 	private List<CompoundProperty> distanceToProperties;
 
-	//	private HashMap<CompoundProperty, CompoundPropertyEmbedQuality> embedQualityPerProp = new HashMap<CompoundProperty, CompoundPropertyEmbedQuality>();
+	private ThreeDBuilder threeDBuilder;
+	private DatasetClusterer datasetClusterer;
+	private ThreeDEmbedder threeDEmbedder;
+	private ThreeDAligner threeDAligner;
 
 	// --------------------------------------------
 
@@ -53,8 +54,9 @@ public class ClusteringData
 	{
 		name = dataset.getName();
 		fullName = dataset.getFullName();
-		sdfFilename = dataset.getSDFPath(true);
+		origSDF = dataset.getSDF();
 		origLocalPath = dataset.isLocal() ? dataset.getLocalPath() : null;
+		dataset.setClusteringData(this);
 	}
 
 	public String getName()
@@ -123,49 +125,19 @@ public class ClusteringData
 		return features;
 	}
 
-	public String getSDFFilename()
+	public void setSDF(String sdf)
 	{
-		return sdfFilename;
+		this.sdf = sdf;
 	}
 
-	public List<SubstructureSmartsType> getSubstructureSmartsTypes()
+	public String getSDF()
 	{
-		return substructureSmartsTypes;
+		return sdf;
 	}
 
-	public void addSubstructureSmartsTypes(SubstructureSmartsType type)
+	public String getOrigSDF()
 	{
-		substructureSmartsTypes.add(type);
-	}
-
-	public void setClusterAlgorithm(String clusterAlgorithm)
-	{
-		this.clusterAlgorithm = clusterAlgorithm;
-	}
-
-	public String getClusterAlgorithm()
-	{
-		return clusterAlgorithm;
-	}
-
-	public void setClusterAlgorithmDistjoint(boolean disjoint)
-	{
-		isClusterAlgorithmDisjoint = disjoint;
-	}
-
-	public boolean isClusterAlgorithmDisjoint()
-	{
-		return isClusterAlgorithmDisjoint;
-	}
-
-	public void setEmbedAlgorithm(String embedAlgorithm)
-	{
-		this.embedAlgorithm = embedAlgorithm;
-	}
-
-	public String getEmbedAlgorithm()
-	{
-		return embedAlgorithm;
+		return origSDF;
 	}
 
 	public void setEmbedQuality(String embedQuality)
@@ -193,17 +165,6 @@ public class ClusteringData
 		this.embedQualityProperty = embedQualityProperty;
 	}
 
-	//
-	//	public void setEmbeddingQuality(CompoundProperty p, CompoundPropertyEmbedQuality embedQuality)
-	//	{
-	//		embedQualityPerProp.put(p, embedQuality);
-	//	}
-	//
-	//	public CompoundPropertyEmbedQuality getEmbeddingQuality(CompoundProperty p)
-	//	{
-	//		return embedQualityPerProp.get(p);
-	//	}
-
 	public List<CompoundProperty> getDistanceToProperties()
 	{
 		return distanceToProperties;
@@ -214,4 +175,43 @@ public class ClusteringData
 		this.distanceToProperties = distanceToProperties;
 	}
 
+	public void setThreeDBuilder(ThreeDBuilder threeDBuilder)
+	{
+		this.threeDBuilder = threeDBuilder;
+	}
+
+	public ThreeDBuilder getThreeDBuilder()
+	{
+		return threeDBuilder;
+	}
+
+	public void setDatasetClusterer(DatasetClusterer datasetClusterer)
+	{
+		this.datasetClusterer = datasetClusterer;
+	}
+
+	public DatasetClusterer getDatasetClusterer()
+	{
+		return datasetClusterer;
+	}
+
+	public void setThreeDEmbedder(ThreeDEmbedder threeDEmbedder)
+	{
+		this.threeDEmbedder = threeDEmbedder;
+	}
+
+	public ThreeDEmbedder getThreeDEmbedder()
+	{
+		return threeDEmbedder;
+	}
+
+	public void setThreeDAligner(ThreeDAligner threeDAligner)
+	{
+		this.threeDAligner = threeDAligner;
+	}
+
+	public ThreeDAligner getThreeDAligner()
+	{
+		return threeDAligner;
+	}
 }

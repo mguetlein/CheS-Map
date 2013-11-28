@@ -18,7 +18,6 @@ import main.Settings;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 import rscript.ExportRUtil;
-import rscript.RScriptUtil;
 import util.ArrayUtil;
 import util.ExternalToolUtil;
 import util.FileUtil;
@@ -58,11 +57,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		File rScript = null;
 		try
 		{
-			String propsMD5 = PropertyUtil.getPropertyMD5(getProperties());
-			String datasetMD5 = CompoundPropertyUtil.getSetMD5(features, dataset.getMD5());
-
-			String featureTableFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + datasetMD5
-					+ ".features.table");
+			String featureTableFile = dataset.getFeatureTableFilePath("table");
 			if (!Settings.CACHING_ENABLED || !new File(featureTableFile).exists())
 				ExportRUtil.toRTable(features,
 						CompoundPropertyUtil.valuesReplaceNullWithMedian(features, instances, dataset),
@@ -73,7 +68,9 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			Settings.LOGGER.info("Using r-embedder " + getName() + " with properties: "
 					+ PropertyUtil.toString(getProperties()));
 
-			rScript = new File(RScriptUtil.getScriptPath(getShortName() + "." + propsMD5, getRScriptCode()));
+			rScript = File.createTempFile("rscript", "R");
+			FileUtil.writeStringToFile(rScript.getAbsolutePath(), getRScriptCode());
+
 			String errorOut = ExternalToolUtil.run(
 					getShortName(),
 					new String[] { BinHandler.RSCRIPT_BINARY.getLocation(), FileUtil.getAbsolutePathEscaped(rScript),
@@ -126,7 +123,6 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 				throw new IllegalStateException("embedding failed: could not read distance matrix");
 
 			return positions;
-			// v3f[i] = new Vector3f((float) v3d.get(i).getX(), (float) v3d.get(i).getY(), (float) v3d.get(i).getZ());
 		}
 		finally
 		{

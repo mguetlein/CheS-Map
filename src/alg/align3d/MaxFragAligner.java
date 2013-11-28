@@ -75,7 +75,7 @@ public class MaxFragAligner extends Abstract3DAligner
 						maxMatchEngine);
 			}
 		}
-		alignToSmarts(dataset, clusters, SubstructureSmartsType.MAX_FRAG);
+		alignToSmarts(dataset, clusters);
 	}
 
 	@Override

@@ -88,12 +88,25 @@ public class PropHandler
 		}
 	}
 
+	public static boolean isPropFile(String name)
+	{
+		return name.matches("ches\\.mapper\\.v[0-9]+\\.[0-9]+\\.props");
+	}
+
 	private PropHandler(boolean loadProperties)
 	{
 		// try loading props
 		props = new Properties();
 		if (loadProperties)
 		{
+			String propFileNames[] = new File(Settings.BASE_DIR).list(new FilenameFilter()
+			{
+				@Override
+				public boolean accept(File dir, String name)
+				{
+					return isPropFile(name);
+				}
+			});
 			propertiesFile = Settings.BASE_DIR + File.separator + "ches.mapper.v" + Settings.VERSION.major + "."
 					+ Settings.VERSION.minor + ".props";
 
@@ -103,14 +116,6 @@ public class PropHandler
 			else
 			{
 				Settings.LOGGER.debug("Property file for current version " + Settings.VERSION + " not found");
-				String propFileNames[] = new File(Settings.BASE_DIR).list(new FilenameFilter()
-				{
-					@Override
-					public boolean accept(File dir, String name)
-					{
-						return name.matches("ches\\.mapper\\.v[0-9]+\\.[0-9]+\\.props");
-					}
-				});
 				if (propFileNames.length > 0)
 				{
 					Settings.LOGGER.debug(propFileNames.length + " other property files found");
@@ -147,6 +152,11 @@ public class PropHandler
 						Settings.LOGGER.debug("No compatible property file found");
 				}
 			}
+
+			//migration
+			for (String f : propFileNames)
+				if (!propertiesFile.endsWith(f))
+					new File(Settings.BASE_DIR + File.separator + f).delete();
 
 			try
 			{

@@ -4,7 +4,6 @@ import gui.FeatureWizardPanel.FeatureInfo;
 import gui.Message;
 import gui.Messages;
 import gui.property.Property;
-import gui.property.PropertyUtil;
 import io.SDFUtil;
 
 import java.io.File;
@@ -14,7 +13,6 @@ import java.util.List;
 
 import main.Settings;
 import main.TaskProvider;
-import util.ArrayUtil;
 import util.ValueFileCache;
 import weka.CascadeSimpleKMeans;
 import alg.AbstractAlgorithm;
@@ -23,12 +21,13 @@ import data.DatasetFile;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundPropertyUtil;
 
 public abstract class AbstractDatasetClusterer extends AbstractAlgorithm implements DatasetClusterer
 {
 	private List<ClusterData> clusters;
 	protected ClusterApproach clusterApproach = ClusterApproach.Other;
+	private String sdf;
+	private Boolean multiAssignment;
 
 	@Override
 	public ClusterApproach getClusterApproach()
@@ -61,9 +60,9 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 	}
 
 	@Override
-	public boolean isDisjointClusterer()
+	public final boolean isDisjointClusterer()
 	{
-		return true;
+		return !multiAssignment;
 	}
 
 	@Override
@@ -86,11 +85,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 	public void clusterDataset(DatasetFile dataset, List<CompoundData> compounds, List<CompoundProperty> features)
 			throws Exception
 	{
-		String datasetFeaturesClusterpropsMD5 = CompoundPropertyUtil.getSetMD5(features, dataset.getMD5() + " "
-				+ PropertyUtil.getPropertyMD5(getProperties()));
-
-		String filename = Settings.destinationFile(dataset, dataset.getShortName() + "." + getShortName() + "."
-				+ datasetFeaturesClusterpropsMD5 + ".cluster");
+		String filename = dataset.getClusterAssignmentFilePath();
 		List<Integer[]> clusterAssignements;
 
 		boolean interactive = false;
@@ -117,15 +112,12 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 
 		HashMap<Integer, List<Integer>> compoundToCluster = new HashMap<Integer, List<Integer>>();
 
-		boolean multiAssignment = false;
+		multiAssignment = false;
 		for (int m = 0; m < clusterAssignements.size(); m++)
 		{
 			Integer[] clusterIndices = clusterAssignements.get(m);
 			if (clusterIndices != null)
 			{
-				if (isDisjointClusterer() && clusterIndices.length > 1)
-					throw new Error("Disjoint clusterer with more than one cluster assingment "
-							+ ArrayUtil.toString(clusterIndices));
 				multiAssignment |= clusterIndices.length > 1;
 
 				List<Integer> clusterList = compoundToCluster.get(m);
@@ -225,32 +217,49 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 			}
 		}
 
-		TaskProvider.verbose("Storing cluster results in files");
 		int count = 0;
 		for (ClusterData c : clusters)
 		{
 			if (c.getSize() == 0)
-				throw new Error("try to store empty cluster");
-
-			// String parent = origFile.substring(0, origFile.lastIndexOf("/"));
-			// String origName = origFile.substring(origFile.lastIndexOf("/") + 1);
-
-			String name = dataset.getShortName() + "_" + getShortName() + "_" + datasetFeaturesClusterpropsMD5
-					+ "_cluster_" + count + ".sdf";
-			String clusterFile = Settings.destinationFile(dataset, name);
-			if (!Settings.CACHING_ENABLED || !new File(clusterFile).exists() || interactive)
-			{
-				// already loaded file may be overwritten, clear
-				DatasetFile.clearFilesWith3DSDF(clusterFile);
-				SDFUtil.filter(dataset.getSDFPath(true), clusterFile, ((ClusterDataImpl) c).calculateCompoundIndices(),
-						true);
-			}
-			else
-				Settings.LOGGER.info("cluster already stored: " + clusterFile);
+				throw new Error("empty cluster");
 			((ClusterDataImpl) c).setOrigIndex(count);
 			((ClusterDataImpl) c).setName(clusterName(count++, c == unclusteredCompounds));
-			((ClusterDataImpl) c).setFilename(clusterFile);
 		}
+
+		if (!multiAssignment)
+		{
+			sdf = dataset.getSDF3D();
+			for (ClusterData c : clusters)
+			{
+				List<Integer> clusterIdx = new ArrayList<Integer>();
+				for (CompoundData comp : c.getCompounds())
+					clusterIdx.add(comp.getOrigIndex());
+				c.setCompoundClusterIndices(clusterIdx);
+			}
+		}
+		else
+		{
+			//we have to create a new sdf 
+			sdf = dataset.getClusterSDFile();
+			if (Settings.CACHING_ENABLED && new File(sdf).exists())
+				Settings.LOGGER.info("multi-asignment cluster-file exists: " + sdf);
+			else
+			{
+				Settings.LOGGER.info("write compounds to multi-asignment cluster-file");
+				for (ClusterData c : clusters)
+					SDFUtil.filter(dataset.getSDF3D(), sdf, c.getCompoundOrigIndices(), true, true);
+			}
+			//update the cluster-indices accordingly
+			int cIdx = 0;
+			for (ClusterData c : clusters)
+			{
+				List<Integer> clusterIdx = new ArrayList<Integer>();
+				for (CompoundData comp : c.getCompounds())
+					clusterIdx.add(cIdx++);
+				c.setCompoundClusterIndices(clusterIdx);
+			}
+		}
+
 		if (unclusteredCompounds != null)
 			TaskProvider.warning(Settings.text("cluster.warning.not-clustered-compounds",
 					unclusteredCompounds.getName(), unclusteredCompounds.getSize() + ""), Settings
@@ -258,6 +267,12 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 
 		if (count == 0)
 			throw new Error("clusterer returned no cluster");
+	}
+
+	@Override
+	public String getClusterSDFile()
+	{
+		return sdf;
 	}
 
 	private static String clusterName(int index, boolean notClusteredCompounds)

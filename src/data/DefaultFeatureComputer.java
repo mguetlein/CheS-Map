@@ -42,7 +42,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 		int count = 0;
 		for (CompoundPropertySet propSet : compoundPropertySets)
 		{
-			TaskProvider.update("Computing feature " + (count + 1) + "/" + compoundPropertySets.length + " : "
+			TaskProvider.update("Compute feature " + (count + 1) + "/" + compoundPropertySets.length + " : "
 					+ propSet.toString());
 
 			if (propSet instanceof IntegratedProperty)
@@ -68,8 +68,6 @@ public class DefaultFeatureComputer implements FeatureComputer
 				return;
 			count++;
 		}
-
-		TaskProvider.update("Num features computed: " + features.size());
 
 		for (IntegratedProperty p : dataset.getIntegratedProperties())
 			if (!props.contains(p))
@@ -110,7 +108,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 				else
 				{
 					c = new CompoundDataImpl(smiles[i], dataset.getCompounds()[i]);
-					c.setIndex(i);
+					c.setOrigIndex(i);
 					compounds.add(c);
 				}
 

@@ -218,8 +218,9 @@ public class EmbedUtil
 
 					if (feature.getType() != Type.NOMINAL)
 						throw new Error();
-					if (feature.getNominalDomain().length == 2 && feature.getNominalDomain()[0].equals("0")
-							&& feature.getNominalDomain()[1].equals("1"))
+					if (feature.getNominalDomain(dataset).length == 2
+							&& feature.getNominalDomain(dataset)[0].equals("0")
+							&& feature.getNominalDomain(dataset)[1].equals("1"))
 					{
 						if (instances.get(i).getStringValue(features.get(k)) == null)
 							v_i.add(Double.parseDouble(feature.getModeNonNull(dataset)));
@@ -228,7 +229,7 @@ public class EmbedUtil
 					}
 					else
 					{
-						for (String val : feature.getNominalDomain())
+						for (String val : feature.getNominalDomain(dataset))
 						{
 							if (ObjectUtil.equals(instances.get(i).getStringValue(features.get(k)), val))
 								v_i.add(1.0);

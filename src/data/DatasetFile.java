@@ -11,13 +11,15 @@ import org.openscience.cdk.interfaces.IMolecule;
 import util.FileUtil;
 import util.StringUtil;
 
-public class DatasetFile
+public class DatasetFile extends FilenameProvider
 {
 	private String URI;
 	private String localPath;
 
-	private String sdfPath;
-	private String sdf3DPath;
+	private String SDF;
+	private String SDF3D;
+	private String SDFClustered;
+	private String SDFAligned;
 	private String md5;
 	private String shortName;
 	private String fullName;
@@ -84,20 +86,44 @@ public class DatasetFile
 		return shortName;
 	}
 
-	public String getSDFPath(boolean threeD)
+	public String getSDF()
 	{
-		if (threeD)
-			return sdf3DPath;
-		else
-			return sdfPath;
+		return SDF;
 	}
 
-	public void setSDFPath(String sdfPath, boolean threeD)
+	public void setSDF(String sdf)
 	{
-		if (threeD)
-			this.sdf3DPath = sdfPath;
-		else
-			this.sdfPath = sdfPath;
+		this.SDF = sdf;
+	}
+
+	public String getSDF3D()
+	{
+		return SDF3D;
+	}
+
+	public void setSDF3D(String sdf3d)
+	{
+		SDF3D = sdf3d;
+	}
+
+	public String getSDFClustered()
+	{
+		return SDFClustered;
+	}
+
+	public void setSDFClustered(String sDFClustered)
+	{
+		SDFClustered = sDFClustered;
+	}
+
+	public String getSDFAligned()
+	{
+		return SDFAligned;
+	}
+
+	public void setSDFAligned(String sdfAligned)
+	{
+		this.SDFAligned = sdfAligned;
 	}
 
 	private DatasetFile(String uRI, String localPath, String fullName)
@@ -105,6 +131,7 @@ public class DatasetFile
 		this.URI = uRI;
 		this.localPath = localPath;
 		this.fullName = fullName;
+		setDatasetFile(this);
 	}
 
 	public static DatasetFile localFile(String localPath)
@@ -183,31 +210,25 @@ public class DatasetFile
 		return featureService.isLoaded(this);
 	}
 
-	private void clear()
-	{
-		featureService.clear(this);
-	}
-
-	public static void clearFilesWith3DSDF(String sdfFile)
+	public static void clearFiles(String sdfFile)
 	{
 		for (DatasetFile f : instances)
-		{
-			if (f.localPath.equals(sdfFile) || sdfFile.equals(f.getSDFPath(true)))
-				f.clear();
-		}
+			if (sdfFile.equals(f.getSDF()) || sdfFile.equals(f.getSDF3D()) || sdfFile.equals(f.getSDFClustered())
+					|| sdfFile.equals(f.getSDFAligned()))
+				featureService.clear(f);
 	}
 
 	public void loadDataset() throws Exception
 	{
 		featureService.loadDataset(this);
-		if (getSDFPath(false) == null)
+		if (getSDF() == null)
 		{
 			if (!TaskProvider.isRunning())
 				return;
 			TaskProvider.verbose("Creating 2D structures");
-			FeatureService.writeCompoundsToSDFFile(this, Settings.destinationSDFFile(this));
-			this.setSDFPath(Settings.destinationSDFFile(this), false);
-			this.updateCompoundStructure(false);
+			FeatureService.writeCompoundsToSDFile(this, Settings.destinationFile(this, "sdf"));
+			this.setSDF(Settings.destinationFile(this, "sdf"));
+			this.updateCompoundStructureFrom2DSDF();
 		}
 	}
 
@@ -216,9 +237,14 @@ public class DatasetFile
 		return featureService.numCompounds(this);
 	}
 
-	public void updateCompoundStructure(boolean threeD)
+	public void updateCompoundStructureFrom2DSDF()
 	{
-		featureService.updateCompoundStructure(this, threeD);
+		featureService.updateCompoundStructureFrom2DSDF(this);
+	}
+
+	public void updateCompoundStructureFrom3DSDF()
+	{
+		featureService.updateCompoundStructureFrom3DSDF(this);
 	}
 
 	public IMolecule[] getCompounds()
@@ -241,7 +267,7 @@ public class DatasetFile
 	public String getMD5()
 	{
 		if (md5 == null)
-			md5 = StringUtil.getMD5(toString() + "." + FileUtil.getMD5String(localPath));
+			md5 = StringUtil.getMD5(getShortName() + "." + FileUtil.getMD5String(localPath));
 		return md5;
 	}
 

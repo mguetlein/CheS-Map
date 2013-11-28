@@ -12,7 +12,7 @@ public interface ThreeDBuilder extends Algorithm
 
 	public void build3D(DatasetFile datasetFile);
 
-	public String get3DSDFFile();
+	public String get3DSDFile();
 
 	public boolean isReal3DBuilder();
 }

@@ -32,23 +32,15 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 
 	public abstract void build3D(DatasetFile dataset, String outFile);
 
-	public String get3DSDFFile()
+	public String get3DSDFile()
 	{
 		return threeDFilename;
-	}
-
-	public abstract String getInitials();
-
-	private String destinationFile(DatasetFile dataset)
-	{
-		return Settings.destinationFile(dataset, dataset.getShortName() + "." + dataset.getMD5() + "." + getInitials()
-				+ "3d.sdf");
 	}
 
 	@Override
 	public boolean isCached(DatasetFile dataset)
 	{
-		File threeD = new File(destinationFile(dataset));
+		File threeD = new File(dataset.get3DBuilderSDFilePath(this));
 		if (threeD.exists())
 			Settings.LOGGER.info("3d file already exists: " + threeD);
 		return threeD.exists();
@@ -64,15 +56,7 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 	@Override
 	public void build3D(final DatasetFile dataset)
 	{
-		if (Settings.CACHING_ENABLED && dataset.getSDFPath(false).contains("." + getInitials() + "3d"))
-		{
-			Settings.LOGGER.info("file already in " + getInitials() + "3d : " + dataset.getSDFPath(false)
-					+ ", no 3d structure generation");
-			threeDFilename = dataset.getSDFPath(false);
-			return;
-		}
-
-		String sdfFile = dataset.getSDFPath(false);
+		String sdfFile = dataset.getSDF();
 		File orig = new File(sdfFile);
 		if (!orig.exists())
 			throw new IllegalStateException("sdf file not found");
@@ -80,9 +64,8 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 		try
 		{
 			final File tmpFile = File.createTempFile("3dbuild", "tmp");
-			String finalFile = destinationFile(dataset);
+			String finalFile = dataset.get3DBuilderSDFilePath(this);
 
-			//			Settings.LOGGER.println(threeDFilename);
 			File threeD = new File(finalFile);
 			if (!threeD.exists() || !Settings.CACHING_ENABLED)
 			{
@@ -107,9 +90,8 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 							if (tmpFile.exists())
 							{
 								int i = SDFUtil.countCompounds(tmpFile.getAbsolutePath());
-								TaskProvider.update("Building 3D structure for compound " + (i + 1) + "/" + max);
-								TaskProvider
-										.verbose("This may take some time. The result is cached, you have to do it only once.");
+								TaskProvider.update("Compute 3D structure for compound " + (i + 1) + "/" + max
+										+ " (the results are cached)");
 							}
 						}
 					}
@@ -119,7 +101,7 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 				running = false;
 
 				if (autoCorrect)
-					check3DSDFile(tmpFile.getAbsolutePath(), dataset.getSDFPath(false), tmpFile.getAbsolutePath());
+					check3DSDFile(tmpFile.getAbsolutePath(), dataset.getSDF(), tmpFile.getAbsolutePath());
 
 				if (!TaskProvider.isRunning())
 					return;

@@ -403,7 +403,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 						else
 							new TaskDialog(task, wizard);
 					}
-					TaskProvider.update("Loading dataset: " + d.getName());
+					TaskProvider.update("Load dataset: " + d.getName());
 					try
 					{
 						if (!d.isLocal())
@@ -427,13 +427,19 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 							else
 								throw new Exception("file not found: " + datasetFile.getAbsolutePath());
 						}
-
 						task.finish();
 						TaskProvider.removeTask();
-						if (dataset == null)
-							buttonLoad.setEnabled(true);
-						updateDataset();
-						block.unblock(f);
+						SwingUtilities.invokeLater(new Runnable()
+						{
+							@Override
+							public void run()
+							{
+								if (dataset == null)
+									buttonLoad.setEnabled(true);
+								updateDataset();
+								block.unblock(f);
+							}
+						});
 					}
 					catch (IllegalCompoundsException e)
 					{
@@ -443,41 +449,67 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 						Settings.LOGGER.error(e);
 						task.cancel();
 						TaskProvider.removeTask();
-						String cleanedFile = Settings.destinationFile(d,
-								d.getShortName() + ".cleaned." + d.getFileExtension());
+
+						//						String cleanedFile = Settings.destinationFile("cleaned." + d.getFileExtension());
 						int res = JOptionPane.showConfirmDialog(
 								Settings.TOP_LEVEL_FRAME,
-								"Could not read " + e.illegalCompounds.size() + " compound/s in dataset: "
-										+ d.getPath() + "\nIndices of compounds that could not be loaded: "
+								"Could not read "
+										+ e.illegalCompounds.size()
+										+ " compound/s in dataset: "
+										+ d.getPath()
+										+ "\nIndices of compounds that could not be loaded: "
 										+ ListUtil.toString(e.illegalCompounds)
-										+ "\n\nDo you want to remove the faulty compounds and reload the dataset?"
-										+ "\n(New dataset would be stored at: " + cleanedFile + ")", "Dataset faulty",
-								JOptionPane.YES_NO_OPTION);
+										+ "\n\nDo you want to skip the faulty compounds, store the correct compounds in a new file, and reload this new file?",
+								"Dataset faulty", JOptionPane.YES_NO_OPTION);
 						block.unblock(f);
+						boolean loadCleaned = false;
 						if (res == JOptionPane.YES_OPTION)
 						{
-							if (d.getFileExtension().matches("(?i)sdf"))
-								SDFUtil.filter_exclude(d.getSDFPath(false), cleanedFile, e.illegalCompounds, false);
-							else if (d.getFileExtension().matches("(?i)csv"))
+							String parent = FileUtil.getParent(d.getLocalPath());
+							String cleanedFile = parent + File.separator + d.getShortName() + "_cleaned."
+									+ d.getFileExtension();
+							JFileChooser fc = new JFileChooser(parent);
+							fc.setSelectedFile(new File(cleanedFile));
+							int res2 = fc.showSaveDialog(Settings.TOP_LEVEL_FRAME);
+							if (res2 == JFileChooser.APPROVE_OPTION)
 							{
-								String all = FileUtil.readStringFromFile(d.getLocalPath());
-								StringBuffer cleaned = new StringBuffer();
-								int count = 0;
-								for (String line : all.split("\n"))
+								if (fc.getSelectedFile().exists())
 								{
-									if (!e.illegalCompounds.contains(new Integer(count - 1)))
-									{
-										cleaned.append(line);
-										cleaned.append("\n");
-									}
-									count += 1;
+									int res3 = JOptionPane.showConfirmDialog(Settings.TOP_LEVEL_FRAME, "File '"
+											+ fc.getSelectedFile().getAbsolutePath() + "' already exists. Overwrite?",
+											"Overwrite existing file?", JOptionPane.YES_NO_OPTION);
+									if (res3 == JOptionPane.YES_OPTION)
+										loadCleaned = true;
 								}
-								FileUtil.writeStringToFile(cleanedFile, cleaned.toString());
-								ThreadUtil.sleep(1000);
+								else
+									loadCleaned = true;
 							}
-							load(cleanedFile);
+							if (loadCleaned)
+							{
+								cleanedFile = fc.getSelectedFile().getAbsolutePath();
+								if (d.getFileExtension().matches("(?i)sdf"))
+									SDFUtil.filter_exclude(d.getSDF(), cleanedFile, e.illegalCompounds, false);
+								else if (d.getFileExtension().matches("(?i)csv"))
+								{
+									String all = FileUtil.readStringFromFile(d.getLocalPath());
+									StringBuffer cleaned = new StringBuffer();
+									int count = 0;
+									for (String line : all.split("\n"))
+									{
+										if (!e.illegalCompounds.contains(new Integer(count - 1)))
+										{
+											cleaned.append(line);
+											cleaned.append("\n");
+										}
+										count += 1;
+									}
+									FileUtil.writeStringToFile(cleanedFile, cleaned.toString());
+									ThreadUtil.sleep(1000);
+								}
+								load(cleanedFile);
+							}
 						}
-						else if (dataset == null)
+						if (!loadCleaned || dataset == null)
 							buttonLoad.setEnabled(true);
 					}
 					catch (Throwable e)
@@ -511,7 +543,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 
 		if (wait)
 		{
-			if (showLoadDialog && Thread.currentThread().getName().contains("AWT-EventQueue"))
+			if (showLoadDialog && SwingUtilities.isEventDispatchThread())
 				throw new Error("Cannot wait within awt event thread when load dialog is shown");
 			ThreadUtil.sleep(100);
 			while (block.isBlocked())

@@ -27,12 +27,14 @@ public class OpenBabel3DBuilder extends AbstractReal3DBuilder
 				return !TaskProvider.isRunning();
 			}
 		};
-		if (datasetFile.getLocalPath() != null && datasetFile.getLocalPath().endsWith(".smi"))
+		if (datasetFile.getLocalPath() != null && datasetFile.getLocalPath().toLowerCase().endsWith(".smi"))
 			BinHandler.getOBWrapper().compute3DfromSmiles(Settings.BABEL_3D_CACHE, datasetFile.getLocalPath(), outfile,
 					aborter);
-		else
-			BinHandler.getOBWrapper().compute3DfromSDF(Settings.BABEL_3D_CACHE, datasetFile.getSDFPath(false), outfile,
+		else if (datasetFile.getLocalPath() != null && datasetFile.getLocalPath().toLowerCase().endsWith(".csv"))
+			BinHandler.getOBWrapper().compute3DfromSmiles(Settings.BABEL_3D_CACHE, datasetFile.getSmiles(), outfile,
 					aborter);
+		else
+			BinHandler.getOBWrapper().compute3DfromSDF(Settings.BABEL_3D_CACHE, datasetFile.getSDF(), outfile, aborter);
 	}
 
 	@Override
@@ -51,11 +53,5 @@ public class OpenBabel3DBuilder extends AbstractReal3DBuilder
 	public String getDescription()
 	{
 		return Settings.text("build3d.openbabel.desc", Settings.OPENBABEL_STRING);
-	}
-
-	@Override
-	public String getInitials()
-	{
-		return "ob";
 	}
 }

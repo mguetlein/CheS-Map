@@ -15,7 +15,7 @@ public class IntegratedProperty extends AbstractCompoundProperty implements Comp
 
 	private IntegratedProperty(String property, DatasetFile dataset)
 	{
-		super(property, property + "." + dataset.getShortName() + "." + dataset.getMD5(), "Included in Dataset");
+		super(property, property + "." + dataset.toString() + "." + dataset.getMD5(), "Included in Dataset");
 		this.property = property;
 	}
 
@@ -132,6 +132,12 @@ public class IntegratedProperty extends AbstractCompoundProperty implements Comp
 
 	@Override
 	public boolean isComputationSlow()
+	{
+		return false;
+	}
+
+	@Override
+	public boolean isSensitiveTo3D()
 	{
 		return false;
 	}

@@ -22,12 +22,11 @@ public class ComputeMCS
 	public static void computeMCS(DatasetFile dataset, List<ClusterData> clusters)
 	{
 		int count = 0;
-
 		IMolecule allMols[] = dataset.getCompounds();
 
 		for (ClusterData c : clusters)
 		{
-			String cacheFile = Settings.destinationFile(dataset, FileUtil.getFilename(c.getFilename(), false) + ".mcs");
+			String cacheFile = dataset.getAlignResultsPerClusterFilePath(count, "mcs");
 
 			String smarts = null;
 			if (Settings.CACHING_ENABLED && new File(cacheFile).exists())
@@ -42,11 +41,11 @@ public class ComputeMCS
 				if (MCSComputer.DEBUG)
 					Settings.LOGGER.info("\n\n");
 
-				TaskProvider.update("Computing MCS for cluster " + (++count) + "/" + clusters.size());
+				TaskProvider.verbose("Compute MCS for cluster " + count + "/" + clusters.size());
 
 				IMolecule mols[] = new IMolecule[c.getSize()];
 				for (int i = 0; i < mols.length; i++)
-					mols[i] = allMols[c.getCompounds().get(i).getIndex()];
+					mols[i] = allMols[c.getCompounds().get(i).getOrigIndex()];
 				IAtomContainer mcsMolecule = null;
 				try
 				{
@@ -62,7 +61,6 @@ public class ComputeMCS
 					smarts = g.createSMILES(mcsMolecule);
 					//HACK: otherwhise CDK cannot rematch the smarts 
 					smarts = smarts.replaceAll("\\[nH\\]", "n");
-
 					//				Settings.LOGGER.println("non aromatic");
 					//				g = new SmilesGenerator();
 					//				Settings.LOGGER.println(g.createSMILES(mcsMolecule));
@@ -77,6 +75,7 @@ public class ComputeMCS
 				((ClusterDataImpl) c).setSubstructureSmartsMatchEngine(SubstructureSmartsType.MCS, MatchEngine.CDK);
 				Settings.LOGGER.info("MCSMolecule: " + c.getSubstructureSmarts(SubstructureSmartsType.MCS));
 			}
+			count++;
 		}
 	}
 }

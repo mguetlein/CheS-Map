@@ -25,8 +25,6 @@ public interface CompoundProperty
 
 	public void setTypeAllowed(Type type, boolean allowed);
 
-	public String[] getNominalDomain();
-
 	public boolean isSmartsProperty();
 
 	public String getSmarts();
@@ -36,6 +34,10 @@ public interface CompoundProperty
 	public CompoundPropertySet getCompoundPropertySet();
 
 	public String getUniqueName();
+
+	public String[] getNominalDomain(DatasetFile dataset);
+
+	public String[] getNominalDomainInMappedDataset();
 
 	public String[] getStringValues(DatasetFile dataset);
 

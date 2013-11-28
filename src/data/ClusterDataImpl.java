@@ -9,6 +9,8 @@ import util.ArraySummary;
 import util.CountedSet;
 import util.DistanceMatrix;
 import util.DoubleArraySummary;
+import util.DoubleKeyHashMap;
+import util.ListUtil;
 import data.fragments.MatchEngine;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
@@ -20,15 +22,17 @@ public class ClusterDataImpl implements ClusterData
 {
 	private String name;
 	private String alignAlgorithm;
+	private boolean isAligned;
 	private int origIndex;
-	private String filename;
-	private String alignedFilename;
+	private List<Integer> compoundOrigIndices;
+	private List<Integer> compoundClusterIndices = new ArrayList<Integer>();
 	private List<CompoundData> compounds = new ArrayList<CompoundData>();
 	private DistanceMatrix<CompoundData> compoundDistances;
 	private HashMap<SubstructureSmartsType, String> substructureSmarts = new HashMap<SubstructureSmartsType, String>();
 	private HashMap<SubstructureSmartsType, MatchEngine> substructureSmartsEngine = new HashMap<SubstructureSmartsType, MatchEngine>();
-	private HashMap<CompoundProperty, ArraySummary> values = new HashMap<CompoundProperty, ArraySummary>();
+	private DoubleKeyHashMap<CompoundProperty, String, ArraySummary> values = new DoubleKeyHashMap<CompoundProperty, String, ArraySummary>();
 	private boolean containsNotClusteredCompounds = false;
+	private List<Integer> origIndicesFilter;
 
 	public String getName()
 	{
@@ -50,33 +54,16 @@ public class ClusterDataImpl implements ClusterData
 		return origIndex;
 	}
 
-	public String getFilename()
-	{
-		if (isAligned())
-			return alignedFilename;
-		else
-			return filename;
-	}
-
-	public void setFilename(String filename)
-	{
-		this.filename = filename;
-	}
-
-	public void setAlignedFilename(String alignedFilename)
-	{
-		this.alignedFilename = alignedFilename;
-	}
-
 	@Override
 	public boolean isAligned()
 	{
-		return alignedFilename != null;
+		return isAligned;
 	}
 
-	public void setAlignAlgorithm(String alignAlgorithm)
+	public void setAlignAlgorithm(String alignAlgorithm, boolean isAligned)
 	{
 		this.alignAlgorithm = alignAlgorithm;
+		this.isAligned = isAligned;
 	}
 
 	@Override
@@ -90,12 +77,28 @@ public class ClusterDataImpl implements ClusterData
 		return compounds;
 	}
 
-	public List<Integer> calculateCompoundIndices()
+	@Override
+	public List<Integer> getCompoundOrigIndices()
 	{
-		List<Integer> indices = new ArrayList<Integer>();
-		for (CompoundData c : compounds)
-			indices.add(c.getIndex());
-		return indices;
+		if (compoundOrigIndices == null)
+		{
+			compoundOrigIndices = new ArrayList<Integer>();
+			for (CompoundData c : compounds)
+				compoundOrigIndices.add(c.getOrigIndex());
+		}
+		return compoundOrigIndices;
+	}
+
+	@Override
+	public void setCompoundClusterIndices(List<Integer> idx)
+	{
+		this.compoundClusterIndices = idx;
+	}
+
+	@Override
+	public List<Integer> getCompoundClusterIndices()
+	{
+		return compoundClusterIndices;
 	}
 
 	public void addCompound(CompoundData compound)
@@ -135,28 +138,43 @@ public class ClusterDataImpl implements ClusterData
 		values.clear();
 	}
 
+	@Override
+	public void setFilter(List<Integer> origIndicesFilter)
+	{
+		this.origIndicesFilter = origIndicesFilter;
+	}
+
 	private ArraySummary getSummaryValue(CompoundProperty p)
 	{
-		if (values.get(p) == null)
+		String filterKey = origIndicesFilter == null ? "" : ListUtil.toString(origIndicesFilter);
+		if (values.get(p, filterKey) == null)
 		{
 			if (p.getType() == Type.NUMERIC)
 			{
-				Double vals[] = new Double[getSize()];
-				int i = 0;
-				for (CompoundData c : compounds)
-					vals[i++] = c.getDoubleValue(p);
-				values.put(p, DoubleArraySummary.create(Arrays.asList(vals)));
+				List<Double> vals = new ArrayList<Double>();
+				if (origIndicesFilter == null)
+					for (CompoundData c : compounds)
+						vals.add(c.getDoubleValue(p));
+				else
+					for (CompoundData c : compounds)
+						if (origIndicesFilter.indexOf(c.getOrigIndex()) != -1)
+							vals.add(c.getDoubleValue(p));
+				values.put(p, filterKey, DoubleArraySummary.create(vals));
 			}
 			else
 			{
-				String vals[] = new String[getSize()];
-				int i = 0;
-				for (CompoundData c : compounds)
-					vals[i++] = c.getStringValue(p);
-				values.put(p, CountedSet.create(Arrays.asList(vals)));
+				List<String> vals = new ArrayList<String>();
+				if (origIndicesFilter == null)
+					for (CompoundData c : compounds)
+						vals.add(c.getStringValue(p));
+				else
+					for (CompoundData c : compounds)
+						if (origIndicesFilter.indexOf(c.getOrigIndex()) != -1)
+							vals.add(c.getStringValue(p));
+				values.put(p, filterKey, CountedSet.create(vals));
 			}
 		}
-		return values.get(p);
+		return values.get(p, filterKey);
 	}
 
 	public Double getDoubleValue(CompoundProperty p)
@@ -171,7 +189,12 @@ public class ClusterDataImpl implements ClusterData
 	{
 		if (p.getType() != Type.NOMINAL)
 			throw new IllegalStateException();
-		return ((CountedSet<String>) getSummaryValue(p)).values().get(0);
+		CountedSet<String> set = (CountedSet<String>) getSummaryValue(p);
+		String mode = set.getMode(false);
+		if (set.getCount(mode) > set.getSum(false) * 2 / 3.0)
+			return mode;
+		else
+			return null;
 	}
 
 	@Override
@@ -190,7 +213,6 @@ public class ClusterDataImpl implements ClusterData
 			if (set.contains("0"))
 				set.rename("0", "no-match");
 			return set.toString(html);
-			//			return "matches " + set.getCount("1") + "/" + set.sum();
 		}
 		else
 		{
@@ -213,7 +235,7 @@ public class ClusterDataImpl implements ClusterData
 
 	public int numMissingValues(CompoundProperty p)
 	{
-		return getSummaryValue(p).getNumNull();
+		return getSummaryValue(p).getNullCount();
 	}
 
 	public DistanceMatrix<CompoundData> getCompoundDistances(List<CompoundProperty> props)

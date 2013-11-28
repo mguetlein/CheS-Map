@@ -509,7 +509,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 			LinkedHashMap<OBFingerprintProperty, List<Integer>> occurences = new LinkedHashMap<OBFingerprintProperty, List<Integer>>();
 
 			tmp = File.createTempFile(dataset.getShortName(), "OBfingerprint");
-			String cmd[] = { BinHandler.BABEL_BINARY.getLocation(), "-isdf", dataset.getSDFPath(false), "-ofpt", "-xf",
+			String cmd[] = { BinHandler.BABEL_BINARY.getLocation(), "-isdf", dataset.getSDF(), "-ofpt", "-xf",
 					type.toString(), "-xs" };
 			TaskProvider.verbose("Running babel: " + ArrayUtil.toString(cmd, " ", "", ""));
 			ExternalToolUtil.run("ob-fingerprints", cmd, tmp);

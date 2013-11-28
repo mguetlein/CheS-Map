@@ -14,7 +14,7 @@ public class UseOrigStructures extends Abstract3DBuilder
 	String f;
 
 	@Override
-	public String get3DSDFFile()
+	public String get3DSDFile()
 	{
 		return f;
 	}
@@ -22,7 +22,7 @@ public class UseOrigStructures extends Abstract3DBuilder
 	@Override
 	public void build3D(DatasetFile dataset)
 	{
-		f = dataset.getSDFPath(false);
+		f = dataset.getSDF();
 	}
 
 	@Override

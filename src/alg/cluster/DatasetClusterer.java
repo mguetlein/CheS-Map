@@ -24,6 +24,8 @@ public interface DatasetClusterer extends Algorithm
 
 	public List<ClusterData> getClusters();
 
+	public String getClusterSDFile();
+
 	public boolean isDisjointClusterer();
 
 	public boolean requiresFeatures();

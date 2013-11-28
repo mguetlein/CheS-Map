@@ -21,7 +21,7 @@ public class OpenBabelSmartsHandler implements SmartsHandler
 		if (dataset.getLocalPath() != null && dataset.getLocalPath().endsWith(".smi"))
 			file = dataset.getLocalPath();
 		else
-			file = dataset.getSDFPath(false);
+			file = dataset.getSDF();
 		return obSmartsMatcher.match(smarts, minNumMatches, file, dataset.numCompounds());
 	}
 }

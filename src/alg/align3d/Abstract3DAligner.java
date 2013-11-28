@@ -19,7 +19,6 @@ import org.openscience.cdk.interfaces.IMolecule;
 
 import util.ExternalToolUtil;
 import util.FileUtil;
-import util.StringUtil;
 import alg.AbstractAlgorithm;
 import alg.cluster.DatasetClusterer;
 import data.ClusterDataImpl;
@@ -32,12 +31,12 @@ import dataInterface.SubstructureSmartsType;
 
 public abstract class Abstract3DAligner extends AbstractAlgorithm implements ThreeDAligner
 {
-	String alignedFiles[];
+	String alignedFile;
 
 	@Override
-	public String getAlginedClusterFile(int clusterIndex)
+	public String getAlignedSDFile()
 	{
-		return alignedFiles[clusterIndex];
+		return alignedFile;
 	}
 
 	@Override
@@ -51,82 +50,107 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 
 	public abstract void giveNoSmartsWarning(int clusterIndex);
 
-	public void alignToSmarts(DatasetFile dataset, List<ClusterData> clusters, SubstructureSmartsType type)
+	public void alignToSmarts(DatasetFile dataset, List<ClusterData> clusters)
 	{
-		alignedFiles = new String[clusters.size()];
-
-		int count = 0;
-		for (ClusterData cluster : clusters)
+		SubstructureSmartsType type = getSubstructureSmartsType();
+		alignedFile = dataset.getAlignSDFilePath();
+		if (Settings.CACHING_ENABLED && new File(alignedFile).exists())
 		{
-			boolean aligned = false;
-			String destFile = null;
+			Settings.LOGGER.info("3D aligned file already exists: " + alignedFile);
+		}
+		else
+		{
+			String alignedFiles[] = new String[clusters.size()];
+			int count = 0;
+			for (ClusterData cluster : clusters)
+			{
+				boolean aligned = false;
+				String destFile = null;
+				MatchEngine matchEngine = cluster.getSubstructureSmartsMatchEngine(type);
 
-			if (cluster.getCompounds().size() < 2)
-			{
-				// dont give a warning, single compound clusters cannot be aligned
-			}
-			else if (cluster.getSubstructureSmarts(type) == null
-					|| cluster.getSubstructureSmarts(type).trim().length() == 0)
-			{
-				giveNoSmartsWarning(count);
-			}
-			else
-			{
-				destFile = Settings.destinationFile(
-						dataset,
-						FileUtil.getFilename(cluster.getFilename(), false) + "."
-								+ StringUtil.getMD5(cluster.getSubstructureSmarts(type)) + "."
-								+ cluster.getSubstructureSmartsMatchEngine(type) + ".aligned.sdf");
-
-				if (Settings.CACHING_ENABLED && new File(destFile).exists())
+				if (cluster.getCompounds().size() < 2)
 				{
-					Settings.LOGGER.info("3D aligned file already exists: " + destFile);
-					aligned = true;
+					// dont give a warning, single compound clusters cannot be aligned
+				}
+				else if (cluster.getSubstructureSmarts(type) == null
+						|| cluster.getSubstructureSmarts(type).trim().length() == 0)
+				{
+					giveNoSmartsWarning(count);
 				}
 				else
 				{
-					TaskProvider.update("Aligning cluster " + (count + 1) + "/" + clusters.size() + " according to "
-							+ cluster.getSubstructureSmarts(type));
-					if (cluster.getSubstructureSmartsMatchEngine(type) == MatchEngine.CDK)
-						aligned = alignWithCDK(dataset, cluster, count, type, destFile);
-					else if (cluster.getSubstructureSmartsMatchEngine(type) == MatchEngine.OpenBabel)
-						aligned = alignWithOpenBabel(dataset, cluster, count, type, destFile);
+					destFile = dataset.getAlignResultsPerClusterFilePath(count, cluster.getSubstructureSmarts(type)
+							+ matchEngine);
+
+					if (Settings.CACHING_ENABLED && new File(destFile).exists())
+					{
+						Settings.LOGGER.info("3D aligned file already exists: " + destFile);
+						aligned = true;
+					}
 					else
-						throw new IllegalStateException();
+					{
+						TaskProvider.update("3D align cluster " + (count + 1) + "/" + clusters.size()
+								+ " according to " + cluster.getSubstructureSmarts(type));
+						if (matchEngine == MatchEngine.CDK)
+							aligned = alignWithCDK(dataset, cluster, count, destFile);
+						else if (matchEngine == MatchEngine.OpenBabel)
+							aligned = alignWithOpenBabel(dataset, cluster, count, destFile);
+						else
+							throw new IllegalStateException();
+					}
 				}
+
+				if (aligned)
+				{
+					((ClusterDataImpl) cluster).setAlignAlgorithm(getName(), true);
+					alignedFiles[count] = destFile;
+				}
+				else
+				{
+					((ClusterDataImpl) cluster).setAlignAlgorithm(NoAligner.getNameStatic(), false);
+					alignedFiles[count] = null;
+				}
+				count++;
 			}
 
-			if (aligned)
+			Settings.LOGGER.info("Create 3D aligend file: " + alignedFile);
+			FileUtil.copy(dataset.getSDFClustered(), alignedFile);
+			int i = 0;
+			for (ClusterData cluster : clusters)
 			{
-				((ClusterDataImpl) cluster).setAlignAlgorithm(getName());
-				alignedFiles[count] = destFile;
+				if (alignedFiles[i] == null)
+				{
+					if (cluster.isAligned())
+						throw new IllegalStateException();
+					//do nothing;
+				}
+				else
+				{
+					if (!cluster.isAligned())
+						throw new IllegalStateException();
+					SDFUtil.replaceCompounds(alignedFile, alignedFiles[i], cluster.getCompoundClusterIndices());
+				}
+				i++;
 			}
-			else
-			{
-				((ClusterDataImpl) cluster).setAlignAlgorithm(NoAligner.getNameStatic());
-				alignedFiles[count] = null;
-			}
-			count++;
 		}
 	}
 
-	private boolean alignWithCDK(DatasetFile dataset, ClusterData cluster, int index, SubstructureSmartsType type,
-			String destFile)
+	private boolean alignWithCDK(DatasetFile dataset, ClusterData cluster, int index, String destFile)
 	{
-		int compoundIndices[] = new int[cluster.getSize()];
+		int compoundOrigIndices[] = new int[cluster.getSize()];
 		IMolecule compounds[] = new IMolecule[cluster.getSize()];
-		String smarts = cluster.getSubstructureSmarts(type);
+		String smarts = cluster.getSubstructureSmarts(getSubstructureSmartsType());
 
 		for (int k = 0; k < cluster.getSize(); k++)
 		{
 			CompoundData comp = cluster.getCompounds().get(k);
-			compoundIndices[k] = comp.getIndex();
-			compounds[k] = dataset.getCompounds()[comp.getIndex()];
+			compoundOrigIndices[k] = comp.getOrigIndex();
+			compounds[k] = dataset.getCompounds()[comp.getOrigIndex()];
 		}
 		try
 		{
 			MultiKabschAlignement.align(compounds, smarts);
-			FeatureService.writeCompoundsToSDFFile(dataset, destFile, compoundIndices, true);
+			FeatureService.writeOrigCompoundsToSDFile(dataset.getCompounds(), destFile, compoundOrigIndices, true);
 			return true;
 		}
 		catch (Exception e)
@@ -139,10 +163,11 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 		}
 	}
 
-	private boolean alignWithOpenBabel(DatasetFile dataset, ClusterData cluster, int index,
-			SubstructureSmartsType type, String destFile)
+	private boolean alignWithOpenBabel(DatasetFile dataset, ClusterData cluster, int index, String destFile)
 	{
-		String clusterFile = cluster.getFilename();
+		SubstructureSmartsType type = getSubstructureSmartsType();
+
+		//		String clusterFile = cluster.getFilename();
 		File tmpFirst = null;
 		File tmpRemainder = null;
 		File tmpAligned = null;
@@ -158,25 +183,19 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 			{
 				throw new RuntimeException(e);
 			}
-			// String alignedStructures = FileUtil.getParent(clusterFile) + File.separator
-			// + FileUtil.getFilename(clusterFile, false) + ".aligned.sdf";
 
-			SDFUtil.filter(clusterFile, tmpFirst.getAbsolutePath(), new int[] { 0 }, true);
+			SDFUtil.filter(dataset.getSDFClustered(), tmpFirst.getAbsolutePath(), new int[] { cluster
+					.getCompoundClusterIndices().get(0) }, true);
 			int remainderIndices[] = new int[cluster.getCompounds().size() - 1];
 			for (int j = 0; j < remainderIndices.length; j++)
-				remainderIndices[j] = (j + 1);
-			SDFUtil.filter(clusterFile, tmpRemainder.getAbsolutePath(), remainderIndices, true);
+				remainderIndices[j] = cluster.getCompoundClusterIndices().get(j + 1);
+			SDFUtil.filter(dataset.getSDFClustered(), tmpRemainder.getAbsolutePath(), remainderIndices, true);
 
 			ExternalToolUtil.run("obfit", new String[] { BinHandler.BABEL_BINARY.getSisterCommandLocation("obfit"),
 					cluster.getSubstructureSmarts(type), tmpFirst.getAbsolutePath(), tmpRemainder.getAbsolutePath() },
 					tmpAligned);
 
-			DatasetFile.clearFilesWith3DSDF(destFile);
 			FileUtil.join(tmpFirst.getAbsolutePath(), tmpAligned.getAbsolutePath(), destFile);
-			// if (SDFUtil.countCompounds(alignedStructures) != SDFUtil.countCompounds(clusterFile))
-			// throw new IllegalStateException(alignedStructures + " "
-			// + SDFUtil.countCompounds(alignedStructures) + " != " + clusterFile + " "
-			// + SDFUtil.countCompounds(clusterFile));
 
 			return true;
 		}

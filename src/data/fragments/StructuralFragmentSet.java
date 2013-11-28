@@ -18,7 +18,6 @@ import util.DoubleKeyHashMap;
 import util.FileUtil;
 import util.FileUtil.CSVFile;
 import util.FileUtil.UnexpectedNumColsException;
-import util.StringUtil;
 import data.CDKSmartsHandler;
 import data.DatasetFile;
 import data.OpenBabelSmartsHandler;
@@ -153,16 +152,11 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	{
 		if (cacheFile.get(StructuralFragmentProperties.getMatchEngine(), dataset) == null)
 		{
-			String allSmartsStrings = "";
-			for (StructuralFragment fragment : fragments.get(StructuralFragmentProperties.getMatchEngine()))
-				allSmartsStrings += fragment.getSmarts();
-			String enc = StringUtil.getMD5(allSmartsStrings + dataset.getMD5());
 			cacheFile.put(
 					StructuralFragmentProperties.getMatchEngine(),
 					dataset,
-					Settings.destinationFile(dataset,
-							StructuralFragmentProperties.getMatchEngine() + "." + dataset.getShortName() + "." + enc
-									+ ".matches.csv"));
+					dataset.getSmartsMatchesFilePath(StructuralFragmentProperties.getMatchEngine(),
+							fragments.get(StructuralFragmentProperties.getMatchEngine())));
 		}
 		return cacheFile.get(StructuralFragmentProperties.getMatchEngine(), dataset);
 	}
@@ -178,7 +172,7 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	{
 		Settings.LOGGER.info("Computing structural fragment " + StructuralFragmentProperties.getMatchEngine() + " "
 				+ StructuralFragmentProperties.getMinFrequency() + " "
-				+ StructuralFragmentProperties.isSkipOmniFragments() + " " + dataset.getSDFPath(false));
+				+ StructuralFragmentProperties.isSkipOmniFragments() + " " + dataset.getSDF());
 
 		List<String> smarts = new ArrayList<String>();
 		for (StructuralFragment fragment : fragments.get(StructuralFragmentProperties.getMatchEngine()))

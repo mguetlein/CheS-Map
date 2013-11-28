@@ -102,4 +102,9 @@ public class DistanceToProperty extends AbstractCompoundProperty implements Comp
 		return Type.NUMERIC;
 	}
 
+	@Override
+	public boolean isSensitiveTo3D()
+	{
+		return false;
+	}
 }

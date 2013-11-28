@@ -14,7 +14,6 @@ import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.qsar.IMolecularDescriptor;
 
 import util.FileUtil.UnexpectedNumColsException;
-import util.StringUtil;
 import util.ValueFileCache;
 import data.DatasetFile;
 import data.desc.DescriptorForMixturesHandler;
@@ -122,10 +121,7 @@ public class CDKPropertySet implements CompoundPropertySet
 
 	private String cacheFile(DatasetFile dataset)
 	{
-		String s = dataset.getShortName() + "." + dataset.getMD5() + "." + StringUtil.encodeFilename(desc.toString());
-		if (Settings.DESC_MIXTURE_HANDLING)
-			s += ".mixt";
-		return Settings.destinationFile(dataset, s);
+		return dataset.getFeatureValuesFilePath(this);
 	}
 
 	@Override
@@ -275,7 +271,10 @@ public class CDKPropertySet implements CompoundPropertySet
 	@Override
 	public String getNameIncludingParams()
 	{
-		return toString();
+		String s = toString();
+		if (Settings.DESC_MIXTURE_HANDLING)
+			s += ".mixt";
+		return s;
 	}
 
 	@Override
@@ -288,6 +287,12 @@ public class CDKPropertySet implements CompoundPropertySet
 	public boolean isComputationSlow()
 	{
 		return desc.isComputationSlow();
+	}
+
+	@Override
+	public boolean isSensitiveTo3D()
+	{
+		return true;
 	}
 
 }

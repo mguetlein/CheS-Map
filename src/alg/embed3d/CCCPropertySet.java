@@ -114,4 +114,9 @@ public class CCCPropertySet extends AbstractCompoundProperty implements Compound
 		return false;
 	}
 
+	@Override
+	public boolean isSensitiveTo3D()
+	{
+		return false;
+	}
 }

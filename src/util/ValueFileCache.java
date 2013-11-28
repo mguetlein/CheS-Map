@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.vecmath.Vector3f;
 
@@ -153,17 +154,38 @@ public class ValueFileCache
 		try
 		{
 			BufferedWriter b = new BufferedWriter(new FileWriter(f));
-			String s = "";
+			StringBuffer s = new StringBuffer();
 			for (Vector3f vector3f : positions)
-				s += Vector3fUtil.serialize(vector3f) + ",";
-			s = s.substring(0, s.length() - 1);
-			b.write(s + "\n");
+			{
+				s.append(Vector3fUtil.serialize(vector3f));
+				s.append(",");
+			}
+			String ss = s.toString();
+			ss = ss.substring(0, ss.length() - 1);
+			b.write(ss + "\n");
 			b.close();
 		}
 		catch (IOException e)
 		{
 			throw new Error(e);
 		}
+	}
+
+	public static void main(String[] args) throws IOException
+	{
+		Random r = new Random();
+		List<Vector3f> vecs = new ArrayList<Vector3f>();
+		for (int i = 0; i < 10000; i++)
+			vecs.add(new Vector3f(r.nextFloat(), r.nextFloat(), r.nextFloat()));
+		//Vector3f f[] = ArrayUtil.toArray(vecs);
+		File f = File.createTempFile("bla", "blub");
+		StopWatchUtil.start("write");
+		writeCachePosition2(f.getAbsolutePath(), vecs);
+		//ArrayUtil.toCSVString(f);
+		StopWatchUtil.stop("write");
+		StopWatchUtil.print();
+		System.out.println(f);
+		//		f.delete();
 	}
 
 }

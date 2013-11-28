@@ -22,9 +22,9 @@ import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.InsetsUIResource;
 
+import util.ArrayUtil;
 import util.FileUtil;
 import util.ImageLoader;
-import util.OSUtil;
 import util.Version;
 import data.DatasetFile;
 
@@ -89,7 +89,7 @@ public class Settings
 	public static JFrame TOP_LEVEL_FRAME = null;
 	public static Random RANDOM = new Random();
 	public static Boolean DBG = false;
-	public static Boolean CACHING_ENABLED = true;
+	public static Boolean CACHING_ENABLED = false;
 	public static Boolean DESC_MIXTURE_HANDLING = false;
 	public static ImageIcon CHES_MAPPER_IMAGE = ImageLoader.CHES_MAPPER;
 	public static ImageIcon CHES_MAPPER_ICON = ImageLoader.CHES_MAPPER_ICON;
@@ -142,16 +142,22 @@ public class Settings
 	}
 
 	public static String BASE_DIR = System.getProperty("user.home") + File.separator + ".ches-mapper";
+	public static String CACHE_DIR = BASE_DIR + File.separator + "cache";
 	public static String STRUCTURAL_FRAGMENT_DIR = BASE_DIR + File.separator + "structural_fragments";
 	public static String MODIFIED_BABEL_DATA_DIR = BASE_DIR + File.separator + "babel_data";
 	public static String R_LIB_DIR = BASE_DIR + File.separator + "r_libs";
 	public static String BABEL_3D_CACHE = BASE_DIR + File.separator + "babel3d";
 
 	public static final Logger LOGGER;
+	public static String LOG_FILE = BASE_DIR + File.separator + "ches-mapper.log";
 
 	static
 	{
-		for (String d : new String[] { BASE_DIR, STRUCTURAL_FRAGMENT_DIR, MODIFIED_BABEL_DATA_DIR, R_LIB_DIR })
+		String legal_dirs[] = new String[] { BASE_DIR, CACHE_DIR, STRUCTURAL_FRAGMENT_DIR, MODIFIED_BABEL_DATA_DIR,
+				R_LIB_DIR, BABEL_3D_CACHE };
+		String legal_files[] = new String[] { LOG_FILE };
+
+		for (String d : legal_dirs)
 		{
 			File dir = new File(d);
 			if (!dir.exists())
@@ -159,10 +165,23 @@ public class Settings
 			if (!dir.exists())
 				throw new Error("Could not create '" + d + "'");
 		}
+		//migration: delete old cache
+		for (File f : new File(BASE_DIR).listFiles())
+			if (f.isDirectory())
+			{
+				if (ArrayUtil.indexOf(legal_dirs, f.getAbsolutePath()) == -1)
+					FileUtil.deleteDirectory(f);
+			}
+			else
+			{
+				if (!PropHandler.isPropFile(f.getName()) && ArrayUtil.indexOf(legal_files, f.getAbsolutePath()) == -1)
+					f.delete();
+			}
+
 		try
 		{
-			LOGGER = new Logger(BASE_DIR + File.separator + "ches-mapper.log", true);
-			LOGGER.info("Logger initialized ('" + BASE_DIR + File.separator + "ches-mapper.log" + "')");
+			LOGGER = new Logger(LOG_FILE, true);
+			LOGGER.info("Logger initialized ('" + LOG_FILE + "')");
 		}
 		catch (RuntimeException e)
 		{
@@ -231,7 +250,7 @@ public class Settings
 	{
 		try
 		{
-			return BASE_DIR + File.separator + URLEncoder.encode(url, "UTF-8");
+			return CACHE_DIR + File.separator + URLEncoder.encode(url, "UTF-8");
 		}
 		catch (UnsupportedEncodingException e)
 		{
@@ -245,51 +264,14 @@ public class Settings
 		return STRUCTURAL_FRAGMENT_DIR + File.separator + string;
 	}
 
-	public static String destinationFile(DatasetFile dataset, String destinationFilename)
+	public static String destinationFile(DatasetFile dataset, String filenameSuffix)
 	{
-		try
-		{
-			if (destinationFilename.startsWith("http://"))
-				destinationFilename = URLEncoder.encode(destinationFilename, "UTF-8");
-		}
-		catch (UnsupportedEncodingException e)
-		{
-			Settings.LOGGER.error(e);
-			return null;
-		}
-		return destinationFileForFileAndName(
-				(dataset.getSDFPath(false) == null ? dataset.getLocalPath() : dataset.getSDFPath(false)),
-				destinationFilename);
-	}
-
-	public static String destinationSDFFile(DatasetFile dataset)
-	{
-		return destinationFileForFileAndName(dataset.getLocalPath(),
-				FileUtil.getFilename(dataset.getLocalPath(), false) + "." + dataset.getMD5() + ".sdf");
-	}
-
-	private static String destinationFileForFileAndName(String origFile, String filename)
-	{
-		if (origFile.startsWith(BASE_DIR))
-			return FileUtil.getParent(origFile) + File.separator + filename;
-		else
-		{
-			String path = FileUtil.getParent(origFile);
-			if (OSUtil.isWindows() && path.charAt(1) == ':')
-				path = path.charAt(0) + path.substring(2);
-			String parent = BASE_DIR + File.separator + path;
-			File dir = new File(parent);
-			if (!dir.exists())
-				dir.mkdirs();
-			if (!dir.exists())
-				throw new Error("could not create: " + dir);
-			return dir.getAbsolutePath() + File.separator + filename;
-		}
+		return destinationFile(dataset.getShortName() + "." + dataset.getMD5() + "." + filenameSuffix);
 	}
 
 	public static String destinationFile(String destinationFilename)
 	{
-		return BASE_DIR + File.separator + destinationFilename;
+		return CACHE_DIR + File.separator + destinationFilename;
 	}
 
 	// ------------------------ EXTERNAL PROGRAMMS -----------------------

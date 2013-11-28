@@ -295,17 +295,27 @@ public class FeatureService
 		}
 	}
 
-	public synchronized void updateCompoundStructure(DatasetFile dataset, boolean threeD)
+	public synchronized void updateCompoundStructureFrom2DSDF(DatasetFile dataset)
+	{
+		updateCompoundStructure(dataset, dataset.getSDF());
+	}
+
+	public synchronized void updateCompoundStructureFrom3DSDF(DatasetFile dataset)
+	{
+		updateCompoundStructure(dataset, dataset.getSDF3D());
+	}
+
+	private synchronized void updateCompoundStructure(DatasetFile dataset, String sdf)
 	{
 		if (fileToCompounds.get(dataset) == null)
 			throw new IllegalStateException();
 
-		Settings.LOGGER.info("read compounds structures fom file '" + dataset.getSDFPath(threeD) + "' ");
+		Settings.LOGGER.info("read compounds structures fom file '" + sdf + "' ");
 
 		try
 		{
 			ISimpleChemObjectReader reader = new ReaderFactory().createReader(new InputStreamReader(
-					new FileInputStream(dataset.getSDFPath(threeD))));
+					new FileInputStream(sdf)));
 			IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
 			List<IAtomContainer> list = ChemFileManipulator.getAllAtomContainers(content);
 			reader.close();
@@ -400,7 +410,7 @@ public class FeatureService
 				if (reader == null)
 					throw new IllegalArgumentException("Could not determine input file type");
 				else if (reader instanceof MDLReader || reader instanceof MDLV2000Reader)
-					dataset.setSDFPath(dataset.getLocalPath(), false);
+					dataset.setSDF(dataset.getLocalPath());
 				IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
 				list = ChemFileManipulator.getAllAtomContainers(content);
 				reader.close();
@@ -575,8 +585,7 @@ public class FeatureService
 		}
 		else if (!cdkSmiles.containsKey(dataset))
 		{
-			String smilesFile = Settings.destinationFile(dataset, dataset.getShortName() + "." + dataset.getMD5()
-					+ ".smiles");
+			String smilesFile = Settings.destinationFile(dataset, "smiles");
 			String smiles[] = null;
 			if (new File(smilesFile).exists())
 			{
@@ -683,12 +692,12 @@ public class FeatureService
 	 * @throws CDKException
 	 * @throws IOException
 	 */
-	public static void writeCompoundsToSDFFile(DatasetFile dataset, String sdfFile) throws CDKException, IOException
+	public static void writeCompoundsToSDFile(DatasetFile dataset, String sdfFile) throws CDKException, IOException
 	{
-		int compoundIndices[] = new int[dataset.numCompounds()];
-		for (int i = 0; i < compoundIndices.length; i++)
-			compoundIndices[i] = i;
-		writeCompoundsToSDFFile(dataset, sdfFile, compoundIndices, false);
+		int compoundOrigIndices[] = new int[dataset.numCompounds()];
+		for (int i = 0; i < compoundOrigIndices.length; i++)
+			compoundOrigIndices[i] = i;
+		writeOrigCompoundsToSDFile(dataset.getCompounds(), sdfFile, compoundOrigIndices, false);
 	}
 
 	/**
@@ -701,23 +710,23 @@ public class FeatureService
 	 * @throws CDKException
 	 * @throws IOException
 	 */
-	public static void writeCompoundsToSDFFile(DatasetFile dataset, String sdfFile, int compoundIndices[],
+	public static void writeOrigCompoundsToSDFile(IMolecule molecules[], String sdfFile, int compoundOrigIndices[],
 			boolean overwrite) throws CDKException, IOException
 	{
-		if (dataset.numCompounds() < compoundIndices.length)
+		if (molecules.length < compoundOrigIndices.length)
 			throw new IllegalArgumentException();
 
 		if (!new File(sdfFile).exists() || overwrite)
 		{
-			File tmpFile = File.createTempFile(dataset.getShortName(), "build.sdf");
+			File tmpFile = File.createTempFile("tmp-dataset", "build.sdf");
 
 			SDFWriter writer = new SDFWriter(new FileOutputStream(tmpFile));
 			StructureDiagramGenerator sdg = new StructureDiagramGenerator();
 			FixBondOrdersTool fix = new FixBondOrdersTool();
 
-			for (int cIndex : compoundIndices)
+			for (int cIndex : compoundOrigIndices)
 			{
-				IMolecule molecule = dataset.getCompounds()[cIndex];
+				IMolecule molecule = molecules[cIndex];
 
 				IMoleculeSet oldSet = ConnectivityChecker.partitionIntoMolecules(molecule);
 				AtomContainer newSet = new AtomContainer();
@@ -761,10 +770,10 @@ public class FeatureService
 			res |= tmpFile.delete();
 			if (!res)
 				throw new Error("renaming or delete file error");
-			Settings.LOGGER.info("created 2d sdf file: " + sdfFile);
+			Settings.LOGGER.info("write cdk compounds to sd-file: " + sdfFile);
 		}
 		else
-			Settings.LOGGER.info("sdf 2d file already exists: " + sdfFile);
+			Settings.LOGGER.info("cdk sd-file alread exists: " + sdfFile);
 	}
 
 }

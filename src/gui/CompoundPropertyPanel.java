@@ -407,7 +407,7 @@ public class CompoundPropertyPanel extends JPanel
 				CountedSet<String> set = CountedSet.fromArray(selectedProperty.getStringValues(dataset));
 				p = new MessageLabel(Message.warningMessage("This feature ('" + selectedProperty.toString()
 						+ "') is most likely not suited for clustering and embedding.\n"
-						+ "It is not numeric, and it has '" + set.size() + "' distinct values."));
+						+ "It is not numeric, and it has '" + set.getNumValues() + "' distinct values."));
 				((MessageLabel) p).setMessageFont(((MessageLabel) p).getMessageFont().deriveFont(Font.BOLD));
 				p.setBorder(new EmptyBorder(0, 10, 0, 0));
 			}
