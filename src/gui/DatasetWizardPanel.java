@@ -401,7 +401,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 							th.start();
 						}
 						else
-							new TaskDialog(task, wizard);
+							new TaskDialog(task, Settings.TOP_LEVEL_FRAME_SCREEN);
 					}
 					TaskProvider.update("Load dataset: " + d.getName());
 					try

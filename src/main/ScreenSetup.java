@@ -12,7 +12,6 @@ import util.ScreenUtil;
 public class ScreenSetup
 {
 	Border wizardBorder;
-	int screen;
 	Dimension viewerSize;
 	Dimension wizardSize;
 	Dimension fullScreenSize;
@@ -42,7 +41,6 @@ public class ScreenSetup
 		this.fullScreenSize = viewerFixedSize;
 		this.wizardSize = wizardFixedSize;
 		this.antialiasOn = antialiasOn;
-		this.screen = ScreenUtil.getLargestScreen();
 		this.fontSize = fontSize;
 		this.wizardUndecorated = wizardUndecorated;
 	}
@@ -54,7 +52,7 @@ public class ScreenSetup
 
 	public void centerOnScreen(Window w)
 	{
-		ScreenUtil.centerOnScreen(w, screen);
+		ScreenUtil.centerOnScreen(w, Settings.TOP_LEVEL_FRAME_SCREEN);
 	}
 
 	public void setViewerSize(Dimension viewerSize)
@@ -66,7 +64,7 @@ public class ScreenSetup
 	{
 		if (viewerSize == null)
 		{
-			Dimension dim = ScreenUtil.getScreenSize(this.screen);
+			Dimension dim = ScreenUtil.getScreenSize(Settings.TOP_LEVEL_FRAME_SCREEN);
 			return new Dimension(dim.width - 200, dim.height - 200);
 		}
 		else
@@ -95,7 +93,7 @@ public class ScreenSetup
 	public Dimension getFullScreenSize()
 	{
 		if (fullScreenSize == null)
-			return ScreenUtil.getScreenSize(this.screen);
+			return ScreenUtil.getScreenSize(Settings.TOP_LEVEL_FRAME_SCREEN);
 		else
 			return fullScreenSize;
 	}
@@ -108,16 +106,6 @@ public class ScreenSetup
 	public boolean isAntialiasOn()
 	{
 		return antialiasOn;
-	}
-
-	public int getScreen()
-	{
-		return screen;
-	}
-
-	public void setScreen(int s)
-	{
-		screen = s;
 	}
 
 	public int getFontSize()

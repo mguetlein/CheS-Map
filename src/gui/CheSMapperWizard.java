@@ -82,7 +82,7 @@ public class CheSMapperWizard extends WizardDialog
 		{
 			public void componentMoved(ComponentEvent e)
 			{
-				ScreenSetup.INSTANCE.setScreen(ScreenUtil.getScreen(CheSMapperWizard.this));
+				Settings.TOP_LEVEL_FRAME_SCREEN = ScreenUtil.getScreen(CheSMapperWizard.this);
 			}
 		});
 
@@ -180,13 +180,6 @@ public class CheSMapperWizard extends WizardDialog
 	protected String getFinishText()
 	{
 		return "Start mapping";
-	}
-
-	@Override
-	protected void close(int returnValue)
-	{
-		Settings.TOP_LEVEL_FRAME_SCREEN = ScreenUtil.getScreen(this);
-		super.close(returnValue);
 	}
 
 	protected void update(int status)

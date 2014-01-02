@@ -25,6 +25,7 @@ import javax.swing.plaf.InsetsUIResource;
 import util.ArrayUtil;
 import util.FileUtil;
 import util.ImageLoader;
+import util.ScreenUtil;
 import util.Version;
 import data.DatasetFile;
 
@@ -60,7 +61,10 @@ public class Settings
 		}
 		catch (Exception e)
 		{
-			Settings.LOGGER.error(e);
+			if (Settings.LOGGER == null)
+				e.printStackTrace();
+			else
+				Settings.LOGGER.error(e);
 		}
 	}
 
@@ -87,7 +91,7 @@ public class Settings
 	}
 
 	public static JFrame TOP_LEVEL_FRAME = null;
-	public static int TOP_LEVEL_FRAME_SCREEN = -1;
+	public static int TOP_LEVEL_FRAME_SCREEN = ScreenUtil.getLargestScreen();
 	public static Random RANDOM = new Random();
 	public static Boolean LARGE_DATA = false;
 	public static Boolean DBG = false;
