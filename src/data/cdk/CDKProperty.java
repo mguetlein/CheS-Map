@@ -19,7 +19,7 @@ public class CDKProperty extends AbstractCompoundProperty
 		this.desc = desc;
 		this.index = index;
 
-		if (ArrayUtil.indexOf(CDKDescriptor.CDK_NUMERIC_DESCRIPTORS, desc) != -1)
+		if (ArrayUtil.indexOf(CDKDescriptor.getNumericDescriptors(), desc) != -1)
 		{
 			setTypeAllowed(Type.NOMINAL, false);
 			setType(Type.NUMERIC);

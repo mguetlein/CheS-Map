@@ -135,7 +135,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 	}
 
 	@Override
-	protected double[][] getFeatureDistanceMatrix()
+	public double[][] getFeatureDistanceMatrix()
 	{
 		return featureDistanceMatrix;
 	}

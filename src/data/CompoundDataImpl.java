@@ -120,14 +120,15 @@ public class CompoundDataImpl implements CompoundData
 	HashMap<String, ImageIcon> icons = new HashMap<String, ImageIcon>();
 
 	@Override
-	public ImageIcon getIcon(boolean black, int width, int height)
+	public ImageIcon getIcon(boolean black, int width, int height, boolean translucent)
 	{
-		String key = black + "#" + width + "#" + height;
+		String key = black + "#" + width + "#" + height + "#" + translucent;
 		if (!icons.containsKey(key))
 		{
 			try
 			{
-				icons.put(key, CDKCompoundIcon.createIcon(iMolecule, black, width, height, Layout.vertical));
+				icons.put(key,
+						CDKCompoundIcon.createIcon(iMolecule, black, width, height, Layout.vertical, translucent));
 			}
 			catch (CDKException e)
 			{

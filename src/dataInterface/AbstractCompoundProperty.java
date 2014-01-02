@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import main.Settings;
 import util.ArrayUtil;
 import util.CountedSet;
 import util.DoubleArraySummary;
@@ -242,14 +243,6 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 		}
 	}
 
-	private DatasetFile mappedDataset;
-
-	@Override
-	public void setMappedDataset(DatasetFile dataset)
-	{
-		this.mappedDataset = dataset;
-	}
-
 	@Override
 	public String[] getNominalDomain(DatasetFile dataset)
 	{
@@ -261,7 +254,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	@Override
 	public String[] getNominalDomainInMappedDataset()
 	{
-		return getNominalDomain(mappedDataset);
+		return getNominalDomain(Settings.MAPPED_DATASET);
 	}
 
 	@Override
@@ -341,7 +334,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	@Override
 	public Boolean isIntegerInMappedDataset()
 	{
-		return isInteger(mappedDataset);
+		return isInteger(Settings.MAPPED_DATASET);
 	}
 
 	@Override
@@ -365,7 +358,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	@Override
 	public Boolean hasSmallDoubleValuesInMappedDataset()
 	{
-		return hasSmallDoubleValues(mappedDataset);
+		return hasSmallDoubleValues(Settings.MAPPED_DATASET);
 	}
 
 	@Override

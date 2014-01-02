@@ -1,5 +1,6 @@
 package alg;
 
+import alg.build3d.ThreeDBuilder;
 import alg.cluster.DatasetClusterer;
 import alg.embed3d.ThreeDEmbedder;
 
@@ -22,6 +23,14 @@ public class AlgorithmException extends RuntimeException
 	public Algorithm getAlgorithm()
 	{
 		return a;
+	}
+
+	public static class ThreeDBuilderException extends AlgorithmException
+	{
+		public ThreeDBuilderException(ThreeDBuilder c, String msg)
+		{
+			super(c, msg);
+		}
 	}
 
 	public static class ClusterException extends AlgorithmException

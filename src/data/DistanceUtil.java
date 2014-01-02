@@ -1,13 +1,18 @@
 package data;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import main.Settings;
 import util.ArrayUtil;
 import util.DistanceMatrix;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertyOwner;
+import dist.SimilarityMeasure;
+import dist.SimilartiyCache;
 
 public class DistanceUtil
 {
@@ -33,6 +38,48 @@ public class DistanceUtil
 			}
 		}
 		return ArrayUtil.euclDistance(d1, d2);
+	}
+
+	private static HashMap<String, Boolean[]> vals = new HashMap<String, Boolean[]>();
+
+	private static String valsKey(CompoundData c, List<CompoundProperty> props)
+	{
+		return Settings.MAPPED_DATASET.hashCode() + "#" + c.hashCode() + "#" + props.hashCode();
+	}
+
+	private static Boolean[] vals(CompoundData c, List<CompoundProperty> props)
+	{
+		String key = valsKey(c, props);
+		if (!vals.containsKey(key))
+		{
+			Boolean b[] = new Boolean[props.size()];
+			int i = 0;
+			for (CompoundProperty p : props)
+			{
+				if (p.getType() == Type.NUMERIC)
+					throw new IllegalStateException();
+				if (c.getStringValue(p) == null)
+					b[i++] = null;
+				else
+				{
+					String dom[] = p.getNominalDomainInMappedDataset();
+					if (dom.length != 2)
+						throw new IllegalStateException();
+					b[i++] = c.getStringValue(p).equals(dom[1]);
+				}
+			}
+			vals.put(key, b);
+		}
+		return vals.get(key);
+	}
+
+	public static Double similarity(List<CompoundData> instances, List<CompoundProperty> props,
+			SimilarityMeasure<Boolean> sim)
+	{
+		List<Boolean[]> vals = new ArrayList<Boolean[]>();
+		for (CompoundData c : instances)
+			vals.add(vals(c, props));
+		return SimilartiyCache.get(sim).similarity(vals);
 	}
 
 	public static DistanceMatrix<CompoundPropertyOwner> computeDistances(List<CompoundData> instances,

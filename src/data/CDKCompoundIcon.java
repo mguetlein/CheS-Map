@@ -4,6 +4,7 @@ import gui.MultiImageIcon;
 import gui.MultiImageIcon.Layout;
 import gui.MultiImageIcon.Orientation;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -57,7 +58,7 @@ public class CDKCompoundIcon
 			{
 				try
 				{
-					ImageIcon img = createIcon(m, false, w, h, Layout.horizontal);
+					ImageIcon img = createIcon(m, false, w, h, Layout.horizontal, false);
 					BufferedImage bi = new BufferedImage(img.getIconWidth(), img.getIconHeight(),
 							BufferedImage.TYPE_INT_RGB);
 					Graphics2D g2 = bi.createGraphics();
@@ -79,22 +80,23 @@ public class CDKCompoundIcon
 		}
 	}
 
-	public static MultiImageIcon createIcon(IMolecule iMolecule, boolean black, int width, int height, Layout layout)
-			throws CDKException
+	public static MultiImageIcon createIcon(IMolecule iMolecule, boolean black, int width, int height, Layout layout,
+			boolean translucent) throws CDKException
 	{
 		IMoleculeSet set = ConnectivityChecker.partitionIntoMolecules(iMolecule);
 		List<ImageIcon> icons = new ArrayList<ImageIcon>();
 		for (int i = 0; i < set.getAtomContainerCount(); i++)
-			icons.add(createIconDissconnected(set.getMolecule(i), black, width, height));
+			icons.add(createIconDissconnected(set.getMolecule(i), black, width, height, translucent));
 		return new MultiImageIcon(icons, layout, Orientation.center, 2);
 	}
 
-	private static ImageIcon createIconDissconnected(IMolecule iMolecule, boolean black, int width, int height)
-			throws CDKException
+	private static ImageIcon createIconDissconnected(IMolecule iMolecule, boolean black, int width, int height,
+			boolean translucent) throws CDKException
 	{
 		Color fColor = black ? Color.WHITE : Color.BLACK;
 		Color bColor = black ? Color.BLACK : Color.WHITE;
-		bColor = new Color(bColor.getRed(), bColor.getGreen(), bColor.getBlue(), 125);
+		bColor = translucent ? new Color(bColor.getRed(), bColor.getGreen(), bColor.getBlue(), 125) : new Color(
+				bColor.getRed(), bColor.getGreen(), bColor.getBlue());
 
 		int origWidth = 1;
 		int origHeight = 1;
@@ -139,7 +141,9 @@ public class CDKCompoundIcon
 		Rectangle result = renderer.shift(drawArea, diagramRectangle);
 		origHeight = (int) (result.getHeight() + result.y);
 		origWidth = (int) (result.getWidth() + result.x);
-		Image image = new BufferedImage(origWidth, origHeight, BufferedImage.TYPE_INT_ARGB);
+		Image image = new BufferedImage(origWidth, origHeight, translucent ? BufferedImage.TYPE_INT_ARGB
+				: BufferedImage.TYPE_INT_RGB);
+
 		Graphics2D g2 = (Graphics2D) image.getGraphics();
 		g2.setColor(bColor);
 		g2.fillRect(0, 0, origWidth, origHeight);
@@ -152,9 +156,11 @@ public class CDKCompoundIcon
 		//double scale = Math.min(sx, sy);
 		int scaledWidth = (int) (origWidth * scale);
 		int scaledHeight = (int) (origHeight * scale);
-		BufferedImage resizedImage = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage resizedImage = new BufferedImage(scaledWidth, scaledHeight,
+				translucent ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = resizedImage.createGraphics();
-		//g.setComposite(AlphaComposite.Src);
+		if (!translucent)
+			g.setComposite(AlphaComposite.Src);
 		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -179,12 +185,12 @@ public class CDKCompoundIcon
 		JPanel pB = new JPanel();
 		pB.setBackground(Color.BLACK);
 		//		pB.setBorder(new EmptyBorder(50, 50, 50, 50));
-		pB.add(new JLabel(createIcon(iMolecule, true, 200, 200, Layout.vertical)));
+		pB.add(new JLabel(createIcon(iMolecule, true, 200, 200, Layout.vertical, false)));
 
 		JPanel pW = new JPanel();
 		pW.setBackground(Color.WHITE);
 		//		pW.setBorder(new EmptyBorder(50, 50, 50, 50));
-		MultiImageIcon img = createIcon(iMolecule, false, 400, 400, Layout.horizontal);
+		MultiImageIcon img = createIcon(iMolecule, false, 400, 400, Layout.horizontal, false);
 		pW.add(new JLabel(img));
 
 		BufferedImage bi = new BufferedImage(img.getIconWidth(), img.getIconHeight(), BufferedImage.TYPE_INT_RGB);

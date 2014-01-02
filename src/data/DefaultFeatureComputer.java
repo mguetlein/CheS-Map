@@ -57,7 +57,6 @@ public class DefaultFeatureComputer implements FeatureComputer
 				for (int i = 0; i < propSet.getSize(dataset); i++)
 				{
 					props.add(propSet.get(dataset, i));
-					propSet.get(dataset, i).setMappedDataset(dataset);
 					features.add(propSet.get(dataset, i));
 
 					if (!TaskProvider.isRunning())
@@ -74,12 +73,17 @@ public class DefaultFeatureComputer implements FeatureComputer
 			{
 				p.setUsedForMapping(false);
 				props.add(p);
-				p.setMappedDataset(dataset);
 				properties.add(p);
 			}
 
 		String[] smiles = dataset.getSmiles();
 
+		for (int i = 0; i < numCompounds; i++)
+		{
+			CompoundDataImpl c = new CompoundDataImpl(smiles[i], dataset.getCompounds()[i]);
+			c.setOrigIndex(i);
+			compounds.add(c);
+		}
 		for (CompoundProperty p : props)
 		{
 			Double d[] = null;
@@ -102,15 +106,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 
 			for (int i = 0; i < numCompounds; i++)
 			{
-				CompoundDataImpl c;
-				if (compounds.size() > i)
-					c = (CompoundDataImpl) compounds.get(i);
-				else
-				{
-					c = new CompoundDataImpl(smiles[i], dataset.getCompounds()[i]);
-					c.setOrigIndex(i);
-					compounds.add(c);
-				}
+				CompoundDataImpl c = (CompoundDataImpl) compounds.get(i);
 
 				if (p.getType() == Type.NUMERIC)
 				{

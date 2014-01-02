@@ -78,12 +78,12 @@ public class CompoundPropertyPanel extends JPanel
 	JPanel comboPanel = new JPanel();
 	JLabel comboLabel = new JLabel();
 	JComboBox comboBox = new JComboBox();
-	JLabel missingValuesLabel = new JLabel(ImageLoader.WARNING);
+	JLabel missingValuesLabel = new JLabel(ImageLoader.getImage(ImageLoader.Image.warning));
 	LinkButton rawDataLink = new LinkButton("Raw data...");
 	JPanel featurePlotPanel = new JPanel(new BorderLayout());
 	ButtonGroup radioGroup = new ButtonGroup();
-	JToggleButton nominalFeatureButton = new JToggleButton("Nominal", ImageLoader.DISTINCT);
-	JToggleButton numericFeatureButton = new JToggleButton("Numeric", ImageLoader.NUMERIC);
+	JToggleButton nominalFeatureButton = new JToggleButton("Nominal", ImageLoader.getImage(ImageLoader.Image.distinct));
+	JToggleButton numericFeatureButton = new JToggleButton("Numeric", ImageLoader.getImage(ImageLoader.Image.numeric));
 	JPanel mainPanel;
 
 	private boolean selfUpdate = false;

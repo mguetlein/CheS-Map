@@ -57,8 +57,6 @@ public interface CompoundProperty
 
 	public Boolean isInteger(DatasetFile dataset);
 
-	public void setMappedDataset(DatasetFile dataset);
-
 	public Boolean isIntegerInMappedDataset();
 
 	public boolean isLogHighlightingEnabled();

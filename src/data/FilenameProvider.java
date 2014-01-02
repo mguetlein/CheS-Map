@@ -9,6 +9,7 @@ import util.ArrayUtil;
 import util.StringUtil;
 import alg.Algorithm;
 import alg.build3d.ThreeDBuilder;
+import appdomain.AppDomainComputer;
 import data.fragments.MatchEngine;
 import data.fragments.StructuralFragment;
 import dataInterface.CompoundProperty;
@@ -69,6 +70,11 @@ public class FilenameProvider
 		String enc = (clusteringData != null && cps.isSensitiveTo3D()) ? (getEncodedSettings(clusteringData
 				.getThreeDBuilder()) + ".") : "";
 		return Settings.destinationFile(dataset, enc + cps.getNameIncludingParams());
+	}
+
+	public String getAppDomainValuesFilePath(AppDomainComputer app, String param)
+	{
+		return Settings.destinationFile(dataset, getEncodedSettingsIncludingFeatures(app) + "." + param);
 	}
 
 	public String getSmartsMatchesFilePath(MatchEngine matchEngine, List<StructuralFragment> fragments)

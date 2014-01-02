@@ -22,6 +22,7 @@ import util.FileUtil;
 import util.ImageLoader;
 import util.OSUtil;
 import babel.OBWrapper;
+import data.obdesc.OBDescriptorFactory;
 
 public class BinHandler
 {
@@ -88,6 +89,16 @@ public class BinHandler
 				Settings.LOGGER.info("External program " + binary.getCommand() + " found at " + binary.getLocation());
 			else
 				Settings.LOGGER.warn("External program " + binary.getCommand() + " not found");
+		}
+		if (BABEL_BINARY.isFound())
+		{
+			new Thread(new Runnable()
+			{
+				public void run()
+				{
+					OBDescriptorFactory.getDescriptorIDs(false);
+				}
+			}).start();
 		}
 	}
 
@@ -192,13 +203,13 @@ public class BinHandler
 			public void propertyChange(PropertyChangeEvent evt)
 			{
 				if (bin.isFound())
-					l.setIcon(ImageLoader.TOOL);
+					l.setIcon(ImageLoader.getImage(ImageLoader.Image.tool));
 			}
 		});
 		if (!bin.isFound())
-			l.setIcon(ImageLoader.ERROR);
+			l.setIcon(ImageLoader.getImage(ImageLoader.Image.error));
 		else
-			l.setIcon(ImageLoader.TOOL);
+			l.setIcon(ImageLoader.getImage(ImageLoader.Image.tool));
 		l.addActionListener(new ActionListener()
 		{
 			@Override

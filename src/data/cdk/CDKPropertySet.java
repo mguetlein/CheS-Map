@@ -23,15 +23,15 @@ import dataInterface.CompoundPropertySet;
 
 public class CDKPropertySet implements CompoundPropertySet
 {
-	public static final CDKPropertySet[] DESCRIPTORS = new CDKPropertySet[CDKDescriptor.CDK_DESCRIPTORS.length];
-	public static final CDKPropertySet[] NUMERIC_DESCRIPTORS = new CDKPropertySet[CDKDescriptor.CDK_NUMERIC_DESCRIPTORS.length];
+	public static final CDKPropertySet[] DESCRIPTORS = new CDKPropertySet[CDKDescriptor.getDescriptors().length];
+	public static final CDKPropertySet[] NUMERIC_DESCRIPTORS = new CDKPropertySet[CDKDescriptor.getNumericDescriptors().length];
 	static
 	{
 		int count = 0;
-		for (CDKDescriptor d : CDKDescriptor.CDK_DESCRIPTORS)
+		for (CDKDescriptor d : CDKDescriptor.getDescriptors())
 			DESCRIPTORS[count++] = new CDKPropertySet(d);
 		count = 0;
-		for (CDKDescriptor d : CDKDescriptor.CDK_NUMERIC_DESCRIPTORS)
+		for (CDKDescriptor d : CDKDescriptor.getNumericDescriptors())
 			NUMERIC_DESCRIPTORS[count++] = new CDKPropertySet(d);
 	}
 
@@ -74,7 +74,7 @@ public class CDKPropertySet implements CompoundPropertySet
 
 	public static CDKProperty fromFeatureName(String s)
 	{
-		for (CDKDescriptor d : CDKDescriptor.CDK_NUMERIC_DESCRIPTORS)
+		for (CDKDescriptor d : CDKDescriptor.getNumericDescriptors())
 			for (int i = 0; i < d.getSize(); i++)
 				if (d.getFeatureName(i).equals(s))
 					return CDKProperty.create(d, i);

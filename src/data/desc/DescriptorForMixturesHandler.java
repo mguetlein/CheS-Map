@@ -46,7 +46,7 @@ public class DescriptorForMixturesHandler
 		}
 	}
 
-	private static boolean isMixture(IMolecule mol)
+	public static boolean isMixture(IMolecule mol)
 	{
 		split(mol);
 		return mixture.get(mol);

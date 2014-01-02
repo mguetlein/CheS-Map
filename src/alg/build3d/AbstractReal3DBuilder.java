@@ -5,7 +5,6 @@ import io.SDFUtil.SDChecker;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
@@ -30,7 +29,7 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 
 	private String threeDFilename;
 
-	public abstract void build3D(DatasetFile dataset, String outFile);
+	public abstract boolean[] build3D(DatasetFile dataset, String outFile) throws Exception;
 
 	public String get3DSDFile()
 	{
@@ -46,15 +45,20 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 		return threeD.exists();
 	}
 
-	boolean autoCorrect = true;
+	enum AutoCorrect
+	{
+		disabled, external, sdf2D
+	}
+
+	AutoCorrect autoCorrect = AutoCorrect.external;
 
 	public void disableAutocorrect()
 	{
-		autoCorrect = false;
+		autoCorrect = AutoCorrect.disabled;
 	}
 
 	@Override
-	public void build3D(final DatasetFile dataset)
+	public void build3D(final DatasetFile dataset) throws Exception
 	{
 		String sdfFile = dataset.getSDF();
 		File orig = new File(sdfFile);
@@ -97,11 +101,15 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 					}
 				});
 				th.start();
-				build3D(dataset, tmpFile.getAbsolutePath());
+				boolean[] build3dsuccessfull = build3D(dataset, tmpFile.getAbsolutePath());
 				running = false;
 
-				if (autoCorrect)
-					check3DSDFile(tmpFile.getAbsolutePath(), dataset.getSDF(), tmpFile.getAbsolutePath());
+				if (autoCorrect == AutoCorrect.sdf2D)
+					check3DSDFile(tmpFile.getAbsolutePath(), dataset.getSDF(), tmpFile.getAbsolutePath(),
+							build3dsuccessfull);
+				else if (autoCorrect == AutoCorrect.external)
+					check3DSDFileExternal(tmpFile.getAbsolutePath(), dataset.getSmiles(), tmpFile.getAbsolutePath(),
+							build3dsuccessfull);
 
 				if (!TaskProvider.isRunning())
 					return;
@@ -114,10 +122,6 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 				Settings.LOGGER.info("3d already computed: " + finalFile);
 			threeDFilename = finalFile;
 		}
-		catch (IOException e)
-		{
-			Settings.LOGGER.error(e);
-		}
 		finally
 		{
 			running = false;
@@ -127,7 +131,7 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 	static SDChecker sdCheck = new SDChecker()
 	{
 		@Override
-		public boolean invalid(String compoundString)
+		public boolean invalid(String compoundString, int sdFileIndex)
 		{
 			try
 			{
@@ -174,14 +178,38 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 		}
 	};
 
-	public static void check3DSDFile(String sdf3Dcorrupt, String sdf2Dcorrect, String sdfResult)
+	public static class CombinedSDFChecker implements SDChecker
 	{
-		SDFUtil.checkSDFile(sdf3Dcorrupt, sdf2Dcorrect, sdfResult, sdCheck);
+		boolean valid[];
+
+		public CombinedSDFChecker(boolean valid[])
+		{
+			this.valid = valid;
+		}
+
+		@Override
+		public boolean invalid(String compoundString, int sdFileIndex)
+		{
+			if (valid != null && !valid[sdFileIndex])
+				return true;
+			else
+				return sdCheck.invalid(compoundString, sdFileIndex);
+		}
 	}
 
-	public static void check3DSDFileExternal(String sdf3Dcorrupt, String smiFile, String sdfResult)
+	public static void check3DSDFile(String sdf3Dcorrupt, String sdf2Dcorrect, String sdfResult, boolean[] valid)
 	{
-		SDFUtil.checkSDFileExternal(sdf3Dcorrupt, smiFile, sdfResult, sdCheck);
+		SDFUtil.checkSDFile(sdf3Dcorrupt, sdf2Dcorrect, sdfResult, new CombinedSDFChecker(valid));
+	}
+
+	public static void check3DSDFileExternal(String sdf3Dcorrupt, String smiFile, String sdfResult, boolean[] valid)
+	{
+		SDFUtil.checkSDFileExternal(sdf3Dcorrupt, smiFile, sdfResult, new CombinedSDFChecker(valid));
+	}
+
+	public static void check3DSDFileExternal(String sdf3Dcorrupt, String smiles[], String sdfResult, boolean[] valid)
+	{
+		SDFUtil.checkSDFileExternal(sdf3Dcorrupt, smiles, sdfResult, new CombinedSDFChecker(valid));
 	}
 
 	@Override

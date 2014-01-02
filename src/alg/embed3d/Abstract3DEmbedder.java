@@ -82,8 +82,6 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 
 	protected abstract String getShortName();
 
-	protected abstract double[][] getFeatureDistanceMatrix();
-
 	public void embedDataset(DatasetFile dataset, List<CompoundData> instances, List<CompoundProperty> features)
 			throws Exception
 	{

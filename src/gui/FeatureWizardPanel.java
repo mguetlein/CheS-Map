@@ -182,19 +182,19 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 				ImageIcon typeIcon = null;
 
 				if (elem.getBinary() != null && !elem.getBinary().isFound())
-					warningIcon = ImageLoader.ERROR;
+					warningIcon = ImageLoader.getImage(ImageLoader.Image.error);
 
 				CompoundProperty.Type type = CompoundPropertySetUtil.getType(elem);
 				if (type == Type.NUMERIC)
-					typeIcon = ImageLoader.NUMERIC;
+					typeIcon = ImageLoader.getImage(ImageLoader.Image.numeric);
 				else if (type == Type.NOMINAL)
-					typeIcon = ImageLoader.DISTINCT;
+					typeIcon = ImageLoader.getImage(ImageLoader.Image.distinct);
 				else if (elem.getSize(dataset) == 1 && warningIcon == null)
-					warningIcon = ImageLoader.WARNING;
+					warningIcon = ImageLoader.getImage(ImageLoader.Image.warning);
 
 				if (!elem.isComputed(dataset) && !(Settings.CACHING_ENABLED && elem.isCached(dataset))
 						&& elem.isComputationSlow())
-					warningIcon = ImageLoader.HOURGLASS;
+					warningIcon = ImageLoader.getImage(ImageLoader.Image.hourglass);
 
 				if (warningIcon == null)
 					return typeIcon;
@@ -217,7 +217,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			public ImageIcon getCategoryIcon(String name)
 			{
 				if (OB_FEATURES.equals(name) && !BinHandler.BABEL_BINARY.isFound())
-					return ImageLoader.ERROR;
+					return ImageLoader.getImage(ImageLoader.Image.error);
 				else
 					return null;
 			}

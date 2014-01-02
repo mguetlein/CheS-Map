@@ -31,64 +31,75 @@ import util.ArrayUtil;
 public class CDKDescriptor
 {
 	public static final DescriptorEngine ENGINE = new DescriptorEngine(DescriptorEngine.MOLECULAR);
-	static CDKDescriptor[] CDK_DESCRIPTORS;
-	static CDKDescriptor[] CDK_NUMERIC_DESCRIPTORS;
+	private static CDKDescriptor[] CDK_DESCRIPTORS;
+	private static CDKDescriptor[] CDK_NUMERIC_DESCRIPTORS;
 
-	static
+	static synchronized CDKDescriptor[] getNumericDescriptors()
 	{
-		try
+		if (CDK_NUMERIC_DESCRIPTORS == null)
+			getDescriptors();
+		return CDK_NUMERIC_DESCRIPTORS;
+	}
+
+	public static synchronized CDKDescriptor[] getDescriptors()
+	{
+		if (CDK_DESCRIPTORS == null)
 		{
-			//			List<IDescriptor> descriptorList = ENGINE.getDescriptorInstances(); // not working in webstart
-			List<IDescriptor> descriptorList = new ArrayList<IDescriptor>();
-			BufferedReader buffy = new BufferedReader(new InputStreamReader(
-					IMolecularDescriptor.class.getResourceAsStream("/qsar-descriptors.set")));
-			String s = null;
-			while ((s = buffy.readLine()) != null)
-				if (s.contains("descriptors.molecular"))
-					try
-					{
-						if (!(Settings.CDK_SKIP_SOME_DESCRIPTORS && (s.toLowerCase().contains("alogp") || s
-								.toLowerCase().contains("aminoacidcount"))))
-							descriptorList.add((IMolecularDescriptor) Class.forName(s).newInstance());
-					}
-					catch (Exception e)
-					{
-						//						Settings.LOGGER.warn("could not init descriptor: " + s);
-						//						Settings.LOGGER.error(e);
-					}
-			buffy.close();
-			Collections.sort(descriptorList, new Comparator<IDescriptor>()
+			try
 			{
-				@Override
-				public int compare(IDescriptor o1, IDescriptor o2)
+				//			List<IDescriptor> descriptorList = ENGINE.getDescriptorInstances(); // not working in webstart
+				List<IDescriptor> descriptorList = new ArrayList<IDescriptor>();
+				BufferedReader buffy = new BufferedReader(new InputStreamReader(
+						IMolecularDescriptor.class.getResourceAsStream("/qsar-descriptors.set")));
+				String s = null;
+				while ((s = buffy.readLine()) != null)
+					if (s.contains("descriptors.molecular"))
+						try
+						{
+							if (!(Settings.CDK_SKIP_SOME_DESCRIPTORS && (s.toLowerCase().contains("alogp") || s
+									.toLowerCase().contains("aminoacidcount"))))
+								descriptorList.add((IMolecularDescriptor) Class.forName(s).newInstance());
+						}
+						catch (Exception e)
+						{
+							//						Settings.LOGGER.warn("could not init descriptor: " + s);
+							//						Settings.LOGGER.error(e);
+						}
+				buffy.close();
+				Collections.sort(descriptorList, new Comparator<IDescriptor>()
 				{
-					return o1.getClass().getName().compareTo(o2.getClass().getName());
+					@Override
+					public int compare(IDescriptor o1, IDescriptor o2)
+					{
+						return o1.getClass().getName().compareTo(o2.getClass().getName());
+					}
+				});
+				Settings.LOGGER.info("Loaded " + descriptorList.size() + " cdk descriptors");
+
+				CDK_DESCRIPTORS = new CDKDescriptor[descriptorList.size()];
+				int i = 0;
+				for (IDescriptor c : descriptorList)
+				{
+					CDK_DESCRIPTORS[i++] = new CDKDescriptor((IMolecularDescriptor) c);
+					//				Settings.LOGGER.print("new " + c.getClass().getSimpleName() + "(), ");
 				}
-			});
-			Settings.LOGGER.info("Loaded " + descriptorList.size() + " cdk descriptors");
 
-			CDK_DESCRIPTORS = new CDKDescriptor[descriptorList.size()];
-			int i = 0;
-			for (IDescriptor c : descriptorList)
-			{
-				CDK_DESCRIPTORS[i++] = new CDKDescriptor((IMolecularDescriptor) c);
-				//				Settings.LOGGER.print("new " + c.getClass().getSimpleName() + "(), ");
+				List<CDKDescriptor> numDesc = new ArrayList<CDKDescriptor>();
+				for (CDKDescriptor desc : CDK_DESCRIPTORS)
+					if (desc.numeric)
+						numDesc.add(desc);
+				CDK_NUMERIC_DESCRIPTORS = new CDKDescriptor[numDesc.size()];
+				numDesc.toArray(CDK_NUMERIC_DESCRIPTORS);
 			}
-
-			List<CDKDescriptor> numDesc = new ArrayList<CDKDescriptor>();
-			for (CDKDescriptor desc : CDK_DESCRIPTORS)
-				if (desc.numeric)
-					numDesc.add(desc);
-			CDK_NUMERIC_DESCRIPTORS = new CDKDescriptor[numDesc.size()];
-			numDesc.toArray(CDK_NUMERIC_DESCRIPTORS);
+			catch (Exception e)
+			{
+				Settings.LOGGER.error("could not load CDK descriptors");
+				Settings.LOGGER.error(e);
+				CDK_DESCRIPTORS = new CDKDescriptor[0];
+				CDK_NUMERIC_DESCRIPTORS = new CDKDescriptor[0];
+			}
 		}
-		catch (Exception e)
-		{
-			Settings.LOGGER.error("could not load CDK descriptors");
-			Settings.LOGGER.error(e);
-			CDK_DESCRIPTORS = new CDKDescriptor[0];
-			CDK_NUMERIC_DESCRIPTORS = new CDKDescriptor[0];
-		}
+		return CDK_DESCRIPTORS;
 	}
 
 	private IMolecularDescriptor m;

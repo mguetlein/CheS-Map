@@ -5,15 +5,18 @@ import java.util.List;
 
 import javax.vecmath.Vector3f;
 
+import util.ArrayUtil;
 import util.StringUtil;
 import alg.FeatureComputer;
 import alg.align3d.NoAligner;
 import alg.align3d.ThreeDAligner;
 import alg.build3d.ThreeDBuilder;
+import alg.build3d.UseOrigStructures;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
+import appdomain.AppDomainComputer;
 import data.ClusteringData;
 import data.CompoundDataImpl;
 import data.DatasetFile;
@@ -21,6 +24,7 @@ import data.DefaultFeatureComputer;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
 import dataInterface.CompoundPropertyUtil;
 
@@ -34,6 +38,7 @@ public class CheSMapping
 	ThreeDAligner threeDAligner;
 
 	Random3DEmbedder randomEmbedder = Random3DEmbedder.INSTANCE;
+	UseOrigStructures no3DBuilder = UseOrigStructures.INSTANCE;
 	NoClusterer noClusterer = NoClusterer.INSTANCE;
 	ThreeDAligner noAligner = NoAligner.INSTANCE;
 
@@ -50,6 +55,7 @@ public class CheSMapping
 
 	ClusteringData clusteringData;
 	Throwable mappingError;
+	Exception threeDBuilderException;
 	Exception clusterException;
 	Exception embedderException;
 	Exception alignException;
@@ -66,13 +72,13 @@ public class CheSMapping
 			{
 				try
 				{
+					Settings.MAPPED_DATASET = dataset;
+
+					if (dataset.getCompounds().length == 0)
+						throw new IllegalStateException("no compounds");
+
 					TaskProvider.update(10, "Compute 3d structure for compounds");
-					threeDGenerator.build3D(dataset);
-					dataset.setSDF3D(threeDGenerator.get3DSDFile());
-					if (dataset.getSDF3D() == null)
-						throw new IllegalStateException();
-					if (!dataset.getSDF().equals(dataset.getSDF3D()))
-						dataset.updateCompoundStructureFrom3DSDF();
+					build3d(dataset, threeDGenerator);
 
 					ClusteringData clustering = new ClusteringData(dataset);
 
@@ -86,6 +92,9 @@ public class CheSMapping
 						clustering.addProperty(p);
 					for (CompoundData c : featureComputer.getCompounds())
 						clustering.addCompound(c);
+					if (dataset.getCompounds().length != clustering.getCompounds().size())
+						throw new IllegalStateException("num compounds does not fit " + dataset.getCompounds().length
+								+ " != " + clustering.getCompounds().size());
 
 					List<CompoundProperty> featuresWithInfo = new ArrayList<CompoundProperty>();
 					for (CompoundProperty p : clustering.getFeatures())
@@ -101,6 +110,8 @@ public class CheSMapping
 						return;
 					TaskProvider.update(40, "Embed compounds into 3D space");
 					embedDataset(dataset, clustering, featuresWithInfo);
+
+					//computedAppDomain(dataset, clustering, featuresWithInfo);
 
 					if (clustering.getDatasetClusterer() != noClusterer
 							&& clustering.getThreeDEmbedder() != randomEmbedder
@@ -168,6 +179,33 @@ public class CheSMapping
 		return alignException;
 	}
 
+	private void build3d(DatasetFile dataset, ThreeDBuilder builder)
+	{
+		ThreeDBuilder b = threeDGenerator;
+		threeDBuilderException = null;
+		try
+		{
+			b.build3D(dataset);
+		}
+		catch (Exception e)
+		{
+			threeDBuilderException = e;
+			Settings.LOGGER.error(e);
+			if (b == no3DBuilder)
+				throw new Error("internal error: no 3d builder should not fail!", e);
+			TaskProvider.warning(b.getName() + " failed on building 3d structures", e.getMessage());
+
+			b = no3DBuilder;
+			no3DBuilder.build3D(dataset);
+		}
+
+		dataset.setSDF3D(b.get3DSDFile());
+		if (dataset.getSDF3D() == null)
+			throw new IllegalStateException();
+		if (!dataset.getSDF().equals(dataset.getSDF3D()))
+			dataset.updateCompoundStructureFrom3DSDF();
+	}
+
 	private void clusterDataset(DatasetFile dataset, ClusteringData clustering, List<CompoundProperty> featuresWithInfo)
 	{
 		DatasetClusterer clusterer = datasetClusterer;
@@ -212,8 +250,48 @@ public class CheSMapping
 		if (dataset.getSDFClustered() == null)
 			throw new IllegalStateException();
 
+		int sum = 0;
 		for (ClusterData c : clusterer.getClusters())
+		{
+			if (c.getSize() == 0)
+				throw new IllegalStateException("internal error: cluster has size 0");
+			sum += c.getSize();
 			clustering.addCluster(c);
+		}
+		if (sum != clustering.getCompounds().size())
+			throw new IllegalStateException("internal error: num clustered compounds does not fit");
+	}
+
+	private void computedAppDomain(DatasetFile dataset, ClusteringData clustering,
+			List<CompoundProperty> featuresWithInfo)
+	{
+		for (CompoundProperty p : featuresWithInfo)
+			if (p.getType() != Type.NUMERIC || p.numMissingValues(dataset) > 0)
+				return;
+
+		//AppDomainComputer appDomain[] = new AppDomainComputer[] { AppDomainHelper.select() };
+		AppDomainComputer appDomain[] = AppDomainComputer.APP_DOMAIN_COMPUTERS;
+		if (appDomain != null && appDomain.length > 0)
+		{
+			List<CompoundProperty> props = new ArrayList<CompoundProperty>();
+			for (AppDomainComputer ad : appDomain)
+			{
+				ad.computeAppDomain(dataset, clustering.getCompounds(), featuresWithInfo, clustering
+						.getThreeDEmbedder().getFeatureDistanceMatrix());
+				props.add(ad.getInsideAppDomainProperty());
+				props.add(ad.getPropabilityAppDomainProperty());
+				for (int i = 0; i < clustering.getNumCompounds(false); i++)
+				{
+					((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(
+							ad.getPropabilityAppDomainProperty(),
+							ad.getPropabilityAppDomainProperty().getDoubleValues(dataset)[i]);
+					((CompoundDataImpl) clustering.getCompounds().get(i)).setStringValue(
+							ad.getInsideAppDomainProperty(),
+							ad.getInsideAppDomainProperty().getStringValues(dataset)[i]);
+				}
+			}
+			clustering.setAppDomainProperties(ArrayUtil.toArray(props));
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -297,7 +375,6 @@ public class CheSMapping
 				for (int i = 0; i < clustering.getNumCompounds(false); i++)
 					((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(embedder.getCCCProperty(),
 							embedder.getCCCProperty().getDoubleValues(dataset)[i]);
-				embedder.getCCCProperty().setMappedDataset(dataset);
 				clustering.setEmbeddingQualityProperty(embedder.getCCCProperty());
 			}
 

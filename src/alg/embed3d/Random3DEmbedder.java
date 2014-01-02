@@ -51,6 +51,12 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	}
 
 	@Override
+	public double[][] getFeatureDistanceMatrix()
+	{
+		return null;
+	}
+
+	@Override
 	public CompoundProperty getCCCProperty()
 	{
 		return null;
@@ -67,13 +73,25 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 
 	private Random rand;
 
+	private static double START_DIST = 0.9;
+	private static int NUM_ATTEMPTS = 50;
+
+	static
+	{
+		if (Settings.LARGE_DATA)
+		{
+			START_DIST = 0.1;
+			NUM_ATTEMPTS = 3;
+		}
+	}
+
 	private Vector3f addRandomPosition(List<Vector3f> existing, float radius) //, float clusterRadius)
 	{
 		//		if (existing == null || existing.size() == 0)
 		//			return new Vector3f(0, 0, 0);
 
 		int count = 0;
-		double dist = radius * 0.9;
+		double dist = radius * START_DIST;
 		while (true)
 		{
 			Vector3f v = Vector3fUtil.randomVector(radius, rand);
@@ -89,9 +107,9 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 			if (!centerTooClose)
 				return v;
 			count++;
-			if (count > 50 && count % 10 == 0)
+			if (count > NUM_ATTEMPTS)
 			{
-				//Settings.LOGGER.warn("reduce radius " + count);
+				Settings.LOGGER.warn("reduce radius " + count);
 				dist *= 0.9;
 			}
 		}

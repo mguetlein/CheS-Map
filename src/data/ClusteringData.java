@@ -29,6 +29,7 @@ public class ClusteringData
 	private String embedQuality;
 
 	private CompoundProperty embedQualityProperty;
+	private CompoundProperty appDomainProperties[];
 	private List<CompoundProperty> distanceToProperties;
 
 	private ThreeDBuilder threeDBuilder;
@@ -165,6 +166,16 @@ public class ClusteringData
 		this.embedQualityProperty = embedQualityProperty;
 	}
 
+	public void setAppDomainProperties(CompoundProperty... appDomainProperty)
+	{
+		this.appDomainProperties = appDomainProperty;
+	}
+
+	public CompoundProperty[] getAppDomainProperties()
+	{
+		return appDomainProperties;
+	}
+
 	public List<CompoundProperty> getDistanceToProperties()
 	{
 		return distanceToProperties;
@@ -214,4 +225,5 @@ public class ClusteringData
 	{
 		return threeDAligner;
 	}
+
 }

@@ -182,6 +182,13 @@ public class CheSMapperWizard extends WizardDialog
 		return "Start mapping";
 	}
 
+	@Override
+	protected void close(int returnValue)
+	{
+		Settings.TOP_LEVEL_FRAME_SCREEN = ScreenUtil.getScreen(this);
+		super.close(returnValue);
+	}
+
 	protected void update(int status)
 	{
 		if (dataset.getDatasetFile() != null)

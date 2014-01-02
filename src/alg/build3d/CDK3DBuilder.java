@@ -24,9 +24,9 @@ public class CDK3DBuilder extends AbstractReal3DBuilder
 	}
 
 	@Override
-	public void build3D(DatasetFile dataset, String outfile)
+	public boolean[] build3D(DatasetFile dataset, String outfile)
 	{
-		FeatureService.generateCDK3D(dataset, outfile, forcefield.getValue().toString());
+		return FeatureService.generateCDK3D(dataset, outfile, forcefield.getValue().toString());
 	}
 
 	@Override

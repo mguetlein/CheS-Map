@@ -196,7 +196,45 @@ public class EmbedUtil
 		//		Settings.LOGGER.println(ArrayUtil.toString(d));
 	}
 
-	private static double[][] euclMatrix(List<CompoundData> instances, List<CompoundProperty> features,
+	//	private static HashMap<String, Double> euclCompoundDistance = new HashMap<String, Double>();
+	//
+	//	private static String keyDistance(DatasetFile dataset, CompoundData c1, CompoundData c2)
+	//	{
+	//		CompoundData c1_ = c1;
+	//		CompoundData c2_ = c2;
+	//		if (c1_.getOrigIndex() > c2.getOrigIndex())
+	//		{
+	//			c1_ = c2;
+	//			c2_ = c1;
+	//		}
+	//		return dataset.hashCode() + "#" + c1_.hashCode() + "#" + c2_.hashCode();
+	//	}
+	//
+	//	private static void putDistance(DatasetFile dataset, CompoundData c1, CompoundData c2, Double dist)
+	//	{
+	//		euclCompoundDistance.put(keyDistance(dataset, c1, c2), dist);
+	//	}
+	//
+	//	public static Double getDistance(DatasetFile dataset, CompoundData c1, CompoundData c2)
+	//	{
+	//		return euclCompoundDistance.get(keyDistance(dataset, c1, c2));
+	//	}
+	//
+	//	public static Double getDistance(DatasetFile dataset, List<CompoundData> instances)
+	//	{
+	//		List<Double> distances = new ArrayList<Double>();
+	//		for (int i = 0; i < instances.size() - 1; i++)
+	//			for (int j = i + 1; j < instances.size(); j++)
+	//				distances.add(getDistance(dataset, instances.get(i), instances.get(j)));
+	//		return DoubleArraySummary.create(distances).getMedian();
+	//	}
+	//
+	//	public static Double getDistanceInMappedDataset(List<CompoundData> instances)
+	//	{
+	//		return getDistance(Settings.MAPPED_DATASET, instances);
+	//	}
+
+	public static double[][] euclMatrix(List<CompoundData> instances, List<CompoundProperty> features,
 			DatasetFile dataset)
 	{
 		HashMap<CompoundPropertyOwner, double[]> vals = new HashMap<CompoundPropertyOwner, double[]>();
@@ -250,6 +288,7 @@ public class EmbedUtil
 			for (int j = i + 1; j < instances.size(); j++)
 			{
 				d[i][j] = ArrayUtil.euclDistance(vals.get(instances.get(i)), vals.get(instances.get(j)));
+				//				putDistance(dataset, instances.get(i), instances.get(j), d[i][j]);
 				d[j][i] = d[i][j];
 			}
 		//		Settings.LOGGER.println(ArrayUtil.toString(d));

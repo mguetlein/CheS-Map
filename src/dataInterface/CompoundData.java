@@ -11,7 +11,7 @@ public interface CompoundData extends CompoundPropertyOwner
 
 	public String getSmiles();
 
-	public ImageIcon getIcon(boolean blackBackground, int width, int height);
+	public ImageIcon getIcon(boolean blackBackground, int width, int height, boolean translucent);
 
 	public Double getNormalizedValueCompleteDataset(CompoundProperty p);
 }

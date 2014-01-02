@@ -79,7 +79,7 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 			l.setForegroundFont(l.getFont().deriveFont(Font.PLAIN));
 			l.setSelectedForegroundFont(l.getFont().deriveFont(Font.PLAIN));
 			l.setSelectedForegroundColor(Color.BLUE);
-			l.setIcon(ImageLoader.TOOL);
+			l.setIcon(ImageLoader.getImage(ImageLoader.Image.tool));
 			l.addActionListener(new ActionListener()
 			{
 				@Override

@@ -87,13 +87,17 @@ public class Settings
 	}
 
 	public static JFrame TOP_LEVEL_FRAME = null;
+	public static int TOP_LEVEL_FRAME_SCREEN = -1;
 	public static Random RANDOM = new Random();
+	public static Boolean LARGE_DATA = false;
 	public static Boolean DBG = false;
-	public static Boolean CACHING_ENABLED = false;
+	public static Boolean CACHING_ENABLED = true;
 	public static Boolean DESC_MIXTURE_HANDLING = false;
-	public static ImageIcon CHES_MAPPER_IMAGE = ImageLoader.CHES_MAPPER;
-	public static ImageIcon CHES_MAPPER_ICON = ImageLoader.CHES_MAPPER_ICON;
-	public static ImageIcon OPENTOX_IMAGE = ImageLoader.OPENTOX;
+	public static DatasetFile MAPPED_DATASET = null;
+
+	public static ImageIcon CHES_MAPPER_IMAGE = ImageLoader.getImage(ImageLoader.Image.ches_mapper);
+	public static ImageIcon CHES_MAPPER_ICON = ImageLoader.getImage(ImageLoader.Image.ches_mapper_icon);
+	public static ImageIcon OPENTOX_IMAGE = ImageLoader.getImage(ImageLoader.Image.opentox);
 
 	static
 	{

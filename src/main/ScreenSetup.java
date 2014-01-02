@@ -57,6 +57,11 @@ public class ScreenSetup
 		ScreenUtil.centerOnScreen(w, screen);
 	}
 
+	public void setViewerSize(Dimension viewerSize)
+	{
+		this.viewerSize = viewerSize;
+	}
+
 	public Dimension getViewerSize()
 	{
 		if (viewerSize == null)
@@ -66,6 +71,11 @@ public class ScreenSetup
 		}
 		else
 			return viewerSize;
+	}
+
+	public void setWizardSize(Dimension wizardSize)
+	{
+		this.wizardSize = wizardSize;
 	}
 
 	public Dimension getWizardSize()
@@ -88,6 +98,11 @@ public class ScreenSetup
 			return ScreenUtil.getScreenSize(this.screen);
 		else
 			return fullScreenSize;
+	}
+
+	public void setFullScreenSize(Dimension fullScreenSize)
+	{
+		this.fullScreenSize = fullScreenSize;
 	}
 
 	public boolean isAntialiasOn()
@@ -129,4 +144,5 @@ public class ScreenSetup
 	{
 		this.fontSize = fontSize;
 	}
+
 }

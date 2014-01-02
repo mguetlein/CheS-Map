@@ -643,8 +643,9 @@ public class FeatureService
 		return fileHas3D.get(dataset);
 	}
 
-	public static void generateCDK3D(DatasetFile dataset, String threeDFilename, String forcefield)
+	public static boolean[] generateCDK3D(DatasetFile dataset, String threeDFilename, String forcefield)
 	{
+		boolean valid[] = new boolean[dataset.getCompounds().length];
 		try
 		{
 			if (new File(threeDFilename).exists())
@@ -652,12 +653,15 @@ public class FeatureService
 
 			IMolecule mols[] = dataset.getCompounds();
 			ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), forcefield);
+
+			int count = 0;
 			for (IMolecule iMolecule : mols)
 			{
 				IMolecule molecule = iMolecule;
 				try
 				{
 					molecule = mb3d.generate3DCoordinates(molecule, true);
+					valid[count] = true;
 				}
 				catch (Exception e)
 				{
@@ -668,11 +672,11 @@ public class FeatureService
 				SDFWriter writer = new SDFWriter(new FileOutputStream(threeDFilename, true));
 				writer.write(molecule);
 				writer.close();
+				count++;
 
 				if (!TaskProvider.isRunning())
-					return;
+					return null;
 			}
-
 		}
 		catch (CDKException e)
 		{
@@ -682,6 +686,7 @@ public class FeatureService
 		{
 			Settings.LOGGER.error(e);
 		}
+		return valid;
 	}
 
 	/**
