@@ -181,7 +181,7 @@ public class ClusterDataImpl implements ClusterData
 	{
 		if (p.getType() != Type.NUMERIC)
 			throw new IllegalStateException();
-		return ((DoubleArraySummary) getSummaryValue(p)).getMedian();
+		return ((DoubleArraySummary) getSummaryValue(p)).getMean();
 	}
 
 	@SuppressWarnings("unchecked")
