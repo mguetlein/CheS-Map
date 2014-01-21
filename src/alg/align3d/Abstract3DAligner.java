@@ -57,6 +57,17 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 		if (Settings.CACHING_ENABLED && new File(alignedFile).exists())
 		{
 			Settings.LOGGER.info("3D aligned file already exists: " + alignedFile);
+
+			int count = 0;
+			for (ClusterData cluster : clusters)
+			{
+				MatchEngine matchEngine = cluster.getSubstructureSmartsMatchEngine(type);
+				String destFile = dataset.getAlignResultsPerClusterFilePath(count, cluster.getSubstructureSmarts(type)
+						+ matchEngine);
+				boolean aligned = new File(destFile).exists();
+				((ClusterDataImpl) cluster).setAlignAlgorithm(getName(), aligned);
+				count++;
+			}
 		}
 		else
 		{
