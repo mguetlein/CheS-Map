@@ -13,11 +13,34 @@ import dataInterface.CompoundProperty.Type;
 
 public class ExportRUtil
 {
-	public static void toRTable(Iterable<CompoundProperty> features, List<String[]> featureValues,
-			String destinationFile)
+	public static class NumericTable
 	{
-		Settings.LOGGER.info("store features in " + destinationFile);
+		public List<String> featureNames;
+		public List<String[]> featureValues;
 
+		private List<String[]> compoundValues;
+
+		public List<String[]> getCompoundValues()
+		{
+			if (compoundValues == null)
+			{
+				compoundValues = new ArrayList<String[]>();
+				int numCompounds = featureValues.get(0).length;
+				int numFeatures = featureValues.size();
+				for (int i = 0; i < numCompounds; i++)
+				{
+					String[] s = new String[numFeatures];
+					for (int j = 0; j < numFeatures; j++)
+						s[j] = featureValues.get(j)[i];
+					compoundValues.add(s);
+				}
+			}
+			return compoundValues;
+		}
+	}
+
+	public static NumericTable toNumericTable(Iterable<CompoundProperty> features, List<String[]> featureValues)
+	{
 		// transpose
 		List<String[]> featureValues1 = new ArrayList<String[]>();
 		for (@SuppressWarnings("unused")
@@ -66,6 +89,18 @@ public class ExportRUtil
 			}
 			count++;
 		}
-		RUtil.toRTable(featureNames2, featureValues2, destinationFile);
+		NumericTable t = new NumericTable();
+		t.featureNames = featureNames2;
+		t.featureValues = featureValues2;
+		return t;
+	}
+
+	public static void toRTable(Iterable<CompoundProperty> features, List<String[]> featureValues,
+			String destinationFile)
+	{
+		NumericTable t = toNumericTable(features, featureValues);
+		Settings.LOGGER.info("store features in " + destinationFile);
+		RUtil.toRTable(t.featureNames, t.featureValues, destinationFile);
+
 	}
 }
