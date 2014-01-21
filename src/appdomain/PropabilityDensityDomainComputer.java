@@ -25,7 +25,7 @@ public class PropabilityDensityDomainComputer extends AbstractAppDomainComputer
 	private KDensity1D[] kdeList = null;
 	private int nGrid = 1024;
 	protected double threshold = 0;
-	protected double pThreshold = 1.0;
+	protected double pThreshold = 0.95;
 
 	public boolean isEmpty()
 	{
@@ -124,7 +124,7 @@ public class PropabilityDensityDomainComputer extends AbstractAppDomainComputer
 		for (int i = 0; i < A.length; i++)
 		{
 			//			pValues[i] = A[i];
-			inside[i] = true;//A[i] >= threshold;
+			inside[i] = A[i] >= threshold;
 		}
 	}
 
@@ -193,24 +193,27 @@ public class PropabilityDensityDomainComputer extends AbstractAppDomainComputer
 		return domain;
 	}
 
-	protected double estimateThreshold(double percent, double[] values)
+	protected double estimateThreshold(double percent, double[] v)
 	{
 		double t;
 		int tIndex = 0;
-		if (percent == 1)
-		{
-			t = Tools.min(values, values.length);
-		}
-		else
-		{
-			Sort sort = new Sort();
-			sort.QuickSortArray(values, values.length);
-			sort = null;
-			tIndex = (int) Math.round(values.length * (1 - percent));
-			if (tIndex < 0)
-				tIndex = 0;
-			t = values[tIndex];
-		}
+		//		if (percent == 1)
+		//		{
+		//			t = Tools.min(values, values.length);
+		//		}
+		//		else
+		//		{
+		double values[] = new double[v.length];
+		for (int i = 0; i < values.length; i++)
+			values[i] = v[i];
+		Sort sort = new Sort();
+		sort.QuickSortArray(values, values.length);
+		sort = null;
+		tIndex = (int) Math.round(values.length * (1 - percent));
+		if (tIndex < 0)
+			tIndex = 0;
+		t = values[tIndex];
+		//		}
 		return t;
 
 	}
