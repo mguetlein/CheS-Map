@@ -20,12 +20,13 @@ import data.cdkfingerprints.CDKFingerprintSet;
 import data.fminer.FminerPropertySet;
 import data.obfingerprints.OBFingerprintSet;
 import dataInterface.AbstractCompoundProperty;
+import dataInterface.CompoundProperty.SubstructureType;
 import dataInterface.FragmentPropertySet;
 
 public class StructuralFragments
 {
-	List<FragmentPropertySet> fragmentList = new ArrayList<FragmentPropertySet>();
-	List<FragmentPropertySet> extendedFragmentList = new ArrayList<FragmentPropertySet>();
+	List<FragmentPropertySet> fragmentListAll = new ArrayList<FragmentPropertySet>();
+	List<FragmentPropertySet> extendedFragmentListAll = new ArrayList<FragmentPropertySet>();
 
 	private static final String[] included = new String[] { "patterns.csv", "SMARTS_InteLigand.csv", "MACCS.csv",
 			"DNA.csv", "Phospholipidosis.csv", "Protein.csv", "ToxTree_BB_CarcMutRules.csv",
@@ -53,14 +54,14 @@ public class StructuralFragments
 
 	public void reset(String showWarningForFile)
 	{
-		fragmentList.clear();
+		fragmentListAll.clear();
 		AbstractCompoundProperty.clearPropertyOfType(StructuralFragment.class);
 
 		for (OBFingerprintSet fp : OBFingerprintSet.VISIBLE_FINGERPRINTS)
-			fragmentList.add(fp);
+			fragmentListAll.add(fp);
 
 		for (CDKFingerprintSet fp : CDKFingerprintSet.FINGERPRINTS)
-			fragmentList.add(fp);
+			fragmentListAll.add(fp);
 
 		String files[] = Settings.getFragmentFiles();
 		Arrays.sort(files);
@@ -144,7 +145,7 @@ public class StructuralFragments
 				String comments = ListUtil.toString(csv.comments, "\n");
 				comments = comments.substring(2, comments.length() - 2);
 				desc += "\nComments:\n" + comments;
-				fragmentList.add(new StructuralFragmentSet(name, desc, a));
+				fragmentListAll.add(new StructuralFragmentSet(name, desc, a));
 			}
 			catch (Exception e)
 			{
@@ -157,33 +158,36 @@ public class StructuralFragments
 			}
 		}
 
-		extendedFragmentList.clear();
-		for (FragmentPropertySet f : fragmentList)
-			extendedFragmentList.add(f);
+		extendedFragmentListAll.clear();
+		for (FragmentPropertySet f : fragmentListAll)
+			extendedFragmentListAll.add(f);
 		for (OBFingerprintSet fp : OBFingerprintSet.HIDDEN_FINGERPRINTS)
-			extendedFragmentList.add(fp);
-		extendedFragmentList.add(new FminerPropertySet());
+			extendedFragmentListAll.add(fp);
+		extendedFragmentListAll.add(new FminerPropertySet());
 	}
 
 	public int getNumSets()
 	{
-		return fragmentList.size();
+		return fragmentListAll.size();
 	}
 
-	public FragmentPropertySet[] getSets()
+	public FragmentPropertySet[] getSets(SubstructureType type)
 	{
-		FragmentPropertySet a[] = new FragmentPropertySet[fragmentList.size()];
-		return fragmentList.toArray(a);
+		List<FragmentPropertySet> l = new ArrayList<FragmentPropertySet>();
+		for (FragmentPropertySet f : fragmentListAll)
+			if (f.getSubstructureType() == type)
+				l.add(f);
+		return ListUtil.toArray(FragmentPropertySet.class, l);
 	}
 
-	public FragmentPropertySet getSet(int i)
-	{
-		return fragmentList.get(i);
-	}
+	//	public FragmentPropertySet getSet(int i)
+	//	{
+	//		return fragmentList.get(i);
+	//	}
 
 	public FragmentPropertySet findFromString(String string)
 	{
-		for (FragmentPropertySet a : extendedFragmentList)
+		for (FragmentPropertySet a : extendedFragmentListAll)
 		{
 			if (a.toString().equals(string))
 				return a;

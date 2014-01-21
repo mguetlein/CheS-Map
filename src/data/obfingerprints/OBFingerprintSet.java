@@ -21,6 +21,7 @@ import util.ExternalToolUtil;
 import util.ListUtil;
 import data.DatasetFile;
 import data.fragments.StructuralFragmentProperties;
+import dataInterface.CompoundProperty.SubstructureType;
 import dataInterface.CompoundProperty.Type;
 import dataInterface.FragmentPropertySet;
 
@@ -42,6 +43,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 	FingerprintType type;
 	String name;
 	String description;
+	SubstructureType substructureType;
 
 	public OBFingerprintSet(FingerprintType type)
 	{
@@ -52,18 +54,22 @@ public class OBFingerprintSet extends FragmentPropertySet
 			case FP2:
 				name = Settings.text("features.struct.fp2");
 				description = Settings.text("features.struct.fp2.desc");
+				substructureType = SubstructureType.MINE;
 				break;
 			case FP3:
 				name = Settings.text("features.struct.fp3");
 				description = Settings.text("features.struct.fp3.desc");
+				substructureType = SubstructureType.MATCH;
 				break;
 			case FP4:
 				name = Settings.text("features.struct.fp4");
 				description = Settings.text("features.struct.fp4.desc");
+				substructureType = SubstructureType.MATCH;
 				break;
 			case MACCS:
 				name = Settings.text("features.struct.maccs");
 				description = Settings.text("features.struct.maccs.desc");
+				substructureType = SubstructureType.MATCH;
 				break;
 			default:
 				throw new Error("Unknown type");
@@ -93,6 +99,12 @@ public class OBFingerprintSet extends FragmentPropertySet
 	public boolean isSizeDynamic()
 	{
 		return true;
+	}
+
+	@Override
+	public SubstructureType getSubstructureType()
+	{
+		return substructureType;
 	}
 
 	@Override

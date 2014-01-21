@@ -21,6 +21,7 @@ import util.FileUtil.UnexpectedNumColsException;
 import data.CDKSmartsHandler;
 import data.DatasetFile;
 import data.OpenBabelSmartsHandler;
+import dataInterface.CompoundProperty.SubstructureType;
 import dataInterface.CompoundProperty.Type;
 import dataInterface.FragmentPropertySet;
 
@@ -113,6 +114,12 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	public boolean isSizeDynamic()
 	{
 		return true;
+	}
+
+	@Override
+	public SubstructureType getSubstructureType()
+	{
+		return SubstructureType.MATCH;
 	}
 
 	@Override

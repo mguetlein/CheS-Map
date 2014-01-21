@@ -58,6 +58,7 @@ import data.fragments.StructuralFragmentProperties;
 import data.fragments.StructuralFragments;
 import data.obdesc.OBDescriptorProperty;
 import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.SubstructureType;
 import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
 import dataInterface.CompoundPropertySetUtil;
@@ -77,14 +78,21 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 	private String addFeaturesText = "Add feature";
 	private String remFeaturesText = "Remove feature";
 
-	public static final String ROOT = "Features";
+	public static final String ROOT = Settings.text("features.root");
+
 	public static final String INTEGRATED_FEATURES = Settings.text("features.integrated");
-	public static final String CDK_FEATURES = Settings.text("features.cdk");
-	public static final String OB_FEATURES = Settings.text("features.ob");
+	public static final String PC_FEATURES = Settings.text("features.pc");
 	public static final String STRUCTURAL_FRAGMENTS = Settings.text("features.struct");
 
+	public static final String MINE_STRUCTURAL_FRAGMENTS = Settings.text("features.struct.mine");
+	public static final String MATCH_STRUCTURAL_FRAGMENTS = Settings.text("features.struct.match");
+
+	public static final String CDK_FEATURES = Settings.text("features.cdk");
+	public static final String OB_FEATURES = Settings.text("features.ob");
+
 	JPanel structuralFragmentPropsContainer;
-	private JPanel propsPanel;
+	private JPanel fragmentPropsPanel;
+	private JPanel fragmentPropsPanelSMARTS;
 	private StructuralFragmentPropertiesPanel fragmentProperties;
 	CheSMapperWizard wizard;
 
@@ -150,7 +158,10 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		builder.appendParagraphGapRow();
 		builder.nextLine();
 		builder.append(fragmentProperties.getSummaryPanel(wizard), 2);
-		propsPanel = builder.getPanel();
+		fragmentPropsPanelSMARTS = builder.getPanel();
+
+		fragmentPropsPanel = new JPanel();
+		fragmentPropsPanel.add(fragmentProperties.getSummaryPanel(wizard));
 
 		compoundPropertyPanel = new CompoundPropertyPanel(this, wizard);
 		structuralFragmentPropsContainer = new JPanel(new BorderLayout());
@@ -232,6 +243,13 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 				else
 					return elem.toString();
 			}
+
+			//			@Override
+			//			public Dimension getPreferredSize()
+			//			{
+			//				Dimension dim = super.getPreferredSize();
+			//				return new Dimension(dim.width, dim.height + 45);
+			//			}
 		};
 	}
 
@@ -244,7 +262,8 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			{
 				if (BinHandler.BABEL_BINARY.isFound())
 				{
-					selector.addElementList(OB_FEATURES, OBDescriptorProperty.getDescriptors(true));
+					selector.addElementList(new String[] { PC_FEATURES, OB_FEATURES },
+							OBDescriptorProperty.getDescriptors(true));
 					update();
 				}
 			}
@@ -409,12 +428,24 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		String info;
 		if (highlightedCategory == null || highlightedCategory.equals(ROOT))
 			info = Settings.text("features.desc.long", addFeaturesText);
+		else if (highlightedCategory.equals(PC_FEATURES))
+			info = Settings.text("features.pc.desc");
 		else if (highlightedCategory.equals(INTEGRATED_FEATURES))
 			info = Settings.text("features.integrated.desc");
 		else if (highlightedCategory.equals(STRUCTURAL_FRAGMENTS))
 		{
-			info = Settings.text("features.struct.desc", Settings.STRUCTURAL_FRAGMENT_DIR + File.separator);
-			props = propsPanel;
+			info = Settings.text("features.struct.desc");
+			props = fragmentPropsPanel;
+		}
+		else if (highlightedCategory.equals(MINE_STRUCTURAL_FRAGMENTS))
+		{
+			info = Settings.text("features.struct.mine.desc");
+			props = fragmentPropsPanel;
+		}
+		else if (highlightedCategory.equals(MATCH_STRUCTURAL_FRAGMENTS))
+		{
+			info = Settings.text("features.struct.match.desc", Settings.STRUCTURAL_FRAGMENT_DIR + File.separator);
+			props = fragmentPropsPanelSMARTS;
 		}
 		else if (highlightedCategory.equals(CDK_FEATURES))
 			info = Settings.text("features.cdk.desc", Settings.CDK_STRING);
@@ -431,11 +462,13 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			//cdk sub categories
 			info = Settings.text("features.cdk.desc", Settings.CDK_STRING);
 		}
+
 		compoundPropertyPanel.showInfoText(info);
-		if (props == null)
-			structuralFragmentPropsContainer.removeAll();
-		else
+		structuralFragmentPropsContainer.setIgnoreRepaint(true);
+		structuralFragmentPropsContainer.removeAll();
+		if (props != null)
 			structuralFragmentPropsContainer.add(props, BorderLayout.WEST);
+		structuralFragmentPropsContainer.setIgnoreRepaint(false);
 		structuralFragmentPropsContainer.revalidate();
 		structuralFragmentPropsContainer.repaint();
 	}
@@ -563,13 +596,19 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 
 		IntegratedProperty[] integrated = dataset.getIntegratedProperties();
 		selector.addElementList(INTEGRATED_FEATURES, integrated);
+		selector.addElements(PC_FEATURES);
 		for (CDKPropertySet p : CDKPropertySet.NUMERIC_DESCRIPTORS)
 			for (String clazz : p.getDictionaryClass())
-				selector.addElements(new String[] { CDK_FEATURES, clazz }, p);
-
-		selector.addElementList(OB_FEATURES, OBDescriptorProperty.getDescriptors(false));
+				selector.addElements(new String[] { PC_FEATURES, CDK_FEATURES, clazz }, p);
+		selector.addElements(new String[] { PC_FEATURES, OB_FEATURES }, OBDescriptorProperty.getDescriptors(false));
 		selector.addElements(STRUCTURAL_FRAGMENTS);
-		selector.addElementList(STRUCTURAL_FRAGMENTS, StructuralFragments.instance.getSets());
+		selector.addElementList(new String[] { STRUCTURAL_FRAGMENTS, MINE_STRUCTURAL_FRAGMENTS },
+				StructuralFragments.instance.getSets(SubstructureType.MINE));
+		selector.addElementList(new String[] { STRUCTURAL_FRAGMENTS, MATCH_STRUCTURAL_FRAGMENTS },
+				StructuralFragments.instance.getSets(SubstructureType.MATCH));
+
+		selector.expand(PC_FEATURES);
+		selector.expand(STRUCTURAL_FRAGMENTS);
 
 		for (CompoundPropertySet m : getFeaturesFromMappingWorkflow(PropHandler.getProperties(), false))
 			selector.setSelected(m);

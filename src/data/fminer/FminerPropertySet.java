@@ -14,6 +14,7 @@ import util.FminerWrapper;
 import data.DatasetFile;
 import data.fragments.StructuralFragmentProperties;
 import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.SubstructureType;
 import dataInterface.CompoundProperty.Type;
 import dataInterface.FragmentPropertySet;
 
@@ -93,6 +94,12 @@ public class FminerPropertySet extends FragmentPropertySet
 	public boolean isSizeDynamicHigh(DatasetFile dataset)
 	{
 		return true;
+	}
+
+	@Override
+	public SubstructureType getSubstructureType()
+	{
+		return SubstructureType.MINE;
 	}
 
 	@Override

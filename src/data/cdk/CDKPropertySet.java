@@ -18,6 +18,7 @@ import util.ValueFileCache;
 import data.DatasetFile;
 import data.desc.DescriptorForMixturesHandler;
 import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.SubstructureType;
 import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
 
@@ -264,6 +265,12 @@ public class CDKPropertySet implements CompoundPropertySet
 
 	@Override
 	public Binary getBinary()
+	{
+		return null;
+	}
+
+	@Override
+	public SubstructureType getSubstructureType()
 	{
 		return null;
 	}

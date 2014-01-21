@@ -22,8 +22,9 @@ import util.CountedSet;
 import data.DatasetFile;
 import data.cdk.CDKDescriptor;
 import data.fragments.StructuralFragmentProperties;
-import dataInterface.FragmentPropertySet;
+import dataInterface.CompoundProperty.SubstructureType;
 import dataInterface.CompoundProperty.Type;
+import dataInterface.FragmentPropertySet;
 
 public class CDKFingerprintSet extends FragmentPropertySet
 {
@@ -95,6 +96,12 @@ public class CDKFingerprintSet extends FragmentPropertySet
 	public Binary getBinary()
 	{
 		return null;
+	}
+
+	@Override
+	public SubstructureType getSubstructureType()
+	{
+		return SubstructureType.MATCH;
 	}
 
 	@Override

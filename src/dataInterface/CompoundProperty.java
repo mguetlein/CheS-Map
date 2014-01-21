@@ -11,6 +11,11 @@ public interface CompoundProperty
 		NUMERIC, NOMINAL
 	}
 
+	public static enum SubstructureType
+	{
+		MINE, MATCH
+	}
+
 	public String getName();
 
 	public String getDescription();
@@ -30,6 +35,8 @@ public interface CompoundProperty
 	public String getSmarts();
 
 	public MatchEngine getSmartsMatchEngine();
+
+	public SubstructureType getSubstructureType();
 
 	public CompoundPropertySet getCompoundPropertySet();
 

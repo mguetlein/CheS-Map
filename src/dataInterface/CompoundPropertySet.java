@@ -2,6 +2,7 @@ package dataInterface;
 
 import gui.binloc.Binary;
 import data.DatasetFile;
+import dataInterface.CompoundProperty.SubstructureType;
 
 public interface CompoundPropertySet
 {
@@ -32,4 +33,6 @@ public interface CompoundPropertySet
 	public boolean isComputationSlow();
 
 	public boolean isSensitiveTo3D();
+
+	public SubstructureType getSubstructureType();
 }

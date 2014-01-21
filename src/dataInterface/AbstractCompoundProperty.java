@@ -91,6 +91,12 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	}
 
 	@Override
+	public SubstructureType getSubstructureType()
+	{
+		return getCompoundPropertySet().getSubstructureType();
+	}
+
+	@Override
 	public Type getType()
 	{
 		return type;
