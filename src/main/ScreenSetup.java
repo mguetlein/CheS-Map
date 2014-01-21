@@ -23,7 +23,7 @@ public class ScreenSetup
 	//	public static final ScreenSetup SCREENSHOT = new ScreenSetup(new EtchedBorder(), new Dimension(1200, 750),
 	//			new Dimension(600, 375), true, 10, true);
 	public static final ScreenSetup SCREENSHOT = new ScreenSetup(new EtchedBorder(), new Dimension(1200, 750),
-			new Dimension(1200, 750), true, 20, true);
+			new Dimension(1200, 750), true, 18, true);
 	public static final ScreenSetup VIDEO = new ScreenSetup(new EmptyBorder(0, 0, 0, 0), new Dimension(1024, 768),
 			new Dimension(1024, 768), true, 12, false);
 	public static final ScreenSetup SMALL_SCREEN = new ScreenSetup(new EmptyBorder(0, 0, 0, 0),
