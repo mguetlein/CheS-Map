@@ -67,7 +67,7 @@ public class SDFImport3DBuilder extends AbstractReal3DBuilder
 	@Override
 	public boolean[] build3D(DatasetFile dataset, String outFile) throws Exception
 	{
-		disableAutocorrect();
+		setAutoCorrect(AutoCorrect.disabled);
 
 		CompoundProperty property = null;
 		for (CompoundProperty prop : dataset.getIntegratedProperties())

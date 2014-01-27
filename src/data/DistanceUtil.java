@@ -40,17 +40,17 @@ public class DistanceUtil
 		return ArrayUtil.euclDistance(d1, d2);
 	}
 
-	private static HashMap<String, Boolean[]> vals = new HashMap<String, Boolean[]>();
+	private static HashMap<String, Boolean[]> booleanValues = new HashMap<String, Boolean[]>();
 
 	private static String valsKey(CompoundData c, List<CompoundProperty> props)
 	{
 		return Settings.MAPPED_DATASET.hashCode() + "#" + c.hashCode() + "#" + props.hashCode();
 	}
 
-	private static Boolean[] vals(CompoundData c, List<CompoundProperty> props)
+	private static Boolean[] booleanValues(CompoundData c, List<CompoundProperty> props)
 	{
 		String key = valsKey(c, props);
-		if (!vals.containsKey(key))
+		if (!booleanValues.containsKey(key))
 		{
 			Boolean b[] = new Boolean[props.size()];
 			int i = 0;
@@ -68,9 +68,9 @@ public class DistanceUtil
 					b[i++] = c.getStringValue(p).equals(dom[1]);
 				}
 			}
-			vals.put(key, b);
+			booleanValues.put(key, b);
 		}
-		return vals.get(key);
+		return booleanValues.get(key);
 	}
 
 	public static Double similarity(List<CompoundData> instances, List<CompoundProperty> props,
@@ -78,7 +78,7 @@ public class DistanceUtil
 	{
 		List<Boolean[]> vals = new ArrayList<Boolean[]>();
 		for (CompoundData c : instances)
-			vals.add(vals(c, props));
+			vals.add(booleanValues(c, props));
 		return SimilartiyCache.get(sim).similarity(vals);
 	}
 

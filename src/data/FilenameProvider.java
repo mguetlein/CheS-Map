@@ -93,6 +93,8 @@ public class FilenameProvider
 
 	public String getClusterAssignmentFilePath()
 	{
+		if (clusteringData.getDatasetClusterer() == null)
+			throw new IllegalStateException();
 		return Settings.destinationFile(dataset,
 				getEncodedSettingsIncludingFeatures(clusteringData.getDatasetClusterer()) + ".cluster");
 	}
@@ -104,6 +106,8 @@ public class FilenameProvider
 
 	public String getEmbeddingResultsFilePath(String extension)
 	{
+		if (clusteringData.getThreeDEmbedder() == null)
+			throw new IllegalStateException();
 		return Settings.destinationFile(dataset,
 				getEncodedSettingsIncludingFeatures(clusteringData.getThreeDEmbedder()) + ".embed." + extension);
 	}

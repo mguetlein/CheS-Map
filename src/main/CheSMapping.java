@@ -5,7 +5,6 @@ import java.util.List;
 
 import javax.vecmath.Vector3f;
 
-import util.ArrayUtil;
 import util.StringUtil;
 import alg.FeatureComputer;
 import alg.align3d.NoAligner;
@@ -290,7 +289,9 @@ public class CheSMapping
 							ad.getInsideAppDomainProperty().getStringValues(dataset)[i]);
 				}
 			}
-			clustering.setAppDomainProperties(ArrayUtil.toArray(props));
+
+			for (CompoundProperty p : props)
+				clustering.addAdditionalProperty(p, false);
 		}
 	}
 
@@ -375,7 +376,7 @@ public class CheSMapping
 				for (int i = 0; i < clustering.getNumCompounds(false); i++)
 					((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(embedder.getCCCProperty(),
 							embedder.getCCCProperty().getDoubleValues(dataset)[i]);
-				clustering.setEmbeddingQualityProperty(embedder.getCCCProperty());
+				clustering.addAdditionalProperty(embedder.getCCCProperty(), true);
 			}
 
 			//			List<CompoundProperty> distanceTo = new ArrayList<CompoundProperty>();

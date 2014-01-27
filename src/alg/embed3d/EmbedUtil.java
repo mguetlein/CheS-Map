@@ -29,11 +29,11 @@ public class EmbedUtil
 		return computeRSquare(d1, d2);
 	}
 
-	public static double computeRSquare(List<Vector3f> positions, List<CompoundData> instances,
-			List<CompoundProperty> features, DatasetFile dataset)
-	{
-		return computeRSquare(positions, euclMatrix(instances, features, dataset));
-	}
+	//	public static double computeRSquare(List<Vector3f> positions, List<CompoundData> instances,
+	//			List<CompoundProperty> features, DatasetFile dataset)
+	//	{
+	//		return computeRSquare(positions, euclMatrix(instances, features, dataset));
+	//	}
 
 	private static double computeRSquare(double[][] m1, double[][] m2)
 	{
@@ -73,11 +73,11 @@ public class EmbedUtil
 		return computeCCC(d1, d2);
 	}
 
-	public static double computeCCC(List<Vector3f> positions, List<CompoundData> instances,
-			List<CompoundProperty> features, DatasetFile dataset)
-	{
-		return computeCCC(positions, euclMatrix(instances, features, dataset));
-	}
+	//	public static double computeCCC(List<Vector3f> positions, List<CompoundData> instances,
+	//			List<CompoundProperty> features, DatasetFile dataset)
+	//	{
+	//		return computeCCC(positions, euclMatrix(instances, features, dataset));
+	//	}
 
 	public static double[] computeCCCs(List<Vector3f> positions, double distanceMatrix[][])
 	{
@@ -88,11 +88,11 @@ public class EmbedUtil
 		return computeCCCs(d1, d2);
 	}
 
-	public static double[] computeCCCs(List<Vector3f> positions, List<CompoundData> instances,
-			List<CompoundProperty> features, DatasetFile dataset)
-	{
-		return computeCCCs(positions, euclMatrix(instances, features, dataset));
-	}
+	//	public static double[] computeCCCs(List<Vector3f> positions, List<CompoundData> instances,
+	//			List<CompoundProperty> features, DatasetFile dataset)
+	//	{
+	//		return computeCCCs(positions, euclMatrix(instances, features, dataset));
+	//	}
 
 	private static double[] computeCCCs(double[][] m1, double[][] m2)
 	{

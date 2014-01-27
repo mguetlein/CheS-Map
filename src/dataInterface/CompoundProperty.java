@@ -52,6 +52,8 @@ public interface CompoundProperty
 
 	public Double[] getNormalizedValues(DatasetFile dataset);
 
+	public Double[] getNormalizedValuesInCompleteMappedDataset();
+
 	public Double[] getNormalizedLogValues(DatasetFile dataset);
 
 	public Double getNormalizedMedian(DatasetFile dataset);

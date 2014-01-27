@@ -25,6 +25,7 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	{
 	}
 
+	protected double[][] distances;
 	private List<Vector3f> positions;
 	private double rSquare = -Double.MAX_VALUE;
 	private double ccc = -Double.MAX_VALUE;
@@ -32,9 +33,11 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	private List<Vector3f> getPositions(int numPositions)
 	{
 		rand = new Random((long) randomSeed.getValue());
+		dist = 0.95f;
+		count = 0;
 		List<Vector3f> pos = new ArrayList<Vector3f>();
 		for (int i = 0; i < numPositions; i++)
-			pos.add(addRandomPosition(pos, 1));//, 0.9f));
+			pos.add(addRandomPosition(pos));
 		return pos;
 	}
 
@@ -48,12 +51,6 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	public double getCCC()
 	{
 		return ccc;
-	}
-
-	@Override
-	public double[][] getFeatureDistanceMatrix()
-	{
-		return null;
 	}
 
 	@Override
@@ -72,29 +69,17 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	IntegerProperty randomSeed = new IntegerProperty("Random seed", "Random embedding - Random seed", 1);
 
 	private Random rand;
+	float dist;
+	int count;
 
-	private static double START_DIST = 0.9;
-	private static int NUM_ATTEMPTS = 50;
-
-	static
-	{
-		if (Settings.LARGE_DATA)
-		{
-			START_DIST = 0.1;
-			NUM_ATTEMPTS = 3;
-		}
-	}
-
-	private Vector3f addRandomPosition(List<Vector3f> existing, float radius) //, float clusterRadius)
+	private Vector3f addRandomPosition(List<Vector3f> existing) //, float clusterRadius)
 	{
 		//		if (existing == null || existing.size() == 0)
 		//			return new Vector3f(0, 0, 0);
 
-		int count = 0;
-		double dist = radius * START_DIST;
 		while (true)
 		{
-			Vector3f v = Vector3fUtil.randomVector(radius, rand);
+			Vector3f v = Vector3fUtil.randomVector(dist, rand);
 			boolean centerTooClose = false;
 			for (Vector3f v2 : existing)
 			{
@@ -107,22 +92,29 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 			if (!centerTooClose)
 				return v;
 			count++;
-			if (count > NUM_ATTEMPTS)
+			if (count % 50 == 0)
 			{
-				Settings.LOGGER.warn("reduce radius " + count);
 				dist *= 0.9;
+				//				Settings.LOGGER.warn(count + " reduce radius to " + dist);
 			}
 		}
+	}
+
+	@Override
+	public double[][] getFeatureDistanceMatrix()
+	{
+		return distances;
 	}
 
 	@Override
 	public void embedDataset(DatasetFile dataset, List<CompoundData> instances, List<CompoundProperty> features)
 	{
 		positions = getPositions(instances.size());
+		distances = EmbedUtil.euclMatrix(instances, features, dataset);
 		if (instances.size() > 2)
 		{
-			rSquare = EmbedUtil.computeRSquare(positions, instances, features, dataset);
-			ccc = EmbedUtil.computeCCC(positions, instances, features, dataset);
+			rSquare = EmbedUtil.computeRSquare(positions, distances);
+			ccc = EmbedUtil.computeCCC(positions, distances);
 		}
 	}
 

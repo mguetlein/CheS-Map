@@ -3,6 +3,7 @@ package data;
 import java.util.ArrayList;
 import java.util.List;
 
+import alg.DistanceMeasure;
 import alg.align3d.ThreeDAligner;
 import alg.build3d.ThreeDBuilder;
 import alg.cluster.DatasetClusterer;
@@ -21,6 +22,7 @@ public class ClusteringData
 
 	private List<CompoundProperty> features = new ArrayList<CompoundProperty>();
 	private List<CompoundProperty> properties = new ArrayList<CompoundProperty>();
+	private List<CompoundProperty> additionalProperties = new ArrayList<CompoundProperty>();
 
 	private List<ClusterData> clusters = new ArrayList<ClusterData>();
 	private List<CompoundData> compounds = new ArrayList<CompoundData>();
@@ -29,8 +31,8 @@ public class ClusteringData
 	private String embedQuality;
 
 	private CompoundProperty embedQualityProperty;
-	private CompoundProperty appDomainProperties[];
-	private List<CompoundProperty> distanceToProperties;
+	//	private CompoundProperty appDomainProperties[];
+	//	private List<CompoundProperty> distanceToProperties;
 
 	private ThreeDBuilder threeDBuilder;
 	private DatasetClusterer datasetClusterer;
@@ -156,34 +158,21 @@ public class ClusteringData
 		return origLocalPath;
 	}
 
+	public List<CompoundProperty> getAdditionalProperties()
+	{
+		return additionalProperties;
+	}
+
+	public void addAdditionalProperty(CompoundProperty p, boolean isEmbedQuality)
+	{
+		additionalProperties.add(p);
+		if (isEmbedQuality)
+			embedQualityProperty = p;
+	}
+
 	public CompoundProperty getEmbeddingQualityProperty()
 	{
 		return embedQualityProperty;
-	}
-
-	public void setEmbeddingQualityProperty(CompoundProperty embedQualityProperty)
-	{
-		this.embedQualityProperty = embedQualityProperty;
-	}
-
-	public void setAppDomainProperties(CompoundProperty... appDomainProperty)
-	{
-		this.appDomainProperties = appDomainProperty;
-	}
-
-	public CompoundProperty[] getAppDomainProperties()
-	{
-		return appDomainProperties;
-	}
-
-	public List<CompoundProperty> getDistanceToProperties()
-	{
-		return distanceToProperties;
-	}
-
-	public void setDistanceToProperties(List<CompoundProperty> distanceToProperties)
-	{
-		this.distanceToProperties = distanceToProperties;
 	}
 
 	public void setThreeDBuilder(ThreeDBuilder threeDBuilder)
@@ -226,4 +215,16 @@ public class ClusteringData
 		return threeDAligner;
 	}
 
+	public Double getFeatureDistance(int i1, int i2)
+	{
+		if (threeDEmbedder.getFeatureDistanceMatrix() != null)
+			return threeDEmbedder.getFeatureDistanceMatrix()[i1][i2];
+		else
+			return null;
+	}
+
+	public DistanceMeasure getEmbeddingDistanceMeasure()
+	{
+		return threeDEmbedder.getDistanceMeasure();
+	}
 }

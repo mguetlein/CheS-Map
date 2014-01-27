@@ -29,7 +29,7 @@ import dataInterface.CompoundPropertyUtil;
 
 public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 {
-	private double[][] featureDistanceMatrix;
+	//	private double[][] featureDistanceMatrix;
 
 	protected abstract String getRScriptCode();
 
@@ -118,10 +118,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			for (int i = 0; i < instances.size(); i++)
 				positions.add(new Vector3f((float) d[i][0], (float) d[i][1], (float) d[i][2]));
 
-			featureDistanceMatrix = RUtil.readMatrix(tmpDist.getAbsolutePath(), 0);
-			if (featureDistanceMatrix == null)
-				throw new IllegalStateException("embedding failed: could not read distance matrix");
-
+			FileUtil.robustRenameTo(tmpDist.getAbsolutePath(), dataset.getEmbeddingResultsFilePath("dist"));
 			return positions;
 		}
 		finally
@@ -135,9 +132,19 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 	}
 
 	@Override
+	protected boolean storesDistances()
+	{
+		return true;
+	}
+
+	double[][] dist;
+
+	@Override
 	public double[][] getFeatureDistanceMatrix()
 	{
-		return featureDistanceMatrix;
+		if (dist == null)
+			dist = RUtil.readMatrix(dataset.getEmbeddingResultsFilePath("dist"), 0);
+		return dist;
 	}
 
 	@Override

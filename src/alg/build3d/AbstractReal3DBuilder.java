@@ -45,16 +45,16 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 		return threeD.exists();
 	}
 
-	enum AutoCorrect
+	public enum AutoCorrect
 	{
 		disabled, external, sdf2D
 	}
 
 	AutoCorrect autoCorrect = AutoCorrect.external;
 
-	public void disableAutocorrect()
+	public void setAutoCorrect(AutoCorrect a)
 	{
-		autoCorrect = AutoCorrect.disabled;
+		autoCorrect = a;
 	}
 
 	@Override
@@ -108,8 +108,14 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 					check3DSDFile(tmpFile.getAbsolutePath(), dataset.getSDF(), tmpFile.getAbsolutePath(),
 							build3dsuccessfull);
 				else if (autoCorrect == AutoCorrect.external)
-					check3DSDFileExternal(tmpFile.getAbsolutePath(), dataset.getSmiles(), tmpFile.getAbsolutePath(),
-							build3dsuccessfull);
+				{
+					if (dataset.getLocalPath() != null && dataset.getLocalPath().toLowerCase().endsWith(".smi"))
+						check3DSDFileExternal(tmpFile.getAbsolutePath(), dataset.getLocalPath(),
+								tmpFile.getAbsolutePath(), build3dsuccessfull);
+					else
+						check3DSDFileExternal(tmpFile.getAbsolutePath(), dataset.getSmiles(),
+								tmpFile.getAbsolutePath(), build3dsuccessfull);
+				}
 
 				if (!TaskProvider.isRunning())
 					return;
