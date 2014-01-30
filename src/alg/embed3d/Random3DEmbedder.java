@@ -25,10 +25,7 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	{
 	}
 
-	protected double[][] distances;
 	private List<Vector3f> positions;
-	private double rSquare = -Double.MAX_VALUE;
-	private double ccc = -Double.MAX_VALUE;
 
 	private List<Vector3f> getPositions(int numPositions)
 	{
@@ -44,13 +41,13 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	@Override
 	public double getRSquare()
 	{
-		return rSquare;
+		return Double.NaN;
 	}
 
 	@Override
 	public double getCCC()
 	{
-		return ccc;
+		return Double.NaN;
 	}
 
 	@Override
@@ -59,27 +56,17 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 		return null;
 	}
 
-	//	@Override
-	//	public CompoundPropertyEmbedQuality getEmbedQuality(CompoundProperty p, DatasetFile dataset,
-	//			List<MolecularPropertyOwner> instances)
-	//	{
-	//		return new CompoundPropertyEmbedQuality(p, positions, instances, dataset);
-	//	}
-
 	IntegerProperty randomSeed = new IntegerProperty("Random seed", "Random embedding - Random seed", 1);
 
 	private Random rand;
 	float dist;
 	int count;
 
-	private Vector3f addRandomPosition(List<Vector3f> existing) //, float clusterRadius)
+	private Vector3f addRandomPosition(List<Vector3f> existing)
 	{
-		//		if (existing == null || existing.size() == 0)
-		//			return new Vector3f(0, 0, 0);
-
 		while (true)
 		{
-			Vector3f v = Vector3fUtil.randomVector(dist, rand);
+			Vector3f v = Vector3fUtil.randomVector(1.0f, rand);
 			boolean centerTooClose = false;
 			for (Vector3f v2 : existing)
 			{
@@ -103,19 +90,13 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	@Override
 	public double[][] getFeatureDistanceMatrix()
 	{
-		return distances;
+		return null;
 	}
 
 	@Override
 	public void embedDataset(DatasetFile dataset, List<CompoundData> instances, List<CompoundProperty> features)
 	{
 		positions = getPositions(instances.size());
-		distances = EmbedUtil.euclMatrix(instances, features, dataset);
-		if (instances.size() > 2)
-		{
-			rSquare = EmbedUtil.computeRSquare(positions, distances);
-			ccc = EmbedUtil.computeCCC(positions, distances);
-		}
 	}
 
 	@Override

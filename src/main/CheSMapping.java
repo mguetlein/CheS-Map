@@ -368,7 +368,7 @@ public class CheSMapping
 			if (warnMsg != null)
 			{
 				if (embedder instanceof Random3DEmbedder)
-					warnMsg = "Random embedding applied, 3D positions do not reflect feature values" + details;
+					warnMsg = "Random embedding applied, 3D positions do not reflect feature values";
 				TaskProvider.warning(warnMsg, Settings.text("embed.info.quality", Settings.text("embed.r.sammon")));
 			}
 			if (embedder.getCCCProperty() != null)

@@ -1,6 +1,7 @@
 package alg.embed3d;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -8,9 +9,11 @@ import java.util.Random;
 import javax.vecmath.Vector3f;
 
 import main.Settings;
+import main.TaskProvider;
 import util.ArrayUtil;
 import util.DoubleArraySummary;
 import util.ObjectUtil;
+import util.StringUtil;
 import util.Vector3fUtil;
 import data.DatasetFile;
 import dataInterface.CompoundData;
@@ -237,57 +240,113 @@ public class EmbedUtil
 	public static double[][] euclMatrix(List<CompoundData> instances, List<CompoundProperty> features,
 			DatasetFile dataset)
 	{
-		HashMap<CompoundPropertyOwner, double[]> vals = new HashMap<CompoundPropertyOwner, double[]>();
-		for (int i = 0; i < instances.size(); i++)
-		{
-			List<Double> v_i = new ArrayList<Double>();
-			for (int k = 0; k < features.size(); k++)
-			{
-				CompoundProperty feature = features.get(k);
-				if (feature.getType() == Type.NUMERIC)
-				{
-					Double v = instances.get(i).getNormalizedValueCompleteDataset(feature);
-					if (v == null)
-						v = feature.getNormalizedMedian(dataset);
-					v_i.add(v);
-				}
-				else
-				{
+		TaskProvider.verbose("Compute euclidean distance matrix");
 
-					if (feature.getType() != Type.NOMINAL)
-						throw new Error();
-					if (feature.getNominalDomain(dataset).length == 2
-							&& feature.getNominalDomain(dataset)[0].equals("0")
-							&& feature.getNominalDomain(dataset)[1].equals("1"))
+		boolean binary = true;
+		for (CompoundProperty p : features)
+			if (p.getType() != Type.NOMINAL || p.getNominalDomain(dataset).length > 2)
+			{
+				binary = false;
+				break;
+			}
+
+		HashMap<CompoundPropertyOwner, double[]> vals = new HashMap<CompoundPropertyOwner, double[]>();
+		HashMap<CompoundPropertyOwner, BitSet> binaryVals = new HashMap<CompoundPropertyOwner, BitSet>();
+
+		if (!binary)
+		{
+			for (int i = 0; i < instances.size(); i++)
+			{
+				CompoundData c = instances.get(i);
+
+				List<Double> v_i = new ArrayList<Double>();
+				for (int k = 0; k < features.size(); k++)
+				{
+					CompoundProperty feature = features.get(k);
+					if (feature.getType() == Type.NUMERIC)
 					{
-						if (instances.get(i).getStringValue(features.get(k)) == null)
-							v_i.add(Double.parseDouble(feature.getModeNonNull(dataset)));
-						else
-							v_i.add(Double.parseDouble(instances.get(i).getStringValue(features.get(k))));
+						Double v = c.getNormalizedValueCompleteDataset(feature);
+						if (v == null)
+							v = feature.getNormalizedMedian(dataset);
+						v_i.add(v);
 					}
 					else
 					{
-						for (String val : feature.getNominalDomain(dataset))
+
+						if (feature.getType() != Type.NOMINAL)
+							throw new Error();
+						if (feature.getNominalDomain(dataset).length == 2
+								&& feature.getNominalDomain(dataset)[0].equals("0")
+								&& feature.getNominalDomain(dataset)[1].equals("1"))
 						{
-							if (ObjectUtil.equals(instances.get(i).getStringValue(features.get(k)), val))
-								v_i.add(1.0);
+							if (c.getStringValue(feature) == null)
+								v_i.add(Double.parseDouble(feature.getModeNonNull(dataset)));
 							else
-								v_i.add(0.0);
+								v_i.add(Double.parseDouble(c.getStringValue(feature)));
+						}
+						else
+						{
+							for (String val : feature.getNominalDomain(dataset))
+							{
+								if (ObjectUtil.equals(c.getStringValue(feature), val))
+									v_i.add(1.0);
+								else
+									v_i.add(0.0);
+							}
 						}
 					}
 				}
+				//			Settings.LOGGER.println(vals.size() + " " + ListUtil.toString(v_i));
+				vals.put(c, ArrayUtil.toPrimitiveDoubleArray(v_i));
 			}
-			//			Settings.LOGGER.println(vals.size() + " " + ListUtil.toString(v_i));
-			vals.put(instances.get(i), ArrayUtil.toPrimitiveDoubleArray(v_i));
 		}
+		else
+		{
+			for (int i = 0; i < instances.size(); i++)
+			{
+				CompoundData c = instances.get(i);
+				BitSet b = new BitSet(features.size());
+				for (int k = 0; k < features.size(); k++)
+				{
+					CompoundProperty feature = features.get(k);
+					String domain[] = feature.getNominalDomain(dataset);
+					Boolean mode = null;
+
+					if (c.getStringValue(feature) == null)
+					{
+						if (mode == null)
+							mode = domain[0].equals(feature.getModeNonNull(dataset));
+						if (mode)
+							b.set(k);
+					}
+					else if (domain[0].equals(c.getStringValue(feature)))
+						b.set(k);
+				}
+				binaryVals.put(c, b);
+			}
+		}
+
 		//		for (MolecularPropertyOwner m : vals.keySet())
 		//			Settings.LOGGER.println("values: " + m.toString() + " " + ArrayUtil.toString(vals.get(m)));
 
+		long count = 0;
+		long num = instances.size() * (instances.size() - 1) / 2;
 		double[][] d = new double[instances.size()][instances.size()];
 		for (int i = 0; i < instances.size() - 1; i++)
 			for (int j = i + 1; j < instances.size(); j++)
 			{
-				d[i][j] = ArrayUtil.euclDistance(vals.get(instances.get(i)), vals.get(instances.get(j)));
+				if (count % 10000 == 0)
+					TaskProvider.verbose("Compute euclidean distance matrix "
+							+ StringUtil.formatDouble(((count / (double) num) * 100)) + "% (" + count + "/" + num
+							+ " entries)");
+				count++;
+
+				if (!binary)
+					d[i][j] = ArrayUtil.euclDistance(vals.get(instances.get(i)), vals.get(instances.get(j)));
+				else
+					d[i][j] = ArrayUtil
+							.euclDistance(binaryVals.get(instances.get(i)), binaryVals.get(instances.get(j)));
+
 				//				putDistance(dataset, instances.get(i), instances.get(j), d[i][j]);
 				d[j][i] = d[i][j];
 			}

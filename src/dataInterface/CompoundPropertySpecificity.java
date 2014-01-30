@@ -1,13 +1,15 @@
 package dataInterface;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.stat.inference.TestUtils;
 
+import util.Binning;
 import util.CountedSet;
-import util.DoubleArraySummary;
 
 public class CompoundPropertySpecificity
 {
@@ -68,19 +70,11 @@ public class CompoundPropertySpecificity
 	{
 		private static HashMap<double[], NumericSingleHelper> map = new HashMap<double[], CompoundPropertySpecificity.NumericSingleHelper>();
 
-		double med;
-		double maxDistToMedian;
-		double minDistToMedian;
+		Binning binning;
 
 		private NumericSingleHelper(double a[])
 		{
-			med = DoubleArraySummary.create(a).getMedian();
-			double distToMed[] = new double[a.length];
-			for (int i = 0; i < distToMed.length; i++)
-				distToMed[i] = Math.abs(a[i] - med);
-			DoubleArraySummary distToMedSummary = DoubleArraySummary.create(distToMed);
-			maxDistToMedian = distToMedSummary.getMax();
-			minDistToMedian = distToMedSummary.getMin();
+			binning = new Binning(a, 20, false);
 		}
 
 		public static NumericSingleHelper get(double a[])
@@ -90,25 +84,11 @@ public class CompoundPropertySpecificity
 			return map.get(a);
 		}
 
-		/**
-		 * idea: the specificty is 1 - the relative distance to the median
-		 * i.e. the farer the value is away from the median, the higher the spec / the smaller the value
-		 */
 		public double specificity(double s)
 		{
-			if (maxDistToMedian == minDistToMedian)
-				return NO_SPEC_AVAILABLE;
-			double dist = Math.abs(s - med);
-			if (dist >= maxDistToMedian)
-				return 0;
-			if (dist <= minDistToMedian)
-				return 1;
-			dist -= minDistToMedian;
-			double d = 1 - dist / (maxDistToMedian - minDistToMedian);
-			if (Double.isNaN(d))
-				return NO_SPEC_AVAILABLE;
-			else
-				return d;
+			long all[] = binning.getAllCounts();
+			long selected[] = binning.getSelectedCounts(s);
+			return nominalSpecificty(selected, all);
 		}
 	}
 
@@ -117,11 +97,10 @@ public class CompoundPropertySpecificity
 		return NumericSingleHelper.get(all).specificity(selected);
 	}
 
-	public static void main(String[] args)
+	public static void main(String[] args) throws IOException
 	{
-
-		//		System.out.println(numericMultiSpecificty(new NormalDistribution(0, 1).sample(1000), new NormalDistribution(
-		//				0.2, 1).sample(1000)));
-		System.out.println(numericSingleSpecificty(0, new double[] { 0, 0, 0, 0, 0, 6, 6, 6, 10, 12 }));
+		double[] d = new NormalDistribution(0, 5).sample(500);
+		for (Double i : new double[] { -10, -5.0, 0.0, 5.0, 10 })
+			System.out.println(i + " " + NumericSingleHelper.get(d).specificity(i));
 	}
 }
