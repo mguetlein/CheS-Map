@@ -84,6 +84,10 @@ public class CompoundPropertySpecificity
 			return map.get(a);
 		}
 
+		/**
+		 * specificity for numeric single prop is performed by binning + chi-square
+		 * as prop-dense implementation in math3 was not willing to work 
+		 */
 		public double specificity(double s)
 		{
 			long all[] = binning.getAllCounts();
