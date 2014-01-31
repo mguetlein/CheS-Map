@@ -71,6 +71,7 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 
 		TaskProvider.verbose("Apply PCA");
 		pca.buildEvaluator(data);
+		Settings.LOGGER.debug(pca.toString());
 		resultData = pca.transformedData(data);
 
 		List<Vector3f> positions = new ArrayList<Vector3f>();
