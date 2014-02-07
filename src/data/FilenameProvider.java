@@ -52,7 +52,7 @@ public class FilenameProvider
 		if (algs != null)
 			for (Algorithm alg : algs)
 				if (alg != null)
-					enc = PropertyUtil.getPropertyMD5(alg.getProperties(), alg.getName() + enc);
+					enc += PropertyUtil.getPropertyMD5(alg.getProperties(), alg.getName() + enc);
 		return enc;
 	}
 
@@ -114,6 +114,8 @@ public class FilenameProvider
 
 	public String getAlignSDFilePath()
 	{
+		if (clusteringData.getDatasetClusterer() == null || clusteringData.getThreeDAligner() == null)
+			throw new IllegalStateException();
 		return Settings.destinationFile(
 				dataset,
 				getEncodedSettingsIncludingFeatures(clusteringData.getDatasetClusterer(),
