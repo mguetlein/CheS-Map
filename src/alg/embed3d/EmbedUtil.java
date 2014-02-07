@@ -13,7 +13,6 @@ import main.TaskProvider;
 import util.ArrayUtil;
 import util.DoubleArraySummary;
 import util.ObjectUtil;
-import util.StringUtil;
 import util.Vector3fUtil;
 import data.DatasetFile;
 import dataInterface.CompoundData;
@@ -240,7 +239,7 @@ public class EmbedUtil
 	public static double[][] euclMatrix(List<CompoundData> instances, List<CompoundProperty> features,
 			DatasetFile dataset)
 	{
-		TaskProvider.verbose("Compute euclidean distance matrix");
+		TaskProvider.debug("Compute euclidean distance matrix");
 
 		boolean binary = true;
 		for (CompoundProperty p : features)
@@ -335,11 +334,10 @@ public class EmbedUtil
 		for (int i = 0; i < instances.size() - 1; i++)
 			for (int j = i + 1; j < instances.size(); j++)
 			{
-				if (count % 10000 == 0)
-					TaskProvider.verbose("Compute euclidean distance matrix "
-							+ StringUtil.formatDouble(((count / (double) num) * 100)) + "% (" + count + "/" + num
-							+ " entries)");
 				count++;
+				if (count % 5000 == 0)
+					TaskProvider.verbose("Compute euclidean distance matrix " + ((int) ((count / (double) num) * 100))
+							+ "% (" + count + "/" + num + " entries)");
 
 				if (!binary)
 					d[i][j] = ArrayUtil.euclDistance(vals.get(instances.get(i)), vals.get(instances.get(j)));

@@ -523,10 +523,10 @@ public class OBFingerprintSet extends FragmentPropertySet
 			tmp = File.createTempFile(dataset.getShortName(), "OBfingerprint");
 			String cmd[] = { BinHandler.BABEL_BINARY.getLocation(), "-isdf", dataset.getSDF(), "-ofpt", "-xf",
 					type.toString(), "-xs" };
-			TaskProvider.verbose("Running babel: " + ArrayUtil.toString(cmd, " ", "", ""));
+			TaskProvider.debug("Running babel: " + ArrayUtil.toString(cmd, " ", "", ""));
 			ExternalToolUtil.run("ob-fingerprints", cmd, tmp);
 
-			TaskProvider.verbose("Parsing fingerprints");
+			TaskProvider.debug("Parsing fingerprints");
 			BufferedReader buffy = new BufferedReader(new FileReader(tmp));
 			String s = null;
 

@@ -123,20 +123,20 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		{
 			positions = embed(dataset, instances, features);
 
-			TaskProvider.verbose("Store embedding results to: " + embedFilename);
+			TaskProvider.debug("Store embedding results to: " + embedFilename);
 			ValueFileCache.writeCachePosition2(embedFilename, positions);
 
-			TaskProvider.verbose("Compute rSquare");
+			TaskProvider.debug("Compute rSquare");
 
 			rSquare = EmbedUtil.computeRSquare(positions, getFeatureDistanceMatrix());
 			//				rSquare = EmbedUtil.computeRSquare(positions, instances, features, dataset);
-			TaskProvider.verbose("Store embedding rSquare to: " + rSquareFilename);
+			TaskProvider.debug("Store embedding rSquare to: " + rSquareFilename);
 			FileUtil.writeStringToFile(rSquareFilename, rSquare + "");
 
-			TaskProvider.verbose("Compute ccc");
+			TaskProvider.debug("Compute ccc");
 			ccc = EmbedUtil.computeCCC(positions, getFeatureDistanceMatrix());
 			//				ccc = EmbedUtil.computeCCC(positions, instances, features, dataset);
-			TaskProvider.verbose("Store embedding ccc to: " + cccFilename);
+			TaskProvider.debug("Store embedding ccc to: " + cccFilename);
 			FileUtil.writeStringToFile(cccFilename, ccc + "");
 
 			cccPropValues = EmbedUtil.computeCCCs(positions, getFeatureDistanceMatrix());

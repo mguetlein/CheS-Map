@@ -36,7 +36,6 @@ public class DefaultFeatureComputer implements FeatureComputer
 		compounds = new ArrayList<CompoundData>();
 
 		int numCompounds = dataset.numCompounds();
-
 		List<CompoundProperty> props = new ArrayList<CompoundProperty>();
 
 		int count = 0;

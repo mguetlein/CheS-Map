@@ -378,7 +378,7 @@ public class FeatureService
 		if (fileToCompounds.get(dataset) == null)
 		{
 			//Settings.LOGGER.info("read dataset file '" + dataset.getLocalPath() + "' with cdk");
-			TaskProvider.verbose("Parsing file with CDK");
+			TaskProvider.debug("Parsing file with CDK");
 
 			Vector<IMolecule> mols = new Vector<IMolecule>();
 			integratedProperties.put(dataset, new LinkedHashSet<IntegratedProperty>());

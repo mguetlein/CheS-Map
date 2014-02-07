@@ -408,7 +408,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 					{
 						if (!d.isLocal())
 						{
-							TaskProvider.verbose("Downloading external dataset: " + d.getName());
+							TaskProvider.debug("Downloading external dataset: " + d.getName());
 							DatasetUtil.downloadDataset(d.getURI());
 						}
 						if (TaskProvider.isRunning())

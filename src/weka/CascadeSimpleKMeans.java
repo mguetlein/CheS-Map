@@ -43,7 +43,7 @@ public class CascadeSimpleKMeans extends RandomizableClusterer implements Cluste
 	protected int minNumClusters = 2;
 	protected int maxNumClusters = 10;
 	protected int restarts = 10;
-	protected boolean printDebug = true;
+	protected boolean printDebug = false;
 	protected DistanceFunction distanceFunction = new EuclideanDistance();
 	protected int maxIterations = 500;
 	protected boolean manuallySelectNumClusters = false;
@@ -74,6 +74,8 @@ public class CascadeSimpleKMeans extends RandomizableClusterer implements Cluste
 		double meanCHs[] = new double[maxNumClusters + 1 - minNumClusters];
 		double maxCHs[] = new double[maxNumClusters + 1 - minNumClusters];
 		int maxSeed[] = new int[maxNumClusters + 1 - minNumClusters];
+
+		TaskProvider.debug("CascadeKMeans Clustering, Restarts: " + restarts + ", K: " + maxNumClusters);
 
 		for (int i = 0; i < restarts; i++)
 		{

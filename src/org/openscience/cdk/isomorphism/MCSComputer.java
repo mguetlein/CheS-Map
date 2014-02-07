@@ -25,7 +25,7 @@ import util.ThreadUtil;
 
 public class MCSComputer
 {
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 	private static SmilesGenerator g;
 	static
 	{

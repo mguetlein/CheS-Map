@@ -43,7 +43,7 @@ import util.StringUtil;
 
 public class MultiKabschAlignement
 {
-	public static boolean DEBUG = true;
+	public static boolean DEBUG = false;
 
 	private static SMARTSQueryTool queryTool;
 	static
@@ -131,6 +131,7 @@ public class MultiKabschAlignement
 
 		if (DEBUG)
 			Settings.LOGGER.info("Num matches in compound 1: " + molInfo1.numSmartsMatches());
+		TaskProvider.debug("Align compound " + molInfos.length + " with SMARTS " + smarts);
 
 		for (int m = 1; m < molecules.length; m++)
 		{
@@ -143,9 +144,7 @@ public class MultiKabschAlignement
 			Atom bestAtoms2[] = null;
 			int bestMol1Index = -1;
 
-			String msg = "Align compound " + (m + 1) + "/" + molInfos.length + " to first compound";
-			TaskProvider.verbose(msg);
-
+			TaskProvider.verbose("Align compound " + (m + 1) + "/" + molInfos.length + " to first compound");
 			if (DEBUG)
 			{
 				Settings.LOGGER.info("Num matches in compound " + (m + 1) + ": " + molInfo2.numSmartsMatches());

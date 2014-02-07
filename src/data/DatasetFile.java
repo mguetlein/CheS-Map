@@ -225,7 +225,7 @@ public class DatasetFile extends FilenameProvider
 		{
 			if (!TaskProvider.isRunning())
 				return;
-			TaskProvider.verbose("Creating 2D structures");
+			TaskProvider.debug("Creating 2D structures");
 			FeatureService.writeCompoundsToSDFile(this, Settings.destinationFile(this, "sdf"));
 			this.setSDF(Settings.destinationFile(this, "sdf"));
 			this.updateCompoundStructureFrom2DSDF();

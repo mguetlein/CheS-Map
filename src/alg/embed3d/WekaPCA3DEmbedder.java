@@ -69,7 +69,7 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 		BufferedReader reader = new BufferedReader(new FileReader(f));
 		Instances data = new Instances(reader);
 
-		TaskProvider.verbose("Apply PCA");
+		TaskProvider.debug("Apply PCA");
 		pca.buildEvaluator(data);
 		Settings.LOGGER.debug(pca.toString());
 		resultData = pca.transformedData(data);

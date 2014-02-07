@@ -60,6 +60,8 @@ public class CDKSmartsHandler implements SmartsHandler
 			}
 		}
 
+		TaskProvider.debug("Matching smarts on compounds");
+
 		IMolecule mols[] = dataset.getCompounds();
 		for (int m = 0; m < mols.length; m++)
 		{

@@ -158,7 +158,7 @@ public class WekaClusterer extends AbstractDatasetClusterer
 	{
 		WekaPropertyUtil.setProperties(wekaClusterer, properties);
 
-		TaskProvider.verbose("Converting data to arff-format");
+		TaskProvider.debug("Converting data to arff-format");
 		File f = CompoundArffWriter.writeArffFile(dataset, compounds, features);
 
 		try
@@ -167,10 +167,10 @@ public class WekaClusterer extends AbstractDatasetClusterer
 			Instances data = new Instances(reader);
 
 			eval = new ClusterEvaluation();
-			TaskProvider.verbose("Building clusterer");
+			TaskProvider.debug("Building clusterer");
 			wekaClusterer.buildClusterer(data);
 			eval.setClusterer(wekaClusterer);
-			TaskProvider.verbose("Clustering dataset");
+			TaskProvider.debug("Clustering dataset");
 			eval.evaluateClusterer(data);
 			Settings.LOGGER.info("# of clusters: " + eval.getNumClusters());
 

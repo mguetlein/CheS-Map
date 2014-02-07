@@ -41,7 +41,7 @@ public class ComputeMCS
 				if (MCSComputer.DEBUG)
 					Settings.LOGGER.info("\n\n");
 
-				TaskProvider.verbose("Compute MCS for cluster " + count + "/" + clusters.size());
+				TaskProvider.debug("Compute MCS for cluster " + count + "/" + clusters.size());
 
 				IMolecule mols[] = new IMolecule[c.getSize()];
 				for (int i = 0; i < mols.length; i++)

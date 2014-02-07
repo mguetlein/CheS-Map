@@ -164,6 +164,8 @@ public class CDKPropertySet implements CompoundPropertySet
 			for (int j = 0; j < getSize(); j++)
 				vv.add(new Double[mols.length]);
 
+			TaskProvider.debug("Compute " + this + " for " + mols.length + " compounds");
+
 			for (int i = 0; i < mols.length; i++)
 			{
 				TaskProvider.verbose("Compute " + this + " for " + (i + 1) + "/" + mols.length + " compounds");

@@ -161,6 +161,8 @@ public class CDKFingerprintSet extends FragmentPropertySet
 	{
 		List<CDKFingerprintProperty> ps = new ArrayList<CDKFingerprintProperty>();
 		HashMap<CDKFingerprintProperty, String[]> hash = new HashMap<CDKFingerprintProperty, String[]>();
+
+		TaskProvider.debug("Computing CDK fingerprint for compounds");
 		for (int m = 0; m < dataset.numCompounds(); m++)
 		{
 			TaskProvider.verbose("Computing CDK fingerprint for compound " + (m + 1) + "/" + dataset.numCompounds());
