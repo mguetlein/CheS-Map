@@ -88,7 +88,7 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	}
 
 	@Override
-	public double[][] getFeatureDistanceMatrix()
+	public DistanceMatrix getFeatureDistanceMatrix()
 	{
 		return null;
 	}

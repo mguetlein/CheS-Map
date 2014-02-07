@@ -308,6 +308,12 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	}
 
 	@Override
+	public Double[] getDoubleValuesInCompleteMappedDataset()
+	{
+		return getDoubleValues(Settings.MAPPED_DATASET);
+	}
+
+	@Override
 	public Double[] getNormalizedValues(DatasetFile dataset)
 	{
 		if (getType() != Type.NUMERIC)

@@ -137,13 +137,12 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 		return true;
 	}
 
-	double[][] dist;
-
 	@Override
-	public double[][] getFeatureDistanceMatrix()
+	public DistanceMatrix getFeatureDistanceMatrix()
 	{
 		if (dist == null)
-			dist = RUtil.readMatrix(dataset.getEmbeddingResultsFilePath("dist"), 0);
+			dist = new DistanceMatrix(getDistanceMeasure(), RUtil.readMatrix(
+					dataset.getEmbeddingResultsFilePath("dist"), 0));
 		return dist;
 	}
 

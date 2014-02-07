@@ -7,6 +7,7 @@ import alg.DistanceMeasure;
 import alg.align3d.ThreeDAligner;
 import alg.build3d.ThreeDBuilder;
 import alg.cluster.DatasetClusterer;
+import alg.embed3d.DistanceMatrix;
 import alg.embed3d.ThreeDEmbedder;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
@@ -218,9 +219,14 @@ public class ClusteringData
 	public Double getFeatureDistance(int i1, int i2)
 	{
 		if (threeDEmbedder.getFeatureDistanceMatrix() != null)
-			return threeDEmbedder.getFeatureDistanceMatrix()[i1][i2];
+			return threeDEmbedder.getFeatureDistanceMatrix().getValues()[i1][i2];
 		else
 			return null;
+	}
+
+	public DistanceMatrix getFeatureDistanceMatrix()
+	{
+		return threeDEmbedder.getFeatureDistanceMatrix();
 	}
 
 	public DistanceMeasure getEmbeddingDistanceMeasure()

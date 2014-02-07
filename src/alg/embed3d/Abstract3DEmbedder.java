@@ -87,6 +87,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	protected DatasetFile dataset;
 	protected List<CompoundData> instances;
 	protected List<CompoundProperty> features;
+	protected DistanceMatrix dist;
 
 	public void embedDataset(DatasetFile dataset, List<CompoundData> instances, List<CompoundProperty> features)
 			throws Exception
@@ -94,6 +95,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		this.dataset = dataset;
 		this.features = features;
 		this.instances = instances;
+		dist = null;
 
 		String embedFilename = dataset.getEmbeddingResultsFilePath("pos");
 		String rSquareFilename = dataset.getEmbeddingResultsFilePath("rSquare");

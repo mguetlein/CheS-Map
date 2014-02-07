@@ -276,7 +276,7 @@ public class CheSMapping
 			for (AppDomainComputer ad : appDomain)
 			{
 				ad.computeAppDomain(dataset, clustering.getCompounds(), featuresWithInfo, clustering
-						.getThreeDEmbedder().getFeatureDistanceMatrix());
+						.getThreeDEmbedder().getFeatureDistanceMatrix().getValues());
 				props.add(ad.getInsideAppDomainProperty());
 				props.add(ad.getPropabilityAppDomainProperty());
 				for (int i = 0; i < clustering.getNumCompounds(false); i++)
@@ -378,32 +378,38 @@ public class CheSMapping
 							embedder.getCCCProperty().getDoubleValues(dataset)[i]);
 				clustering.addAdditionalProperty(embedder.getCCCProperty(), true);
 			}
-
-			//			List<CompoundProperty> distanceTo = new ArrayList<CompoundProperty>();
-			//			int i = 0;
-			//			for (CompoundData c : clustering.getCompounds())
-			//			{
-			//				DistanceToProperty p = new DistanceToProperty(dataset, c.getIndex() + "", i, emb.getPositions());
-			//				p.setMappedDataset(dataset);
-			//				for (int j = 0; j < clustering.getNumCompounds(true); j++)
-			//					((CompoundDataImpl) clustering.getCompounds().get(j)).setDoubleValue(p,
-			//							p.getDoubleValues(dataset)[j]);
-			//				distanceTo.add(p);
-			//				i++;
-			//			}
-			//			clustering.setDistanceToProperties(distanceTo);
 		}
 		else
 			clustering.setEmbedQuality("n/a");
 
-		//		for (CompoundProperty p : ListUtil.concat(clustering.getProperties(), clustering.getFeatures()))
-		//			clustering.setEmbeddingQuality(
-		//					p,
-		//					emb.getEmbedQuality(p, dataset,
-		//							ListUtil.cast(MolecularPropertyOwner.class, clustering.getCompounds())));
 		int cCount = 0;
+		List<Vector3f> distinct = new ArrayList<Vector3f>();//hash-set does not work, dont now why!
 		for (Vector3f v : embedder.getPositions())
+		{
 			((CompoundDataImpl) clustering.getCompounds().get(cCount++)).setPosition(v);
+			boolean match = false;
+			for (Vector3f v2 : distinct)
+				if (v2.equals(v))
+				{
+					match = true;
+					break;
+				}
+			if (!match)
+				distinct.add(v);
+		}
+
+		if (distinct.size() < cCount)
+		{
+			int equalPos = embedder.getPositions().size() - distinct.size();
+			TaskProvider
+					.warning(
+							equalPos + " of " + cCount + " compounds share equal 3D positions.",
+							"This warning is expected if compounds occur multiple times in the dataset. "
+									+ "Embedding algorithms do assign 3D positions based on the feature values. "
+									+ "If compounds have equal feature values, they will most likely be assigned equal positions in 3D space. "
+									+ "To avoid this, add more features, that help to distinguish between compounds.");
+		}
+
 		for (ClusterData c : clustering.getClusters())
 			for (CompoundData co : c.getCompounds())
 				if (co.getPosition() == null)

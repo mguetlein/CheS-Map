@@ -36,6 +36,8 @@ public class StructuralFragments
 			"ToxTree_SkinSensitisationPlugin.csv", "ToxTree_SMARTCYPPlugin.csv", "ToxTree_VerhaarScheme2.csv",
 			"ToxTree_VerhaarScheme.csv" };
 
+	public static final String SMARTS_LIST_PREFIX = "Smarts list: ";
+
 	private static HashMap<String, String> nameSuffixes = new HashMap<String, String>();
 	{
 		nameSuffixes.put("patterns", "(OpenBabel FP3)");
@@ -137,7 +139,7 @@ public class StructuralFragments
 							JOptionPane.WARNING_MESSAGE);
 
 				String fname = FileUtil.getFilename(filename, false);
-				String name = "Smarts list: " + fname;
+				String name = SMARTS_LIST_PREFIX + fname;
 				if (nameSuffixes.containsKey(fname))
 					name += " " + nameSuffixes.get(fname);
 				String desc = "Num smarts strings: " + a.get(MatchEngine.CDK).size();

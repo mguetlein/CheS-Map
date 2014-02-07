@@ -50,6 +50,8 @@ public interface CompoundProperty
 
 	public Double[] getDoubleValues(DatasetFile dataset);
 
+	public Double[] getDoubleValuesInCompleteMappedDataset();
+
 	public Double[] getNormalizedValues(DatasetFile dataset);
 
 	public Double[] getNormalizedValuesInCompleteMappedDataset();

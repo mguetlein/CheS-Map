@@ -63,6 +63,11 @@ public class Sammon3DEmbedder extends AbstractRTo3DEmbedder
 		return new Property[] { niter, magic, tol, dist_sim };
 	}
 
+	public void enableTanimoto()
+	{
+		dist_sim.setValue("Tanimoto (similarity)");
+	}
+
 	@Override
 	protected String getRScriptCode()
 	{
@@ -117,7 +122,7 @@ public class Sammon3DEmbedder extends AbstractRTo3DEmbedder
 		return false;
 	}
 
-	String rCode = "duplicate_indices <- function( data ) {\n" //
+	static String rCode = "duplicate_indices <- function( data ) {\n" //
 			+ "  indices = 1:nrow(data)\n"// 
 			+ "  z = data\n"
 			+ "  duplicate_index = anyDuplicated(z)\n"// 

@@ -23,13 +23,11 @@ import dataInterface.CompoundPropertyOwner;
 
 public class EmbedUtil
 {
-	public static double computeRSquare(List<Vector3f> positions, double distanceMatrix[][])
+	public static double computeRSquare(List<Vector3f> positions, DistanceMatrix featureDistanceMatrix)
 	{
-		double d1[][] = distanceMatrix;
-		normalizeDistanceMatrix(d1);
 		double d2[][] = euclMatrix(positions);
 		normalizeDistanceMatrix(d2);
-		return computeRSquare(d1, d2);
+		return computeRSquare(featureDistanceMatrix.getNormalizedValues(), d2);
 	}
 
 	//	public static double computeRSquare(List<Vector3f> positions, List<CompoundData> instances,
@@ -40,6 +38,9 @@ public class EmbedUtil
 
 	private static double computeRSquare(double[][] m1, double[][] m2)
 	{
+		if (m1.length != m1[0].length || m2.length != m2[0].length || m1.length != m2.length)
+			throw new IllegalArgumentException();
+
 		double ss_err = 0;
 		double ss_tot = 0;
 		double m1_mean = 0;
@@ -62,18 +63,16 @@ public class EmbedUtil
 		return 1 - ss_err / ss_tot;
 	}
 
-	public static double computeCCC(List<Vector3f> positions, double distanceMatrix[][])
+	public static double computeCCC(List<Vector3f> positions, DistanceMatrix featureDistanceMatrix)
 	{
-		return computeCCC(positions, Dimensions.xyz, distanceMatrix);
+		return computeCCC(positions, Dimensions.xyz, featureDistanceMatrix);
 	}
 
-	public static double computeCCC(List<Vector3f> positions, Dimensions dims, double distanceMatrix[][])
+	public static double computeCCC(List<Vector3f> positions, Dimensions dims, DistanceMatrix featureDistanceMatrix)
 	{
-		double d1[][] = distanceMatrix;
-		normalizeDistanceMatrix(d1);
 		double d2[][] = euclMatrix(positions, dims);
 		normalizeDistanceMatrix(d2);
-		return computeCCC(d1, d2);
+		return computeCCC(featureDistanceMatrix.getNormalizedValues(), d2);
 	}
 
 	//	public static double computeCCC(List<Vector3f> positions, List<CompoundData> instances,
@@ -82,13 +81,11 @@ public class EmbedUtil
 	//		return computeCCC(positions, euclMatrix(instances, features, dataset));
 	//	}
 
-	public static double[] computeCCCs(List<Vector3f> positions, double distanceMatrix[][])
+	public static double[] computeCCCs(List<Vector3f> positions, DistanceMatrix featureDistanceMatrix)
 	{
-		double d1[][] = distanceMatrix;
-		normalizeDistanceMatrix(d1);
 		double d2[][] = euclMatrix(positions);
 		normalizeDistanceMatrix(d2);
-		return computeCCCs(d1, d2);
+		return computeCCCs(featureDistanceMatrix.getNormalizedValues(), d2);
 	}
 
 	//	public static double[] computeCCCs(List<Vector3f> positions, List<CompoundData> instances,
@@ -99,6 +96,9 @@ public class EmbedUtil
 
 	private static double[] computeCCCs(double[][] m1, double[][] m2)
 	{
+		if (m1.length != m1[0].length || m2.length != m2[0].length || m1.length != m2.length)
+			throw new IllegalArgumentException();
+
 		double ccc[] = new double[m1.length];
 
 		for (int k = 0; k < ccc.length; k++)

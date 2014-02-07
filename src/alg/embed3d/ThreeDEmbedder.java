@@ -27,7 +27,7 @@ public interface ThreeDEmbedder extends Algorithm
 
 	public List<Vector3f> getPositions();
 
-	public double[][] getFeatureDistanceMatrix();
+	public DistanceMatrix getFeatureDistanceMatrix();
 
 	public double getRSquare();
 

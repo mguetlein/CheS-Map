@@ -38,6 +38,7 @@ import data.IntegratedProperty;
 import data.cdk.CDKPropertySet;
 import data.fminer.FminerPropertySet;
 import data.fragments.StructuralFragmentProperties;
+import data.fragments.StructuralFragments;
 import data.obdesc.OBDescriptorProperty;
 import data.obfingerprints.FingerprintType;
 import data.obfingerprints.OBFingerprintSet;
@@ -123,7 +124,7 @@ public class MappingWorkflow
 	 */
 	public enum DescriptorCategory
 	{
-		integrated, cdk, ob, obFP2, obFP3, obFP4, obMACCS, fminer;
+		integrated, cdk, ob, obFP2, obFP3, obFP4, obMACCS, fminer, benigniBossa
 	}
 
 	/**
@@ -209,7 +210,7 @@ public class MappingWorkflow
 
 			if (feats.contains(DescriptorCategory.obFP2) || feats.contains(DescriptorCategory.obFP3)
 					|| feats.contains(DescriptorCategory.obFP4) || feats.contains(DescriptorCategory.obMACCS)
-					|| feats.contains(DescriptorCategory.fminer))
+					|| feats.contains(DescriptorCategory.fminer) || feats.contains(DescriptorCategory.benigniBossa))
 			{
 				if (fpMinFreq == -1)
 					fpMinFreq = Math.max(1, Math.min(10, dataset.numCompounds() / 10));
@@ -235,6 +236,10 @@ public class MappingWorkflow
 			if (feats.contains(DescriptorCategory.obMACCS))
 				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
 						FingerprintType.MACCS) });
+			if (feats.contains(DescriptorCategory.benigniBossa))
+				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
+						new FragmentPropertySet[] { StructuralFragments.instance
+								.findFromString(StructuralFragments.SMARTS_LIST_PREFIX + "ToxTree_BB_CarcMutRules") });
 			if (feats.contains(DescriptorCategory.fminer))
 				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
 						new FragmentPropertySet[] { new FminerPropertySet() });

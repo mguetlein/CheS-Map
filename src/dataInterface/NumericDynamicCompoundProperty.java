@@ -77,4 +77,10 @@ public abstract class NumericDynamicCompoundProperty extends DynamicCompoundProp
 		return normalizedValues;
 	}
 
+	@Override
+	public Double[] getDoubleValuesInCompleteMappedDataset()
+	{
+		return doubleValues;
+	}
+
 }
