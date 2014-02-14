@@ -50,7 +50,7 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 		disabled, external, sdf2D
 	}
 
-	AutoCorrect autoCorrect = AutoCorrect.external;
+	AutoCorrect autoCorrect = AutoCorrect.disabled;
 
 	public void setAutoCorrect(AutoCorrect a)
 	{
