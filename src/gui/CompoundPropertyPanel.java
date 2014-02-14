@@ -11,7 +11,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,10 +46,10 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import data.DatasetFile;
 import data.FeatureLoader;
-import dataInterface.AbstractFragmentProperty;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
+import dataInterface.CompoundPropertyUtil;
 import dataInterface.FragmentPropertySet;
 import freechart.AbstractFreeChartPanel;
 import freechart.BarPlotPanel;
@@ -353,6 +352,7 @@ public class CompoundPropertyPanel extends JPanel
 		if (prop.getSize(dataset) > 0)
 		{
 			CompoundProperty selectedProperty = prop.get(dataset, propIndex);
+			boolean isExportedSmarts = CompoundPropertyUtil.isExportedFPProperty(selectedProperty);
 			nominalFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NOMINAL));
 			numericFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NUMERIC));
 
@@ -370,18 +370,23 @@ public class CompoundPropertyPanel extends JPanel
 			if (type == Type.NOMINAL)
 			{
 				nominalFeatureButton.setSelected(true);
-				CountedSet<String> set = CountedSet.fromArray(selectedProperty.getStringValues(dataset));
-				List<String> values = set.values(new DefaultComparator<String>());
-				if (values.contains(null))
-					values.remove(null);
-				List<Double> counts = new ArrayList<Double>();
-				for (String o : values)
-					if (o != null)
-						counts.add((double) set.getCount(o));
-				for (int i = 0; i < values.size(); i++)
-					if (selectedProperty.isSmartsProperty())
-						values.set(i, AbstractFragmentProperty.getFormattedSmartsValue(values.get(i)));
-				p = new BarPlotPanel(null, "#compounds", counts, values);
+
+				String values[] = selectedProperty.getNominalDomain(dataset);
+				for (int i = 0; i < values.length; i++)
+					values[i] = selectedProperty.getFormattedValue(values[i]);
+				int counts[] = selectedProperty.getNominalDomainCounts(dataset);
+				//				CountedSet<String> set = CountedSet.fromArray(selectedProperty.getStringValues(dataset));
+				//				List<String> values = set.values(new DefaultComparator<String>());
+				//				if (values.contains(null))
+				//					values.remove(null);
+				//				List<Double> counts = new ArrayList<Double>();
+				//				for (String o : values)
+				//					if (o != null)
+				//						counts.add((double) set.getCount(o));
+				//				for (int i = 0; i < values.size(); i++)
+				//					if (selectedProperty.isSmartsProperty() || isExportedSmarts)
+				//						values.set(i, AbstractFragmentProperty.getFormattedSmartsValue(values.get(i)));
+				p = new BarPlotPanel(null, "#compounds", ArrayUtil.toPrimitiveDoubleArray(counts), values);
 				((BarPlotPanel) p).setMaximumBarWidth(.35);
 			}
 			else if (type == Type.NUMERIC)

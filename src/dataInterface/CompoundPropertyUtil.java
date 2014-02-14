@@ -11,11 +11,32 @@ import util.ArrayUtil;
 import util.DoubleArraySummary;
 import util.ObjectUtil;
 import data.DatasetFile;
+import data.cdk.CDKProperty;
+import data.obdesc.OBDescriptorProperty;
+import data.obfingerprints.OBFingerprintProperty;
 import dataInterface.CompoundProperty.Type;
 import freechart.FreeChartUtil;
 
 public class CompoundPropertyUtil
 {
+	public static boolean isExportedFPProperty(CompoundProperty p)
+	{
+		return (p.getType() != Type.NUMERIC && p.getNominalDomainInMappedDataset().length == 2
+				&& p.getNominalDomainInMappedDataset()[0].equals("0")
+				&& p.getNominalDomainInMappedDataset()[1].equals("1") && p.toString().matches("^OB-.*:.*"));
+	}
+
+	public static String propToExportString(CompoundProperty p)
+	{
+		if (p instanceof CDKProperty)
+			return "CDK:" + p.toString();
+		if (p instanceof OBDescriptorProperty)
+			return "OB:" + p.toString();
+		if (p instanceof OBFingerprintProperty)
+			return "OB-" + ((OBFingerprintProperty) p).getOBType() + ":" + p.toString();
+		return p.toString();
+	}
+
 	public static int computeNumDistinct(Double values[])
 	{
 		return DoubleArraySummary.create(values).getNum();
@@ -118,6 +139,9 @@ public class CompoundPropertyUtil
 			Color col[];
 			if (p.isSmartsProperty())
 				col = new Color[] { getLowValueColor(), getHighValueColor() };
+			else if (p.getNominalDomainInMappedDataset().length == 2
+					&& p.getNominalDomainInMappedDataset()[0].equals("active"))
+				col = new Color[] { getHighValueColor(), getLowValueColor() };
 			else
 			{
 				col = AVAILABLE_COLORS;

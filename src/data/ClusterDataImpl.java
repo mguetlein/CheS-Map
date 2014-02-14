@@ -16,6 +16,7 @@ import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
+import dataInterface.CompoundPropertyUtil;
 import dataInterface.SubstructureSmartsType;
 
 public class ClusterDataImpl implements ClusterData
@@ -205,7 +206,7 @@ public class ClusterDataImpl implements ClusterData
 
 	public String getSummaryStringValue(CompoundProperty p, boolean html)
 	{
-		if (p.isSmartsProperty())
+		if (p.isSmartsProperty() || CompoundPropertyUtil.isExportedFPProperty(p))
 		{
 			CountedSet<String> set = getNominalSummary(p).copy();
 			if (set.contains("1"))

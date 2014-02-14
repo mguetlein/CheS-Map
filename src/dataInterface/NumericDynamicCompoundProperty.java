@@ -42,6 +42,12 @@ public abstract class NumericDynamicCompoundProperty extends DynamicCompoundProp
 	}
 
 	@Override
+	public String getFormattedValue(Object doubleOrString)
+	{
+		return AbstractCompoundProperty.getFormattedValue(this, doubleOrString);
+	}
+
+	@Override
 	public String toString()
 	{
 		return getName();

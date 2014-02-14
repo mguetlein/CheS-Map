@@ -10,8 +10,6 @@ import javax.vecmath.Vector3f;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IMolecule;
 
-import util.StringUtil;
-import dataInterface.AbstractFragmentProperty;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
@@ -94,21 +92,12 @@ public class CompoundDataImpl implements CompoundData
 	}
 
 	@Override
-	public String getFormattedValue(CompoundProperty property)
+	public String getFormattedValue(CompoundProperty p)
 	{
-		if (property.getType() == Type.NUMERIC)
-			if (getDoubleValue(property) == null)
-				return "null";
-			else if (property.isIntegerInMappedDataset())
-				return StringUtil.formatDouble(getDoubleValue(property), 0);
-			else if (property.hasSmallDoubleValuesInMappedDataset())
-				return StringUtil.formatDouble(getDoubleValue(property), 3);
-			else
-				return StringUtil.formatDouble(getDoubleValue(property));
-		else if (property.isSmartsProperty())
-			return AbstractFragmentProperty.getFormattedSmartsValue(getStringValue(property));
+		if (p.getType() == Type.NUMERIC)
+			return p.getFormattedValue(getDoubleValue(p));
 		else
-			return getStringValue(property) + "";
+			return p.getFormattedValue(getStringValue(p));
 	}
 
 	@Override

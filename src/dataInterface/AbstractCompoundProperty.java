@@ -12,6 +12,7 @@ import main.Settings;
 import util.ArrayUtil;
 import util.CountedSet;
 import util.DoubleArraySummary;
+import util.StringUtil;
 import util.ToStringComparator;
 import data.DatasetFile;
 import data.fragments.MatchEngine;
@@ -163,6 +164,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	}
 
 	private HashMap<DatasetFile, String[]> domain = new HashMap<DatasetFile, String[]>();
+	private HashMap<DatasetFile, int[]> domainCounts = new HashMap<DatasetFile, int[]>();
 	private HashMap<DatasetFile, String[]> stringValues = new HashMap<DatasetFile, String[]>();
 	private HashMap<DatasetFile, Double[]> doubleValues = new HashMap<DatasetFile, Double[]>();
 	private HashMap<DatasetFile, Double[]> normalizedValues = new HashMap<DatasetFile, Double[]>();
@@ -229,6 +231,36 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 		hasSmallDoubleValues.put(dataset, smallDoubleValue);
 	}
 
+	static String getFormattedValue(CompoundProperty p, Object doubleOrString)
+	{
+		if (doubleOrString == null)
+			return "missing";
+		if (p.getType() == Type.NUMERIC)
+		{
+			Double d = (Double) doubleOrString;
+			if (p.isIntegerInMappedDataset())
+				return StringUtil.formatDouble(d, 0);
+			else if (p.hasSmallDoubleValuesInMappedDataset())
+				return StringUtil.formatDouble(d, 3);
+			else
+				return StringUtil.formatDouble(d);
+		}
+		else
+		{
+			String s = (String) doubleOrString;
+			if (p.isSmartsProperty() || CompoundPropertyUtil.isExportedFPProperty(p))
+				return s.equals("1") ? "match" : "no-match";
+			else
+				return s + "";
+		}
+	}
+
+	@Override
+	public String getFormattedValue(Object doubleOrString)
+	{
+		return getFormattedValue(this, doubleOrString);
+	}
+
 	private void setDomainAndNumDistinct(DatasetFile dataset, String values[])
 	{
 		CountedSet<String> set = CountedSet.create(values);
@@ -236,14 +268,19 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 		if (set.getNumValues() == 0)
 		{
 			domain.put(dataset, new String[0]);
+			domainCounts.put(dataset, new int[0]);
 			distinct.put(dataset, 0);
 			modeNonNull.put(dataset, null);
 		}
 		else
 		{
 			String dom[] = ArrayUtil.toArray(set.values());
+			int domCounts[] = new int[dom.length];
+			for (int i = 0; i < domCounts.length; i++)
+				domCounts[i] = set.getCount(dom[i]);
 			Arrays.sort(dom, new ToStringComparator());
 			domain.put(dataset, dom);
+			domainCounts.put(dataset, domCounts);
 			distinct.put(dataset, set.getNumValues());
 			modeNonNull.put(dataset, set.values().get(0));
 		}
@@ -255,6 +292,14 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 		if (!domain.containsKey(dataset))
 			throw new Error("values not yet set");
 		return domain.get(dataset);
+	}
+
+	@Override
+	public int[] getNominalDomainCounts(DatasetFile dataset)
+	{
+		if (!domainCounts.containsKey(dataset))
+			throw new Error("values not yet set");
+		return domainCounts.get(dataset);
 	}
 
 	@Override

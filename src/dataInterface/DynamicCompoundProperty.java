@@ -68,6 +68,12 @@ public abstract class DynamicCompoundProperty implements CompoundProperty, Compo
 	}
 
 	@Override
+	public int[] getNominalDomainCounts(DatasetFile dataset)
+	{
+		throw new IllegalStateException();
+	}
+
+	@Override
 	public String[] getStringValues(DatasetFile dataset)
 	{
 		throw new IllegalStateException();

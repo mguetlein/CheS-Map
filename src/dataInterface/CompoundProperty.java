@@ -44,9 +44,13 @@ public interface CompoundProperty
 
 	public String[] getNominalDomain(DatasetFile dataset);
 
+	public int[] getNominalDomainCounts(DatasetFile dataset);
+
 	public String[] getNominalDomainInMappedDataset();
 
 	public String[] getStringValues(DatasetFile dataset);
+
+	public String getFormattedValue(Object doubleOrString);
 
 	public Double[] getDoubleValues(DatasetFile dataset);
 
