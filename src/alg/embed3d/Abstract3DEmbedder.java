@@ -78,7 +78,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	}
 
 	protected abstract List<Vector3f> embed(DatasetFile dataset, List<CompoundData> instances,
-			List<CompoundProperty> features) throws Exception;
+			List<CompoundProperty> features) throws Exception; //boolean[] trainInstances
 
 	protected abstract String getShortName();
 
@@ -89,8 +89,9 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	protected List<CompoundProperty> features;
 	protected DistanceMatrix dist;
 
+	@Override
 	public void embedDataset(DatasetFile dataset, List<CompoundData> instances, List<CompoundProperty> features)
-			throws Exception
+			throws Exception //boolean[] trainInstances
 	{
 		this.dataset = dataset;
 		this.features = features;
@@ -121,7 +122,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		}
 		else
 		{
-			positions = embed(dataset, instances, features);
+			positions = embed(dataset, instances, features); //, trainInstances
 
 			TaskProvider.debug("Store embedding results to: " + embedFilename);
 			ValueFileCache.writeCachePosition2(embedFilename, positions);

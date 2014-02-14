@@ -319,8 +319,17 @@ public class CheSMapping
 		}
 		try
 		{
+			//			CompoundProperty p = null;
+			//			for (CompoundProperty pp : clustering.getProperties())
+			//				if (pp.toString().equals("dataset"))
+			//					p = pp;
+			//			if (p == null)
+			//				throw new IllegalArgumentException();
+			//			for (int i = 0; i < train.length; i++)
+			//				train[i] = clustering.getCompounds().get(i).getStringValue(p).equals("train");
+
 			clustering.setThreeDEmbedder(embedder);
-			embedder.embedDataset(dataset, clustering.getCompounds(), featuresWithInfo);
+			embedder.embedDataset(dataset, clustering.getCompounds(), featuresWithInfo); //, train
 		}
 		catch (Exception e)
 		{
@@ -333,7 +342,7 @@ public class CheSMapping
 					e.getMessage());
 			embedder = randomEmbedder;
 			clustering.setThreeDEmbedder(embedder);
-			randomEmbedder.embedDataset(dataset, clustering.getCompounds(), featuresWithInfo);
+			randomEmbedder.embedDataset(dataset, clustering.getCompounds(), featuresWithInfo); //,null
 		}
 
 		//		if (emb.getProcessMessages() != null && emb.getProcessMessages().containsWarning())

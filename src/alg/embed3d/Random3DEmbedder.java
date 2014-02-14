@@ -94,7 +94,7 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	}
 
 	@Override
-	public void embedDataset(DatasetFile dataset, List<CompoundData> instances, List<CompoundProperty> features)
+	public void embedDataset(DatasetFile dataset, List<CompoundData> instances, List<CompoundProperty> features) //boolean[] trainInstances
 	{
 		positions = getPositions(instances.size());
 	}

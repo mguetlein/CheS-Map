@@ -58,7 +58,7 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 
 	@Override
 	public List<Vector3f> embed(DatasetFile dataset, List<CompoundData> instances, List<CompoundProperty> features)
-			throws Exception
+			throws Exception //boolean[] trainInstances
 	{
 		if (this == INSTANCE_NO_PROBS)
 			pca.setCenterData(true);
@@ -69,7 +69,14 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 		BufferedReader reader = new BufferedReader(new FileReader(f));
 		Instances data = new Instances(reader);
 
+		//		Instances reducedData = new Instances(data);
+		//		for (int i = trainInstances.length - 1; i >= 0; i--)
+		//			if (!trainInstances[i])
+		//				reducedData.remove(i);
+		//		System.out.println("num instances of pca: " + reducedData.size());
+
 		TaskProvider.debug("Apply PCA");
+		//		pca.buildEvaluator(reducedData);
 		pca.buildEvaluator(data);
 		Settings.LOGGER.debug(pca.toString());
 		resultData = pca.transformedData(data);

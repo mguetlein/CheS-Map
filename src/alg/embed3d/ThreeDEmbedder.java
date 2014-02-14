@@ -23,7 +23,7 @@ public interface ThreeDEmbedder extends Algorithm
 	public boolean requiresFeatures();
 
 	public void embedDataset(DatasetFile dataset, List<CompoundData> instances, List<CompoundProperty> features)
-			throws Exception;
+			throws Exception; // boolean[] trainInstances
 
 	public List<Vector3f> getPositions();
 

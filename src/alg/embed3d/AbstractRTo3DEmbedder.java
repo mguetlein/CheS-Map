@@ -41,7 +41,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 
 	@Override
 	public List<Vector3f> embed(DatasetFile dataset, final List<CompoundData> instances,
-			final List<CompoundProperty> features) throws IOException
+			final List<CompoundProperty> features) throws IOException //, boolean[] trainInstances
 	{
 		processMessages.clear();
 		if (features.size() < getMinNumFeatures())
