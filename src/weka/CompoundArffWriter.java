@@ -14,7 +14,11 @@ public class CompoundArffWriter implements ArffWritable
 {
 	public static File writeArffFile(DatasetFile dataset, List<CompoundData> compounds, List<CompoundProperty> features)
 	{
-		String arffFile = dataset.getFeatureTableFilePath("arff");
+		return writeArffFile(dataset.getFeatureTableFilePath("arff"), compounds, features);
+	}
+
+	public static File writeArffFile(String arffFile, List<CompoundData> compounds, List<CompoundProperty> features)
+	{
 		File file = new File(arffFile);
 		if (!Settings.CACHING_ENABLED || !file.exists())
 		{
