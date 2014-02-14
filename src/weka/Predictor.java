@@ -18,10 +18,62 @@ import weka.core.converters.ArffLoader;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
+import dataInterface.NumericDynamicCompoundProperty;
 
 public class Predictor
 {
-	public static double[] predict(List<CompoundData> compounds, List<CompoundProperty> features, CompoundProperty clazz)
+	public static class PredictionResult
+	{
+		double[] prediction;
+		double[] missClassfied;
+
+		public PredictionResult(double[] prediction, double[] missClassfied)
+		{
+			this.prediction = prediction;
+			this.missClassfied = missClassfied;
+		}
+
+		public CompoundProperty createFeature()
+		{
+			return new NumericDynamicCompoundProperty(ArrayUtil.toDoubleArray(prediction))
+			{
+
+				@Override
+				public String getName()
+				{
+					return "prediction";
+				}
+
+				@Override
+				public String getDescription()
+				{
+					return ".";
+				}
+			};
+		}
+
+		public CompoundProperty createMissclassifiedFeature()
+		{
+			return new NumericDynamicCompoundProperty(ArrayUtil.toDoubleArray(missClassfied))
+			{
+
+				@Override
+				public String getName()
+				{
+					return "miss-classified";
+				}
+
+				@Override
+				public String getDescription()
+				{
+					return ".";
+				}
+			};
+		}
+	}
+
+	public static PredictionResult predict(List<CompoundData> compounds, List<CompoundProperty> features,
+			CompoundProperty clazz)
 	{
 		try
 		{
@@ -126,8 +178,18 @@ public class Predictor
 				//						+ data.get(i).stringValue(data.numAttributes() - 1) + " " + ArrayUtil.toString(pred));
 				d[i] = ArrayUtil.getMean(pred);
 			}
-			return d;
 
+			double m[] = new double[d.length];
+			for (int i = 0; i < m.length; i++)
+			{
+				double actual = ArrayUtil.indexOf(clazz.getNominalDomainInMappedDataset(), compounds.get(i)
+						.getStringValue(clazz));
+				if (actual == 0)
+					m[i] = 1 - d[i];
+				else
+					m[i] = d[i];
+			}
+			return new PredictionResult(d, m);
 		}
 		catch (IOException e)
 		{
