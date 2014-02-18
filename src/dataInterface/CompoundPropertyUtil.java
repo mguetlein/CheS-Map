@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import util.ArrayUtil;
 import util.DoubleArraySummary;
@@ -24,6 +26,18 @@ public class CompoundPropertyUtil
 		return (p.getType() != Type.NUMERIC && p.getNominalDomainInMappedDataset().length == 2
 				&& p.getNominalDomainInMappedDataset()[0].equals("0")
 				&& p.getNominalDomainInMappedDataset()[1].equals("1") && p.toString().matches("^OB-.*:.*"));
+	}
+
+	public static String stripExportString(CompoundProperty p)
+	{
+		if (p.toString().startsWith("CDK:"))
+			return p.toString().substring(4);
+		if (p.toString().startsWith("OB:"))
+			return p.toString().substring(3);
+		Matcher m = Pattern.compile("^OB-.*:(.*)").matcher(p.toString());
+		if (m.matches())
+			return m.group(1);
+		return p.toString();
 	}
 
 	public static String propToExportString(CompoundProperty p)
