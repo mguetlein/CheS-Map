@@ -90,6 +90,11 @@ public class Settings
 		return MessageFormat.format(text.getString(key), param1, param2, param3);
 	}
 
+	public static String text(String key, String param1, String param2, String param3, String param4)
+	{
+		return MessageFormat.format(text.getString(key), param1, param2, param3, param4);
+	}
+
 	public static JFrame TOP_LEVEL_FRAME = null;
 	public static int TOP_LEVEL_FRAME_SCREEN = ScreenUtil.getLargestScreen();
 	public static Random RANDOM = new Random();
