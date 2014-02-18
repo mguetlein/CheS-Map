@@ -250,6 +250,8 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 			String s = (String) doubleOrString;
 			if (p.isSmartsProperty() || CompoundPropertyUtil.isExportedFPProperty(p))
 				return s.equals("1") ? "match" : "no-match";
+			//			if (p.toString().contains("activityoutcome"))
+			//				return s.equals("1") ? "active" : (s.equals("0") ? "inactive" : s);
 			else
 				return s + "";
 		}
