@@ -16,7 +16,6 @@ import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
-import dataInterface.CompoundPropertyUtil;
 import dataInterface.SubstructureSmartsType;
 
 public class ClusterDataImpl implements ClusterData
@@ -147,7 +146,12 @@ public class ClusterDataImpl implements ClusterData
 
 	private ArraySummary getSummaryValue(CompoundProperty p)
 	{
-		String filterKey = origIndicesFilter == null ? "" : ListUtil.toString(origIndicesFilter);
+		return getSummaryValue(p, false);
+	}
+
+	private ArraySummary getSummaryValue(CompoundProperty p, boolean formatted)
+	{
+		String filterKey = (origIndicesFilter == null ? "" : ListUtil.toString(origIndicesFilter)) + formatted;
 		if (values.get(p, filterKey) == null)
 		{
 			if (p.getType() == Type.NUMERIC)
@@ -164,15 +168,26 @@ public class ClusterDataImpl implements ClusterData
 			}
 			else
 			{
-				List<String> vals = new ArrayList<String>();
-				if (origIndicesFilter == null)
-					for (CompoundData c : compounds)
-						vals.add(c.getStringValue(p));
+				if (formatted)
+				{
+					@SuppressWarnings("unchecked")
+					CountedSet<String> set = ((CountedSet<String>) getSummaryValue(p, false)).copy();
+					for (String key : set.values())
+						set.rename(key, p.getFormattedValue(key));
+					values.put(p, filterKey, set);
+				}
 				else
-					for (CompoundData c : compounds)
-						if (origIndicesFilter.indexOf(c.getOrigIndex()) != -1)
+				{
+					List<String> vals = new ArrayList<String>();
+					if (origIndicesFilter == null)
+						for (CompoundData c : compounds)
 							vals.add(c.getStringValue(p));
-				values.put(p, filterKey, CountedSet.create(vals));
+					else
+						for (CompoundData c : compounds)
+							if (origIndicesFilter.indexOf(c.getOrigIndex()) != -1)
+								vals.add(c.getStringValue(p));
+					values.put(p, filterKey, CountedSet.create(vals));
+				}
 			}
 		}
 		return values.get(p, filterKey);
@@ -206,23 +221,11 @@ public class ClusterDataImpl implements ClusterData
 
 	public String getSummaryStringValue(CompoundProperty p, boolean html)
 	{
-		if (p.isSmartsProperty() || CompoundPropertyUtil.isExportedFPProperty(p))
-		{
-			CountedSet<String> set = getNominalSummary(p).copy();
-			if (set.contains("1"))
-				set.rename("1", "match");
-			if (set.contains("0"))
-				set.rename("0", "no-match");
-			return set.toString(html);
-		}
-		else
-		{
-			if (p.getType() == Type.NUMERIC && p.hasSmallDoubleValuesInMappedDataset())
-				return ((DoubleArraySummary) getSummaryValue(p)).toString(html, 3);
-			else
-				return getSummaryValue(p).toString(html);
-		}
-
+		if (p.getType() == Type.NOMINAL)
+			return getSummaryValue(p, true).toString(html);
+		if (p.getType() == Type.NUMERIC && p.hasSmallDoubleValuesInMappedDataset())
+			return ((DoubleArraySummary) getSummaryValue(p)).toString(html, 3);
+		return getSummaryValue(p).toString(html);
 	}
 
 	@SuppressWarnings("unchecked")
