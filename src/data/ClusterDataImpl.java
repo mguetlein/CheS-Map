@@ -203,7 +203,7 @@ public class ClusterDataImpl implements ClusterData
 	@SuppressWarnings("unchecked")
 	public String getStringValue(CompoundProperty p)
 	{
-		if (p.getType() != Type.NOMINAL)
+		if (p.getType() == Type.NUMERIC)
 			throw new IllegalStateException();
 		CountedSet<String> set = (CountedSet<String>) getSummaryValue(p);
 		String mode = set.getMode(false);
