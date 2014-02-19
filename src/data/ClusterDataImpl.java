@@ -173,7 +173,7 @@ public class ClusterDataImpl implements ClusterData
 					@SuppressWarnings("unchecked")
 					CountedSet<String> set = ((CountedSet<String>) getSummaryValue(p, false)).copy();
 					for (String key : set.values())
-						set.rename(key, p.getFormattedValue(key));
+						set.rename(key, p.getFormattedValueInMappedDataset(key));
 					values.put(p, filterKey, set);
 				}
 				else

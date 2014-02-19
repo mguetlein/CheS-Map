@@ -352,7 +352,7 @@ public class CompoundPropertyPanel extends JPanel
 		if (prop.getSize(dataset) > 0)
 		{
 			CompoundProperty selectedProperty = prop.get(dataset, propIndex);
-			boolean isExportedSmarts = CompoundPropertyUtil.isExportedFPProperty(selectedProperty);
+			boolean isExportedSmarts = CompoundPropertyUtil.isExportedFPPropertyInMappedDataset(selectedProperty);
 			nominalFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NOMINAL));
 			numericFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NUMERIC));
 
@@ -373,7 +373,7 @@ public class CompoundPropertyPanel extends JPanel
 
 				String values[] = selectedProperty.getNominalDomain(dataset);
 				for (int i = 0; i < values.length; i++)
-					values[i] = selectedProperty.getFormattedValue(values[i]);
+					values[i] = selectedProperty.getFormattedValue(values[i], dataset);
 				int counts[] = selectedProperty.getNominalDomainCounts(dataset);
 				//				CountedSet<String> set = CountedSet.fromArray(selectedProperty.getStringValues(dataset));
 				//				List<String> values = set.values(new DefaultComparator<String>());

@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import main.Settings;
 import util.ArrayUtil;
 import util.DoubleArraySummary;
 import util.ObjectUtil;
@@ -21,11 +22,16 @@ import freechart.FreeChartUtil;
 
 public class CompoundPropertyUtil
 {
-	public static boolean isExportedFPProperty(CompoundProperty p)
+	public static boolean isExportedFPProperty(CompoundProperty p, DatasetFile d)
 	{
-		return (p.getType() != Type.NUMERIC && p.getNominalDomainInMappedDataset().length == 2
-				&& p.getNominalDomainInMappedDataset()[0].equals("0")
-				&& p.getNominalDomainInMappedDataset()[1].equals("1") && p.toString().matches("^OB-.*:.*"));
+		return (p.getType() != Type.NUMERIC && p.getNominalDomain(d).length == 2
+				&& p.getNominalDomain(d)[0].equals("0") && p.getNominalDomain(d)[1].equals("1") && p.toString()
+				.matches("^OB-.*:.*"));
+	}
+
+	public static boolean isExportedFPPropertyInMappedDataset(CompoundProperty p)
+	{
+		return isExportedFPProperty(p, Settings.MAPPED_DATASET);
 	}
 
 	public static String stripExportString(CompoundProperty p)
@@ -174,7 +180,7 @@ public class CompoundPropertyUtil
 		int index = ArrayUtil.indexOf(p.getNominalDomainInMappedDataset(), val);
 		if (index == -1)
 			throw new IllegalStateException(val + " not found in "
-					+ ArrayUtil.toString(p.getNominalDomainInMappedDataset()));
+					+ ArrayUtil.toString(p.getNominalDomainInMappedDataset()) + " for property " + p);
 		return getNominalColors(p)[index];
 	}
 

@@ -50,7 +50,9 @@ public interface CompoundProperty
 
 	public String[] getStringValues(DatasetFile dataset);
 
-	public String getFormattedValue(Object doubleOrString);
+	public String getFormattedValueInMappedDataset(Object doubleOrString);
+
+	public String getFormattedValue(Object doubleOrString, DatasetFile dataset);
 
 	public Double[] getDoubleValues(DatasetFile dataset);
 

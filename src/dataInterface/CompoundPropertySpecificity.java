@@ -50,7 +50,7 @@ public class CompoundPropertySpecificity
 
 	public static double numericMultiSpecificty(double[] selected, double[] all)
 	{
-		if (selected.length == 0)
+		if (selected == null || selected.length == 0)
 			return NO_SPEC_AVAILABLE;
 		if (selected.length == 1)
 			return numericSingleSpecificty(selected[0], all);

@@ -95,9 +95,9 @@ public class CompoundDataImpl implements CompoundData
 	public String getFormattedValue(CompoundProperty p)
 	{
 		if (p.getType() == Type.NUMERIC)
-			return p.getFormattedValue(getDoubleValue(p));
+			return p.getFormattedValueInMappedDataset(getDoubleValue(p));
 		else
-			return p.getFormattedValue(getStringValue(p));
+			return p.getFormattedValueInMappedDataset(getStringValue(p));
 	}
 
 	@Override

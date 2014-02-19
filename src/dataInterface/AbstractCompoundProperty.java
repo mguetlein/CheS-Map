@@ -231,7 +231,12 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 		hasSmallDoubleValues.put(dataset, smallDoubleValue);
 	}
 
-	static String getFormattedValue(CompoundProperty p, Object doubleOrString)
+	static String getFormattedValueInMappedDataset(CompoundProperty p, Object doubleOrString)
+	{
+		return getFormattedValue(p, doubleOrString, Settings.MAPPED_DATASET);
+	}
+
+	static String getFormattedValue(CompoundProperty p, Object doubleOrString, DatasetFile dataset)
 	{
 		if (doubleOrString == null)
 			return "missing";
@@ -248,7 +253,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 		else
 		{
 			String s = (String) doubleOrString;
-			if (p.isSmartsProperty() || CompoundPropertyUtil.isExportedFPProperty(p))
+			if (p.isSmartsProperty() || CompoundPropertyUtil.isExportedFPProperty(p, dataset))
 				return s.equals("1") ? "match" : "no-match";
 			//			if (p.toString().contains("activityoutcome"))
 			//				return s.equals("1") ? "active" : (s.equals("0") ? "inactive" : s);
@@ -258,9 +263,15 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	}
 
 	@Override
-	public String getFormattedValue(Object doubleOrString)
+	public String getFormattedValueInMappedDataset(Object doubleOrString)
 	{
-		return getFormattedValue(this, doubleOrString);
+		return getFormattedValueInMappedDataset(this, doubleOrString);
+	}
+
+	@Override
+	public String getFormattedValue(Object doubleOrString, DatasetFile dataset)
+	{
+		return getFormattedValue(this, doubleOrString, dataset);
 	}
 
 	private void setDomainAndNumDistinct(DatasetFile dataset, String values[])
@@ -288,19 +299,32 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 		}
 	}
 
+	private void checkValuesForDataset(DatasetFile dataset)
+	{
+		if (dataset == null)
+			throw new Error("dataset is null, probably mapped dataset not yet set");
+		if (!missing.containsKey(dataset))
+		{
+			String msg = "dataset " + dataset.getName() + "/" + dataset.hashCode() + " not yet set for property "
+					+ this + "\ncurrently mapped dataset:" + Settings.MAPPED_DATASET.getName() + "/"
+					+ Settings.MAPPED_DATASET.hashCode() + "\navailable dataset in proptery: ";
+			for (DatasetFile d : missing.keySet())
+				msg += d.getName() + "/" + d.hashCode() + ", ";
+			throw new Error(msg);
+		}
+	}
+
 	@Override
 	public String[] getNominalDomain(DatasetFile dataset)
 	{
-		if (!domain.containsKey(dataset))
-			throw new Error("values not yet set");
+		checkValuesForDataset(dataset);
 		return domain.get(dataset);
 	}
 
 	@Override
 	public int[] getNominalDomainCounts(DatasetFile dataset)
 	{
-		if (!domainCounts.containsKey(dataset))
-			throw new Error("values not yet set");
+		checkValuesForDataset(dataset);
 		return domainCounts.get(dataset);
 	}
 
@@ -313,10 +337,8 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	@Override
 	public int numDistinctValues(DatasetFile dataset)
 	{
-		if (distinct.containsKey(dataset))
-			return distinct.get(dataset);
-		else
-			return -1;
+		checkValuesForDataset(dataset);
+		return distinct.get(dataset);
 	}
 
 	private void setMissing(DatasetFile dataset, Object values[])
@@ -339,8 +361,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	{
 		if (getType() == Type.NUMERIC)
 			throw new IllegalStateException();
-		if (!stringValues.containsKey(dataset))
-			throw new Error("values not yet set");
+		checkValuesForDataset(dataset);
 		return stringValues.get(dataset);
 	}
 
@@ -349,8 +370,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	{
 		if (getType() != Type.NUMERIC)
 			throw new IllegalStateException();
-		if (!doubleValues.containsKey(dataset))
-			throw new Error("values not yet set");
+		checkValuesForDataset(dataset);
 		return doubleValues.get(dataset);
 	}
 
@@ -365,8 +385,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	{
 		if (getType() != Type.NUMERIC)
 			throw new IllegalStateException();
-		if (!normalizedValues.containsKey(dataset))
-			throw new Error("values not yet set");
+		checkValuesForDataset(dataset);
 		return normalizedValues.get(dataset);
 	}
 
@@ -381,8 +400,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	{
 		if (getType() != Type.NUMERIC)
 			throw new IllegalStateException();
-		if (!normalizedLogValues.containsKey(dataset))
-			throw new Error("values not yet set");
+		checkValuesForDataset(dataset);
 		return normalizedLogValues.get(dataset);
 	}
 
@@ -391,8 +409,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	{
 		if (getType() != Type.NUMERIC)
 			throw new IllegalStateException();
-		if (!doubleValues.containsKey(dataset))
-			throw new Error("values not yet set");
+		checkValuesForDataset(dataset);
 		return median.get(dataset);
 	}
 
@@ -405,19 +422,15 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	@Override
 	public Boolean isInteger(DatasetFile dataset)
 	{
-		if (isInteger.containsKey(dataset))
-			return isInteger.get(dataset);
-		else
-			return null;
+		checkValuesForDataset(dataset);
+		return isInteger.get(dataset);
 	}
 
 	@Override
 	public Boolean hasSmallDoubleValues(DatasetFile dataset)
 	{
-		if (hasSmallDoubleValues.containsKey(dataset))
-			return hasSmallDoubleValues.get(dataset);
-		else
-			return null;
+		checkValuesForDataset(dataset);
+		return hasSmallDoubleValues.get(dataset);
 	}
 
 	@Override
@@ -431,8 +444,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	{
 		if (getType() == Type.NUMERIC)
 			throw new IllegalStateException();
-		if (!modeNonNull.containsKey(dataset))
-			throw new Error("values not yet set");
+		checkValuesForDataset(dataset);
 		return modeNonNull.get(dataset);
 	}
 

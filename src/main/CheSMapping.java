@@ -412,11 +412,11 @@ public class CheSMapping
 			int equalPos = embedder.getPositions().size() - distinct.size();
 			TaskProvider
 					.warning(
-							equalPos + " of " + cCount + " compounds share equal 3D positions.",
-							"This warning is expected if compounds occur multiple times in the dataset. "
-									+ "Embedding algorithms do assign 3D positions based on the feature values. "
+							equalPos + " (of " + cCount + ") compounds share equal 3D positions with another compound.",
+							"Embedding algorithms do assign 3D positions based on the feature values. "
 									+ "If compounds have equal feature values, they will most likely be assigned equal positions in 3D space. "
-									+ "To avoid this, add more features, that help to distinguish between compounds.");
+									+ "To avoid this, add more features, that help to distinguish between compounds.\n"
+									+ "This warning is expected if compounds occur multiple times in the dataset.");
 		}
 
 		for (ClusterData c : clustering.getClusters())

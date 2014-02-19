@@ -2,6 +2,7 @@ package dataInterface;
 
 import util.ArrayUtil;
 import util.DoubleArraySummary;
+import data.DatasetFile;
 
 public abstract class NumericDynamicCompoundProperty extends DynamicCompoundProperty
 {
@@ -42,9 +43,15 @@ public abstract class NumericDynamicCompoundProperty extends DynamicCompoundProp
 	}
 
 	@Override
-	public String getFormattedValue(Object doubleOrString)
+	public String getFormattedValueInMappedDataset(Object doubleOrString)
 	{
-		return AbstractCompoundProperty.getFormattedValue(this, doubleOrString);
+		return AbstractCompoundProperty.getFormattedValueInMappedDataset(this, doubleOrString);
+	}
+
+	@Override
+	public String getFormattedValue(Object doubleOrString, DatasetFile dataset)
+	{
+		return AbstractCompoundProperty.getFormattedValue(this, doubleOrString, dataset);
 	}
 
 	@Override

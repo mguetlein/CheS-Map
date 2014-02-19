@@ -18,5 +18,9 @@ public interface CompoundPropertyOwner
 	 */
 	public String getStringValue(CompoundProperty p);
 
+	/**
+	 * referes to mapped dataset
+	 * @return
+	 */
 	public String getFormattedValue(CompoundProperty p);
 }
