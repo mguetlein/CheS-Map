@@ -46,7 +46,7 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 		File rScript = null;
 		try
 		{
-			String featureTableFile = dataset.getFeatureTableFilePath("arff");
+			String featureTableFile = dataset.getFeatureTableFilePath("table");
 			if (!Settings.CACHING_ENABLED || !new File(featureTableFile).exists())
 				ExportRUtil.toRTable(features,
 						CompoundPropertyUtil.valuesReplaceNullWithMedian(features, compounds, dataset),
