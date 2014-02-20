@@ -49,7 +49,6 @@ import data.FeatureLoader;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
-import dataInterface.CompoundPropertyUtil;
 import dataInterface.FragmentPropertySet;
 import freechart.AbstractFreeChartPanel;
 import freechart.BarPlotPanel;
@@ -352,7 +351,6 @@ public class CompoundPropertyPanel extends JPanel
 		if (prop.getSize(dataset) > 0)
 		{
 			CompoundProperty selectedProperty = prop.get(dataset, propIndex);
-			boolean isExportedSmarts = CompoundPropertyUtil.isExportedFPPropertyInMappedDataset(selectedProperty);
 			nominalFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NOMINAL));
 			numericFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NUMERIC));
 
@@ -371,9 +369,10 @@ public class CompoundPropertyPanel extends JPanel
 			{
 				nominalFeatureButton.setSelected(true);
 
-				String values[] = selectedProperty.getNominalDomain(dataset);
+				String values[] = new String[selectedProperty.getNominalDomain(dataset).length];
 				for (int i = 0; i < values.length; i++)
-					values[i] = selectedProperty.getFormattedValue(values[i], dataset);
+					values[i] = selectedProperty.getFormattedValue(selectedProperty.getNominalDomain(dataset)[i],
+							dataset);
 				int counts[] = selectedProperty.getNominalDomainCounts(dataset);
 				//				CountedSet<String> set = CountedSet.fromArray(selectedProperty.getStringValues(dataset));
 				//				List<String> values = set.values(new DefaultComparator<String>());
