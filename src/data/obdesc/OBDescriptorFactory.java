@@ -19,7 +19,7 @@ public class OBDescriptorFactory
 
 	private static String[] nominal = new String[] {};
 	private static String[] numeric = new String[] { "abonds", "atoms", "bonds", "dbonds", "sbonds", "tbonds", "HBA1",
-			"HBA2", "HBD", "L5", "logP", "MR", "MW", "nF", "nHal", "TPSA" };
+			"HBA2", "HBD", "logP", "MR", "MW", "nF", "nHal", "TPSA" };
 
 	public static Type getDescriptorDefaultType(String id)
 	{
