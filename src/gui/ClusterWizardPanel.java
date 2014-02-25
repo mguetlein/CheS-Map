@@ -29,6 +29,8 @@ import com.jgoodies.forms.layout.Sizes;
 
 public class ClusterWizardPanel extends GenericWizardPanel
 {
+	private static boolean CLUSTERING_ENABLED_PER_DEFAULT = false;
+
 	boolean canProceed = false;
 	private static IntegerProperty min = new IntegerProperty("minNumClusters", 2, 1, Integer.MAX_VALUE);
 	private static IntegerProperty max = new IntegerProperty("maxNumClusters", 5, 1, Integer.MAX_VALUE);
@@ -83,8 +85,8 @@ public class ClusterWizardPanel extends GenericWizardPanel
 
 	class SimpleClusterPanel extends SimplePanel
 	{
-		JRadioButton buttonYes = new JRadioButton("Yes (recommended)", true);
-		JRadioButton buttonNo = new JRadioButton("No");
+		JRadioButton buttonYes = new JRadioButton("Yes", CLUSTERING_ENABLED_PER_DEFAULT);
+		JRadioButton buttonNo = new JRadioButton("No", !CLUSTERING_ENABLED_PER_DEFAULT);
 		PropertyPanel propertyPanel = new PropertyPanel(new Property[] { min, max }, PropHandler.getProperties(),
 				PropHandler.getPropertiesFile());
 
@@ -106,7 +108,7 @@ public class ClusterWizardPanel extends GenericWizardPanel
 			};
 			buttonYes.addActionListener(a);
 			buttonNo.addActionListener(a);
-			DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("p,10px,p"));
+			DefaultFormBuilder b = new DefaultFormBuilder(new FormLayout("p,20px,p"));
 			b.setLineGapSize(Sizes.dluX(4));
 			b.append(new JLabel("Cluster dataset?"), 3);
 			b.nextLine();
@@ -124,11 +126,8 @@ public class ClusterWizardPanel extends GenericWizardPanel
 			add(b.getPanel());
 
 			String simpleSelected = PropHandler.get(propKeySimpleViewYesSelected);
-			if (simpleSelected != null && simpleSelected.equals("false"))
-			{
-				buttonNo.setSelected(true);
-				propertyPanel.setEnabled(false);
-			}
+			buttonYes.setSelected(simpleSelected != null && simpleSelected.equals("true"));
+			propertyPanel.setEnabled(buttonYes.isSelected());
 		}
 
 		@Override
