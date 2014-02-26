@@ -197,6 +197,8 @@ public class ClusterDataImpl implements ClusterData
 	{
 		if (p.getType() != Type.NUMERIC)
 			throw new IllegalStateException();
+		if (origIndicesFilter != null && origIndicesFilter.size() == 0)
+			return null;
 		return ((DoubleArraySummary) getSummaryValue(p)).getMean();
 	}
 
@@ -205,6 +207,8 @@ public class ClusterDataImpl implements ClusterData
 	{
 		if (p.getType() == Type.NUMERIC)
 			throw new IllegalStateException();
+		if (origIndicesFilter != null && origIndicesFilter.size() == 0)
+			return null;
 		CountedSet<String> set = (CountedSet<String>) getSummaryValue(p);
 		String mode = set.getMode(false);
 		if (set.getCount(mode) > set.getSum(false) * 2 / 3.0)
@@ -221,6 +225,8 @@ public class ClusterDataImpl implements ClusterData
 
 	public String getSummaryStringValue(CompoundProperty p, boolean html)
 	{
+		if (origIndicesFilter != null && origIndicesFilter.size() == 0)
+			return null;
 		if (p.getType() == Type.NOMINAL)
 			return getSummaryValue(p, true).toString(html);
 		if (p.getType() == Type.NUMERIC && p.hasSmallDoubleValuesInMappedDataset())
