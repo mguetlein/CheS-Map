@@ -75,7 +75,7 @@ public class PropHandler
 			// no prop-compatibility-support for version 0
 			return false;
 		}
-		else if (version1.major == 1)
+		else if (version1.major == 1 || version1.major == 2)
 		{
 			//so far all minor versions within major version 1 are compatible
 			return true;
