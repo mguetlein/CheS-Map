@@ -235,8 +235,14 @@ public class FeatureService
 			int molCount = 0;
 			for (IAtomContainer mol : list)
 			{
+				boolean smilesProp = true;
 				for (String p : propNames)
 				{
+					if (smilesProp)
+					{
+						smilesProp = false;
+						continue;
+					}
 					if (props.get(p).size() != list.size())
 						throw new IllegalStateException("num molecules: " + list.size() + ", num values for '" + p
 								+ "': " + props.get(p).size());
