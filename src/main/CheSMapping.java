@@ -370,12 +370,14 @@ public class CheSMapping
 
 		if (dataset.numCompounds() > 2)
 		{
-			double rSquare = embedder.getRSquare();
+			//			double rSquare = embedder.getRSquare();
 			double ccc = embedder.getCCC();
-			Settings.LOGGER.info("r-square: " + rSquare + ", ccc: " + ccc);
-			String formRSquare = StringUtil.formatDouble(rSquare, 2);
+			//			Settings.LOGGER.info("r-square: " + rSquare + ", ccc: " + ccc);
+			Settings.LOGGER.info("ccc: " + ccc);
+			//			String formRSquare = StringUtil.formatDouble(rSquare, 2);
 			String formCCC = StringUtil.formatDouble(embedder.getCCC(), 2);
-			String details = " (CCC: " + formCCC + ", r^2: " + formRSquare + ")";
+			String details = " (CCC: " + formCCC + ")";
+			//			String details = " (CCC: " + formCCC + ", r^2: " + formRSquare + ")";
 			String warnMsg = null;
 			if (ccc >= 0.9)
 				clustering.setEmbedQuality("excellent" + details);

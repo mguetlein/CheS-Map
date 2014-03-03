@@ -29,7 +29,7 @@ public interface ThreeDEmbedder extends Algorithm
 
 	public DistanceMatrix getFeatureDistanceMatrix();
 
-	public double getRSquare();
+	//	public double getRSquare();
 
 	public double getCCC();
 

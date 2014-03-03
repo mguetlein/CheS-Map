@@ -38,11 +38,11 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 		return pos;
 	}
 
-	@Override
-	public double getRSquare()
-	{
-		return Double.NaN;
-	}
+	//	@Override
+	//	public double getRSquare()
+	//	{
+	//		return Double.NaN;
+	//	}
 
 	@Override
 	public double getCCC()

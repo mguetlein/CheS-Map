@@ -41,11 +41,11 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		return positions;
 	}
 
-	@Override
-	public double getRSquare()
-	{
-		return rSquare;
-	}
+	//	@Override
+	//	public double getRSquare()
+	//	{
+	//		return rSquare;
+	//	}
 
 	@Override
 	public double getCCC()
@@ -100,7 +100,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		dist = null;
 
 		String embedFilename = dataset.getEmbeddingResultsFilePath("pos");
-		String rSquareFilename = dataset.getEmbeddingResultsFilePath("rSquare");
+		//String rSquareFilename = dataset.getEmbeddingResultsFilePath("rSquare");
 		String cccFilename = dataset.getEmbeddingResultsFilePath("ccc");
 		String cccPropFilename = dataset.getEmbeddingResultsFilePath("cccProp");
 
@@ -108,14 +108,15 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 
 		double cccPropValues[];
 
-		if (Settings.CACHING_ENABLED && new File(embedFilename).exists() && new File(rSquareFilename).exists()
+		if (Settings.CACHING_ENABLED
+				&& new File(embedFilename).exists() //&& new File(rSquareFilename).exists()
 				&& new File(cccFilename).exists() && new File(cccPropFilename).exists()
 				&& (!storesDistances() || new File(distFilename).exists()))
 		{
 			Settings.LOGGER.info("Read cached embedding results from: " + embedFilename);
 			positions = ValueFileCache.readCachePosition2(embedFilename, instances.size());
-			Settings.LOGGER.info("Read cached embedding rSquare from: " + rSquareFilename);
-			rSquare = DoubleUtil.parseDouble(FileUtil.readStringFromFile(rSquareFilename));
+			//			Settings.LOGGER.info("Read cached embedding rSquare from: " + rSquareFilename);
+			//			rSquare = DoubleUtil.parseDouble(FileUtil.readStringFromFile(rSquareFilename));
 			Settings.LOGGER.info("Read cached embedding ccc from: " + cccFilename);
 			ccc = DoubleUtil.parseDouble(FileUtil.readStringFromFile(cccFilename));
 			Settings.LOGGER.info("Read cached embedding ccc property from: " + cccPropFilename);
@@ -130,10 +131,9 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 
 			TaskProvider.debug("Compute rSquare");
 
-			rSquare = EmbedUtil.computeRSquare(positions, getFeatureDistanceMatrix());
-			//				rSquare = EmbedUtil.computeRSquare(positions, instances, features, dataset);
-			TaskProvider.debug("Store embedding rSquare to: " + rSquareFilename);
-			FileUtil.writeStringToFile(rSquareFilename, rSquare + "");
+			//			rSquare = EmbedUtil.computeRSquare(positions, getFeatureDistanceMatrix());
+			//			TaskProvider.debug("Store embedding rSquare to: " + rSquareFilename);
+			//			FileUtil.writeStringToFile(rSquareFilename, rSquare + "");
 
 			TaskProvider.debug("Compute ccc");
 			ccc = EmbedUtil.computeCCC(positions, getFeatureDistanceMatrix());
