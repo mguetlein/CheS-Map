@@ -199,6 +199,8 @@ public class ClusterDataImpl implements ClusterData
 			throw new IllegalStateException();
 		if (origIndicesFilter != null && origIndicesFilter.size() == 0)
 			return null;
+		if (getSummaryValue(p).isAllNull())
+			return null;
 		return ((DoubleArraySummary) getSummaryValue(p)).getMean();
 	}
 
