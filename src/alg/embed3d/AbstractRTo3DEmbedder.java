@@ -132,12 +132,6 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 	}
 
 	@Override
-	protected boolean storesDistances()
-	{
-		return true;
-	}
-
-	@Override
 	public DistanceMatrix getFeatureDistanceMatrix()
 	{
 		if (dist == null)

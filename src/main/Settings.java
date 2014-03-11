@@ -98,7 +98,6 @@ public class Settings
 	public static JFrame TOP_LEVEL_FRAME = null;
 	public static int TOP_LEVEL_FRAME_SCREEN = ScreenUtil.getLargestScreen();
 	public static Random RANDOM = new Random();
-	public static Boolean LARGE_DATA = false;
 	public static Boolean DBG = false;
 	public static Boolean CACHING_ENABLED = true;
 	public static Boolean DESC_MIXTURE_HANDLING = false;

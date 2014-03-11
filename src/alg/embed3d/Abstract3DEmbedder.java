@@ -83,8 +83,6 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 
 	protected abstract String getShortName();
 
-	protected abstract boolean storesDistances();
-
 	protected DatasetFile dataset;
 	protected List<CompoundData> instances;
 	protected List<CompoundProperty> features;
@@ -104,23 +102,21 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		String cccFilename = dataset.getEmbeddingResultsFilePath("ccc");
 		String cccPropFilename = dataset.getEmbeddingResultsFilePath("cccProp");
 
-		String distFilename = dataset.getEmbeddingResultsFilePath("dist");
+		double cccPropValues[] = null;
 
-		double cccPropValues[];
-
-		if (Settings.CACHING_ENABLED
-				&& new File(embedFilename).exists() //&& new File(rSquareFilename).exists()
-				&& new File(cccFilename).exists() && new File(cccPropFilename).exists()
-				&& (!storesDistances() || new File(distFilename).exists()))
+		if (Settings.CACHING_ENABLED && new File(embedFilename).exists() //&& new File(rSquareFilename).exists()
+				&& new File(cccFilename).exists() && new File(cccPropFilename).exists())
 		{
 			Settings.LOGGER.info("Read cached embedding results from: " + embedFilename);
 			positions = ValueFileCache.readCachePosition2(embedFilename, instances.size());
-			//			Settings.LOGGER.info("Read cached embedding rSquare from: " + rSquareFilename);
-			//			rSquare = DoubleUtil.parseDouble(FileUtil.readStringFromFile(rSquareFilename));
 			Settings.LOGGER.info("Read cached embedding ccc from: " + cccFilename);
 			ccc = DoubleUtil.parseDouble(FileUtil.readStringFromFile(cccFilename));
 			Settings.LOGGER.info("Read cached embedding ccc property from: " + cccPropFilename);
 			cccPropValues = ArrayUtil.toPrimitiveDoubleArray(ValueFileCache.readCacheDouble2(cccPropFilename));
+
+			// compute, as this might take a few seconds on large datasets, to have it available later
+			if (getFeatureDistanceMatrix() == null)
+				throw new IllegalStateException("no distance matrix");
 		}
 		else
 		{
@@ -129,20 +125,12 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 			TaskProvider.debug("Store embedding results to: " + embedFilename);
 			ValueFileCache.writeCachePosition2(embedFilename, positions);
 
-			TaskProvider.debug("Compute rSquare");
-
-			//			rSquare = EmbedUtil.computeRSquare(positions, getFeatureDistanceMatrix());
-			//			TaskProvider.debug("Store embedding rSquare to: " + rSquareFilename);
-			//			FileUtil.writeStringToFile(rSquareFilename, rSquare + "");
-
 			TaskProvider.debug("Compute ccc");
 			ccc = EmbedUtil.computeCCC(positions, getFeatureDistanceMatrix());
-			//				ccc = EmbedUtil.computeCCC(positions, instances, features, dataset);
 			TaskProvider.debug("Store embedding ccc to: " + cccFilename);
 			FileUtil.writeStringToFile(cccFilename, ccc + "");
 
 			cccPropValues = EmbedUtil.computeCCCs(positions, getFeatureDistanceMatrix());
-			//			cccPropValues = EmbedUtil.computeCCCs(positions, instances, features, dataset);
 			ValueFileCache.writeCacheDouble2(cccPropFilename, ArrayUtil.toList(cccPropValues));
 		}
 		cccProp = CCCPropertySet.create(dataset, cccPropValues, embedFilename);

@@ -73,6 +73,18 @@ public class DistanceUtil
 		return booleanValues.get(key);
 	}
 
+	public static boolean isBoolean(List<CompoundProperty> props)
+	{
+		for (CompoundProperty p : props)
+		{
+			if (p.getType() == Type.NUMERIC)
+				return false;
+			if (p.getNominalDomainInMappedDataset().length != 2)
+				return false;
+		}
+		return true;
+	}
+
 	public static Double similarity(List<CompoundData> instances, List<CompoundProperty> props,
 			SimilarityMeasure<Boolean> sim)
 	{

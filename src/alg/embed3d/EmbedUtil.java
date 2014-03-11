@@ -1,18 +1,19 @@
 package alg.embed3d;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
 import javax.vecmath.Vector3f;
 
-import main.Settings;
 import main.TaskProvider;
+
+import org.apache.commons.math3.ml.distance.EuclideanDistance;
+
 import util.ArrayUtil;
-import util.DoubleArraySummary;
 import util.ObjectUtil;
+import util.StopWatchUtil;
 import util.Vector3fUtil;
 import data.DatasetFile;
 import dataInterface.CompoundData;
@@ -241,111 +242,60 @@ public class EmbedUtil
 	{
 		TaskProvider.debug("Compute euclidean distance matrix");
 
-		boolean binary = true;
-		for (CompoundProperty p : features)
-			if (p.getType() != Type.NOMINAL || p.getNominalDomain(dataset).length > 2)
-			{
-				binary = false;
-				break;
-			}
-
 		HashMap<CompoundPropertyOwner, double[]> vals = new HashMap<CompoundPropertyOwner, double[]>();
-		HashMap<CompoundPropertyOwner, BitSet> binaryVals = new HashMap<CompoundPropertyOwner, BitSet>();
 
-		if (!binary)
+		for (int i = 0; i < instances.size(); i++)
 		{
-			for (int i = 0; i < instances.size(); i++)
-			{
-				CompoundData c = instances.get(i);
+			CompoundData c = instances.get(i);
 
-				List<Double> v_i = new ArrayList<Double>();
-				for (int k = 0; k < features.size(); k++)
+			List<Double> v_i = new ArrayList<Double>();
+			for (int k = 0; k < features.size(); k++)
+			{
+				CompoundProperty feature = features.get(k);
+				if (feature.getType() == Type.NUMERIC)
 				{
-					CompoundProperty feature = features.get(k);
-					if (feature.getType() == Type.NUMERIC)
+					Double v = c.getNormalizedValueCompleteDataset(feature);
+					if (v == null)
+						v = feature.getNormalizedMedian(dataset);
+					v_i.add(v);
+				}
+				else
+				{
+
+					if (feature.getType() != Type.NOMINAL)
+						throw new Error();
+					if (feature.getNominalDomain(dataset).length == 2
+							&& feature.getNominalDomain(dataset)[0].equals("0")
+							&& feature.getNominalDomain(dataset)[1].equals("1"))
 					{
-						Double v = c.getNormalizedValueCompleteDataset(feature);
-						if (v == null)
-							v = feature.getNormalizedMedian(dataset);
-						v_i.add(v);
+						if (c.getStringValue(feature) == null)
+							v_i.add(Double.parseDouble(feature.getModeNonNull(dataset)));
+						else
+							v_i.add(Double.parseDouble(c.getStringValue(feature)));
 					}
 					else
 					{
-
-						if (feature.getType() != Type.NOMINAL)
-							throw new Error();
-						if (feature.getNominalDomain(dataset).length == 2
-								&& feature.getNominalDomain(dataset)[0].equals("0")
-								&& feature.getNominalDomain(dataset)[1].equals("1"))
+						for (String val : feature.getNominalDomain(dataset))
 						{
-							if (c.getStringValue(feature) == null)
-								v_i.add(Double.parseDouble(feature.getModeNonNull(dataset)));
+							if (ObjectUtil.equals(c.getStringValue(feature), val))
+								v_i.add(1.0);
 							else
-								v_i.add(Double.parseDouble(c.getStringValue(feature)));
-						}
-						else
-						{
-							for (String val : feature.getNominalDomain(dataset))
-							{
-								if (ObjectUtil.equals(c.getStringValue(feature), val))
-									v_i.add(1.0);
-								else
-									v_i.add(0.0);
-							}
+								v_i.add(0.0);
 						}
 					}
 				}
-				//			Settings.LOGGER.println(vals.size() + " " + ListUtil.toString(v_i));
-				vals.put(c, ArrayUtil.toPrimitiveDoubleArray(v_i));
 			}
+			//			Settings.LOGGER.println(vals.size() + " " + ListUtil.toString(v_i));
+			vals.put(c, ArrayUtil.toPrimitiveDoubleArray(v_i));
 		}
-		else
-		{
-			for (int i = 0; i < instances.size(); i++)
-			{
-				CompoundData c = instances.get(i);
-				BitSet b = new BitSet(features.size());
-				for (int k = 0; k < features.size(); k++)
-				{
-					CompoundProperty feature = features.get(k);
-					String domain[] = feature.getNominalDomain(dataset);
-					Boolean mode = null;
-
-					if (c.getStringValue(feature) == null)
-					{
-						if (mode == null)
-							mode = domain[0].equals(feature.getModeNonNull(dataset));
-						if (mode)
-							b.set(k);
-					}
-					else if (domain[0].equals(c.getStringValue(feature)))
-						b.set(k);
-				}
-				binaryVals.put(c, b);
-			}
-		}
-
 		//		for (MolecularPropertyOwner m : vals.keySet())
 		//			Settings.LOGGER.println("values: " + m.toString() + " " + ArrayUtil.toString(vals.get(m)));
 
-		long count = 0;
-		long num = instances.size() * (instances.size() - 1) / 2;
 		double[][] d = new double[instances.size()][instances.size()];
 		for (int i = 0; i < instances.size() - 1; i++)
 			for (int j = i + 1; j < instances.size(); j++)
 			{
-				count++;
-				if (count % 5000 == 0)
-					TaskProvider.verbose("Compute euclidean distance matrix " + ((int) ((count / (double) num) * 100))
-							+ "% (" + count + "/" + num + " entries)");
-
-				if (!binary)
-					d[i][j] = ArrayUtil.euclDistance(vals.get(instances.get(i)), vals.get(instances.get(j)));
-				else
-					d[i][j] = ArrayUtil
-							.euclDistance(binaryVals.get(instances.get(i)), binaryVals.get(instances.get(j)));
-
-				//				putDistance(dataset, instances.get(i), instances.get(j), d[i][j]);
+				d[i][j] = ArrayUtil.euclDistance(vals.get(instances.get(i)), vals.get(instances.get(j)));
 				d[j][i] = d[i][j];
 			}
 		//		Settings.LOGGER.println(ArrayUtil.toString(d));
@@ -413,44 +363,71 @@ public class EmbedUtil
 	public static void main(String args[])
 	{
 		Random r = new Random();
-		int ns[] = new int[] { 100 }; //{ 10, 50, 100, 500, 1000 };
-		int restarts = 30;
 
-		double deviation[] = new double[] { 1, 0.5, 0.25, 0.20, 0.15, 0.10, 0.05 };
+		int numCompounds = 10000;
+		int numValues = 2000;
 
-		for (int n : ns)
+		List<double[]> l = new ArrayList<double[]>();
+		for (int i = 0; i < numCompounds; i++)
 		{
-			Settings.LOGGER.info(n);
-
-			for (double dev : deviation)
-			{
-				Settings.LOGGER.info("dev: " + dev);
-
-				double[] results = new double[restarts];
-
-				for (int k = 0; k < restarts; k++)
-				{
-					double d[][] = new double[n][n];
-					double d2[][] = new double[n][n];
-
-					for (int i = 0; i < n; i++)
-						for (int j = 0; j < n; j++)
-							if (i != j)
-							{
-								d[i][j] = r.nextDouble();
-								d2[i][j] = d[i][j] + (d[i][j] * dev * (r.nextBoolean() ? 1 : -1));
-								//d2[i][j] = r.nextDouble();
-							}
-
-					normalizeDistanceMatrix(d);
-					normalizeDistanceMatrix(d2);
-					results[k] = computeRSquare(d, d2);
-				}
-
-				Settings.LOGGER.info(DoubleArraySummary.create(results).getMedian());
-			}
-			Settings.LOGGER.info();
+			double d[] = new double[numValues];
+			for (int k = 0; k < numValues; k++)
+				d[k] = r.nextDouble();
+			l.add(d);
 		}
+		EuclideanDistance dist = new EuclideanDistance();
+
+		StopWatchUtil.start("calc");
+		long c = 0;
+		for (int i = 0; i < numCompounds - 1; i++)
+		{
+			for (int j = i + 1; j < numCompounds; j++)
+			{
+				ArrayUtil.euclDistance(l.get(i), l.get(j));
+				c++;
+			}
+		}
+		System.out.println(c);
+		StopWatchUtil.stop("calc");
+		StopWatchUtil.print();
+		//		int ns[] = new int[] { 100 }; //{ 10, 50, 100, 500, 1000 };
+		//		int restarts = 30;
+		//
+		//		double deviation[] = new double[] { 1, 0.5, 0.25, 0.20, 0.15, 0.10, 0.05 };
+		//
+		//		for (int n : ns)
+		//		{
+		//			Settings.LOGGER.info(n);
+		//
+		//			for (double dev : deviation)
+		//			{
+		//				Settings.LOGGER.info("dev: " + dev);
+		//
+		//				double[] results = new double[restarts];
+		//
+		//				for (int k = 0; k < restarts; k++)
+		//				{
+		//					double d[][] = new double[n][n];
+		//					double d2[][] = new double[n][n];
+		//
+		//					for (int i = 0; i < n; i++)
+		//						for (int j = 0; j < n; j++)
+		//							if (i != j)
+		//							{
+		//								d[i][j] = r.nextDouble();
+		//								d2[i][j] = d[i][j] + (d[i][j] * dev * (r.nextBoolean() ? 1 : -1));
+		//								//d2[i][j] = r.nextDouble();
+		//							}
+		//
+		//					normalizeDistanceMatrix(d);
+		//					normalizeDistanceMatrix(d2);
+		//					results[k] = computeRSquare(d, d2);
+		//				}
+		//
+		//				Settings.LOGGER.info(DoubleArraySummary.create(results).getMedian());
+		//			}
+		//			Settings.LOGGER.info();
+		//		}
 	}
 
 	//	public static class CompoundPropertyEmbedQuality implements Comparable<CompoundPropertyEmbedQuality>

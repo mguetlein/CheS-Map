@@ -1,7 +1,9 @@
 package util;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -130,6 +132,58 @@ public class ValueFileCache
 		writeCache(cacheFile, l);
 	}
 
+	public static void writeSymmetricMatrix(String distFilename, double[][] d)
+	{
+		File f = new File(distFilename);
+		try
+		{
+			BufferedWriter b = new BufferedWriter(new FileWriter(f));
+			b.write(String.valueOf(d.length));
+			b.write('\n');
+			for (int i = 0; i < d.length - 1; i++)
+			{
+				for (int j = i + 1; j < d.length; j++)
+				{
+					b.write(String.valueOf(d[i][j]));
+					b.write(';');
+				}
+				b.write('\n');
+			}
+			b.close();
+		}
+		catch (IOException e)
+		{
+			throw new Error(e);
+		}
+	}
+
+	public static double[][] readSymmetricMatrix(String distFilename)
+	{
+		File f = new File(distFilename);
+		try
+		{
+			BufferedReader r = new BufferedReader(new FileReader(f));
+			int size = Integer.parseInt(r.readLine());
+			double d[][] = new double[size][size];
+			for (int i = 0; i < d.length - 1; i++)
+			{
+				String s[] = r.readLine().split(";");
+				int k = 0;
+				for (int j = i + 1; j < d.length; j++)
+				{
+					d[i][j] = Double.parseDouble(s[k++]);
+					d[j][i] = d[i][j];
+				}
+			}
+			r.close();
+			return d;
+		}
+		catch (IOException e)
+		{
+			throw new Error(e);
+		}
+	}
+
 	public static void writeCache(String cacheFile, List<Object[]> values)
 	{
 		File f = new File(cacheFile);
@@ -174,18 +228,34 @@ public class ValueFileCache
 	public static void main(String[] args) throws IOException
 	{
 		Random r = new Random();
-		List<Vector3f> vecs = new ArrayList<Vector3f>();
-		for (int i = 0; i < 10000; i++)
-			vecs.add(new Vector3f(r.nextFloat(), r.nextFloat(), r.nextFloat()));
-		//Vector3f f[] = ArrayUtil.toArray(vecs);
-		File f = File.createTempFile("bla", "blub");
-		StopWatchUtil.start("write");
-		writeCachePosition2(f.getAbsolutePath(), vecs);
-		//ArrayUtil.toCSVString(f);
-		StopWatchUtil.stop("write");
-		StopWatchUtil.print();
-		System.out.println(f);
-		//		f.delete();
-	}
+		//		List<Vector3f> vecs = new ArrayList<Vector3f>();
+		//		for (int i = 0; i < 10000; i++)
+		//			vecs.add(new Vector3f(r.nextFloat(), r.nextFloat(), r.nextFloat()));
+		//		//Vector3f f[] = ArrayUtil.toArray(vecs);
+		//		File f = File.createTempFile("bla", "blub");
+		//		StopWatchUtil.start("write");
+		//		writeCachePosition2(f.getAbsolutePath(), vecs);
+		//		//ArrayUtil.toCSVString(f);
+		//		StopWatchUtil.stop("write");
+		//		StopWatchUtil.print();
+		//		System.out.println(f);
+		//		//		f.delete();
 
+		int n = 10;
+		double d[][] = new double[n][n];
+		for (int i = 0; i < d.length - 1; i++)
+		{
+			for (int j = i + 1; j < d.length; j++)
+			{
+				d[i][j] = r.nextDouble();
+				d[j][i] = d[i][j];
+			}
+		}
+		writeSymmetricMatrix("/tmp/delme", d);
+		double d2[][] = readSymmetricMatrix("/tmp/delme");
+		for (int i = 0; i < d.length; i++)
+			for (int j = 0; j < d.length; j++)
+				if (d[i][j] != d2[i][j])
+					throw new Error();
+	}
 }

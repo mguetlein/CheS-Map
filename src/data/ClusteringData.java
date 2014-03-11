@@ -218,10 +218,7 @@ public class ClusteringData
 
 	public Double getFeatureDistance(int i1, int i2)
 	{
-		if (threeDEmbedder.getFeatureDistanceMatrix() != null)
-			return threeDEmbedder.getFeatureDistanceMatrix().getValues()[i1][i2];
-		else
-			return null;
+		return threeDEmbedder.getFeatureDistanceMatrix().getValues()[i1][i2];
 	}
 
 	public DistanceMatrix getFeatureDistanceMatrix()
