@@ -8,9 +8,6 @@ import java.util.Random;
 import javax.vecmath.Vector3f;
 
 import main.TaskProvider;
-
-import org.apache.commons.math3.ml.distance.EuclideanDistance;
-
 import util.ArrayUtil;
 import util.ObjectUtil;
 import util.StopWatchUtil;
@@ -375,8 +372,6 @@ public class EmbedUtil
 				d[k] = r.nextDouble();
 			l.add(d);
 		}
-		EuclideanDistance dist = new EuclideanDistance();
-
 		StopWatchUtil.start("calc");
 		long c = 0;
 		for (int i = 0; i < numCompounds - 1; i++)
