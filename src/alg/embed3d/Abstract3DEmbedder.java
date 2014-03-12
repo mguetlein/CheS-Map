@@ -97,7 +97,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		//String rSquareFilename = dataset.getEmbeddingResultsFilePath("rSquare");
 		String cccFilename = dataset.getEmbeddingResultsFilePath("ccc");
 		String cccPropFilename = dataset.getEmbeddingResultsFilePath("cccProp");
-		distFilename = dataset.getEmbeddingResultsFilePath("cccProp");
+		distFilename = dataset.getEmbeddingResultsFilePath("dist");
 
 		double cccPropValues[] = null;
 

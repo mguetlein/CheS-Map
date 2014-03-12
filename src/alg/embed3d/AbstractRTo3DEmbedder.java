@@ -14,6 +14,7 @@ import javax.vecmath.Vector3f;
 
 import main.BinHandler;
 import main.Settings;
+import main.TaskProvider;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
@@ -118,7 +119,7 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			for (int i = 0; i < instances.size(); i++)
 				positions.add(new Vector3f((float) d[i][0], (float) d[i][1], (float) d[i][2]));
 
-			FileUtil.robustRenameTo(tmpDist.getAbsolutePath(), dataset.getEmbeddingResultsFilePath("dist"));
+			FileUtil.robustRenameTo(tmpDist.getAbsolutePath(), distFilename);
 			return positions;
 		}
 		finally
@@ -135,7 +136,10 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 	public DistanceMatrix getFeatureDistanceMatrix()
 	{
 		if (dist == null)
+		{
+			TaskProvider.debug("Read distance matrix from: " + distFilename);
 			dist = new DistanceMatrix(getDistanceMeasure(), RUtil.readMatrix(distFilename, 0));
+		}
 		return dist;
 	}
 
