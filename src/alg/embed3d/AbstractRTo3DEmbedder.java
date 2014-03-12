@@ -135,9 +135,14 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 	public DistanceMatrix getFeatureDistanceMatrix()
 	{
 		if (dist == null)
-			dist = new DistanceMatrix(getDistanceMeasure(), RUtil.readMatrix(
-					dataset.getEmbeddingResultsFilePath("dist"), 0));
+			dist = new DistanceMatrix(getDistanceMeasure(), RUtil.readMatrix(distFilename, 0));
 		return dist;
+	}
+
+	@Override
+	protected boolean storesDistances()
+	{
+		return true;
 	}
 
 	@Override

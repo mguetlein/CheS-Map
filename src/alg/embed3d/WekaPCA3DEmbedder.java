@@ -107,6 +107,12 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 	}
 
 	@Override
+	protected boolean storesDistances()
+	{
+		return false;
+	}
+
+	@Override
 	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
 		Messages m = super.getMessages(dataset, featureInfo, clusterer);
