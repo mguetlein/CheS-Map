@@ -65,9 +65,9 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		Messages m = super.getMessages(dataset, featureInfo, clusterer);
 		if (requiresFeatures() && !featureInfo.featuresSelected)
 			m.add(Message.errorMessage(Settings.text("error.no-features")));
-		else if (requiresFeatures() && !featureInfo.numericFeaturesSelected
-				&& (featureInfo.numFeatures < dataset.numCompounds() * 0.25))
-			m.add(Message.infoMessage(Settings.text("embed.info.only-few-nominal")));
+		//		else if (requiresFeatures() && !featureInfo.numericFeaturesSelected
+		//				&& (featureInfo.numFeatures < dataset.numCompounds() * 0.25))
+		//			m.add(Message.infoMessage(Settings.text("embed.info.only-few-nominal")));
 		return m;
 	}
 
