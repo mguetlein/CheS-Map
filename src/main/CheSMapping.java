@@ -1,13 +1,10 @@
 package main;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-import javax.vecmath.Tuple3f;
 import javax.vecmath.Vector3f;
 
-import util.ArrayUtil;
 import util.StringUtil;
 import alg.FeatureComputer;
 import alg.align3d.NoAligner;
@@ -16,6 +13,7 @@ import alg.build3d.ThreeDBuilder;
 import alg.build3d.UseOrigStructures;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
+import alg.embed3d.EqualPositionPropertySet;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
 import appdomain.AppDomainComputer;
@@ -298,20 +296,6 @@ public class CheSMapping
 		}
 	}
 
-	static class MyVector3f extends Vector3f // to fix missing overwrite of equals(Object) in old vecmatch lib included in the cdk 1.14.18
-	{
-		public MyVector3f(Tuple3f v)
-		{
-			super(v);
-		}
-
-		@Override
-		public boolean equals(Object o)
-		{
-			return o instanceof MyVector3f && super.equals(this);
-		}
-	}
-
 	@SuppressWarnings("unchecked")
 	private void embedDataset(DatasetFile dataset, ClusteringData clustering, List<CompoundProperty> featuresWithInfo)
 	{
@@ -410,45 +394,22 @@ public class CheSMapping
 		else
 			clustering.setEmbedQuality("n/a");
 
+		if (embedder != randomEmbedder)
+		{
+			EqualPositionPropertySet eqPos = EqualPositionPropertySet.create(dataset, embedder.getPositions(),
+					dataset.getEmbeddingResultsFilePath("eq-pos"));
+			if (eqPos != null)
+			{
+				for (int i = 0; i < clustering.getNumCompounds(false); i++)
+					((CompoundDataImpl) clustering.getCompounds().get(i)).setStringValue(eqPos,
+							eqPos.getStringValues(dataset)[i]);
+				clustering.addAdditionalProperty(eqPos, false);
+			}
+		}
+
 		int cCount = 0;
-		HashMap<Vector3f, List<Integer>> posMap = new HashMap<Vector3f, List<Integer>>();
 		for (Vector3f v : embedder.getPositions())
-		{
-			((CompoundDataImpl) clustering.getCompounds().get(cCount)).setPosition(v);
-			MyVector3f w = new MyVector3f(v);
-			if (posMap.containsKey(w))
-				posMap.get(w).add(cCount);
-			else
-				posMap.put(w, ArrayUtil.toList(new int[] { cCount }));
-			cCount++;
-		}
-
-		int numDistinctPos = posMap.size();
-		if (numDistinctPos < cCount)
-		{
-			int numMultiCompounds = 0;
-			int numCommonPos = 0;
-			for (List<Integer> l : posMap.values())
-				if (l.size() > 1)
-				{
-					numCommonPos++;
-					numMultiCompounds += l.size();
-				}
-			TaskProvider
-					.warning(
-							"The " + cCount + " compounds have been mapped to only " + numDistinctPos
-									+ " distinct 3D positions",
-							"The 3D position of "
-									+ numMultiCompounds
-									+ " compounds is not unique; "
-									+ numCommonPos
-									+ " positions are occupied by multiple compounds.\n"
-									+ "Embedding algorithms do assign 3D positions based on the feature values. "
-									+ "If compounds have equal feature values, they will most likely be assigned equal positions in 3D space. "
-									+ "To avoid this, add more features, that help to distinguish between compounds.\n"
-									+ "This warning is expected if compounds occur multiple times in the dataset.");
-		}
-
+			((CompoundDataImpl) clustering.getCompounds().get(cCount++)).setPosition(v);
 		for (ClusterData c : clustering.getClusters())
 			for (CompoundData co : c.getCompounds())
 				if (co.getPosition() == null)

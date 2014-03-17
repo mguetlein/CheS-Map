@@ -236,10 +236,15 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 		return getFormattedValue(p, doubleOrString, Settings.MAPPED_DATASET);
 	}
 
+	public String getFormattedNullValue()
+	{
+		return "missing";
+	}
+
 	static String getFormattedValue(CompoundProperty p, Object doubleOrString, DatasetFile dataset)
 	{
 		if (doubleOrString == null)
-			return "missing";
+			return p.getFormattedNullValue();
 		if (p.getType() == Type.NUMERIC)
 		{
 			Double d = (Double) doubleOrString;

@@ -8,6 +8,12 @@ import data.fragments.MatchEngine;
 public abstract class DynamicCompoundProperty implements CompoundProperty, CompoundPropertySet
 {
 	@Override
+	public String getFormattedNullValue()
+	{
+		return "missing";
+	}
+
+	@Override
 	public boolean isSmiles()
 	{
 		return false;

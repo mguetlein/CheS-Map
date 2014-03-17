@@ -174,6 +174,7 @@ public class ClusterDataImpl implements ClusterData
 					CountedSet<String> set = ((CountedSet<String>) getSummaryValue(p, false)).copy();
 					for (String key : set.values())
 						set.rename(key, p.getFormattedValueInMappedDataset(key));
+					set.setToBack(p.getFormattedNullValue());
 					values.put(p, filterKey, set);
 				}
 				else

@@ -54,6 +54,8 @@ public interface CompoundProperty
 
 	public String getFormattedValue(Object doubleOrString, DatasetFile dataset);
 
+	public String getFormattedNullValue();
+
 	public Double[] getDoubleValues(DatasetFile dataset);
 
 	public Double[] getDoubleValuesInCompleteMappedDataset();
