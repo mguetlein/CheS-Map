@@ -250,7 +250,7 @@ public class MappingWorkflow
 				features.put(
 						FeatureWizardPanel.OB_FEATURES,
 						ArrayUtil.cast(OBDescriptorProperty.class,
-								filterNotSuited(OBDescriptorProperty.getDescriptors(true), true, null, null, null)));
+								filterNotSuited(OBDescriptorProperty.getDescriptors(false), true, null, null, null)));
 			return features;
 		}
 	}
