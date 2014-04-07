@@ -777,9 +777,7 @@ public class FeatureService
 			}
 			writer.close();
 
-			boolean res = tmpFile.renameTo(new File(sdfFile));
-			res |= tmpFile.delete();
-			if (!res)
+			if (!FileUtil.robustRenameTo(tmpFile, new File(sdfFile)))
 				throw new Error("renaming or delete file error");
 			Settings.LOGGER.info("write cdk compounds to sd-file: " + sdfFile);
 		}

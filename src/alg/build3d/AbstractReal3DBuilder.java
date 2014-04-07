@@ -21,6 +21,7 @@ import org.openscience.cdk.interfaces.IChemObject;
 import org.openscience.cdk.io.MDLV2000Reader;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 
+import util.FileUtil;
 import data.DatasetFile;
 
 public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
@@ -119,9 +120,8 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 
 				if (!TaskProvider.isRunning())
 					return;
-				boolean res = tmpFile.renameTo(new File(finalFile));
-				res |= tmpFile.delete();
-				if (!res)
+
+				if (!FileUtil.robustRenameTo(tmpFile, new File(finalFile)))
 					throw new Error("renaming or delete file error");
 			}
 			else

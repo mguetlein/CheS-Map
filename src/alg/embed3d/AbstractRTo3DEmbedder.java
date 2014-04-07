@@ -119,7 +119,8 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 			for (int i = 0; i < instances.size(); i++)
 				positions.add(new Vector3f((float) d[i][0], (float) d[i][1], (float) d[i][2]));
 
-			FileUtil.robustRenameTo(tmpDist.getAbsolutePath(), distFilename);
+			if (!FileUtil.robustRenameTo(tmpDist.getAbsolutePath(), distFilename))
+				throw new Error("renaming or delete file error");
 			return positions;
 		}
 		finally
