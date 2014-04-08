@@ -15,7 +15,7 @@ import main.Settings;
 import main.TaskProvider;
 
 import org.openscience.cdk.geometry.alignment.MultiKabschAlignement;
-import org.openscience.cdk.interfaces.IMolecule;
+import org.openscience.cdk.interfaces.IAtomContainer;
 
 import util.ExternalToolUtil;
 import util.FileUtil;
@@ -149,7 +149,7 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 	private boolean alignWithCDK(DatasetFile dataset, ClusterData cluster, int index, String destFile)
 	{
 		int compoundOrigIndices[] = new int[cluster.getSize()];
-		IMolecule compounds[] = new IMolecule[cluster.getSize()];
+		IAtomContainer compounds[] = new IAtomContainer[cluster.getSize()];
 		String smarts = cluster.getSubstructureSmarts(getSubstructureSmartsType());
 
 		for (int k = 0; k < cluster.getSize(); k++)

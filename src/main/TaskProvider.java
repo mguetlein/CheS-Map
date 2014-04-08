@@ -74,24 +74,45 @@ public class TaskProvider
 	{
 		if (currentTask != null)
 			currentTask.warning(warningMessage, exception);
+		else
+		{
+			Settings.LOGGER.warn(warningMessage + " : ");
+			Settings.LOGGER.error(exception);
+		}
 	}
 
 	public static void warning(String warningMessage, String details)
 	{
 		if (currentTask != null)
 			currentTask.warning(warningMessage, details);
+		else
+		{
+			Settings.LOGGER.warn(warningMessage + " : ");
+			Settings.LOGGER.warn(details);
+		}
 	}
 
 	public static void failed(String errorMessage, Throwable exception)
 	{
 		if (currentTask != null)
 			currentTask.failed(errorMessage, exception);
+		else
+		{
+			Settings.LOGGER.error(errorMessage + " : ");
+			Settings.LOGGER.error(exception);
+		}
+
 	}
 
 	public static void failed(String errorMessage, String details)
 	{
 		if (currentTask != null)
 			currentTask.failed(errorMessage, details);
+		else
+		{
+			Settings.LOGGER.error(errorMessage + " : ");
+			Settings.LOGGER.error(details);
+		}
 	}
 
 }

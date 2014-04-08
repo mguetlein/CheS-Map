@@ -24,15 +24,18 @@ import main.TaskProvider;
 import org.openscience.cdk.AtomContainer;
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.ChemFile;
-import org.openscience.cdk.aromaticity.CDKHueckelAromaticityDetector;
+import org.openscience.cdk.DefaultChemObjectBuilder;
+import org.openscience.cdk.aromaticity.Aromaticity;
+import org.openscience.cdk.aromaticity.ElectronDonation;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.exception.NoSuchAtomTypeException;
 import org.openscience.cdk.graph.ConnectivityChecker;
+import org.openscience.cdk.graph.CycleFinder;
+import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IAtomContainerSet;
 import org.openscience.cdk.interfaces.IChemFile;
 import org.openscience.cdk.interfaces.IChemObject;
-import org.openscience.cdk.interfaces.IMolecule;
-import org.openscience.cdk.interfaces.IMoleculeSet;
 import org.openscience.cdk.io.INChIPlainTextReader;
 import org.openscience.cdk.io.ISimpleChemObjectReader;
 import org.openscience.cdk.io.MDLReader;
@@ -59,7 +62,7 @@ import dataInterface.CompoundProperty.Type;
 
 public class FeatureService
 {
-	private HashMap<DatasetFile, IMolecule[]> fileToCompounds = new HashMap<DatasetFile, IMolecule[]>();
+	private HashMap<DatasetFile, IAtomContainer[]> fileToCompounds = new HashMap<DatasetFile, IAtomContainer[]>();
 	private HashMap<DatasetFile, Boolean> fileHas3D = new HashMap<DatasetFile, Boolean>();
 	private HashMap<DatasetFile, LinkedHashSet<IntegratedProperty>> integratedProperties = new HashMap<DatasetFile, LinkedHashSet<IntegratedProperty>>();
 	private HashMap<DatasetFile, IntegratedProperty> integratedSmiles = new HashMap<DatasetFile, IntegratedProperty>();
@@ -188,8 +191,8 @@ public class FeatureService
 				SMILESReader reader = new SMILESReader(new ByteArrayInputStream(smilesInchiContent.toString()
 						.getBytes()));
 				IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
-				list = ChemFileManipulator.getAllAtomContainers(content);
 				reader.close();
+				list = ChemFileManipulator.getAllAtomContainers(content);
 			}
 			else if (inchi)
 			{
@@ -198,11 +201,11 @@ public class FeatureService
 				{
 					INChIPlainTextReader reader = new INChIPlainTextReader(new ByteArrayInputStream(inch.getBytes()));
 					IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
+					reader.close();
 					List<IAtomContainer> l = ChemFileManipulator.getAllAtomContainers(content);
 					if (l.size() != 1)
 						throw new Error();
 					list.add(l.get(0));
-					reader.close();
 				}
 			}
 			else
@@ -325,11 +328,17 @@ public class FeatureService
 			IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
 			List<IAtomContainer> list = ChemFileManipulator.getAllAtomContainers(content);
 			reader.close();
-			Vector<IMolecule> mols = new Vector<IMolecule>();
+			Vector<IAtomContainer> mols = new Vector<IAtomContainer>();
+
+			// mimics the old CDKHuckelAromaticityDetector which uses the CDK atom types
+			ElectronDonation model = ElectronDonation.cdk();
+			CycleFinder cycles = Cycles.cdkAromaticSet();
+			Aromaticity aromaticity = new Aromaticity(model, cycles);
+
 			for (IAtomContainer iAtomContainer : list)
 			{
-				IMolecule mol = (IMolecule) iAtomContainer;
-				mol = (IMolecule) AtomContainerManipulator.removeHydrogens(mol);
+				IAtomContainer mol = (IAtomContainer) iAtomContainer;
+				mol = (IAtomContainer) AtomContainerManipulator.removeHydrogens(mol);
 				try
 				{
 					AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
@@ -338,10 +347,10 @@ public class FeatureService
 				{
 					Settings.LOGGER.error(e);
 				}
-				CDKHueckelAromaticityDetector.detectAromaticity(mol);
+				aromaticity.apply(mol);
 				mols.add(mol);
 			}
-			IMolecule res[] = new IMolecule[mols.size()];
+			IAtomContainer res[] = new IAtomContainer[mols.size()];
 			mols.toArray(res);
 			fileToCompounds.put(dataset, res);
 		}
@@ -386,7 +395,7 @@ public class FeatureService
 			//Settings.LOGGER.info("read dataset file '" + dataset.getLocalPath() + "' with cdk");
 			TaskProvider.debug("Parsing file with CDK");
 
-			Vector<IMolecule> mols = new Vector<IMolecule>();
+			Vector<IAtomContainer> mols = new Vector<IAtomContainer>();
 			integratedProperties.put(dataset, new LinkedHashSet<IntegratedProperty>());
 
 			int mCount = 0;
@@ -427,7 +436,7 @@ public class FeatureService
 
 			for (IAtomContainer iAtomContainer : list)
 			{
-				IMolecule mol = (IMolecule) iAtomContainer;
+				IAtomContainer mol = (IAtomContainer) iAtomContainer;
 				for (Object key : mol.getProperties().keySet())
 				{
 					IntegratedProperty p = IntegratedProperty.create(key.toString(), dataset);
@@ -442,9 +451,14 @@ public class FeatureService
 				if (!TaskProvider.isRunning())
 					return;
 			}
+			// mimics the old CDKHuckelAromaticityDetector which uses the CDK atom types
+			ElectronDonation model = ElectronDonation.cdk();
+			CycleFinder cycles = Cycles.cdkAromaticSet();
+			Aromaticity aromaticity = new Aromaticity(model, cycles);
+
 			for (IAtomContainer iAtomContainer : list)
 			{
-				IMolecule mol = (IMolecule) iAtomContainer;
+				IAtomContainer mol = (IAtomContainer) iAtomContainer;
 				if (!TaskProvider.isRunning())
 					return;
 				TaskProvider.verbose("Loaded " + (mCount + 1) + "/" + list.size() + " compounds");
@@ -457,7 +471,7 @@ public class FeatureService
 					propVals.get(p).add(props.get(p.getName()));
 				}
 
-				mol = (IMolecule) AtomContainerManipulator.removeHydrogens(mol);
+				mol = (IAtomContainer) AtomContainerManipulator.removeHydrogens(mol);
 				try
 				{
 					AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mol);
@@ -466,7 +480,7 @@ public class FeatureService
 				{
 					Settings.LOGGER.error(e);
 				}
-				CDKHueckelAromaticityDetector.detectAromaticity(mol);
+				aromaticity.apply(mol);
 
 				// CDKHydrogenAdder ha = CDKHydrogenAdder.getInstance(DefaultChemObjectBuilder.getInstance());
 				// try
@@ -546,7 +560,7 @@ public class FeatureService
 					p.setDoubleValues(dataset, doubleValues);
 			}
 
-			IMolecule res[] = new IMolecule[mols.size()];
+			IAtomContainer res[] = new IAtomContainer[mols.size()];
 			mols.toArray(res);
 			fileToCompounds.put(dataset, res);
 
@@ -560,7 +574,7 @@ public class FeatureService
 		return fileToCompounds.get(dataset).length;
 	}
 
-	public IMolecule[] getCompounds(DatasetFile dataset)
+	public IAtomContainer[] getCompounds(DatasetFile dataset)
 	{
 		try
 		{
@@ -585,7 +599,14 @@ public class FeatureService
 				{
 					if (sg == null)
 						sg = new SmilesGenerator();
-					smiles[i] = sg.createSMILES(dataset.getCompounds()[i]);
+					try
+					{
+						smiles[i] = sg.create(dataset.getCompounds()[i]);
+					}
+					catch (CDKException e)
+					{
+						TaskProvider.warning("Cannont create smiles for compound " + i, e);
+					}
 				}
 			return smiles;
 		}
@@ -611,8 +632,18 @@ public class FeatureService
 				SmilesGenerator sg = new SmilesGenerator();
 				smiles = new String[dataset.getCompounds().length];
 				int i = 0;
-				for (IMolecule m : dataset.getCompounds())
-					smiles[i++] = sg.createSMILES(m);
+				for (IAtomContainer m : dataset.getCompounds())
+				{
+					try
+					{
+						smiles[i] = sg.create(m);
+					}
+					catch (CDKException e)
+					{
+						TaskProvider.warning("Cannont create smiles for compound " + i, e);
+					}
+					i++;
+				}
 				Settings.LOGGER.info(" ..done, store: " + smilesFile);
 				ValueFileCache.writeCacheString(smilesFile, smiles);
 			}
@@ -629,12 +660,12 @@ public class FeatureService
 		{
 			boolean has3D = false;
 
-			IMolecule mols[] = fileToCompounds.get(dataset);
-			for (IMolecule iMolecule : mols)
+			IAtomContainer mols[] = fileToCompounds.get(dataset);
+			for (IAtomContainer molecule : mols)
 			{
-				for (int i = 0; i < iMolecule.getAtomCount(); i++)
+				for (int i = 0; i < molecule.getAtomCount(); i++)
 				{
-					Point3d p = iMolecule.getAtom(i).getPoint3d();
+					Point3d p = molecule.getAtom(i).getPoint3d();
 					if (p != null && p.z != 0)
 					{
 						has3D = true;
@@ -657,13 +688,14 @@ public class FeatureService
 			if (new File(threeDFilename).exists())
 				new File(threeDFilename).delete();
 
-			IMolecule mols[] = dataset.getCompounds();
-			ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), forcefield);
+			IAtomContainer mols[] = dataset.getCompounds();
+			ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), forcefield,
+					DefaultChemObjectBuilder.getInstance());
 
 			int count = 0;
-			for (IMolecule iMolecule : mols)
+			for (IAtomContainer iMolecule : mols)
 			{
-				IMolecule molecule = iMolecule;
+				IAtomContainer molecule = iMolecule;
 				try
 				{
 					molecule = mb3d.generate3DCoordinates(molecule, true);
@@ -673,7 +705,7 @@ public class FeatureService
 				{
 					TaskProvider.warning("Could not build 3D for compound", e);
 				}
-				molecule = (IMolecule) AtomContainerManipulator.removeHydrogens(molecule);
+				molecule = (IAtomContainer) AtomContainerManipulator.removeHydrogens(molecule);
 
 				SDFWriter writer = new SDFWriter(new FileOutputStream(threeDFilename, true));
 				writer.write(molecule);
@@ -721,8 +753,8 @@ public class FeatureService
 	 * @throws CDKException
 	 * @throws IOException
 	 */
-	public static void writeOrigCompoundsToSDFile(IMolecule molecules[], String sdfFile, int compoundOrigIndices[],
-			boolean overwrite) throws CDKException, IOException
+	public static void writeOrigCompoundsToSDFile(IAtomContainer molecules[], String sdfFile,
+			int compoundOrigIndices[], boolean overwrite) throws CDKException, IOException
 	{
 		if (molecules.length < compoundOrigIndices.length)
 			throw new IllegalArgumentException();
@@ -730,56 +762,61 @@ public class FeatureService
 		if (!new File(sdfFile).exists() || overwrite)
 		{
 			File tmpFile = File.createTempFile("tmp-dataset", "build.sdf");
-
 			SDFWriter writer = new SDFWriter(new FileOutputStream(tmpFile));
-			StructureDiagramGenerator sdg = new StructureDiagramGenerator();
-			FixBondOrdersTool fix = new FixBondOrdersTool();
-
-			for (int cIndex : compoundOrigIndices)
+			try
 			{
-				IMolecule molecule = molecules[cIndex];
+				StructureDiagramGenerator sdg = new StructureDiagramGenerator();
+				FixBondOrdersTool fix = new FixBondOrdersTool();
 
-				IMoleculeSet oldSet = ConnectivityChecker.partitionIntoMolecules(molecule);
-				AtomContainer newSet = new AtomContainer();
-				for (int i = 0; i < oldSet.getMoleculeCount(); i++)
+				for (int cIndex : compoundOrigIndices)
 				{
-					IMolecule mol;
-					try
-					{
-						sdg.setMolecule(oldSet.getMolecule(i));
-						sdg.generateCoordinates();
-						mol = sdg.getMolecule();
-					}
-					catch (Exception e)
-					{
-						Settings.LOGGER.error(e);
-						mol = oldSet.getMolecule(i);
-					}
-					mol = (IMolecule) AtomContainerManipulator.removeHydrogens(mol);
-					try
-					{
-						mol = fix.kekuliseAromaticRings(mol);
-					}
-					catch (Exception e)
-					{
-						Settings.LOGGER.error(e);
-					}
-					newSet.add(mol);
+					IAtomContainer molecule = molecules[cIndex];
 
+					IAtomContainerSet oldSet = ConnectivityChecker.partitionIntoMolecules(molecule);
+					AtomContainer newSet = new AtomContainer();
+					for (int i = 0; i < oldSet.getAtomContainerCount(); i++)
+					{
+						IAtomContainer mol;
+						try
+						{
+							sdg.setMolecule(oldSet.getAtomContainer(i));
+							sdg.generateCoordinates();
+							mol = sdg.getMolecule();
+						}
+						catch (Exception e)
+						{
+							Settings.LOGGER.error(e);
+							mol = oldSet.getAtomContainer(i);
+						}
+						mol = (IAtomContainer) AtomContainerManipulator.removeHydrogens(mol);
+						try
+						{
+							mol = fix.kekuliseAromaticRings(mol);
+						}
+						catch (Exception e)
+						{
+							Settings.LOGGER.error(e);
+						}
+						newSet.add(mol);
+
+						if (!TaskProvider.isRunning())
+							return;
+					}
+					if (molecule.getProperty("SMIdbNAME") != null) // set identifier in sdf file (title) with identifier in SMI file (SMIdbNAME)
+						newSet.setProperty(CDKConstants.TITLE, molecule.getProperty("SMIdbNAME"));
+					writer.write(newSet);
 					if (!TaskProvider.isRunning())
 						return;
 				}
-				if (molecule.getProperty("SMIdbNAME") != null) // set identifier in sdf file (title) with identifier in SMI file (SMIdbNAME)
-					newSet.setProperty(CDKConstants.TITLE, molecule.getProperty("SMIdbNAME"));
-				writer.write(newSet);
-				if (!TaskProvider.isRunning())
-					return;
-			}
-			writer.close();
 
-			if (!FileUtil.robustRenameTo(tmpFile, new File(sdfFile)))
-				throw new Error("renaming or delete file error");
-			Settings.LOGGER.info("write cdk compounds to sd-file: " + sdfFile);
+				if (!FileUtil.robustRenameTo(tmpFile, new File(sdfFile)))
+					throw new Error("renaming or delete file error");
+				Settings.LOGGER.info("write cdk compounds to sd-file: " + sdfFile);
+			}
+			finally
+			{
+				writer.close();
+			}
 		}
 		else
 			Settings.LOGGER.info("cdk sd-file alread exists: " + sdfFile);

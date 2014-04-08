@@ -7,7 +7,6 @@ import main.Settings;
 import main.TaskProvider;
 
 import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.isomorphism.MCSComputer;
 import org.openscience.cdk.smiles.SmilesGenerator;
 
@@ -22,7 +21,7 @@ public class ComputeMCS
 	public static void computeMCS(DatasetFile dataset, List<ClusterData> clusters)
 	{
 		int count = 0;
-		IMolecule allMols[] = dataset.getCompounds();
+		IAtomContainer allMols[] = dataset.getCompounds();
 
 		for (ClusterData c : clusters)
 		{
@@ -43,7 +42,7 @@ public class ComputeMCS
 
 				TaskProvider.debug("Compute MCS for cluster " + count + "/" + clusters.size());
 
-				IMolecule mols[] = new IMolecule[c.getSize()];
+				IAtomContainer mols[] = new IAtomContainer[c.getSize()];
 				for (int i = 0; i < mols.length; i++)
 					mols[i] = allMols[c.getCompounds().get(i).getOrigIndex()];
 				IAtomContainer mcsMolecule = null;

@@ -8,7 +8,7 @@ import javax.swing.ImageIcon;
 import javax.vecmath.Vector3f;
 
 import org.openscience.cdk.exception.CDKException;
-import org.openscience.cdk.interfaces.IMolecule;
+import org.openscience.cdk.interfaces.IAtomContainer;
 
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
@@ -22,9 +22,9 @@ public class CompoundDataImpl implements CompoundData
 	private HashMap<CompoundProperty, Double> doubleValues = new HashMap<CompoundProperty, Double>();
 	private HashMap<CompoundProperty, Double> normalizedValuesCompleteDataset = new HashMap<CompoundProperty, Double>();
 	private String smiles;
-	private IMolecule iMolecule;
+	private IAtomContainer iMolecule;
 
-	public CompoundDataImpl(String smiles, IMolecule m)
+	public CompoundDataImpl(String smiles, IAtomContainer m)
 	{
 		if (smiles == null || smiles.toString().length() == 0)
 			throw new IllegalArgumentException();

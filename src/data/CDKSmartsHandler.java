@@ -6,8 +6,8 @@ import java.util.List;
 import main.Settings;
 import main.TaskProvider;
 
-import org.openscience.cdk.exception.CDKException;
-import org.openscience.cdk.interfaces.IMolecule;
+import org.openscience.cdk.DefaultChemObjectBuilder;
+import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.smiles.smarts.SMARTSQueryTool;
 
 import dataInterface.SmartsHandler;
@@ -17,13 +17,7 @@ public class CDKSmartsHandler implements SmartsHandler
 	private static SMARTSQueryTool queryTool;
 	static
 	{
-		try
-		{
-			queryTool = new SMARTSQueryTool("C");
-		}
-		catch (CDKException e)
-		{
-		}
+		queryTool = new SMARTSQueryTool("C", DefaultChemObjectBuilder.getInstance());
 	}
 
 	public static boolean isSMARTS(String smarts)
@@ -62,7 +56,7 @@ public class CDKSmartsHandler implements SmartsHandler
 
 		TaskProvider.debug("Matching smarts on compounds");
 
-		IMolecule mols[] = dataset.getCompounds();
+		IAtomContainer mols[] = dataset.getCompounds();
 		for (int m = 0; m < mols.length; m++)
 		{
 			TaskProvider.verbose("Matching smarts on compound " + (m + 1) + "/" + mols.length);

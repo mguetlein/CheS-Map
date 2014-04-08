@@ -9,12 +9,11 @@ import main.Settings;
 
 import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IMolecule;
-import org.openscience.cdk.interfaces.IMoleculeSet;
+import org.openscience.cdk.interfaces.IAtomContainerSet;
 import org.openscience.cdk.io.SDFWriter;
-import org.openscience.cdk.smiles.SmilesGenerator;
 
 import util.ArrayUtil;
+import util.CDKUtil;
 import data.DatasetFile;
 import data.cdk.CDKDescriptor;
 import data.obdesc.OBDescriptorFactory;
@@ -24,20 +23,20 @@ public class DescriptorForMixturesHandler
 {
 	private static boolean DEBUG = true;
 
-	public static Double[] computeCDKDescriptor(CDKDescriptor desc, IMolecule mol)
+	public static Double[] computeCDKDescriptor(CDKDescriptor desc, IAtomContainer mol)
 	{
 		if (!isMixture(mol))
 			return desc.computeDescriptor(mol);
 		else
 		{
-			IMoleculeSet set = split(mol);
+			IAtomContainerSet set = split(mol);
 			List<Double[]> results = new ArrayList<Double[]>();
 			if (DEBUG)
 			{
 				String msg = "computing descriptor for mixture from ";
 				for (int i = 0; i < set.getAtomContainerCount(); i++)
-					msg += sg.createSMILES(set.getAtomContainer(i)) + " ";
-				msg += "orig compound was " + sg.createSMILES(mol);
+					msg += CDKUtil.createSmiles(set.getAtomContainer(i)) + " ";
+				msg += "orig compound was " + CDKUtil.createSmiles(mol);
 				Settings.LOGGER.debug(msg);
 			}
 			for (int i = 0; i < set.getAtomContainerCount(); i++)
@@ -46,27 +45,26 @@ public class DescriptorForMixturesHandler
 		}
 	}
 
-	public static boolean isMixture(IMolecule mol)
+	public static boolean isMixture(IAtomContainer mol)
 	{
 		split(mol);
 		return mixture.get(mol);
 	}
 
-	private static HashMap<IMolecule, IMoleculeSet> split = new HashMap<IMolecule, IMoleculeSet>();
-	private static HashMap<IMolecule, Boolean> mixture = new HashMap<IMolecule, Boolean>();
-	private static SmilesGenerator sg = new SmilesGenerator();
+	private static HashMap<IAtomContainer, IAtomContainerSet> split = new HashMap<IAtomContainer, IAtomContainerSet>();
+	private static HashMap<IAtomContainer, Boolean> mixture = new HashMap<IAtomContainer, Boolean>();
 
-	private static IMoleculeSet split(IMolecule mol)
+	private static IAtomContainerSet split(IAtomContainer mol)
 	{
 		if (!split.containsKey(mol))
 		{
-			IMoleculeSet set = ConnectivityChecker.partitionIntoMolecules(mol);
+			IAtomContainerSet set = ConnectivityChecker.partitionIntoMolecules(mol);
 			if (set.getAtomContainerCount() > 1)
 			{
 				mixture.put(mol, true);
 				if (DEBUG)
 					Settings.LOGGER.debug("Mixture found: " + set.getAtomContainerCount() + " : "
-							+ sg.createSMILES(mol));
+							+ CDKUtil.createSmiles(mol));
 			}
 			else
 				mixture.put(mol, false);
@@ -90,7 +88,7 @@ public class DescriptorForMixturesHandler
 				{
 					if (DEBUG)
 						Settings.LOGGER.debug("removing ion/salt/acid "
-								+ sg.createSMILES(set.getAtomContainer(minNumAtomsIndex)));
+								+ CDKUtil.createSmiles(set.getAtomContainer(minNumAtomsIndex)));
 					set.removeAtomContainer(minNumAtomsIndex);
 				}
 				else
@@ -100,7 +98,7 @@ public class DescriptorForMixturesHandler
 			{
 				String s = "remaining : ";
 				for (int i = 0; i < set.getAtomContainerCount(); i++)
-					s += (i > 0 ? "." : "") + sg.createSMILES(set.getAtomContainer(i));
+					s += (i > 0 ? "." : "") + CDKUtil.createSmiles(set.getAtomContainer(i));
 				Settings.LOGGER.debug(s);
 			}
 			split.put(mol, set);
@@ -127,7 +125,7 @@ public class DescriptorForMixturesHandler
 				if (DEBUG && isMixture(dataset.getCompounds()[i]))
 					Settings.LOGGER.debug("computing descriptor for mixture from "
 							+ ArrayUtil.toString(splitIndices.get(i)) + "orig compound was " + i + " : "
-							+ sg.createSMILES(dataset.getCompounds()[i]));
+							+ CDKUtil.createSmiles(dataset.getCompounds()[i]));
 				dRes[i] = ArrayUtil.getMean(ArrayUtil.toPrimitiveDoubleArray(ArrayUtil.removeNullValues(cVals)));
 			}
 			return ArrayUtil.toStringArray(dRes);
@@ -137,7 +135,7 @@ public class DescriptorForMixturesHandler
 	private static boolean hasMixture(DatasetFile dataset)
 	{
 		boolean hasMixtures = false;
-		for (IMolecule m : dataset.getCompounds())
+		for (IAtomContainer m : dataset.getCompounds())
 			if (isMixture(m))
 			{
 				hasMixtures = true;
@@ -156,7 +154,7 @@ public class DescriptorForMixturesHandler
 			List<IAtomContainer> splitMols = new ArrayList<IAtomContainer>();
 			for (int i = 0; i < dataset.getCompounds().length; i++)
 			{
-				IMoleculeSet set = split(dataset.getCompounds()[i]);
+				IAtomContainerSet set = split(dataset.getCompounds()[i]);
 				map.add(new int[set.getAtomContainerCount()]);
 				for (int j = 0; j < set.getAtomContainerCount(); j++)
 				{

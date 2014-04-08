@@ -26,8 +26,7 @@ import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IMolecule;
-import org.openscience.cdk.interfaces.IMoleculeSet;
+import org.openscience.cdk.interfaces.IAtomContainerSet;
 import org.openscience.cdk.layout.StructureDiagramGenerator;
 import org.openscience.cdk.renderer.AtomContainerRenderer;
 import org.openscience.cdk.renderer.color.CPKAtomColors;
@@ -51,7 +50,7 @@ public class CDKCompoundIcon
 		int w = 200;
 		int h = 200;
 		int c = 0;
-		for (IMolecule m : d.getCompounds())
+		for (IAtomContainer m : d.getCompounds())
 		{
 			String file = outdir + "/" + StringUtil.getMD5(d.getSmiles()[c]) + ".png";
 			if (!new File(file).exists())
@@ -80,17 +79,17 @@ public class CDKCompoundIcon
 		}
 	}
 
-	public static MultiImageIcon createIcon(IMolecule iMolecule, boolean black, int width, int height, Layout layout,
-			boolean translucent) throws CDKException
+	public static MultiImageIcon createIcon(IAtomContainer iMolecule, boolean black, int width, int height,
+			Layout layout, boolean translucent) throws CDKException
 	{
-		IMoleculeSet set = ConnectivityChecker.partitionIntoMolecules(iMolecule);
+		IAtomContainerSet set = ConnectivityChecker.partitionIntoMolecules(iMolecule);
 		List<ImageIcon> icons = new ArrayList<ImageIcon>();
 		for (int i = 0; i < set.getAtomContainerCount(); i++)
-			icons.add(createIconDissconnected(set.getMolecule(i), black, width, height, translucent));
+			icons.add(createIconDissconnected(set.getAtomContainer(i), black, width, height, translucent));
 		return new MultiImageIcon(icons, layout, Orientation.center, 2);
 	}
 
-	private static ImageIcon createIconDissconnected(IMolecule iMolecule, boolean black, int width, int height,
+	private static ImageIcon createIconDissconnected(IAtomContainer iMolecule, boolean black, int width, int height,
 			boolean translucent) throws CDKException
 	{
 		Color fColor = black ? Color.WHITE : Color.BLACK;
@@ -129,8 +128,8 @@ public class CDKCompoundIcon
 						((BasicBondGenerator.BondWidth) parameter).setValue(2.0);
 					else if (parameter instanceof BasicSceneGenerator.Margin)
 						((BasicSceneGenerator.Margin) parameter).setValue(12.0);
-					else if (parameter instanceof BasicBondGenerator.BondLength)
-						((BasicBondGenerator.BondLength) parameter).setValue(Math.max(20,
+					else if (parameter instanceof BasicSceneGenerator.BondLength)
+						((BasicSceneGenerator.BondLength) parameter).setValue(Math.max(20,
 								Math.min(40, Math.min(width, height) / 5.0)));
 				}
 			}
@@ -180,7 +179,7 @@ public class CDKCompoundIcon
 		//String smiles = "COc(ccc(c1)[N+])c1[N+]";
 		//String smiles = "c1ccccc1";
 		SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
-		IMolecule iMolecule = sp.parseSmiles(smiles);
+		IAtomContainer iMolecule = sp.parseSmiles(smiles);
 
 		JPanel pB = new JPanel();
 		pB.setBackground(Color.BLACK);

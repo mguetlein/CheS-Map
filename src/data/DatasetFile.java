@@ -6,7 +6,7 @@ import java.util.List;
 import main.Settings;
 import main.TaskProvider;
 
-import org.openscience.cdk.interfaces.IMolecule;
+import org.openscience.cdk.interfaces.IAtomContainer;
 
 import util.FileUtil;
 import util.StringUtil;
@@ -247,7 +247,7 @@ public class DatasetFile extends FilenameProvider
 		featureService.updateCompoundStructureFrom3DSDF(this);
 	}
 
-	public IMolecule[] getCompounds()
+	public IAtomContainer[] getCompounds()
 	{
 		return featureService.getCompounds(this);
 	}

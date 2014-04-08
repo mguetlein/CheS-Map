@@ -23,9 +23,8 @@ import org.openscience.cdk.geometry.GeometryTools;
 import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IAtomContainerSet;
 import org.openscience.cdk.interfaces.IBond;
-import org.openscience.cdk.interfaces.IMolecule;
-import org.openscience.cdk.interfaces.IMoleculeSet;
 import org.openscience.cdk.io.SDFWriter;
 import org.openscience.cdk.isomorphism.MyUniversalIsomorphismTester;
 import org.openscience.cdk.isomorphism.UniversalIsomorphismTester;
@@ -76,7 +75,7 @@ public class MultiKabschAlignement
 
 	Random r = new Random();
 
-	public static void align(IMolecule[] molecules, String smarts) throws CDKException, CloneNotSupportedException
+	public static void align(IAtomContainer[] molecules, String smarts) throws CDKException, CloneNotSupportedException
 	{
 		MoleculeInfo molInfos[] = new MoleculeInfo[molecules.length];
 
@@ -85,7 +84,7 @@ public class MultiKabschAlignement
 			molInfos[m] = new MoleculeInfo();
 			queryTool.setSmarts(smarts);
 			if (!queryTool.matches(molecules[m]))
-				throw new IllegalStateException(g.createSMILES(molecules[m]) + " does not match " + smarts);
+				throw new IllegalStateException(g.create(molecules[m]) + " does not match " + smarts);
 
 			boolean warning = false;
 			for (IAtom a : molecules[m].atoms())
@@ -94,7 +93,7 @@ public class MultiKabschAlignement
 				{
 					if (a.getPoint2d() == null)
 						throw new Error("no 2d coordinates");
-					Settings.LOGGER.warn("no 3d coordinates available for " + g.createSMILES(molecules[m]));
+					Settings.LOGGER.warn("no 3d coordinates available for " + g.create(molecules[m]));
 					warning = true;
 				}
 				if (a.getPoint3d() == null)
@@ -126,7 +125,7 @@ public class MultiKabschAlignement
 		int selectedMatchIndex1 = -1;
 		Point3d centerOfMass = null;
 
-		IMolecule mol1 = molecules[0];
+		IAtomContainer mol1 = molecules[0];
 		MoleculeInfo molInfo1 = molInfos[0];
 
 		if (DEBUG)
@@ -135,7 +134,7 @@ public class MultiKabschAlignement
 
 		for (int m = 1; m < molecules.length; m++)
 		{
-			IMolecule mol2 = molecules[m];
+			IAtomContainer mol2 = molecules[m];
 			MoleculeInfo molInfo2 = molInfos[m];
 
 			double rmsd = Double.MAX_VALUE;
@@ -222,8 +221,8 @@ public class MultiKabschAlignement
 						if (tmpRMSD - 0.1 < rmsd)
 						{
 							//compute complete rmsd
-							IMolecule mol1clone = (IMolecule) mol1.clone();
-							IMolecule mol2clone = (IMolecule) mol2.clone();
+							IAtomContainer mol1clone = (IAtomContainer) mol1.clone();
+							IAtomContainer mol2clone = (IAtomContainer) mol2.clone();
 							Point3d cm1 = tmpKa.getCenterOfMass();
 							for (int i = 0; i < mol1clone.getAtomCount(); i++)
 							{
@@ -380,8 +379,9 @@ public class MultiKabschAlignement
 			CloneNotSupportedException
 	{
 		SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
-		IMolecule mol[] = new IMolecule[smiles.length];
-		ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), "mm2");
+		IAtomContainer mol[] = new IAtomContainer[smiles.length];
+		ModelBuilder3D mb3d = ModelBuilder3D.getInstance(TemplateHandler3D.getInstance(), "mm2",
+				DefaultChemObjectBuilder.getInstance());
 		for (int i = 0; i < mol.length; i++)
 		{
 			Settings.LOGGER.info("build molecule " + (i + 1) + "/" + mol.length);
@@ -392,26 +392,27 @@ public class MultiKabschAlignement
 		toSDF(mol, "/tmp/" + name + ".after.sdf");
 	}
 
-	private static void toSDF(IMolecule mols[], String file) throws FileNotFoundException, IOException, CDKException
+	private static void toSDF(IAtomContainer mols[], String file) throws FileNotFoundException, IOException,
+			CDKException
 	{
 		SDFWriter writer = new SDFWriter(new FileOutputStream(file));
 		StructureDiagramGenerator sdg = new StructureDiagramGenerator();
-		for (IMolecule mol : mols)
+		for (IAtomContainer mol : mols)
 		{
-			IMoleculeSet oldSet = ConnectivityChecker.partitionIntoMolecules(mol);
+			IAtomContainerSet oldSet = ConnectivityChecker.partitionIntoMolecules(mol);
 			AtomContainer newSet = new AtomContainer();
-			for (int i = 0; i < oldSet.getMoleculeCount(); i++)
+			for (int i = 0; i < oldSet.getAtomContainerCount(); i++)
 			{
 				try
 				{
-					sdg.setMolecule(oldSet.getMolecule(i));
+					sdg.setMolecule(oldSet.getAtomContainer(i));
 					sdg.generateCoordinates();
 					newSet.add(AtomContainerManipulator.removeHydrogens(sdg.getMolecule()));
 				}
 				catch (Exception e)
 				{
 					Settings.LOGGER.error(e);
-					newSet.add(AtomContainerManipulator.removeHydrogens(oldSet.getMolecule(i)));
+					newSet.add(AtomContainerManipulator.removeHydrogens(oldSet.getAtomContainer(i)));
 				}
 			}
 			writer.write(newSet);
