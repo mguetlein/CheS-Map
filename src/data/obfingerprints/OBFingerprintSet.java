@@ -487,6 +487,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 		}
 
 		File tmp = null;
+		BufferedReader buffy = null;
 		try
 		{
 			Settings.LOGGER.info("computing structural fragment " + StructuralFragmentProperties.getMatchEngine() + " "
@@ -527,7 +528,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 			ExternalToolUtil.run("ob-fingerprints", cmd, tmp);
 
 			TaskProvider.debug("Parsing fingerprints");
-			BufferedReader buffy = new BufferedReader(new FileReader(tmp));
+			buffy = new BufferedReader(new FileReader(tmp));
 			String s = null;
 
 			int count = -1;
@@ -593,11 +594,20 @@ public class OBFingerprintSet extends FragmentPropertySet
 		finally
 		{
 			tmp.delete();
+			if (buffy != null)
+				try
+				{
+					buffy.close();
+				}
+				catch (IOException e)
+				{
+					Settings.LOGGER.error(e);
+				}
 		}
 	}
 
 	@Override
-	public boolean isUsedForMapping()
+	public boolean isSelectedForMapping()
 	{
 		return true;
 	}

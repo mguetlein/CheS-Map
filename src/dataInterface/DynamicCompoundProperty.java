@@ -122,6 +122,12 @@ public abstract class DynamicCompoundProperty implements CompoundProperty, Compo
 	}
 
 	@Override
+	public int numMissingValuesInMappedDataset()
+	{
+		throw new IllegalStateException();
+	}
+
+	@Override
 	public int numDistinctValues(DatasetFile dataset)
 	{
 		throw new IllegalStateException();
@@ -210,7 +216,7 @@ public abstract class DynamicCompoundProperty implements CompoundProperty, Compo
 	}
 
 	@Override
-	public boolean isUsedForMapping()
+	public boolean isSelectedForMapping()
 	{
 		return false;
 	}
@@ -245,4 +251,21 @@ public abstract class DynamicCompoundProperty implements CompoundProperty, Compo
 		throw new IllegalStateException();
 	}
 
+	@Override
+	public CompoundProperty getRedundantProp(DatasetFile dataset)
+	{
+		return null;
+	}
+
+	@Override
+	public CompoundProperty getRedundantPropInMappedDataset()
+	{
+		return null;
+	}
+
+	@Override
+	public void setRedundantPropInMappedDataset(CompoundProperty b)
+	{
+		throw new IllegalStateException();
+	}
 }

@@ -218,7 +218,7 @@ public class CDKFingerprintSet extends FragmentPropertySet
 	}
 
 	@Override
-	public boolean isUsedForMapping()
+	public boolean isSelectedForMapping()
 	{
 		return true;
 	}

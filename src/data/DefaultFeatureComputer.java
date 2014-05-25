@@ -45,7 +45,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 					+ propSet.toString());
 
 			if (propSet instanceof IntegratedProperty)
-				((IntegratedProperty) propSet).setUsedForMapping(true);
+				((IntegratedProperty) propSet).setSelectedForMapping(true);
 
 			boolean computed = true;
 			if (!propSet.isComputed(dataset))
@@ -70,7 +70,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 		for (IntegratedProperty p : dataset.getIntegratedProperties())
 			if (!props.contains(p))
 			{
-				p.setUsedForMapping(false);
+				p.setSelectedForMapping(false);
 				props.add(p);
 				properties.add(p);
 			}

@@ -40,6 +40,8 @@ public class ClusteringData
 	private ThreeDEmbedder threeDEmbedder;
 	private ThreeDAligner threeDAligner;
 
+	private boolean skippingRedundantFeatures;
+
 	// --------------------------------------------
 
 	public int getNumClusters()
@@ -229,5 +231,15 @@ public class ClusteringData
 	public DistanceMeasure getEmbeddingDistanceMeasure()
 	{
 		return threeDEmbedder.getDistanceMeasure();
+	}
+
+	public void setSkippingRedundantFeatures(boolean skippingRedundantFeatures)
+	{
+		this.skippingRedundantFeatures = skippingRedundantFeatures;
+	}
+
+	public boolean isSkippingRedundantFeatures()
+	{
+		return skippingRedundantFeatures;
 	}
 }

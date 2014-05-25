@@ -175,6 +175,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	private HashMap<DatasetFile, Integer> distinct = new HashMap<DatasetFile, Integer>();
 	private HashMap<DatasetFile, Boolean> isInteger = new HashMap<DatasetFile, Boolean>();
 	private HashMap<DatasetFile, Boolean> hasSmallDoubleValues = new HashMap<DatasetFile, Boolean>();
+	private HashMap<DatasetFile, CompoundProperty> isRedundant = new HashMap<DatasetFile, CompoundProperty>();
 
 	public boolean isValuesSet(DatasetFile dataset)
 	{
@@ -346,6 +347,12 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 		return distinct.get(dataset);
 	}
 
+	@Override
+	public int numDistinctValuesInMappedDataset()
+	{
+		return numDistinctValues(Settings.MAPPED_DATASET);
+	}
+
 	private void setMissing(DatasetFile dataset, Object values[])
 	{
 		int miss = 0;
@@ -359,6 +366,12 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	public int numMissingValues(DatasetFile dataset)
 	{
 		return missing.get(dataset);
+	}
+
+	@Override
+	public int numMissingValuesInMappedDataset()
+	{
+		return numMissingValues(Settings.MAPPED_DATASET);
 	}
 
 	@Override
@@ -483,6 +496,24 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 		if (getType() != Type.NUMERIC)
 			throw new IllegalStateException();
 		this.colorGradient = colorGradient;
+	}
+
+	@Override
+	public CompoundProperty getRedundantProp(DatasetFile dataset)
+	{
+		return isRedundant.get(dataset);
+	}
+
+	@Override
+	public CompoundProperty getRedundantPropInMappedDataset()
+	{
+		return getRedundantProp(Settings.MAPPED_DATASET);
+	}
+
+	@Override
+	public void setRedundantPropInMappedDataset(CompoundProperty b)
+	{
+		isRedundant.put(Settings.MAPPED_DATASET, b);
 	}
 
 }

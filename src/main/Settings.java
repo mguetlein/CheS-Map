@@ -102,6 +102,7 @@ public class Settings
 	public static Boolean CACHING_ENABLED = true;
 	public static Boolean DESC_MIXTURE_HANDLING = false;
 	public static DatasetFile MAPPED_DATASET = null;
+	public static boolean SKIP_REDUNDANT_FEATURES = false;
 
 	public static ImageIcon CHES_MAPPER_IMAGE = ImageLoader.getImage(ImageLoader.Image.ches_mapper);
 	public static ImageIcon CHES_MAPPER_ICON = ImageLoader.getImage(ImageLoader.Image.ches_mapper_icon);

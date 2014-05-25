@@ -162,7 +162,7 @@ public class EqualPositionPropertySet extends AbstractCompoundProperty implement
 	}
 
 	@Override
-	public boolean isUsedForMapping()
+	public boolean isSelectedForMapping()
 	{
 		return false;
 	}

@@ -260,7 +260,7 @@ public class CDKPropertySet implements CompoundPropertySet
 	}
 
 	@Override
-	public boolean isUsedForMapping()
+	public boolean isSelectedForMapping()
 	{
 		return true;
 	}

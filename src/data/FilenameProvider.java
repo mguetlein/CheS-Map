@@ -43,7 +43,10 @@ public class FilenameProvider
 							new Algorithm[] { clusteringData.getThreeDBuilder() });
 					break;
 				}
-		return CompoundPropertyUtil.getSetMD5(clusteringData.getFeatures(), getEncodedSettings(algs));
+		String skipped = "";
+		if (clusteringData.isSkippingRedundantFeatures())
+			skipped += "skippedRedundantFeatures";
+		return CompoundPropertyUtil.getSetMD5(clusteringData.getFeatures(), skipped + getEncodedSettings(algs));
 	}
 
 	private static String getEncodedSettings(Algorithm... algs)

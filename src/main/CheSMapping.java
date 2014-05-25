@@ -96,10 +96,7 @@ public class CheSMapping
 						throw new IllegalStateException("num compounds does not fit " + dataset.getCompounds().length
 								+ " != " + clustering.getCompounds().size());
 
-					List<CompoundProperty> featuresWithInfo = new ArrayList<CompoundProperty>();
-					for (CompoundProperty p : clustering.getFeatures())
-						if (!CompoundPropertyUtil.hasUniqueValue(p, dataset))
-							featuresWithInfo.add(p);
+					List<CompoundProperty> featuresWithInfo = determineFeaturesWithInfo(clustering);
 
 					if (!TaskProvider.isRunning())
 						return;
@@ -157,6 +154,62 @@ public class CheSMapping
 			Settings.LOGGER.error(e);
 		}
 		return clusteringData;
+	}
+
+	/**
+	 * featuresWithInfo are those that are actually used for clustering and embedding
+	 * featuresWithInfo may be != features
+	 * (features does always contain all features selected by the user)
+	 * features with unique values are always removed
+	 * there is a switch for omitting redundant features (default: true)
+	 * (this switch is also used for caching)
+	 */
+	protected List<CompoundProperty> determineFeaturesWithInfo(ClusteringData clustering)
+	{
+		List<CompoundProperty> featuresWithInfo = new ArrayList<CompoundProperty>();
+		int unique = 0;
+		int redundant = 0;
+		for (CompoundProperty p : clustering.getFeatures())
+			if (p.numDistinctValuesInMappedDataset() > 1)
+				featuresWithInfo.add(p);
+			else
+			{
+				Settings.LOGGER.info("skipping unique prop: " + p);
+				unique++;
+			}
+		if (Settings.SKIP_REDUNDANT_FEATURES)
+		{
+			CompoundPropertyUtil.determineRedundantFeatures(featuresWithInfo);
+			List<CompoundProperty> rem = new ArrayList<CompoundProperty>();
+			for (CompoundProperty p : featuresWithInfo)
+				if (p.getRedundantPropInMappedDataset() != null)
+				{
+					redundant++;
+					Settings.LOGGER.info("skipping redundant prop: " + p);
+					rem.add(p);
+				}
+			if (redundant > 0)
+			{
+				for (CompoundProperty p : rem)
+					featuresWithInfo.remove(p);
+				clustering.setSkippingRedundantFeatures(true);
+			}
+		}
+		if (unique > 0)
+			TaskProvider.warning(unique + " of " + clustering.getFeatures().size()
+					+ " feature/s with equal value for each compound ignored for mapping",
+					"Feature/s that have an equal value for each compound, contain no information to distinguish between compounds. "
+							+ "The feature/s are ignored by the mapping algorithms (3D-embedding and clustering). "
+							+ "In the viewer, the feature/s are in the list of features that are selected for mapping "
+							+ "(but labeled as feature with equal value for each compound).");
+		if (redundant > 0)
+			TaskProvider.warning(redundant + " of " + clustering.getFeatures().size()
+					+ " feature/s with redundant values ignored for mapping",
+					"Redundant feature/s contain the same information (feature values) as other features in the dataset. "
+							+ "The feature/s are ignored by the mapping algorithms (3D-embedding and clustering). "
+							+ "In the viewer, the feature/s are in the list of features that are selected for mapping "
+							+ "(but labeled as redundant).");
+		return featuresWithInfo;
 	}
 
 	public Throwable getMappingError()

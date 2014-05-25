@@ -213,7 +213,7 @@ public class OBDescriptorProperty extends AbstractCompoundProperty implements Co
 	}
 
 	@Override
-	public boolean isUsedForMapping()
+	public boolean isSelectedForMapping()
 	{
 		return true;
 	}

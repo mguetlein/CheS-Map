@@ -36,7 +36,7 @@ public class CompoundPropertySetUtil
 		String name = additionalParam;
 		for (CompoundPropertySet p : list)
 			name += p.getNameIncludingParams();
-		//		Settings.LOGGER.warn("feature md5 key: " + name);
+		//		Settings.LOGGER.warn("feature md5 key: " + name + " is based on " + list.size() + " feature sets");
 		return StringUtil.getMD5(name);
 	}
 

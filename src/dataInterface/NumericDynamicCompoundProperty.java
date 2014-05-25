@@ -96,4 +96,10 @@ public abstract class NumericDynamicCompoundProperty extends DynamicCompoundProp
 		return doubleValues;
 	}
 
+	@Override
+	public int numDistinctValuesInMappedDataset()
+	{
+		return distinct;
+	}
+
 }

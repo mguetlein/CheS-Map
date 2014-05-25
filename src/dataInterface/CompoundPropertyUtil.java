@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 import main.Settings;
 import util.ArrayUtil;
 import util.DoubleArraySummary;
-import util.ObjectUtil;
 import data.DatasetFile;
 import data.cdk.CDKProperty;
 import data.obdesc.OBDescriptorProperty;
@@ -59,7 +58,7 @@ public class CompoundPropertyUtil
 
 	public static int computeNumDistinct(Double values[])
 	{
-		return DoubleArraySummary.create(values).getNum();
+		return DoubleArraySummary.create(values).getNumDistinct();
 	}
 
 	public static int computeNumDistinct(String values[])
@@ -211,32 +210,95 @@ public class CompoundPropertyUtil
 		return sets;
 	}
 
-	public static boolean hasUniqueValues(List<CompoundProperty> list, DatasetFile data)
+	//	public static boolean hasUniqueValues(List<CompoundProperty> list, DatasetFile data)
+	//	{
+	//		for (CompoundProperty p : list)
+	//			if (!hasUniqueValue(p, data))
+	//				return false;
+	//		return true;
+	//	}
+
+	//	public static boolean hasUniqueValue(CompoundProperty prop, DatasetFile data)
+	//	{
+	//		boolean first = true;
+	//		Object value = null;
+	//		for (Object val : (prop.getType() == Type.NUMERIC ? prop.getDoubleValues(data) : prop.getStringValues(data)))
+	//		{
+	//			if (first)
+	//			{
+	//				value = val;
+	//				first = false;
+	//			}
+	//			else
+	//			{
+	//				if (!ObjectUtil.equals(value, val))
+	//					return false;
+	//			}
+	//		}
+	//		return true;
+	//	}
+
+	public static void determineRedundantFeatures(List<CompoundProperty> features)
 	{
-		for (CompoundProperty p : list)
-			if (!hasUniqueValue(p, data))
-				return false;
-		return true;
+		HashMap<CompoundProperty, CompoundProperty> redundant = getRedundantFeatures(features, null);
+		for (CompoundProperty p : redundant.keySet())
+			p.setRedundantPropInMappedDataset(redundant.get(p));
 	}
 
-	public static boolean hasUniqueValue(CompoundProperty prop, DatasetFile data)
+	public static HashMap<CompoundProperty, CompoundProperty> getRedundantFeatures(List<CompoundProperty> features,
+			int compoundSubset[])
 	{
-		boolean first = true;
-		Object value = null;
-		for (Object val : (prop.getType() == Type.NUMERIC ? prop.getDoubleValues(data) : prop.getStringValues(data)))
+		List<CompoundProperty> notRedundant = new ArrayList<CompoundProperty>();
+		HashMap<CompoundProperty, Integer> redundantIndices = new HashMap<CompoundProperty, Integer>();
+		for (int i = 0; i < features.size(); i++)
 		{
-			if (first)
+			CompoundProperty p = features.get(i);
+			int matchIndex = -1;
+			for (int j = 0; j < notRedundant.size(); j++)
 			{
-				value = val;
-				first = false;
+				CompoundProperty p2 = notRedundant.get(j);
+				if (isRedundant(p, p2, compoundSubset))
+				{
+					matchIndex = j;
+					break;
+				}
 			}
+			if (matchIndex == -1)
+				notRedundant.add(p);
 			else
 			{
-				if (!ObjectUtil.equals(value, val))
-					return false;
+				CompoundProperty pMatch = notRedundant.get(matchIndex);
+				if ((p.isSmartsProperty() && !pMatch.isSmartsProperty()) // only the new p is smarts
+						|| (p.isSmartsProperty() && pMatch.isSmartsProperty() // if both are smarts 
+						// use the shorter one
+						&& SmartsUtil.getLength(p.getSmarts()) < SmartsUtil.getLength(pMatch.getSmarts())))
+				{
+					notRedundant.set(matchIndex, p); // replace pMatch
+					redundantIndices.put(pMatch, matchIndex);
+				}
+				else
+					redundantIndices.put(p, matchIndex);
 			}
 		}
-		return true;
+		HashMap<CompoundProperty, CompoundProperty> redundant = new HashMap<CompoundProperty, CompoundProperty>();
+		for (CompoundProperty p : redundantIndices.keySet())
+		{
+			redundant.put(p, notRedundant.get(redundantIndices.get(p)));
+			if (p.isSmartsProperty() && redundant.get(p).isSmartsProperty())
+				Settings.LOGGER.debug("skip " + p.getSmarts() + " because of " + redundant.get(p).getSmarts());
+		}
+		return redundant;
 	}
 
+	private static boolean isRedundant(CompoundProperty p1, CompoundProperty p2, int compoundSubset[])
+	{
+		if (p1.getType() == Type.NUMERIC && p2.getType() == Type.NUMERIC)
+			return ArrayUtil.equals(p1.getDoubleValuesInCompleteMappedDataset(),
+					p2.getDoubleValuesInCompleteMappedDataset(), compoundSubset);
+		else if (p1.getType() == Type.NOMINAL && p2.getType() == Type.NOMINAL)
+			return ArrayUtil.redundant(p1.getStringValues(Settings.MAPPED_DATASET),
+					p2.getStringValues(Settings.MAPPED_DATASET), compoundSubset);
+		else
+			return false;
+	}
 }

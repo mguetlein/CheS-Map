@@ -26,7 +26,7 @@ public interface CompoundPropertySet
 
 	public Binary getBinary();
 
-	public boolean isUsedForMapping();
+	public boolean isSelectedForMapping();
 
 	public String getNameIncludingParams();
 

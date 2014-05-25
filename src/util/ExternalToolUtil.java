@@ -56,7 +56,7 @@ public class ExternalToolUtil
 			// hack to determine if process has finished
 			try
 			{
-				p.exitValue();
+				Settings.LOGGER.debug("Exit value: " + p.exitValue());
 				break;
 			}
 			catch (IllegalThreadStateException e)

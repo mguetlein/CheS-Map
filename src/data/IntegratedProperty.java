@@ -9,7 +9,7 @@ import dataInterface.CompoundPropertySet;
 public class IntegratedProperty extends AbstractCompoundProperty implements CompoundPropertySet
 {
 	String property;
-	private boolean usedForMapping;
+	private boolean selectedForMapping;
 
 	private static DoubleKeyHashMap<String, DatasetFile, IntegratedProperty> instances = new DoubleKeyHashMap<String, DatasetFile, IntegratedProperty>();
 
@@ -95,15 +95,15 @@ public class IntegratedProperty extends AbstractCompoundProperty implements Comp
 		return true;
 	}
 
-	public void setUsedForMapping(boolean usedForMapping)
+	public void setSelectedForMapping(boolean selectedForMapping)
 	{
-		this.usedForMapping = usedForMapping;
+		this.selectedForMapping = selectedForMapping;
 	}
 
 	@Override
-	public boolean isUsedForMapping()
+	public boolean isSelectedForMapping()
 	{
-		return usedForMapping;
+		return selectedForMapping;
 	}
 
 	@Override

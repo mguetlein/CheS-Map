@@ -72,7 +72,13 @@ public interface CompoundProperty
 
 	public int numMissingValues(DatasetFile dataset);
 
+	public int numMissingValuesInMappedDataset();
+
+	/** excluding null */
 	public int numDistinctValues(DatasetFile dataset);
+
+	/** excluding null */
+	public int numDistinctValuesInMappedDataset();
 
 	public Boolean isInteger(DatasetFile dataset);
 
@@ -89,5 +95,11 @@ public interface CompoundProperty
 	public Boolean hasSmallDoubleValues(DatasetFile dataset);
 
 	public Boolean hasSmallDoubleValuesInMappedDataset();
+
+	public CompoundProperty getRedundantProp(DatasetFile dataset);
+
+	public CompoundProperty getRedundantPropInMappedDataset();
+
+	public void setRedundantPropInMappedDataset(CompoundProperty b);
 
 }
