@@ -1,7 +1,6 @@
 package weka;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -11,9 +10,11 @@ import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.evaluation.output.prediction.AbstractOutput;
+import weka.classifiers.functions.SMOreg;
 import weka.classifiers.trees.RandomForest;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.SelectedTag;
 import weka.core.converters.ArffLoader;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
@@ -24,11 +25,13 @@ public class Predictor
 {
 	public static class PredictionResult
 	{
+		boolean classification;
 		double[] prediction;
 		double[] missClassfied;
 
-		public PredictionResult(double[] prediction, double[] missClassfied)
+		public PredictionResult(double[] prediction, double[] missClassfied, boolean classification)
 		{
+			this.classification = classification;
 			this.prediction = prediction;
 			this.missClassfied = missClassfied;
 		}
@@ -60,7 +63,7 @@ public class Predictor
 				@Override
 				public String getName()
 				{
-					return "miss-classified";
+					return classification ? "miss-classified" : "error";
 				}
 
 				@Override
@@ -73,19 +76,27 @@ public class Predictor
 	}
 
 	public static PredictionResult predict(List<CompoundData> compounds, List<CompoundProperty> features,
-			CompoundProperty clazz)
+			CompoundProperty clazz, final boolean classification)
 	{
+		File arffFile = null;
 		try
 		{
-			if (clazz.getType() != Type.NOMINAL && clazz.getNominalDomainInMappedDataset().length != 2)
+			if (classification)
+			{
+				if (clazz.getType() != Type.NOMINAL && clazz.getNominalDomainInMappedDataset().length != 2)
+					throw new Error();
+			}
+			else if (clazz.getType() != Type.NUMERIC)
 				throw new Error();
-			final boolean swapPredictedDouble = clazz.getNominalDomainInMappedDataset()[0].equals("active");
+			final boolean swapPredictedDouble = classification
+					&& clazz.getNominalDomainInMappedDataset()[0].equals("active");
 
 			List<CompoundProperty> p = new ArrayList<CompoundProperty>(features);
 			p.add(clazz);
-			if (new File("/tmp/arff-file.arff").exists())
-				new File("/tmp/arff-file.arff").delete();
-			File arffFile = CompoundArffWriter.writeArffFile("/tmp/arff-file.arff", compounds, p);
+			String tmpPath = File.createTempFile("data", "arff").getAbsolutePath();
+			if (new File(tmpPath).exists())
+				new File(tmpPath).delete();
+			arffFile = CompoundArffWriter.writeArffFile(tmpPath, compounds, p);
 			ArffLoader loader = new ArffLoader();
 			loader.setFile(arffFile);
 			Instances data = loader.getDataSet();
@@ -97,7 +108,7 @@ public class Predictor
 			for (int i = 0; i < predictions.length; i++)
 				for (int j = 0; j < predictions[0].length; j++)
 					predictions[i][j] = Double.MAX_VALUE;
-			double acc[] = new double[rep];
+			double performance[] = new double[rep];
 			for (int i = 0; i < rep; i++)
 			{
 				final int rep_i = i;
@@ -115,7 +126,12 @@ public class Predictor
 						}
 						double[] d = super.evaluateModel(classifier, data, forPredictionsPrinting);
 						for (int i = 0; i < data.numInstances(); i++)
-							predictions[w[i]][rep_i] = swapPredictedDouble ? (1 - d[i]) : d[i];
+						{
+							if (classification)
+								predictions[w[i]][rep_i] = swapPredictedDouble ? (1 - d[i]) : d[i];
+							else
+								predictions[w[i]][rep_i] = d[i];
+						}
 						return d;
 					}
 
@@ -163,43 +179,71 @@ public class Predictor
 							classificationOutput.printFooter();
 					}
 				};
-				eval.crossValidateModel(new RandomForest(), data, 10, new Random(i));
-				System.out.println(eval.pctCorrect());
-				acc[i] = eval.pctCorrect();
+				Classifier classifier;
+				if (classification)
+					classifier = new RandomForest();
+				else
+				{
+					classifier = new SMOreg();
+					((SMOreg) classifier).setFilterType(new SelectedTag(SMOreg.FILTER_NONE, SMOreg.TAGS_FILTER));
+				}
+				eval.crossValidateModel(classifier, data, 10, new Random(i));
+				if (classification)
+				{
+					System.out.println(eval.pctCorrect());
+					performance[i] = eval.pctCorrect();
+				}
+				else
+				{
+					System.out.println(eval.meanAbsoluteError());
+					performance[i] = eval.meanAbsoluteError();
+				}
 			}
 
-			System.out.println("mean acc: " + ArrayUtil.getMean(acc));
+			System.out.println("mean " + (classification ? "acc" : "mean-abs-error") + ": "
+					+ ArrayUtil.getMean(performance));
 
-			double d[] = new double[compounds.size()];
+			double predicted[] = new double[compounds.size()];
 			for (int i = 0; i < compounds.size(); i++)
 			{
 				double pred[] = predictions[i];
 				//				System.out.println(compounds.get(i).getFormattedValue(clazz) + " "
 				//						+ data.get(i).stringValue(data.numAttributes() - 1) + " " + ArrayUtil.toString(pred));
-				d[i] = ArrayUtil.getMean(pred);
+				predicted[i] = ArrayUtil.getMean(pred);
 			}
 
-			double m[] = new double[d.length];
-			for (int i = 0; i < m.length; i++)
+			double error[] = new double[predicted.length];
+			for (int i = 0; i < error.length; i++)
 			{
-				double actual = ArrayUtil.indexOf(clazz.getNominalDomainInMappedDataset(), compounds.get(i)
-						.getStringValue(clazz));
-				if (actual == 0)
-					m[i] = 1 - d[i];
+				if (classification)
+				{
+					double actual = ArrayUtil.indexOf(clazz.getNominalDomainInMappedDataset(), compounds.get(i)
+							.getStringValue(clazz));
+					if (actual == 0)
+						error[i] = 1 - predicted[i];
+					else
+						error[i] = predicted[i];
+				}
 				else
-					m[i] = d[i];
+				{
+					double actual = compounds.get(i).getDoubleValue(clazz);
+					double sum = 0;
+					for (double d : predictions[i])
+						sum += Math.abs(actual - d);
+					error[i] = sum / (double) rep;
+				}
 			}
-			return new PredictionResult(d, m);
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return new PredictionResult(predicted, error, classification);
 		}
 		catch (Exception e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		finally
+		{
+			if (arffFile != null && arffFile.exists())
+				arffFile.delete();
 		}
 		return null;
 	}
