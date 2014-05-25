@@ -611,7 +611,8 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 		DatasetFile df = DatasetFile.fromString(StringUtil.split((String) props.get(propKeyDataset)).get(0));
 		if (df.isLocal() && !new File(df.getLocalPath()).exists())
 		{
-			String alternate = alternateDatasetDir + File.separator + df.getName();
+			String alternate = alternateDatasetDir == null ? df.getName() : alternateDatasetDir + File.separator
+					+ df.getName();
 			if (new File(alternate).exists())
 				df = DatasetFile.localFile(alternate);
 			else
