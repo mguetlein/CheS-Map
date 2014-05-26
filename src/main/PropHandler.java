@@ -58,6 +58,14 @@ public class PropHandler
 		instance().storeProps();
 	}
 
+	public static long modificationTime()
+	{
+		if (instance().propertiesFile != null)
+			return new File(instance().propertiesFile).lastModified();
+		else
+			return -1;
+	}
+
 	// ---------------------------------------------------------
 
 	private Properties props;
