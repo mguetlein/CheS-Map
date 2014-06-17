@@ -161,7 +161,8 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 		try
 		{
 			MultiKabschAlignement.align(compounds, smarts);
-			FeatureService.writeOrigCompoundsToSDFile(dataset.getCompounds(), destFile, compoundOrigIndices, true);
+			FeatureService.writeOrigCompoundsToSDFile(dataset.getCompounds(), destFile, compoundOrigIndices, true,
+					false);
 			return true;
 		}
 		catch (Exception e)

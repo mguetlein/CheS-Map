@@ -7,6 +7,7 @@ import javax.vecmath.Vector3f;
 
 import util.StringUtil;
 import alg.FeatureComputer;
+import alg.align3d.BigDataFakeAligner;
 import alg.align3d.NoAligner;
 import alg.align3d.ThreeDAligner;
 import alg.build3d.ThreeDBuilder;
@@ -62,6 +63,9 @@ public class CheSMapping
 
 	public ClusteringData doMapping()
 	{
+		if (Settings.BIG_DATA)
+			threeDAligner = BigDataFakeAligner.INSTANCE;
+
 		clusteringData = null;
 		mappingError = null;
 
@@ -405,7 +409,7 @@ public class CheSMapping
 
 		//		clustering.setEmbedAlgorithm(embedder.getName());
 
-		if (dataset.numCompounds() > 2)
+		if (dataset.numCompounds() > 2 && !Settings.BIG_DATA)
 		{
 			//			double rSquare = embedder.getRSquare();
 			double ccc = embedder.getCCC();

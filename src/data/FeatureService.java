@@ -21,6 +21,7 @@ import javax.vecmath.Point3d;
 import main.Settings;
 import main.TaskProvider;
 
+import org.openscience.cdk.Atom;
 import org.openscience.cdk.AtomContainer;
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.ChemFile;
@@ -708,7 +709,7 @@ public class FeatureService
 		int compoundOrigIndices[] = new int[dataset.numCompounds()];
 		for (int i = 0; i < compoundOrigIndices.length; i++)
 			compoundOrigIndices[i] = i;
-		writeOrigCompoundsToSDFile(dataset.getCompounds(), sdfFile, compoundOrigIndices, false);
+		writeOrigCompoundsToSDFile(dataset.getCompounds(), sdfFile, compoundOrigIndices, false, false);
 	}
 
 	/**
@@ -722,7 +723,7 @@ public class FeatureService
 	 * @throws IOException
 	 */
 	public static void writeOrigCompoundsToSDFile(IMolecule molecules[], String sdfFile, int compoundOrigIndices[],
-			boolean overwrite) throws CDKException, IOException
+			boolean overwrite, boolean bigData) throws CDKException, IOException
 	{
 		if (molecules.length < compoundOrigIndices.length)
 			throw new IllegalArgumentException();
@@ -741,33 +742,38 @@ public class FeatureService
 
 				IMoleculeSet oldSet = ConnectivityChecker.partitionIntoMolecules(molecule);
 				AtomContainer newSet = new AtomContainer();
-				for (int i = 0; i < oldSet.getMoleculeCount(); i++)
+				if (bigData)
+					newSet.addAtom(new Atom("C"));
+				else
 				{
-					IMolecule mol;
-					try
+					for (int i = 0; i < oldSet.getMoleculeCount(); i++)
 					{
-						sdg.setMolecule(oldSet.getMolecule(i));
-						sdg.generateCoordinates();
-						mol = sdg.getMolecule();
-					}
-					catch (Exception e)
-					{
-						Settings.LOGGER.error(e);
-						mol = oldSet.getMolecule(i);
-					}
-					mol = (IMolecule) AtomContainerManipulator.removeHydrogens(mol);
-					try
-					{
-						mol = fix.kekuliseAromaticRings(mol);
-					}
-					catch (Exception e)
-					{
-						Settings.LOGGER.error(e);
-					}
-					newSet.add(mol);
+						IMolecule mol;
+						try
+						{
+							sdg.setMolecule(oldSet.getMolecule(i));
+							sdg.generateCoordinates();
+							mol = sdg.getMolecule();
+						}
+						catch (Exception e)
+						{
+							Settings.LOGGER.error(e);
+							mol = oldSet.getMolecule(i);
+						}
+						mol = (IMolecule) AtomContainerManipulator.removeHydrogens(mol);
+						try
+						{
+							mol = fix.kekuliseAromaticRings(mol);
+						}
+						catch (Exception e)
+						{
+							Settings.LOGGER.error(e);
+						}
+						newSet.add(mol);
 
-					if (!TaskProvider.isRunning())
-						return;
+						if (!TaskProvider.isRunning())
+							return;
+					}
 				}
 				if (molecule.getProperty("SMIdbNAME") != null) // set identifier in sdf file (title) with identifier in SMI file (SMIdbNAME)
 					newSet.setProperty(CDKConstants.TITLE, molecule.getProperty("SMIdbNAME"));

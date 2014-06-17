@@ -17,6 +17,7 @@ import java.util.Vector;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -65,6 +66,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 	JLabel labelProps;
 	JLabel labelNumericProps;
 	JLabel label3D;
+	JComboBox<Boolean> comboBoxBigData;
 
 	WizardDialog wizard;
 	Blockable block;
@@ -74,6 +76,8 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 	private boolean showLoadDialog;
 
 	private String propKeyDataset = "dataset-recently-used";
+
+	private String propKeyBigData = "big-data-mode";
 
 	public DatasetWizardPanel()
 	{
@@ -265,6 +269,36 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 		labelProps = new JLabel("-");
 		labelNumericProps = new JLabel("-");
 		label3D = new JLabel("-");
+		comboBoxBigData = new JComboBox<Boolean>(new Boolean[] { false, true });
+		comboBoxBigData.setRenderer(new DefaultListCellRenderer()
+		{
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+					boolean cellHasFocus)
+			{
+				String s;
+				if (((Boolean) value))
+					s = "No, show only data points.";
+				else
+					s = "Yes (default).";
+				return super.getListCellRendererComponent(list, s, index, isSelected, cellHasFocus);
+			}
+		});
+		comboBoxBigData.setEnabled(false);
+		Settings.BIG_DATA = false;
+		String selected = PropHandler.get(propKeyBigData);
+		if (selected != null && selected.equals("true"))
+			Settings.BIG_DATA = true;
+		comboBoxBigData.setSelectedItem(Settings.BIG_DATA);
+		comboBoxBigData.addActionListener(new ActionListener()
+		{
+			@Override
+			public void actionPerformed(ActionEvent arg0)
+			{
+				updateDataset();
+				Settings.BIG_DATA = (Boolean) comboBoxBigData.getSelectedItem();
+			}
+		});
 
 		builder.append("File:");
 		builder.append(labelFile, 3);
@@ -280,6 +314,18 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 
 		builder.append("3D available:");
 		builder.append(label3D, 3);
+		builder.nextLine();
+
+		builder.append("");
+		builder.nextLine();
+
+		JLabel l2 = new JLabel("3D Viewer Settings:");
+		l2.setFont(l2.getFont().deriveFont(Font.BOLD));
+		builder.append(l2);
+		builder.nextLine();
+
+		builder.append("Show compound structures:");
+		builder.append(comboBoxBigData, 3);
 		builder.nextLine();
 		setLayout(new BorderLayout());
 		add(builder.getPanel());
@@ -304,6 +350,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 				labelProps.setText("-");
 				labelSize.setText("-");
 				label3D.setText("-");
+				comboBoxBigData.setEnabled(false);
 				recentlyUsed.clearSelection();
 			}
 			else
@@ -317,6 +364,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 						recentlyUsed.setSelectedValue(dataset, true);
 					else
 						recentlyUsed.clearSelection();
+				comboBoxBigData.setEnabled(true);
 			}
 			wizard.update();
 		}
@@ -561,6 +609,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 		for (DatasetFile d : oldDatasets)
 			strings.add(d.toString());
 		PropHandler.put(propKeyDataset, VectorUtil.toCSVString(strings));
+		PropHandler.put(propKeyBigData, ((Boolean) comboBoxBigData.getSelectedItem()).toString());
 		PropHandler.storeProperties();
 	}
 
@@ -568,7 +617,11 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 	public Messages canProceed()
 	{
 		if (getDatasetFile() != null)
-			return null;
+			if (getDatasetFile().numCompounds() >= 1000 && (!(Boolean) comboBoxBigData.getSelectedItem()))
+				return Messages
+						.slowMessage("CheS-Mapper shows all compound structures simultaneously in 3D space. If the software runs slowly on your machine with large datasets, try disabling 'Show compound structures'.");
+			else
+				return null;
 		else
 			return Messages.errorMessage(""); // error is obvious (select dataset!)
 	}
@@ -591,17 +644,21 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 	}
 
 	@Override
-	public void exportDatasetToMappingWorkflow(String datasetPath, Properties props)
+	public void exportDatasetToMappingWorkflow(String datasetPath, boolean bigDataMode, Properties props)
 	{
 		load(datasetPath, true);
 		if (dataset != null)
+		{
 			props.put(propKeyDataset, dataset.toString());
+			props.put(propKeyBigData, bigDataMode);
+		}
 	}
 
 	@Override
 	public void exportSettingsToMappingWorkflow(Properties props)
 	{
 		props.put(propKeyDataset, StringUtil.split(PropHandler.get(propKeyDataset)).get(0));
+		props.put(propKeyBigData, PropHandler.get(propKeyBigData));
 	}
 
 	@Override
@@ -649,21 +706,31 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 					return null;
 			}
 		}
-		String newVal = df.toString();
-		String oldVals = PropHandler.get(propKeyDataset);
-		if (oldVals != null)
+		if (storeToSettings)
 		{
-			Vector<String> vec = new Vector<String>(StringUtil.split(oldVals, true));
-			int index = vec.indexOf(newVal);
-			if (index != -1)
-				vec.remove(index);
-			vec.insertElementAt(newVal, 0);
-			PropHandler.put(propKeyDataset, VectorUtil.toCSVString(vec));
+			String newVal = df.toString();
+			String oldVals = PropHandler.get(propKeyDataset);
+			if (oldVals != null)
+			{
+				Vector<String> vec = new Vector<String>(StringUtil.split(oldVals, true));
+				int index = vec.indexOf(newVal);
+				if (index != -1)
+					vec.remove(index);
+				vec.insertElementAt(newVal, 0);
+				PropHandler.put(propKeyDataset, VectorUtil.toCSVString(vec));
+			}
+			else
+				PropHandler.put(propKeyDataset, newVal);
 		}
-		else
-			PropHandler.put(propKeyDataset, newVal);
-
 		load(df.getPath(), true);
+
+		Settings.BIG_DATA = false;
+		String selected = (String) props.get(propKeyBigData);
+		if (selected != null && selected.equals("true"))
+			Settings.BIG_DATA = true;
+		if (storeToSettings)
+			PropHandler.put(propKeyBigData, ((Boolean) Settings.BIG_DATA).toString());
+
 		return dataset;
 	}
 }

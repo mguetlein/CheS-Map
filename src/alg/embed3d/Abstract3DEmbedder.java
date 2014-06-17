@@ -106,28 +106,34 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		{
 			Settings.LOGGER.info("Read cached embedding results from: " + embedFilename);
 			positions = ValueFileCache.readCachePosition2(embedFilename, instances.size());
-			Settings.LOGGER.info("Read cached embedding ccc from: " + cccFilename);
-			ccc = DoubleUtil.parseDouble(FileUtil.readStringFromFile(cccFilename));
-			Settings.LOGGER.info("Read cached embedding ccc property from: " + cccPropFilename);
-			cccPropValues = ArrayUtil.toPrimitiveDoubleArray(ValueFileCache.readCacheDouble2(cccPropFilename));
-			// compute, as this might take a few seconds on large datasets, to have it available later
-			if (getFeatureDistanceMatrix() == null)
-				throw new IllegalStateException("no distance matrix");
+			if (!Settings.BIG_DATA)
+			{
+				Settings.LOGGER.info("Read cached embedding ccc from: " + cccFilename);
+				ccc = DoubleUtil.parseDouble(FileUtil.readStringFromFile(cccFilename));
+				Settings.LOGGER.info("Read cached embedding ccc property from: " + cccPropFilename);
+				cccPropValues = ArrayUtil.toPrimitiveDoubleArray(ValueFileCache.readCacheDouble2(cccPropFilename));
+				// compute, as this might take a few seconds on larger datasets, to have it available later
+				if (getFeatureDistanceMatrix() == null)
+					throw new IllegalStateException("no distance matrix");
+			}
 		}
 		else
 		{
 			positions = embed(dataset, instances, features); //, trainInstances
-
 			TaskProvider.debug("Store embedding results to: " + embedFilename);
 			ValueFileCache.writeCachePosition2(embedFilename, positions);
-			TaskProvider.debug("Compute ccc");
-			ccc = EmbedUtil.computeCCC(positions, getFeatureDistanceMatrix());
-			TaskProvider.debug("Store embedding ccc to: " + cccFilename);
-			FileUtil.writeStringToFile(cccFilename, ccc + "");
-			cccPropValues = EmbedUtil.computeCCCs(positions, getFeatureDistanceMatrix());
-			ValueFileCache.writeCacheDouble2(cccPropFilename, ArrayUtil.toList(cccPropValues));
+			if (!Settings.BIG_DATA)
+			{
+				TaskProvider.debug("Compute ccc");
+				ccc = EmbedUtil.computeCCC(positions, getFeatureDistanceMatrix());
+				TaskProvider.debug("Store embedding ccc to: " + cccFilename);
+				FileUtil.writeStringToFile(cccFilename, ccc + "");
+				cccPropValues = EmbedUtil.computeCCCs(positions, getFeatureDistanceMatrix());
+				ValueFileCache.writeCacheDouble2(cccPropFilename, ArrayUtil.toList(cccPropValues));
+			}
 		}
-		cccProp = CCCPropertySet.create(dataset, cccPropValues, embedFilename);
+		if (!Settings.BIG_DATA)
+			cccProp = CCCPropertySet.create(dataset, cccPropValues, embedFilename);
 
 		if (positions.size() != instances.size())
 			throw new IllegalStateException("illegal num positions " + positions.size() + " " + instances.size());

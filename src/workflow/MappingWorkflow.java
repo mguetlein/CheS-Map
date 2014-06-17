@@ -282,7 +282,7 @@ public class MappingWorkflow
 		Properties props = new Properties();
 
 		DatasetWizardPanel datasetProvider = new DatasetWizardPanel();
-		datasetProvider.exportDatasetToMappingWorkflow(datasetFile, props);
+		datasetProvider.exportDatasetToMappingWorkflow(datasetFile, false, props);
 		if (datasetProvider.getDatasetFile() == null)
 			throw new IllegalArgumentException("Could not load dataset file: " + datasetFile);
 
