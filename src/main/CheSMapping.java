@@ -63,9 +63,6 @@ public class CheSMapping
 
 	public ClusteringData doMapping()
 	{
-		if (Settings.BIG_DATA)
-			threeDAligner = BigDataFakeAligner.INSTANCE;
-
 		clusteringData = null;
 		mappingError = null;
 
@@ -126,7 +123,21 @@ public class CheSMapping
 
 					if (!TaskProvider.isRunning())
 						return;
-					TaskProvider.update(50, "3D align clusters");
+
+					if (Settings.BIG_DATA)
+					{
+						if (threeDAligner != NoAligner.INSTANCE)
+							TaskProvider
+									.warning(
+											"3D alignment of compounds has been disabled.",
+											"CheS-Mapper is configured to NOT show structures (in the first wizard step). "
+													+ "Accordingly, no structures can be aligned. "
+													+ "Hence, the selected 3D alignment algorithm (last wizard step) is ignored.");
+						threeDAligner = BigDataFakeAligner.INSTANCE;
+						TaskProvider.update(50, "Create input dataset without structures");
+					}
+					else
+						TaskProvider.update(50, "3D align clusters");
 					alignDataset(dataset, clustering);
 
 					//		// make sure the files contain appropriate number of compounds 

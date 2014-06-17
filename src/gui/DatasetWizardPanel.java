@@ -55,6 +55,10 @@ import data.FeatureService.IllegalCompoundsException;
 
 public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWorkflowProvider, DatasetLoader
 {
+	private static final String BIG_DATA_WARN_MSG = "CheS-Mapper shows all compound structures simultaneously in 3D space. "
+			+ "If the software runs slowly on your machine with large datasets, "
+			+ "try disabling 'Show compound structures'.";
+
 	JTextField textField;
 	JFileChooser chooser;
 	JList recentlyUsed;
@@ -270,6 +274,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 		labelNumericProps = new JLabel("-");
 		label3D = new JLabel("-");
 		comboBoxBigData = new JComboBox<Boolean>(new Boolean[] { false, true });
+		comboBoxBigData.setToolTipText(BIG_DATA_WARN_MSG);
 		comboBoxBigData.setRenderer(new DefaultListCellRenderer()
 		{
 			@Override
@@ -618,8 +623,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 	{
 		if (getDatasetFile() != null)
 			if (getDatasetFile().numCompounds() >= 1000 && (!(Boolean) comboBoxBigData.getSelectedItem()))
-				return Messages
-						.slowMessage("CheS-Mapper shows all compound structures simultaneously in 3D space. If the software runs slowly on your machine with large datasets, try disabling 'Show compound structures'.");
+				return Messages.slowMessage(BIG_DATA_WARN_MSG);
 			else
 				return null;
 		else

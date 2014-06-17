@@ -1,5 +1,6 @@
 package alg.align3d;
 
+import java.io.File;
 import java.util.List;
 
 import main.Settings;
@@ -41,18 +42,22 @@ public class BigDataFakeAligner extends AbstractAlgorithm implements ThreeDAlign
 	public void algin(DatasetFile dataset, List<ClusterData> clusters, List<CompoundProperty> features)
 	{
 		file = dataset.getAlignSDFilePath();
-		int idx[] = new int[dataset.numCompounds()];
-		for (int i = 0; i < idx.length; i++)
-			idx[i] = i;
-		try
+		if (Settings.CACHING_ENABLED && new File(file).exists())
+			Settings.LOGGER.debug("aligned file already exists: " + file);
+		else
 		{
-			FeatureService.writeOrigCompoundsToSDFile(dataset.getCompounds(), file, idx, true, true);
+			int idx[] = new int[dataset.numCompounds()];
+			for (int i = 0; i < idx.length; i++)
+				idx[i] = i;
+			try
+			{
+				FeatureService.writeOrigCompoundsToSDFile(dataset.getCompounds(), file, idx, true, true);
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}
 		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
-		dataset.getSDFClustered();
 		for (ClusterData c : clusters)
 			((ClusterDataImpl) c).setAlignAlgorithm(getName(), false);
 	}
