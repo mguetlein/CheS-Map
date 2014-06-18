@@ -95,18 +95,24 @@ public class CompoundPropertyUtil
 		return v;
 	}
 
-	private static Color[] AVAILABLE_COLORS = FreeChartUtil.BRIGHT_COLORS;
+	public static final Color[] AVAILABLE_COLORS = FreeChartUtil.BRIGHT_COLORS;
+	public static Color[] CLUSTER_COLORS;
+	public static final Color[] DEFAULT_HIGHILIGHT_MATCH_COLORS;
+	public static Color[] HIGHILIGHT_MATCH_COLORS;
 
 	static
 	{
 		//start with blue instead of red
 		AVAILABLE_COLORS[0] = getLowValueColor();
 		AVAILABLE_COLORS[1] = FreeChartUtil.BRIGHT_RED;
+		CLUSTER_COLORS = AVAILABLE_COLORS;
+		DEFAULT_HIGHILIGHT_MATCH_COLORS = new Color[] { getLowValueColor(), getHighValueColor(), Color.ORANGE };
+		HIGHILIGHT_MATCH_COLORS = DEFAULT_HIGHILIGHT_MATCH_COLORS;
 	}
 
 	public static Color getClusterColor(int index)
 	{
-		return AVAILABLE_COLORS[index % AVAILABLE_COLORS.length];
+		return CLUSTER_COLORS[index % CLUSTER_COLORS.length];
 	}
 
 	public static Color getHighValueColor()
@@ -135,16 +141,6 @@ public class CompoundPropertyUtil
 		return Color.DARK_GRAY;
 	}
 
-	public static Color getSmartsColorMatch()
-	{
-		return getHighValueColor();
-	}
-
-	public static Color getSmartsColorNoMatch()
-	{
-		return getLowValueColor();
-	}
-
 	private static HashMap<String, Color[]> mapping = new HashMap<String, Color[]>();
 
 	public static Color[] getNominalColors(CompoundProperty p)
@@ -152,20 +148,20 @@ public class CompoundPropertyUtil
 		if (p.getType() != Type.NOMINAL)
 			throw new IllegalArgumentException();
 
-		String key = p.toString() + "#" + p.getNominalDomainInMappedDataset().hashCode();
+		String key = p.toString() + "#" + p.getNominalDomainInMappedDataset().hashCode() + "#"
+				+ (p.isSmartsProperty() ? CompoundPropertyUtil.HIGHILIGHT_MATCH_COLORS : p.getHighlightColorSequence());
 		if (!mapping.containsKey(key))
 		{
 			Color col[];
 			if (p.isSmartsProperty())
-				col = new Color[] { getLowValueColor(), getHighValueColor() };
-			else if (p.getNominalDomainInMappedDataset().length == 2
-					&& p.getNominalDomainInMappedDataset()[0].equals("active"))
-				col = new Color[] { getHighValueColor(), getLowValueColor() };
+				col = CompoundPropertyUtil.HIGHILIGHT_MATCH_COLORS;
 			else
 			{
-				col = AVAILABLE_COLORS;
+				col = p.getHighlightColorSequence();
+				if (col == null)
+					col = AVAILABLE_COLORS;
 				while (p.getNominalDomainInMappedDataset().length > col.length)
-					col = ArrayUtil.concat(col, AVAILABLE_COLORS);
+					col = ArrayUtil.concat(col, col);
 				if (p.getNominalDomainInMappedDataset().length < col.length)
 					col = Arrays.copyOfRange(col, 0, p.getNominalDomainInMappedDataset().length);
 			}

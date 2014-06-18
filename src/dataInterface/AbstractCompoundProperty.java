@@ -2,6 +2,7 @@ package dataInterface;
 
 import gui.property.ColorGradient;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 
 	private boolean logEnabled = false;
 	private ColorGradient colorGradient = null;
+	private Color[] colorSequence = null;
 
 	private static HashMap<String, AbstractCompoundProperty> uniqueNames = new HashMap<String, AbstractCompoundProperty>();
 
@@ -496,6 +498,22 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 		if (getType() != Type.NUMERIC)
 			throw new IllegalStateException();
 		this.colorGradient = colorGradient;
+	}
+
+	@Override
+	public Color[] getHighlightColorSequence()
+	{
+		if (getType() == Type.NUMERIC)
+			throw new IllegalStateException();
+		return colorSequence;
+	}
+
+	@Override
+	public void setHighlightColorSequence(Color[] seq)
+	{
+		if (getType() == Type.NUMERIC)
+			throw new IllegalStateException();
+		colorSequence = seq;
 	}
 
 	@Override

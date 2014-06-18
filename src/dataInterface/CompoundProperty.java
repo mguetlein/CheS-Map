@@ -1,6 +1,9 @@
 package dataInterface;
 
 import gui.property.ColorGradient;
+
+import java.awt.Color;
+
 import data.DatasetFile;
 import data.fragments.MatchEngine;
 
@@ -90,7 +93,11 @@ public interface CompoundProperty
 
 	public ColorGradient getHighlightColorGradient();
 
+	public Color[] getHighlightColorSequence();
+
 	public void setHighlightColorGradient(ColorGradient grad);
+
+	public void setHighlightColorSequence(Color[] seq);
 
 	public Boolean hasSmallDoubleValues(DatasetFile dataset);
 

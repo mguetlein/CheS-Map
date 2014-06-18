@@ -2,6 +2,9 @@ package dataInterface;
 
 import gui.binloc.Binary;
 import gui.property.ColorGradient;
+
+import java.awt.Color;
+
 import data.DatasetFile;
 import data.fragments.MatchEngine;
 
@@ -153,18 +156,39 @@ public abstract class DynamicCompoundProperty implements CompoundProperty, Compo
 		this.log = log;
 	}
 
-	ColorGradient grad;
+	ColorGradient colorGradient;
+	Color[] colorSequence;
 
 	@Override
 	public ColorGradient getHighlightColorGradient()
 	{
-		return grad;
+		if (getType() != Type.NUMERIC)
+			throw new IllegalStateException();
+		return colorGradient;
 	}
 
 	@Override
-	public void setHighlightColorGradient(ColorGradient grad)
+	public void setHighlightColorGradient(ColorGradient colorGradient)
 	{
-		this.grad = grad;
+		if (getType() != Type.NUMERIC)
+			throw new IllegalStateException();
+		this.colorGradient = colorGradient;
+	}
+
+	@Override
+	public Color[] getHighlightColorSequence()
+	{
+		if (getType() == Type.NUMERIC)
+			throw new IllegalStateException();
+		return colorSequence;
+	}
+
+	@Override
+	public void setHighlightColorSequence(Color[] seq)
+	{
+		if (getType() == Type.NUMERIC)
+			throw new IllegalStateException();
+		colorSequence = seq;
 	}
 
 	@Override
