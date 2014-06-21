@@ -61,10 +61,15 @@ public class MCSAligner extends Abstract3DAligner
 	@Override
 	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
-		Messages m = super.getMessages(dataset, featureInfo, clusterer);
-		if (dataset.numCompounds() >= 50)
-			m.add(MessageUtil.slowMessage(Settings.text("align.mcs.slow", MaxFragAligner.getNameStatic())));
-		return m;
+		if (Settings.BIG_DATA)
+			return Messages.warningMessage(Settings.text("align.warn.ignored-because-big-data"));
+		else
+		{
+			Messages m = super.getMessages(dataset, featureInfo, clusterer);
+			if (dataset.numCompounds() >= 50)
+				m.add(MessageUtil.slowMessage(Settings.text("align.mcs.slow", MaxFragAligner.getNameStatic())));
+			return m;
+		}
 	}
 
 	@Override

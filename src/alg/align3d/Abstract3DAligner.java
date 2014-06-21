@@ -42,10 +42,14 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 	@Override
 	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
-		Messages m = super.getMessages(dataset, featureInfo, clusterer);
-		if (requiresStructuralFragments() && !featureInfo.smartsFeaturesSelected)
-			m.add(Message.errorMessage(Settings.text("align.error.no-struct")));
-		return m;
+		if (Settings.BIG_DATA)
+			return Messages.warningMessage(Settings.text("align.warn.ignored-because-big-data"));
+		{
+			Messages m = super.getMessages(dataset, featureInfo, clusterer);
+			if (requiresStructuralFragments() && !featureInfo.smartsFeaturesSelected)
+				m.add(Message.errorMessage(Settings.text("align.error.no-struct")));
+			return m;
+		}
 	}
 
 	public abstract void giveNoSmartsWarning(int clusterIndex);

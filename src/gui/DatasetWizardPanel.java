@@ -300,8 +300,8 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 			@Override
 			public void actionPerformed(ActionEvent arg0)
 			{
-				updateDataset();
 				Settings.BIG_DATA = (Boolean) comboBoxBigData.getSelectedItem();
+				updateDataset();
 			}
 		});
 

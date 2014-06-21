@@ -116,8 +116,8 @@ public class CheSMapping
 							&& !clustering.getDatasetClusterer().getDistanceMeasure()
 									.equals(clustering.getThreeDEmbedder().getDistanceMeasure()))
 						TaskProvider.warning(
-								Settings.text("mapping.incomp.distances"),
-								Settings.text("mapping.incomp.distances.desc", clustering.getDatasetClusterer()
+								Settings.text("mapping.incomp-distances"),
+								Settings.text("mapping.incomp-distances.desc", clustering.getDatasetClusterer()
 										.getDistanceMeasure() + "", clustering.getThreeDEmbedder().getDistanceMeasure()
 										+ ""));
 
@@ -127,12 +127,7 @@ public class CheSMapping
 					if (Settings.BIG_DATA)
 					{
 						if (threeDAligner != NoAligner.INSTANCE)
-							TaskProvider
-									.warning(
-											"3D alignment of compounds has been disabled.",
-											"CheS-Mapper is configured to NOT show structures (in the first wizard step). "
-													+ "Accordingly, no structures can be aligned. "
-													+ "Hence, the selected 3D alignment algorithm (last wizard step) is ignored.");
+							TaskProvider.warning("mapping.align-ignored", "mapping.align-ignored.desc");
 						threeDAligner = BigDataFakeAligner.INSTANCE;
 						TaskProvider.update(50, "Create input dataset without structures");
 					}

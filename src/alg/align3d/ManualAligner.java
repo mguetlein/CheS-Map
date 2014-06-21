@@ -96,16 +96,22 @@ public class ManualAligner extends Abstract3DAligner
 	@Override
 	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
-		if (smartsProptery.getValue() == null || smartsProptery.getValue().length() == 0)
-			return Messages.errorMessage("Please provide a SMARTS string");
-		int l = SmartsUtil.getLength(smartsProptery.getValue());
-		if (l == -1)
-			return Messages.errorMessage("Not a valid SMARTS string: '" + smartsProptery.getValue() + "'");
-		if (l < 3)
-			return Messages.errorMessage("Minimum length for SMARTS is 3");
-		if (matchEngineProperty.getValue() == MatchEngine.OpenBabel && !BinHandler.BABEL_BINARY.isFound())
-			return Messages.errorMessage("OpenBabel not found, please use CDK for smarts alignment");
-		return null;
+		if (Settings.BIG_DATA)
+			return Messages.warningMessage(Settings.text("align.warn.ignored-because-big-data"));
+		else
+		{
+			if (smartsProptery.getValue() == null || smartsProptery.getValue().length() == 0)
+				return Messages.errorMessage("Please provide a SMARTS string");
+			int l = SmartsUtil.getLength(smartsProptery.getValue());
+			if (l == -1)
+				return Messages.errorMessage("Not a valid SMARTS string: '" + smartsProptery.getValue() + "'");
+			if (l < 3)
+				return Messages.errorMessage("Minimum length for SMARTS is 3");
+			if (matchEngineProperty.getValue() == MatchEngine.OpenBabel && !BinHandler.BABEL_BINARY.isFound())
+				return Messages.errorMessage("OpenBabel not found, please use CDK for smarts alignment");
+			return null;
+		}
+
 	}
 
 }
