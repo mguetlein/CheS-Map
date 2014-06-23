@@ -55,13 +55,9 @@ import data.FeatureService.IllegalCompoundsException;
 
 public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWorkflowProvider, DatasetLoader
 {
-	private static final String BIG_DATA_WARN_MSG = "CheS-Mapper shows all compound structures simultaneously in 3D space. "
-			+ "If the software runs slowly on your machine with large datasets, "
-			+ "try disabling 'Show compound structures'.";
-
 	JTextField textField;
 	JFileChooser chooser;
-	JList recentlyUsed;
+	JList<DatasetFile> recentlyUsed;
 
 	JButton buttonLoad;
 
@@ -194,15 +190,15 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 				if (s != null && s.trim().length() > 0)
 					oldDatasets.add(DatasetFile.fromString(s));
 		}
-		final DefaultListModel m = new DefaultListModel();
+		final DefaultListModel<DatasetFile> m = new DefaultListModel<DatasetFile>();
 		for (DatasetFile d : oldDatasets)
 			m.addElement(d);
-		recentlyUsed = new JList(m);
+		recentlyUsed = new JList<DatasetFile>(m);
 		recentlyUsed.setFont(recentlyUsed.getFont().deriveFont(Font.PLAIN));
 		recentlyUsed.setCellRenderer(new DefaultListCellRenderer()
 		{
 			@Override
-			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus)
 			{
 				DatasetFile d = (DatasetFile) value;
@@ -274,7 +270,6 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 		labelNumericProps = new JLabel("-");
 		label3D = new JLabel("-");
 		comboBoxBigData = new JComboBox<Boolean>(new Boolean[] { false, true });
-		comboBoxBigData.setToolTipText(BIG_DATA_WARN_MSG);
 		comboBoxBigData.setRenderer(new DefaultListCellRenderer()
 		{
 			@Override
@@ -283,9 +278,9 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 			{
 				String s;
 				if (((Boolean) value))
-					s = "No, show only data points.";
+					s = Settings.text("dataset.big-data.enabled");
 				else
-					s = "Yes (default).";
+					s = Settings.text("dataset.big-data.disabled");
 				return super.getListCellRendererComponent(list, s, index, isSelected, cellHasFocus);
 			}
 		});
@@ -329,8 +324,8 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 		builder.append(l2);
 		builder.nextLine();
 
-		builder.append("Show compound structures:");
-		builder.append(comboBoxBigData, 3);
+		builder.append(Settings.text("dataset.big-data.disable-question"));
+		builder.append(comboBoxBigData, 1);
 		builder.nextLine();
 		setLayout(new BorderLayout());
 		add(builder.getPanel());
@@ -622,10 +617,19 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 	public Messages canProceed()
 	{
 		if (getDatasetFile() != null)
-			if (getDatasetFile().numCompounds() >= 1000 && (!(Boolean) comboBoxBigData.getSelectedItem()))
-				return Messages.slowMessage(BIG_DATA_WARN_MSG);
+		{
+			boolean datasetIsBig = getDatasetFile().numCompounds() >= 1000;
+			boolean bigDataModeEnabled = (Boolean) comboBoxBigData.getSelectedItem();
+			if (datasetIsBig && !bigDataModeEnabled)
+				return Messages.slowMessage(Settings.text("dataset.big-data.not-enabled-warning"));
+			else if (bigDataModeEnabled)
+			{
+				String msg = Settings.text("dataset.big-data.enabled-warning");
+				return datasetIsBig ? Messages.infoMessage(msg) : Messages.warningMessage(msg);
+			}
 			else
 				return null;
+		}
 		else
 			return Messages.errorMessage(""); // error is obvious (select dataset!)
 	}
@@ -654,7 +658,7 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 		if (dataset != null)
 		{
 			props.put(propKeyDataset, dataset.toString());
-			props.put(propKeyBigData, bigDataMode);
+			props.put(propKeyBigData, String.valueOf(bigDataMode));
 		}
 	}
 

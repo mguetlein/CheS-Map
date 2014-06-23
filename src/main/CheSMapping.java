@@ -127,7 +127,8 @@ public class CheSMapping
 					if (Settings.BIG_DATA)
 					{
 						if (threeDAligner != NoAligner.INSTANCE)
-							TaskProvider.warning("mapping.align-ignored", "mapping.align-ignored.desc");
+							TaskProvider.warning(Settings.text("mapping.align-ignored"),
+									Settings.text("mapping.align-ignored.desc"));
 						threeDAligner = BigDataFakeAligner.INSTANCE;
 						TaskProvider.update(50, "Create input dataset without structures");
 					}
