@@ -554,7 +554,16 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 									FileUtil.writeStringToFile(cleanedFile, cleaned.toString());
 									ThreadUtil.sleep(1000);
 								}
-								load(cleanedFile);
+								final String fCleanedFile = cleanedFile;
+								SwingUtilities.invokeLater(new Runnable()
+								{
+									@Override
+									public void run()
+									{
+										load(fCleanedFile);
+									}
+								});
+								return;
 							}
 						}
 						if (!loadCleaned || dataset == null)
