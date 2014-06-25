@@ -5,6 +5,7 @@ import gui.Message;
 import gui.Messages;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.vecmath.Vector3f;
@@ -30,9 +31,9 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	}
 
 	protected List<Vector3f> positions;
-	private double ccc = -Double.MAX_VALUE;
 
-	private CompoundProperty cccProp;
+	private HashMap<CorrelationType, Double> correlationValue = new HashMap<CorrelationType, Double>();
+	private HashMap<CorrelationType, CompoundProperty> correlationProp = new HashMap<CorrelationType, CompoundProperty>();
 
 	@Override
 	public final List<Vector3f> getPositions()
@@ -41,23 +42,19 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	}
 
 	@Override
-	public double getCCC()
+	public double getCorrelation(CorrelationType t)
 	{
-		return ccc;
+		if (correlationValue.containsKey(t))
+			return correlationValue.get(t);
+		else
+			return Double.NaN;
 	}
 
 	@Override
-	public CompoundProperty getCCCProperty()
+	public CompoundProperty getCorrelationProperty(CorrelationType t)
 	{
-		return cccProp;
+		return correlationProp.get(t);
 	}
-
-	//	@Override
-	//	public CompoundPropertyEmbedQuality getEmbedQuality(CompoundProperty p, DatasetFile dataset,
-	//			List<CompoundPropertyOwner> instances)
-	//	{
-	//		return new CompoundPropertyEmbedQuality(p, positions, instances, dataset);
-	//	}
 
 	@Override
 	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
@@ -94,24 +91,42 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		dist = null;
 
 		String embedFilename = dataset.getEmbeddingResultsFilePath("pos");
-		//String rSquareFilename = dataset.getEmbeddingResultsFilePath("rSquare");
-		String cccFilename = dataset.getEmbeddingResultsFilePath("ccc");
-		String cccPropFilename = dataset.getEmbeddingResultsFilePath("cccProp");
+		HashMap<CorrelationType, String> corrValueFilenames = new HashMap<CorrelationType, String>();
+		HashMap<CorrelationType, String> corrPropFilenames = new HashMap<CorrelationType, String>();
+		HashMap<CorrelationType, double[]> corrPropValues = new HashMap<CorrelationType, double[]>();
+		for (CorrelationType t : CorrelationType.types())
+		{
+			corrValueFilenames.put(t, dataset.getEmbeddingResultsFilePath(t.name().toLowerCase()));
+			corrPropFilenames.put(t, dataset.getEmbeddingResultsFilePath(t.name().toLowerCase() + "Prop"));
+		}
 		distFilename = dataset.getEmbeddingResultsFilePath("dist");
 
-		double cccPropValues[] = null;
-
-		if (Settings.CACHING_ENABLED && new File(embedFilename).exists() && new File(cccFilename).exists()
-				&& new File(cccPropFilename).exists() && (!storesDistances() || new File(distFilename).exists()))
+		boolean filesFound = Settings.CACHING_ENABLED && new File(embedFilename).exists();
+		if (storesDistances())
+			filesFound &= new File(distFilename).exists();
+		if (!Settings.BIG_DATA)
+		{
+			for (String f : corrValueFilenames.values())
+				filesFound &= new File(f).exists();
+			for (String f : corrPropFilenames.values())
+				filesFound &= new File(f).exists();
+		}
+		if (filesFound)
 		{
 			Settings.LOGGER.info("Read cached embedding results from: " + embedFilename);
 			positions = ValueFileCache.readCachePosition2(embedFilename, instances.size());
 			if (!Settings.BIG_DATA)
 			{
-				Settings.LOGGER.info("Read cached embedding ccc from: " + cccFilename);
-				ccc = DoubleUtil.parseDouble(FileUtil.readStringFromFile(cccFilename));
-				Settings.LOGGER.info("Read cached embedding ccc property from: " + cccPropFilename);
-				cccPropValues = ArrayUtil.toPrimitiveDoubleArray(ValueFileCache.readCacheDouble2(cccPropFilename));
+				for (CorrelationType t : CorrelationType.types())
+				{
+					String f = corrValueFilenames.get(t);
+					Settings.LOGGER.info("Read cached embedding " + t.name() + " from: " + f);
+					correlationValue.put(t, DoubleUtil.parseDouble(FileUtil.readStringFromFile(f)));
+
+					f = corrPropFilenames.get(t);
+					Settings.LOGGER.info("Read cached embedding " + t.name() + " property from: " + f);
+					corrPropValues.put(t, ArrayUtil.toPrimitiveDoubleArray(ValueFileCache.readCacheDouble2(f)));
+				}
 				// compute, as this might take a few seconds on larger datasets, to have it available later
 				if (getFeatureDistanceMatrix() == null)
 					throw new IllegalStateException("no distance matrix");
@@ -124,16 +139,26 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 			ValueFileCache.writeCachePosition2(embedFilename, positions);
 			if (!Settings.BIG_DATA)
 			{
-				TaskProvider.debug("Compute ccc");
-				ccc = EmbedUtil.computeCCC(positions, getFeatureDistanceMatrix());
-				TaskProvider.debug("Store embedding ccc to: " + cccFilename);
-				FileUtil.writeStringToFile(cccFilename, ccc + "");
-				cccPropValues = EmbedUtil.computeCCCs(positions, getFeatureDistanceMatrix());
-				ValueFileCache.writeCacheDouble2(cccPropFilename, ArrayUtil.toList(cccPropValues));
+				for (CorrelationType t : CorrelationType.types())
+				{
+					TaskProvider.debug("Compute " + t.name());
+					correlationValue.put(t, EmbedUtil.computeCorrelation(t, positions, getFeatureDistanceMatrix()));
+					TaskProvider.debug("Store embedding " + t.name() + " to: " + corrValueFilenames.get(t));
+					FileUtil.writeStringToFile(corrValueFilenames.get(t), correlationValue.get(t) + "");
+
+					corrPropValues.put(t,
+							EmbedUtil.computeCorrelations(t, positions, getFeatureDistanceMatrix()));
+					ValueFileCache.writeCacheDouble2(corrPropFilenames.get(t),
+							ArrayUtil.toList(corrPropValues.get(t)));
+				}
 			}
 		}
 		if (!Settings.BIG_DATA)
-			cccProp = CCCPropertySet.create(dataset, cccPropValues, embedFilename);
+		{
+			for (CorrelationType t : CorrelationType.types())
+				correlationProp.put(t, CorrelationPropertySet.create(t, dataset, corrPropValues.get(t),
+						corrPropFilenames.get(t)));
+		}
 
 		if (positions.size() != instances.size())
 			throw new IllegalStateException("illegal num positions " + positions.size() + " " + instances.size());

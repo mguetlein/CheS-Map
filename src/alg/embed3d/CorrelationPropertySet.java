@@ -10,20 +10,21 @@ import dataInterface.AbstractCompoundProperty;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundPropertySet;
 
-public class CCCPropertySet extends AbstractCompoundProperty implements CompoundPropertySet
+public class CorrelationPropertySet extends AbstractCompoundProperty implements CompoundPropertySet
 {
-	private static HashMap<String, CCCPropertySet> map = new HashMap<String, CCCPropertySet>();
+	private static HashMap<String, CorrelationPropertySet> map = new HashMap<String, CorrelationPropertySet>();
 
-	public static CCCPropertySet create(DatasetFile data, double d[], String uniqNameSuffix)
+	public static CorrelationPropertySet create(CorrelationType t, DatasetFile data, double d[], String uniqNameSuffix)
 	{
 		if (!map.containsKey(uniqNameSuffix))
-			map.put(uniqNameSuffix, new CCCPropertySet(data, d, uniqNameSuffix));
+			map.put(uniqNameSuffix, new CorrelationPropertySet(t, data, d, uniqNameSuffix));
 		return map.get(uniqNameSuffix);
 	}
 
-	private CCCPropertySet(DatasetFile data, double d[], String uniqNameSuffix)
+	private CorrelationPropertySet(CorrelationType t, DatasetFile data, double d[], String uniqNameSuffix)
 	{
-		super(Settings.text("props.ccc"), "ccc." + uniqNameSuffix, Settings.text("props.ccc.desc"));
+		super(Settings.text("props." + t.name().toLowerCase()), t.name().toLowerCase() + "." + uniqNameSuffix, Settings
+				.text("props." + t.name().toLowerCase() + ".desc"));
 		Double s[] = new Double[d.length];
 		for (int i = 0; i < s.length; i++)
 			s[i] = 1 - d[i];

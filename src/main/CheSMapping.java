@@ -14,6 +14,7 @@ import alg.build3d.ThreeDBuilder;
 import alg.build3d.UseOrigStructures;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
+import alg.embed3d.CorrelationType;
 import alg.embed3d.EqualPositionPropertySet;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
@@ -418,28 +419,29 @@ public class CheSMapping
 
 		if (dataset.numCompounds() > 2 && !Settings.BIG_DATA)
 		{
-			//			double rSquare = embedder.getRSquare();
-			double ccc = embedder.getCCC();
-			//			Settings.LOGGER.info("r-square: " + rSquare + ", ccc: " + ccc);
-			Settings.LOGGER.info("ccc: " + ccc);
-			//			String formRSquare = StringUtil.formatDouble(rSquare, 2);
-			String formCCC = StringUtil.formatDouble(embedder.getCCC(), 2);
-			String details = " (CCC: " + formCCC + ")";
-			//			String details = " (CCC: " + formCCC + ", r^2: " + formRSquare + ")";
+			double corr = embedder.getCorrelation(CorrelationType.Pearson);
+			Settings.LOGGER.info("correlation: " + corr);
+			String details = " (Pearson: " + StringUtil.formatDouble(corr, 2) + ")";
 			String warnMsg = null;
-			if (ccc >= 0.9)
-				clustering.setEmbedQuality("excellent" + details);
-			else if (ccc >= 0.7)
+			// categorization according to evans 1996
+			if (corr >= 0.8)
+				clustering.setEmbedQuality("very good" + details);
+			else if (corr >= 0.6)
 				clustering.setEmbedQuality("good" + details);
-			else if (ccc >= 0.5)
+			else if (corr >= 0.4)
 			{
 				warnMsg = "The embedding quality is moderate" + details;
 				clustering.setEmbedQuality("moderate" + details);
 			}
+			else if (corr >= 0.2)
+			{
+				warnMsg = "The embedding quality is weak" + details;
+				clustering.setEmbedQuality("weak" + details);
+			}
 			else
-			{ // < 0.5
-				warnMsg = "The embedding quality is poor" + details;
-				clustering.setEmbedQuality("poor" + details);
+			{
+				warnMsg = "The embedding quality is very weak" + details;
+				clustering.setEmbedQuality("very weak" + details);
 			}
 			if (warnMsg != null)
 			{
@@ -447,12 +449,16 @@ public class CheSMapping
 					warnMsg = "Random embedding applied, 3D positions do not reflect feature values";
 				TaskProvider.warning(warnMsg, Settings.text("embed.info.quality", Settings.text("embed.r.sammon")));
 			}
-			if (embedder.getCCCProperty() != null)
+			for (CorrelationType t : CorrelationType.types())
 			{
-				for (int i = 0; i < clustering.getNumCompounds(false); i++)
-					((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(embedder.getCCCProperty(),
-							embedder.getCCCProperty().getDoubleValues(dataset)[i]);
-				clustering.addAdditionalProperty(embedder.getCCCProperty(), true);
+				if (embedder.getCorrelationProperty(t) != null)
+				{
+					CompoundProperty p = embedder.getCorrelationProperty(t);
+					for (int i = 0; i < clustering.getNumCompounds(false); i++)
+						((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(p,
+								p.getDoubleValues(dataset)[i]);
+					clustering.addAdditionalProperty(p, true);
+				}
 			}
 		}
 		else
