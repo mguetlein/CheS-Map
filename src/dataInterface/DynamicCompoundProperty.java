@@ -4,6 +4,7 @@ import gui.binloc.Binary;
 import gui.property.ColorGradient;
 
 import java.awt.Color;
+import java.nio.channels.IllegalSelectorException;
 
 import data.DatasetFile;
 import data.fragments.MatchEngine;
@@ -89,6 +90,12 @@ public abstract class DynamicCompoundProperty implements CompoundProperty, Compo
 	}
 
 	@Override
+	public String[] getStringValuesInCompleteMappedDataset()
+	{
+		throw new IllegalStateException();
+	}
+
+	@Override
 	public Double[] getDoubleValues(DatasetFile dataset)
 	{
 		throw new IllegalStateException();
@@ -113,7 +120,19 @@ public abstract class DynamicCompoundProperty implements CompoundProperty, Compo
 	}
 
 	@Override
+	public Double getNormalizedMedianInCompleteMappedDataset()
+	{
+		throw new IllegalSelectorException();
+	}
+
+	@Override
 	public String getModeNonNull(DatasetFile dataset)
+	{
+		throw new IllegalStateException();
+	}
+
+	@Override
+	public String getModeNonNullInMappedDataset()
 	{
 		throw new IllegalStateException();
 	}
@@ -292,4 +311,29 @@ public abstract class DynamicCompoundProperty implements CompoundProperty, Compo
 	{
 		throw new IllegalStateException();
 	}
+
+	@Override
+	public Double[] getDoubleValuesInCompleteMappedDataset()
+	{
+		throw new IllegalStateException();
+	}
+
+	@Override
+	public Double[] getNormalizedValuesInCompleteMappedDataset()
+	{
+		throw new IllegalStateException();
+	}
+
+	@Override
+	public Boolean isIntegerInMappedDataset()
+	{
+		throw new IllegalStateException();
+	}
+
+	@Override
+	public Boolean hasSmallDoubleValuesInMappedDataset()
+	{
+		throw new IllegalStateException();
+	}
+
 }

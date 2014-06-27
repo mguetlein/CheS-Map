@@ -101,8 +101,7 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 	public DistanceMatrix getFeatureDistanceMatrix()
 	{
 		if (dist == null)
-			dist = new DistanceMatrix(DistanceMeasure.EUCLIDEAN_DISTANCE, EmbedUtil.euclMatrix(instances, features,
-					dataset));
+			dist = new DistanceMatrix(DistanceMeasure.EUCLIDEAN_DISTANCE, EmbedUtil.euclMatrix(instances, features));
 		return dist;
 	}
 

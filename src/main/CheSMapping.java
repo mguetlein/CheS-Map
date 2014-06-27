@@ -341,8 +341,8 @@ public class CheSMapping
 			List<CompoundProperty> props = new ArrayList<CompoundProperty>();
 			for (AppDomainComputer ad : appDomain)
 			{
-				ad.computeAppDomain(dataset, clustering.getCompounds(), featuresWithInfo, clustering
-						.getThreeDEmbedder().getFeatureDistanceMatrix().getValues());
+				ad.computeAppDomain(clustering.getCompounds(), featuresWithInfo, clustering.getThreeDEmbedder()
+						.getFeatureDistanceMatrix().getValues());
 				props.add(ad.getInsideAppDomainProperty());
 				props.add(ad.getPropabilityAppDomainProperty());
 				for (int i = 0; i < clustering.getNumCompounds(false); i++)

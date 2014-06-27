@@ -53,6 +53,8 @@ public interface CompoundProperty
 
 	public String[] getStringValues(DatasetFile dataset);
 
+	public String[] getStringValuesInCompleteMappedDataset();
+
 	public String getFormattedValueInMappedDataset(Object doubleOrString);
 
 	public String getFormattedValue(Object doubleOrString, DatasetFile dataset);
@@ -71,7 +73,11 @@ public interface CompoundProperty
 
 	public Double getNormalizedMedian(DatasetFile dataset);
 
+	public Double getNormalizedMedianInCompleteMappedDataset();
+
 	public String getModeNonNull(DatasetFile dataset);
+
+	public String getModeNonNullInMappedDataset();
 
 	public int numMissingValues(DatasetFile dataset);
 

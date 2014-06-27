@@ -15,7 +15,6 @@ import util.ArrayUtil;
 import util.ObjectUtil;
 import util.StopWatchUtil;
 import util.Vector3fUtil;
-import data.DatasetFile;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
@@ -215,8 +214,7 @@ public class EmbedUtil
 		//		Settings.LOGGER.println(ArrayUtil.toString(d));
 	}
 
-	public static double[][] euclMatrix(List<CompoundData> instances, List<CompoundProperty> features,
-			DatasetFile dataset)
+	public static double[][] euclMatrix(List<CompoundData> instances, List<CompoundProperty> features)
 	{
 		TaskProvider.debug("Compute euclidean distance matrix");
 
@@ -234,7 +232,7 @@ public class EmbedUtil
 				{
 					Double v = c.getNormalizedValueCompleteDataset(feature);
 					if (v == null)
-						v = feature.getNormalizedMedian(dataset);
+						v = feature.getNormalizedMedianInCompleteMappedDataset();
 					v_i.add(v);
 				}
 				else
@@ -242,18 +240,18 @@ public class EmbedUtil
 
 					if (feature.getType() != Type.NOMINAL)
 						throw new Error();
-					if (feature.getNominalDomain(dataset).length == 2
-							&& feature.getNominalDomain(dataset)[0].equals("0")
-							&& feature.getNominalDomain(dataset)[1].equals("1"))
+					if (feature.getNominalDomainInMappedDataset().length == 2
+							&& feature.getNominalDomainInMappedDataset()[0].equals("0")
+							&& feature.getNominalDomainInMappedDataset()[1].equals("1"))
 					{
 						if (c.getStringValue(feature) == null)
-							v_i.add(Double.parseDouble(feature.getModeNonNull(dataset)));
+							v_i.add(Double.parseDouble(feature.getModeNonNullInMappedDataset()));
 						else
 							v_i.add(Double.parseDouble(c.getStringValue(feature)));
 					}
 					else
 					{
-						for (String val : feature.getNominalDomain(dataset))
+						for (String val : feature.getNominalDomainInMappedDataset())
 						{
 							if (ObjectUtil.equals(c.getStringValue(feature), val))
 								v_i.add(1.0);

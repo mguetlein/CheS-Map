@@ -386,6 +386,12 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	}
 
 	@Override
+	public String[] getStringValuesInCompleteMappedDataset()
+	{
+		return getStringValues(Settings.MAPPED_DATASET);
+	}
+
+	@Override
 	public Double[] getDoubleValues(DatasetFile dataset)
 	{
 		if (getType() != Type.NUMERIC)
@@ -434,6 +440,12 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	}
 
 	@Override
+	public Double getNormalizedMedianInCompleteMappedDataset()
+	{
+		return getNormalizedMedian(Settings.MAPPED_DATASET);
+	}
+
+	@Override
 	public Boolean isIntegerInMappedDataset()
 	{
 		return isInteger(Settings.MAPPED_DATASET);
@@ -466,6 +478,12 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 			throw new IllegalStateException();
 		checkValuesForDataset(dataset);
 		return modeNonNull.get(dataset);
+	}
+
+	@Override
+	public String getModeNonNullInMappedDataset()
+	{
+		return getModeNonNull(Settings.MAPPED_DATASET);
 	}
 
 	@Override

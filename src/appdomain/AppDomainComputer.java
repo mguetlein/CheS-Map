@@ -3,7 +3,6 @@ package appdomain;
 import java.util.List;
 
 import alg.Algorithm;
-import data.DatasetFile;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 
@@ -13,8 +12,8 @@ public interface AppDomainComputer extends Algorithm
 			CentroidAppDomainComputer.INSTANCE, LeverageAppDomainComputer.INSTANCE,
 			PropabilityDensityDomainComputer.INSTANCE };
 
-	public void computeAppDomain(DatasetFile dataset, List<CompoundData> compounds, List<CompoundProperty> features,
-			double[][] featureDistanceMatrix);
+	public void computeAppDomain(/*DatasetFile dataset,*/List<CompoundData> compounds,
+			List<CompoundProperty> features, double[][] featureDistanceMatrix);
 
 	public CompoundProperty getInsideAppDomainProperty();
 

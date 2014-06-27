@@ -13,7 +13,7 @@ public class RandomAppDomainComputer extends AbstractAppDomainComputer
 	@Override
 	public void computeAppDomain()
 	{
-		this.dataset = dataset;
+		//		this.dataset = dataset;
 		Random r = new Random();
 		for (int i = 0; i < compounds.size(); i++)
 		{

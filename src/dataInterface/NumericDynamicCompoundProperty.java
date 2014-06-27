@@ -102,4 +102,10 @@ public abstract class NumericDynamicCompoundProperty extends DynamicCompoundProp
 		return distinct;
 	}
 
+	@Override
+	public Double getNormalizedMedianInCompleteMappedDataset()
+	{
+		return median;
+	}
+
 }

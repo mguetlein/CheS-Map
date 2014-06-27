@@ -27,7 +27,7 @@ public class KNNAppDomainComputer extends DistanceBasedAppDomainComputer
 	@Override
 	public double[] computeTrainingDistances()
 	{
-		double[][] featureDistanceMatrix = EmbedUtil.euclMatrix(compounds, features, dataset);
+		double[][] featureDistanceMatrix = EmbedUtil.euclMatrix(compounds, features);
 		double[] trainingDistances = new double[compounds.size()];
 		for (int i = 0; i < compounds.size(); i++)
 		{

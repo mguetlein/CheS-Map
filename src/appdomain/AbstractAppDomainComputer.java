@@ -8,10 +8,13 @@ import gui.property.Property;
 import java.util.List;
 
 import main.Settings;
+import util.ArrayUtil;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
+import dataInterface.NominalDynamicCompoundProperty;
+import dataInterface.NumericDynamicCompoundProperty;
 
 public abstract class AbstractAppDomainComputer implements AppDomainComputer
 {
@@ -32,16 +35,16 @@ public abstract class AbstractAppDomainComputer implements AppDomainComputer
 	protected double pValues[];
 	protected boolean inside[];
 
-	protected DatasetFile dataset;
+	//	protected DatasetFile dataset;
 	protected List<CompoundData> compounds;
 	protected List<CompoundProperty> features;
 
 	public abstract void computeAppDomain();
 
-	public void computeAppDomain(DatasetFile dataset, List<CompoundData> compounds, List<CompoundProperty> features,
-			double[][] featureDistanceMatrix)
+	public void computeAppDomain(//DatasetFile dataset, 
+			List<CompoundData> compounds, List<CompoundProperty> features, double[][] featureDistanceMatrix)
 	{
-		this.dataset = dataset;
+		//		this.dataset = dataset;
 		this.compounds = compounds;
 		this.features = features;
 		pValues = new double[compounds.size()];
@@ -52,15 +55,45 @@ public abstract class AbstractAppDomainComputer implements AppDomainComputer
 	@Override
 	public CompoundProperty getInsideAppDomainProperty()
 	{
-		return AppDomainPropertySet.create(getShortName(), dataset, inside,
-				dataset.getAppDomainValuesFilePath(this, getShortName() + "inside"));
+		//		return AppDomainPropertySet.create(getShortName(), dataset, inside,
+		//				dataset.getAppDomainValuesFilePath(this, getShortName() + "inside"));
+		return new NominalDynamicCompoundProperty(ArrayUtil.toStringArray(ArrayUtil.toBooleanArray(inside)))
+		{
+
+			@Override
+			public String getName()
+			{
+				return getShortName() + "-inside";
+			}
+
+			@Override
+			public String getDescription()
+			{
+				return ".";
+			}
+		};
 	}
 
 	@Override
 	public CompoundProperty getPropabilityAppDomainProperty()
 	{
-		return AppDomainPropertySet.create(getShortName(), dataset, pValues,
-				dataset.getAppDomainValuesFilePath(this, getShortName() + "propability"));
+		//		return AppDomainPropertySet.create(getShortName(), dataset, pValues,
+		//				dataset.getAppDomainValuesFilePath(this, getShortName() + "propability"));
+		return new NumericDynamicCompoundProperty(ArrayUtil.toDoubleArray(pValues))
+		{
+
+			@Override
+			public String getName()
+			{
+				return getShortName() + "-propability";
+			}
+
+			@Override
+			public String getDescription()
+			{
+				return ".";
+			}
+		};
 	}
 
 	@Override
