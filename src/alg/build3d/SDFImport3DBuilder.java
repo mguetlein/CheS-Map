@@ -23,8 +23,10 @@ import util.ArrayUtil;
 import alg.AlgorithmException.ThreeDBuilderException;
 import data.DatasetFile;
 import data.FeatureService.SDFReader;
+import data.integrated.IntegratedPropertySet;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.Type;
+import dataInterface.NominalProperty;
+import dataInterface.NumericProperty;
 
 public class SDFImport3DBuilder extends AbstractReal3DBuilder
 {
@@ -70,11 +72,11 @@ public class SDFImport3DBuilder extends AbstractReal3DBuilder
 		setAutoCorrect(AutoCorrect.disabled);
 
 		CompoundProperty property = null;
-		for (CompoundProperty prop : dataset.getIntegratedProperties())
+		for (IntegratedPropertySet prop : dataset.getIntegratedProperties())
 		{
-			if (prop.toString().equals(idFeatureDataset.getValue()))
+			if (prop.get().toString().equals(idFeatureDataset.getValue()))
 			{
-				property = prop;
+				property = prop.get();
 				break;
 			}
 		}
@@ -82,13 +84,13 @@ public class SDFImport3DBuilder extends AbstractReal3DBuilder
 			throw new ThreeDBuilderException(this, "property '" + idFeatureDataset.getValue()
 					+ "' not available in dataset");
 		List<String> vals = new ArrayList<String>();
-		if (property.getType() != Type.NUMERIC)
-			vals = ArrayUtil.toList(property.getStringValuesInCompleteDataset());
-		else if (property.isInteger())
-			for (Double d : property.getDoubleValuesInCompleteDataset())
+		if (property instanceof NominalProperty)
+			vals = ArrayUtil.toList(((NominalProperty) property).getStringValues());
+		else if (((NumericProperty) property).isInteger())
+			for (Double d : ((NumericProperty) property).getDoubleValues())
 				vals.add(String.valueOf(d.intValue()));
 		else
-			for (Double d : property.getDoubleValuesInCompleteDataset())
+			for (Double d : ((NumericProperty) property).getDoubleValues())
 				vals.add(String.valueOf(d));
 		for (String v : vals)
 			if (v == null || v.length() == 0)

@@ -15,7 +15,8 @@ import data.fragments.MatchEngine;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.Type;
+import dataInterface.NominalProperty;
+import dataInterface.NumericProperty;
 import dataInterface.SubstructureSmartsType;
 
 public class ClusterDataImpl implements ClusterData
@@ -154,26 +155,28 @@ public class ClusterDataImpl implements ClusterData
 		String filterKey = (origIndicesFilter == null ? "" : ListUtil.toString(origIndicesFilter)) + formatted;
 		if (values.get(p, filterKey) == null)
 		{
-			if (p.getType() == Type.NUMERIC)
+			if (p instanceof NumericProperty)
 			{
+				NumericProperty np = (NumericProperty) p;
 				List<Double> vals = new ArrayList<Double>();
 				if (origIndicesFilter == null)
 					for (CompoundData c : compounds)
-						vals.add(c.getDoubleValue(p));
+						vals.add(c.getDoubleValue(np));
 				else
 					for (CompoundData c : compounds)
 						if (origIndicesFilter.indexOf(c.getOrigIndex()) != -1)
-							vals.add(c.getDoubleValue(p));
+							vals.add(c.getDoubleValue(np));
 				values.put(p, filterKey, DoubleArraySummary.create(vals));
 			}
 			else
 			{
+				NominalProperty np = (NominalProperty) p;
 				if (formatted)
 				{
 					@SuppressWarnings("unchecked")
 					CountedSet<String> set = ((CountedSet<String>) getSummaryValue(p, false)).copy();
 					for (String key : set.values())
-						set.rename(key, p.getFormattedValue(key));
+						set.rename(key, np.getFormattedValue(key));
 					set.setToBack(p.getFormattedNullValue());
 					values.put(p, filterKey, set);
 				}
@@ -182,11 +185,11 @@ public class ClusterDataImpl implements ClusterData
 					List<String> vals = new ArrayList<String>();
 					if (origIndicesFilter == null)
 						for (CompoundData c : compounds)
-							vals.add(c.getStringValue(p));
+							vals.add(c.getStringValue(np));
 					else
 						for (CompoundData c : compounds)
 							if (origIndicesFilter.indexOf(c.getOrigIndex()) != -1)
-								vals.add(c.getStringValue(p));
+								vals.add(c.getStringValue(np));
 					values.put(p, filterKey, CountedSet.create(vals));
 				}
 			}
@@ -194,10 +197,8 @@ public class ClusterDataImpl implements ClusterData
 		return values.get(p, filterKey);
 	}
 
-	public Double getDoubleValue(CompoundProperty p)
+	public Double getDoubleValue(NumericProperty p)
 	{
-		if (p.getType() != Type.NUMERIC)
-			throw new IllegalStateException();
 		if (origIndicesFilter != null && origIndicesFilter.size() == 0)
 			return null;
 		if (getSummaryValue(p).isAllNull())
@@ -206,10 +207,8 @@ public class ClusterDataImpl implements ClusterData
 	}
 
 	@SuppressWarnings("unchecked")
-	public String getStringValue(CompoundProperty p)
+	public String getStringValue(NominalProperty p)
 	{
-		if (p.getType() == Type.NUMERIC)
-			throw new IllegalStateException();
 		if (origIndicesFilter != null && origIndicesFilter.size() == 0)
 			return null;
 		CountedSet<String> set = (CountedSet<String>) getSummaryValue(p);
@@ -230,20 +229,17 @@ public class ClusterDataImpl implements ClusterData
 	{
 		if (origIndicesFilter != null && origIndicesFilter.size() == 0)
 			return null;
-		if (p.getType() == Type.NOMINAL)
+		if (p instanceof NominalProperty)
 			return getSummaryValue(p, true).toString(html);
-		if (p.getType() == Type.NUMERIC && p.hasSmallDoubleValues())
+		if (p instanceof NumericProperty && ((NumericProperty) p).hasSmallDoubleValues())
 			return ((DoubleArraySummary) getSummaryValue(p)).toString(html, 3);
 		return getSummaryValue(p).toString(html);
 	}
 
 	@SuppressWarnings("unchecked")
-	public CountedSet<String> getNominalSummary(CompoundProperty p)
+	public CountedSet<String> getNominalSummary(NominalProperty p)
 	{
-		if (p.getType() == Type.NUMERIC)
-			throw new IllegalArgumentException();
-		else
-			return (CountedSet<String>) getSummaryValue(p);
+		return (CountedSet<String>) getSummaryValue(p);
 	}
 
 	public int numMissingValues(CompoundProperty p)

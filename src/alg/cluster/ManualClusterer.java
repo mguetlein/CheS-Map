@@ -18,7 +18,8 @@ import data.DatasetFile;
 import data.integrated.IntegratedPropertySet;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.Type;
+import dataInterface.NominalProperty;
+import dataInterface.NumericProperty;
 
 public class ManualClusterer extends AbstractDatasetClusterer
 {
@@ -82,14 +83,15 @@ public class ManualClusterer extends AbstractDatasetClusterer
 				CompoundData m = compounds.get(compoundIndex);
 
 				Integer intVals[] = new Integer[0];
-				if (clusterProp.getType() == Type.NUMERIC && clusterProp.isInteger())
+				if (clusterProp instanceof NumericProperty
+						&& ((NumericProperty) clusterProp).isInteger())
 				{
-					if (m.getDoubleValue(clusterProp) != null)
-						intVals = new Integer[] { m.getDoubleValue(clusterProp).intValue() };
+					if (m.getDoubleValue((NumericProperty) clusterProp) != null)
+						intVals = new Integer[] { m.getDoubleValue((NumericProperty) clusterProp).intValue() };
 				}
 				else
 				{
-					String val = m.getStringValue(clusterProp);
+					String val = m.getStringValue((NominalProperty) clusterProp);
 					if (val != null && val.trim().length() > 0)
 					{
 						String vals[] = val.trim().split(",");
@@ -115,12 +117,12 @@ public class ManualClusterer extends AbstractDatasetClusterer
 		}
 		catch (NumberFormatException e)
 		{
-			String domain[] = clusterProp.getNominalDomain();
+			String domain[] = ((NominalProperty) clusterProp).getDomain();
 
 			for (int compoundIndex = 0; compoundIndex < compounds.size(); compoundIndex++)
 			{
 				CompoundData m = compounds.get(compoundIndex);
-				String val = m.getStringValue(clusterProp);
+				String val = m.getStringValue((NominalProperty) clusterProp);
 				if (val == null)
 					clusterAssignment.add(new Integer[0]);
 				else

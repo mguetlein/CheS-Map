@@ -8,7 +8,8 @@ import main.TaskProvider;
 import data.DatasetFile;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.Type;
+import dataInterface.NominalProperty;
+import dataInterface.NumericProperty;
 
 public class CompoundArffWriter implements ArffWritable
 {
@@ -40,7 +41,7 @@ public class CompoundArffWriter implements ArffWritable
 		this.features = features;
 
 		for (CompoundProperty p : features)
-			if (p.getType() == Type.NUMERIC)
+			if (p instanceof NumericProperty)
 			{
 				sparse = false;
 				break;
@@ -71,12 +72,12 @@ public class CompoundArffWriter implements ArffWritable
 	@Override
 	public String getAttributeValueSpace(int attribute)
 	{
-		if (features.get(attribute).getType() == Type.NUMERIC)
+		if (features.get(attribute) instanceof NumericProperty)
 			return "numeric";
 		else
 		{
 			String s = "{";
-			for (String o : features.get(attribute).getNominalDomain())
+			for (String o : ((NominalProperty) features.get(attribute)).getDomain())
 			{
 				if (o != null && o.length() > 1)
 					s += "\"" + o + "\",";
@@ -98,9 +99,10 @@ public class CompoundArffWriter implements ArffWritable
 	@Override
 	public String getAttributeValue(int instance, int attribute)
 	{
-		if (features.get(attribute).getType() == Type.NUMERIC)
+		if (features.get(attribute) instanceof NumericProperty)
 		{
-			Double v = compounds.get(instance).getNormalizedValueCompleteDataset(features.get(attribute));
+			Double v = compounds.get(instance).getNormalizedValueCompleteDataset(
+					(NumericProperty) features.get(attribute));
 			if (v == null)
 				return "?";
 			else
@@ -108,7 +110,7 @@ public class CompoundArffWriter implements ArffWritable
 		}
 		else
 		{
-			String s = compounds.get(instance).getStringValue(features.get(attribute));
+			String s = compounds.get(instance).getStringValue((NominalProperty) features.get(attribute));
 			if (s == null)
 				return "?";
 			else if (s.length() > 1)

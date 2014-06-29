@@ -14,6 +14,7 @@ import alg.build3d.ThreeDBuilder;
 import alg.build3d.UseOrigStructures;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
+import alg.embed3d.CorrelationProperty;
 import alg.embed3d.CorrelationType;
 import alg.embed3d.EqualPositionProperty;
 import alg.embed3d.Random3DEmbedder;
@@ -72,8 +73,6 @@ public class CheSMapping
 			{
 				try
 				{
-					Settings.MAPPED_DATASET = dataset;
-
 					if (dataset.getCompounds().length == 0)
 						throw new IllegalStateException("no compounds");
 
@@ -180,7 +179,7 @@ public class CheSMapping
 		int unique = 0;
 		int redundant = 0;
 		for (CompoundProperty p : clustering.getFeatures())
-			if (p.numDistinctValuesInCompleteDataset() > 1)
+			if (p.numDistinctValues() > 1)
 				featuresWithInfo.add(p);
 			else
 			{
@@ -325,7 +324,6 @@ public class CheSMapping
 			throw new IllegalStateException("internal error: num clustered compounds does not fit");
 	}
 
-	@SuppressWarnings("unchecked")
 	private void embedDataset(DatasetFile dataset, ClusteringData clustering, List<CompoundProperty> featuresWithInfo)
 	{
 		embedderException = null;
@@ -417,10 +415,9 @@ public class CheSMapping
 			{
 				if (embedder.getCorrelationProperty(t) != null)
 				{
-					CompoundProperty p = embedder.getCorrelationProperty(t);
+					CorrelationProperty p = embedder.getCorrelationProperty(t);
 					for (int i = 0; i < clustering.getNumCompounds(false); i++)
-						((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(p,
-								p.getDoubleValuesInCompleteDataset()[i]);
+						((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(p, p.getDoubleValues()[i]);
 					clustering.addAdditionalProperty(p, true);
 				}
 			}
@@ -437,7 +434,7 @@ public class CheSMapping
 			{
 				for (int i = 0; i < clustering.getNumCompounds(false); i++)
 					((CompoundDataImpl) clustering.getCompounds().get(i)).setStringValue(eqPos,
-							eqPos.getStringValuesInCompleteDataset()[i]);
+							eqPos.getStringValues()[i]);
 				clustering.addAdditionalProperty(eqPos, false);
 			}
 		}

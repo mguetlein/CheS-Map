@@ -254,7 +254,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 			for (ClusterData c : clusters)
 			{
 				List<Integer> clusterIdx = new ArrayList<Integer>();
-				for (CompoundData comp : c.getCompounds())
+				for (int k = 0; k < c.getSize(); k++)
 					clusterIdx.add(cIdx++);
 				c.setCompoundClusterIndices(clusterIdx);
 			}

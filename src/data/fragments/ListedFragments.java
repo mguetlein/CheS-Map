@@ -19,10 +19,10 @@ import data.CDKSmartsHandler;
 import data.cdkfingerprints.CDKFingerprintSet;
 import data.fminer.FminerPropertySet;
 import data.obfingerprints.OBFingerprintSet;
-import dataInterface.CompoundProperty.SubstructureType;
+import dataInterface.FragmentProperty.SubstructureType;
 import dataInterface.FragmentPropertySet;
 
-public class StructuralFragments
+public class ListedFragments
 {
 	List<FragmentPropertySet> fragmentListAll = new ArrayList<FragmentPropertySet>();
 	List<FragmentPropertySet> extendedFragmentListAll = new ArrayList<FragmentPropertySet>();
@@ -44,9 +44,9 @@ public class StructuralFragments
 		nameSuffixes.put("MACCS", "(OpenBabel MACCS)");
 	}
 
-	public static StructuralFragments instance = new StructuralFragments();
+	public static ListedFragments instance = new ListedFragments();
 
-	private StructuralFragments()
+	private ListedFragments()
 	{
 		for (String f : included)
 			JarUtil.extractFromJAR("structural_fragments/" + f, Settings.getFragmentFileDestination(f), false);
@@ -56,7 +56,6 @@ public class StructuralFragments
 	public void reset(String showWarningForFile)
 	{
 		fragmentListAll.clear();
-		//AbstractCompoundProperty.clearPropertyOfType(StructuralFragment.class);
 
 		for (OBFingerprintSet fp : OBFingerprintSet.VISIBLE_FINGERPRINTS)
 			fragmentListAll.add(fp);
@@ -87,9 +86,9 @@ public class StructuralFragments
 			try
 			{
 				String warnings = "";
-				HashMap<MatchEngine, List<StructuralFragment>> a = new HashMap<MatchEngine, List<StructuralFragment>>();
+				HashMap<MatchEngine, List<ListedFragmentProperty>> a = new HashMap<MatchEngine, List<ListedFragmentProperty>>();
 				for (MatchEngine m : MatchEngine.values())
-					a.put(m, new ArrayList<StructuralFragment>());
+					a.put(m, new ArrayList<ListedFragmentProperty>());
 
 				CSVFile csv = FileUtil.readCSV(filename, ",");
 				for (String[] line : csv.content)
@@ -105,7 +104,7 @@ public class StructuralFragments
 						{
 							match = false;
 							finalName = inc == 1 ? name : name + "[" + inc + "]";
-							for (StructuralFragment sf : a.get(MatchEngine.values()[0]))
+							for (ListedFragmentProperty sf : a.get(MatchEngine.values()[0]))
 							{
 								if (sf.getName().equals(finalName))
 								{
@@ -118,7 +117,7 @@ public class StructuralFragments
 						for (MatchEngine m : MatchEngine.values())
 						{
 							a.get(m).add(
-									new StructuralFragment(finalName, "Structural Fragment, matched with " + m,
+									new ListedFragmentProperty(finalName, "Structural Fragment, matched with " + m,
 											line[1], m, line.length == 2 ? 0 : Integer.parseInt(line[2])));
 						}
 					}
@@ -146,7 +145,7 @@ public class StructuralFragments
 				String comments = ListUtil.toString(csv.comments, "\n");
 				comments = comments.substring(2, comments.length() - 2);
 				desc += "\nComments:\n" + comments;
-				fragmentListAll.add(new StructuralFragmentSet(name, desc, a));
+				fragmentListAll.add(new ListedFragmentSet(name, desc, a));
 			}
 			catch (Exception e)
 			{
@@ -164,7 +163,7 @@ public class StructuralFragments
 			extendedFragmentListAll.add(f);
 		for (OBFingerprintSet fp : OBFingerprintSet.HIDDEN_FINGERPRINTS)
 			extendedFragmentListAll.add(fp);
-		extendedFragmentListAll.add(new FminerPropertySet());
+		extendedFragmentListAll.add(FminerPropertySet.INSTANCE);
 	}
 
 	public int getNumSets()

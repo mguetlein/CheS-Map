@@ -101,7 +101,6 @@ public class Settings
 	public static Boolean DBG = false;
 	public static Boolean CACHING_ENABLED = true;
 	public static Boolean DESC_MIXTURE_HANDLING = false;
-	public static DatasetFile MAPPED_DATASET = null;
 	public static boolean SKIP_REDUNDANT_FEATURES = false;
 	public static boolean BIG_DATA = false;
 

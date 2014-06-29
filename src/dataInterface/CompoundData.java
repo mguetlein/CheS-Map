@@ -13,5 +13,5 @@ public interface CompoundData extends CompoundPropertyOwner
 
 	public ImageIcon getIcon(boolean blackBackground, int width, int height, boolean translucent);
 
-	public Double getNormalizedValueCompleteDataset(CompoundProperty p);
+	public Double getNormalizedValueCompleteDataset(NumericProperty p);
 }

@@ -8,7 +8,7 @@ public interface CompoundPropertyOwner
 	 * @param p
 	 * @return
 	 */
-	public Double getDoubleValue(CompoundProperty p);
+	public Double getDoubleValue(NumericProperty p);
 
 	/**
 	 * only supported for nominal props, string value, most-frequent value for clusters
@@ -16,7 +16,7 @@ public interface CompoundPropertyOwner
 	 * @param p
 	 * @return
 	 */
-	public String getStringValue(CompoundProperty p);
+	public String getStringValue(NominalProperty p);
 
 	/**
 	 * referes to mapped dataset

@@ -9,7 +9,7 @@ import java.beans.PropertyChangeListener;
 
 import main.BinHandler;
 
-public class StructuralFragmentProperties
+public class FragmentProperties
 {
 	private IntegerProperty minFreqProp = new IntegerProperty("Minimum frequency", "Minimum frequency", 10, 1,
 			Integer.MAX_VALUE);
@@ -19,11 +19,11 @@ public class StructuralFragmentProperties
 
 	Property[] fragmentProps = new Property[] { minFreqProp, skipOmniProp, matchEngine };
 
-	private StructuralFragmentProperties()
+	private FragmentProperties()
 	{
 	}
 
-	private static StructuralFragmentProperties INSTANCE = new StructuralFragmentProperties();
+	private static FragmentProperties INSTANCE = new FragmentProperties();
 
 	public static Property[] getProperties()
 	{

@@ -7,7 +7,9 @@ import java.util.Arrays;
 
 import util.ArrayUtil;
 import util.DoubleArraySummary;
+import util.ListUtil;
 import alg.embed3d.EmbedUtil;
+import dataInterface.CompoundProperty;
 
 public class KNNAppDomainComputer extends DistanceBasedAppDomainComputer
 {
@@ -27,7 +29,8 @@ public class KNNAppDomainComputer extends DistanceBasedAppDomainComputer
 	@Override
 	public double[] computeTrainingDistances()
 	{
-		double[][] featureDistanceMatrix = EmbedUtil.euclMatrix(compounds, features);
+		double[][] featureDistanceMatrix = EmbedUtil.euclMatrix(compounds,
+				ListUtil.cast(CompoundProperty.class, features));
 		double[] trainingDistances = new double[compounds.size()];
 		for (int i = 0; i < compounds.size(); i++)
 		{

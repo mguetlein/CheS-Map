@@ -33,7 +33,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	protected List<Vector3f> positions;
 
 	private HashMap<CorrelationType, Double> correlationValue = new HashMap<CorrelationType, Double>();
-	private HashMap<CorrelationType, CompoundProperty> correlationProp = new HashMap<CorrelationType, CompoundProperty>();
+	private HashMap<CorrelationType, CorrelationProperty> correlationProp = new HashMap<CorrelationType, CorrelationProperty>();
 
 	@Override
 	public final List<Vector3f> getPositions()
@@ -51,7 +51,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	}
 
 	@Override
-	public CompoundProperty getCorrelationProperty(CorrelationType t)
+	public CorrelationProperty getCorrelationProperty(CorrelationType t)
 	{
 		return correlationProp.get(t);
 	}

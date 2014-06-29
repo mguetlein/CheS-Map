@@ -1,9 +1,9 @@
 package alg.embed3d;
 
 import main.Settings;
-import dataInterface.DefaultCompoundProperty;
+import dataInterface.DefaultNumericProperty;
 
-public class CorrelationProperty extends DefaultCompoundProperty //implements CompoundPropertySet
+public class CorrelationProperty extends DefaultNumericProperty //implements CompoundPropertySet
 {
 	//	private static HashMap<String, CorrelationPropertySet> map = new HashMap<String, CorrelationPropertySet>();
 	//
@@ -16,12 +16,11 @@ public class CorrelationProperty extends DefaultCompoundProperty //implements Co
 	//
 	public CorrelationProperty(CorrelationType t, double d[])
 	{
-		super(Settings.text("props." + t.name().toLowerCase()), Settings.text("props." + t.name().toLowerCase()
+		super(null, Settings.text("props." + t.name().toLowerCase()), Settings.text("props." + t.name().toLowerCase()
 				+ ".desc"));
 		Double s[] = new Double[d.length];
 		for (int i = 0; i < s.length; i++)
 			s[i] = 1 - d[i];
-		setType(Type.NUMERIC);
 		setDoubleValues(s);
 	}
 	//

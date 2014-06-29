@@ -2,10 +2,15 @@ package dataInterface;
 
 import gui.binloc.Binary;
 import data.DatasetFile;
-import dataInterface.CompoundProperty.SubstructureType;
+import dataInterface.FragmentProperty.SubstructureType;
 
 public interface CompoundPropertySet
 {
+	public static enum Type
+	{
+		NUMERIC, NOMINAL
+	}
+
 	public boolean isComputed(DatasetFile dataset);
 
 	public boolean isCached(DatasetFile dataset);
@@ -22,7 +27,13 @@ public interface CompoundPropertySet
 
 	public String getDescription();
 
-	public CompoundProperty.Type getType();
+	public void setType(Type type);
+
+	public Type getType();
+
+	public boolean isTypeAllowed(Type type);
+
+	public void setTypeAllowed(Type type, boolean allowed);
 
 	public Binary getBinary();
 

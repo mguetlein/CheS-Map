@@ -31,7 +31,7 @@ public interface ThreeDEmbedder extends Algorithm
 
 	public double getCorrelation(CorrelationType t);
 
-	public CompoundProperty getCorrelationProperty(CorrelationType t);
+	public CorrelationProperty getCorrelationProperty(CorrelationType t);
 
 	public boolean isLinear();
 

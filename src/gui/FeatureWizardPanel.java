@@ -53,15 +53,15 @@ import data.DatasetFile;
 import data.FeatureLoader;
 import data.FeatureService;
 import data.cdk.CDKPropertySet;
-import data.fragments.StructuralFragmentProperties;
-import data.fragments.StructuralFragments;
+import data.fragments.FragmentProperties;
+import data.fragments.ListedFragments;
 import data.integrated.IntegratedPropertySet;
-import data.obdesc.OBDescriptorPropertySet;
+import data.obdesc.OBDescriptorSet;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.SubstructureType;
-import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
+import dataInterface.CompoundPropertySet.Type;
 import dataInterface.CompoundPropertySetUtil;
+import dataInterface.FragmentProperty.SubstructureType;
 import dataInterface.FragmentPropertySet;
 
 public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWorkflowProvider
@@ -195,7 +195,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 				if (elem.getBinary() != null && !elem.getBinary().isFound())
 					warningIcon = ImageLoader.getImage(ImageLoader.Image.error);
 
-				CompoundProperty.Type type = CompoundPropertySetUtil.getType(elem);
+				Type type = CompoundPropertySetUtil.getType(elem);
 				if (type == Type.NUMERIC)
 					typeIcon = ImageLoader.getImage(ImageLoader.Image.numeric);
 				else if (type == Type.NOMINAL)
@@ -263,7 +263,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 				if (BinHandler.BABEL_BINARY.isFound())
 				{
 					selector.addElementList(new String[] { PC_FEATURES, OB_FEATURES },
-							OBDescriptorPropertySet.getDescriptors(true));
+							OBDescriptorSet.getDescriptors(true));
 					update();
 				}
 			}
@@ -393,7 +393,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 							return;
 					}
 					FileUtil.copy(f, new File(dest));
-					StructuralFragments.instance.reset(name);
+					ListedFragments.instance.reset(name);
 					updateIntegratedFeatures(dataset, true);
 				}
 			}
@@ -410,8 +410,8 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			}
 		});
 
-		StructuralFragments.instance.toString(); // load instances first (listener order is important)
-		StructuralFragmentProperties.addPropertyChangeListenerToProperties(new PropertyChangeListener()
+		ListedFragments.instance.toString(); // load instances first (listener order is important)
+		FragmentProperties.addPropertyChangeListenerToProperties(new PropertyChangeListener()
 		{
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
@@ -600,12 +600,12 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		for (CDKPropertySet p : CDKPropertySet.NUMERIC_DESCRIPTORS)
 			for (String clazz : p.getDictionaryClass())
 				selector.addElements(new String[] { PC_FEATURES, CDK_FEATURES, clazz }, p);
-		selector.addElements(new String[] { PC_FEATURES, OB_FEATURES }, OBDescriptorPropertySet.getDescriptors(false));
+		selector.addElements(new String[] { PC_FEATURES, OB_FEATURES }, OBDescriptorSet.getDescriptors(false));
 		selector.addElements(STRUCTURAL_FRAGMENTS);
 		selector.addElementList(new String[] { STRUCTURAL_FRAGMENTS, MINE_STRUCTURAL_FRAGMENTS },
-				StructuralFragments.instance.getSets(SubstructureType.MINE));
+				ListedFragments.instance.getSets(SubstructureType.MINE));
 		selector.addElementList(new String[] { STRUCTURAL_FRAGMENTS, MATCH_STRUCTURAL_FRAGMENTS },
-				StructuralFragments.instance.getSets(SubstructureType.MATCH));
+				ListedFragments.instance.getSets(SubstructureType.MATCH));
 
 		selector.expand(PC_FEATURES);
 		selector.expand(STRUCTURAL_FRAGMENTS);
@@ -622,7 +622,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 	@Override
 	public CompoundPropertySet[] getFeaturesFromMappingWorkflow(Properties props, boolean storeToSettings)
 	{
-		for (Property p : StructuralFragmentProperties.getProperties())
+		for (Property p : FragmentProperties.getProperties())
 			p.loadOrResetToDefault(props);
 		if (storeToSettings)
 		{
@@ -631,7 +631,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 					PropHandler.put(propKey, (String) props.get(propKey));
 				else
 					PropHandler.remove(propKey);
-			for (Property p : StructuralFragmentProperties.getProperties())
+			for (Property p : FragmentProperties.getProperties())
 				p.put(PropHandler.getProperties());
 		}
 
@@ -683,7 +683,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 				throw new Error("no type in serialized compound prop");
 			Type t = Type.valueOf(string.substring(index + 1));
 			String feat = string.substring(0, index);
-			OBDescriptorPropertySet p = OBDescriptorPropertySet.fromString(feat, t);
+			OBDescriptorSet p = OBDescriptorSet.fromString(feat, t);
 			features.add(p);
 		}
 
@@ -691,7 +691,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		selection = StringUtil.split(fragmentFeatures);
 		for (String string : selection)
 		{
-			FragmentPropertySet d = StructuralFragments.instance.findFromString(string);
+			FragmentPropertySet d = ListedFragments.instance.findFromString(string);
 			if (d != null)
 				features.add(d);
 		}
@@ -756,8 +756,8 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 
 		if (features.containsKey(OB_FEATURES) && features.get(OB_FEATURES).length > 0)
 		{
-			OBDescriptorPropertySet[] obFeats = ArrayUtil
-					.cast(OBDescriptorPropertySet.class, features.get(OB_FEATURES));
+			OBDescriptorSet[] obFeats = ArrayUtil
+					.cast(OBDescriptorSet.class, features.get(OB_FEATURES));
 			String[] serilizedOBFeats = new String[obFeats.length];
 			for (int i = 0; i < serilizedOBFeats.length; i++)
 				serilizedOBFeats[i] = obFeats[i] + "#" + obFeats[i].getType();
@@ -771,7 +771,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		else
 			props.remove(propKeyFragments);
 
-		for (Property p : StructuralFragmentProperties.getProperties())
+		for (Property p : FragmentProperties.getProperties())
 			p.put(props);
 	}
 
@@ -809,24 +809,24 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		for (CompoundPropertySet[] feats : features.values())
 			for (CompoundPropertySet feature : feats)
 			{
-				if (feature instanceof IntegratedPropertySet || feature instanceof OBDescriptorPropertySet)
+				if (feature instanceof IntegratedPropertySet)// || feature instanceof OBDescriptorPropertySet)
 				{
 					CompoundProperty feat = (CompoundProperty) feature;
 					if (feature instanceof IntegratedPropertySet)
 					{
-						if (FeatureService.guessNominalFeatureType(feat.numDistinctValuesInCompleteDataset(),
-								dataset.numCompounds(), feat.isTypeAllowed(Type.NUMERIC)))
-							feat.setType(Type.NOMINAL);
+						if (FeatureService.guessNominalFeatureType(feat.numDistinctValues(),
+								dataset.numCompounds(), feature.isTypeAllowed(Type.NUMERIC)))
+							feature.setType(Type.NOMINAL);
 						else
-							feat.setType(Type.NUMERIC);
+							feature.setType(Type.NUMERIC);
 					}
-					else if (feature instanceof OBDescriptorPropertySet)
-					{
-						if (feat.isTypeAllowed(Type.NUMERIC))
-							feat.setType(Type.NUMERIC);
-					}
+					//					else if (feature instanceof OBDescriptorPropertySet)
+					//					{
+					//						if (feature.isTypeAllowed(Type.NUMERIC))
+					//							feature.setType(Type.NUMERIC);
+					//					}
 					if (feature.getType() == null)
-						throw new IllegalArgumentException("probably not suited: " + feat);
+						throw new IllegalArgumentException("probably not suited: " + feature);
 				}
 			}
 		putToProps(features, props);
@@ -878,7 +878,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		for (String propKey : propKeys)
 			if (PropHandler.containsKey(propKey))
 				props.put(propKey, PropHandler.get(propKey));
-		for (Property p : StructuralFragmentProperties.getProperties())
+		for (Property p : FragmentProperties.getProperties())
 			p.put(props);
 	}
 }

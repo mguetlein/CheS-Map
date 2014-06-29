@@ -4,6 +4,7 @@ import gui.binloc.Binary;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -11,52 +12,53 @@ import main.BinHandler;
 import main.Settings;
 import main.TaskProvider;
 import util.ArrayUtil;
-import util.DoubleKeyHashMap;
 import util.FileUtil.UnexpectedNumColsException;
 import util.ListUtil;
 import util.ValueFileCache;
 import data.DatasetFile;
-import data.FeatureService;
 import data.desc.DescriptorForMixturesHandler;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.SubstructureType;
-import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
+import dataInterface.DefaultNominalProperty;
+import dataInterface.DefaultNumericProperty;
+import dataInterface.FragmentProperty.SubstructureType;
 
-public class OBDescriptorPropertySet implements CompoundPropertySet
+public class OBDescriptorSet implements CompoundPropertySet
 {
-	private static OBDescriptorPropertySet[] descriptors;
+	private static OBDescriptorSet[] descriptors;
+	private static HashMap<String, OBDescriptorSet> sets = new HashMap<String, OBDescriptorSet>();
 
-	public synchronized static OBDescriptorPropertySet[] getDescriptors(boolean forceReload)
+	public synchronized static OBDescriptorSet[] getDescriptors(boolean forceReload)
 	{
 		if (descriptors == null || forceReload)
 		{
 			if (descriptors == null)
-				descriptors = new OBDescriptorPropertySet[0];
+				descriptors = new OBDescriptorSet[0];
 
 			Set<String> descriptorIDs = OBDescriptorFactory.getDescriptorIDs(forceReload);
 			if (descriptorIDs == null)
-				return new OBDescriptorPropertySet[0];
-			List<OBDescriptorPropertySet> desc = new ArrayList<OBDescriptorPropertySet>();
+				return new OBDescriptorSet[0];
+			List<OBDescriptorSet> desc = new ArrayList<OBDescriptorSet>();
 			for (String descriptorID : descriptorIDs)
 			{
-				OBDescriptorPropertySet p = fromString(descriptorID, null);
+				OBDescriptorSet p = fromString(descriptorID, null);
 				if (p != null)
 					desc.add(p);
 				else
-					desc.add(new OBDescriptorPropertySet(descriptorID, OBDescriptorFactory
+					desc.add(new OBDescriptorSet(descriptorID, OBDescriptorFactory
 							.getDescriptorDescription(descriptorID), OBDescriptorFactory
 							.getDescriptorDefaultType(descriptorID)));
+				sets.put(descriptorID, p);
 			}
 			descriptors = ListUtil.toArray(desc);
 		}
 		return descriptors;
 	}
 
-	public synchronized static OBDescriptorProperty[] getDescriptorProps(DatasetFile dataset, boolean forceReload)
+	public synchronized static CompoundProperty[] getDescriptorProps(DatasetFile dataset, boolean forceReload)
 	{
-		OBDescriptorPropertySet[] sets = getDescriptors(forceReload);
-		OBDescriptorProperty[] props = new OBDescriptorProperty[sets.length];
+		OBDescriptorSet[] sets = getDescriptors(forceReload);
+		CompoundProperty[] props = new CompoundProperty[sets.length];
 		for (int i = 0; i < props.length; i++)
 			props[i] = sets[i].createOBDescriptorProperty(dataset);
 		return props;
@@ -66,7 +68,7 @@ public class OBDescriptorPropertySet implements CompoundPropertySet
 	private String description;
 	private Type defaultType;
 
-	private OBDescriptorPropertySet(String descriptorID, String description, Type defaultType)
+	private OBDescriptorSet(String descriptorID, String description, Type defaultType)
 	{
 		this.descriptorID = descriptorID;
 		this.description = description;
@@ -84,18 +86,49 @@ public class OBDescriptorPropertySet implements CompoundPropertySet
 		return description;
 	}
 
-	private static DoubleKeyHashMap<String, DatasetFile, OBDescriptorProperty> props = new DoubleKeyHashMap<String, DatasetFile, OBDescriptorProperty>();
-
-	private OBDescriptorProperty createOBDescriptorProperty(DatasetFile dataset)
+	@Override
+	public void setTypeAllowed(Type type, boolean allowed)
 	{
-		if (!props.containsKeyPair(descriptorID, dataset))
-			props.put(descriptorID, dataset, new OBDescriptorProperty(descriptorID, description, defaultType));
-		return props.get(descriptorID, dataset);
+		throw new IllegalArgumentException();
 	}
 
-	public static OBDescriptorPropertySet fromString(String toString, Type type)
+	@Override
+	public void setType(Type type)
 	{
-		for (OBDescriptorPropertySet d : getDescriptors(false))
+		throw new IllegalArgumentException();
+	}
+
+	@Override
+	public boolean isTypeAllowed(Type type)
+	{
+		return type == Type.NOMINAL;
+	}
+
+	@Override
+	public Type getType()
+	{
+		return defaultType;
+	}
+
+	private HashMap<DatasetFile, CompoundProperty> props = new HashMap<DatasetFile, CompoundProperty>();
+
+	private CompoundProperty createOBDescriptorProperty(DatasetFile dataset)
+	{
+		if (!props.containsKey(dataset))
+		{
+			CompoundProperty p;
+			if (getType() == Type.NUMERIC)
+				p = new DefaultNumericProperty(this, descriptorID, description);
+			else
+				p = new DefaultNominalProperty(this, descriptorID, description);
+			props.put(dataset, p);
+		}
+		return props.get(dataset);
+	}
+
+	public static OBDescriptorSet fromString(String toString, Type type)
+	{
+		for (OBDescriptorSet d : getDescriptors(false))
 			if (d.toString().equals(toString))
 			{
 				if (type != null)
@@ -149,48 +182,39 @@ public class OBDescriptorPropertySet implements CompoundPropertySet
 			ValueFileCache.writeCacheString(cache, vals);
 		}
 
-		OBDescriptorProperty prop = createOBDescriptorProperty(dataset);
-		int numDistinct = -1;
-		if (prop.isTypeAllowed(Type.NOMINAL))
+		//		int numDistinct = -1;
+		if (getType() == Type.NOMINAL)
 		{
-			prop.setStringValues(vals);
+			((DefaultNominalProperty) createOBDescriptorProperty(dataset)).setStringValues(vals);
 		}
-		if (prop.isTypeAllowed(Type.NUMERIC))
+		else if (getType() == Type.NOMINAL)
 		{
+			DefaultNumericProperty prop = (DefaultNumericProperty) createOBDescriptorProperty(dataset);
 			Double dVals[] = ArrayUtil.parse(vals);
 			if (dVals == null)
 			{
-				if (getType() == Type.NUMERIC)
-				{
-					TaskProvider.warning(
-							"Cannot compute feature: " + prop.getName(),
-							"Numeric features cannot be parsed. Values returned from OpenBabel:\n"
-									+ ArrayUtil.toString(vals));
-					new File(cache).delete();
-					return false;
-				}
-				else
-					prop.setTypeAllowed(Type.NUMERIC, false);
+				TaskProvider.warning(
+						"Cannot compute feature: " + prop.getName(),
+						"Numeric features cannot be parsed. Values returned from OpenBabel:\n"
+								+ ArrayUtil.toString(vals));
+				new File(cache).delete();
+				return false;
 			}
 			else
 				prop.setDoubleValues(dVals);
 		}
-		if (prop.getType() == null)
-		{
-			if (prop.isTypeAllowed(Type.NOMINAL)
-					&& FeatureService.guessNominalFeatureType(numDistinct, vals.length,
-							prop.isTypeAllowed(Type.NUMERIC)))
-				prop.setType(Type.NOMINAL);
-			else if (prop.isTypeAllowed(Type.NUMERIC))
-				prop.setType(Type.NUMERIC);
-		}
+		else
+			throw new IllegalStateException();
+		//		if (prop.getType() == null)
+		//		{
+		//			if (prop.isTypeAllowed(Type.NOMINAL)
+		//					&& FeatureService.guessNominalFeatureType(numDistinct, vals.length,
+		//							prop.isTypeAllowed(Type.NUMERIC)))
+		//				prop.setType(Type.NOMINAL);
+		//			else if (prop.isTypeAllowed(Type.NUMERIC))
+		//				prop.setType(Type.NUMERIC);
+		//		}
 		return true;
-	}
-
-	@Override
-	public Type getType()
-	{
-		return defaultType;
 	}
 
 	@Override

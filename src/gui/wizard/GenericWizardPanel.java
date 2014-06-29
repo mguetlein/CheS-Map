@@ -47,8 +47,8 @@ import data.DatasetFile;
 
 public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel implements AlgorithmMappingWorkflowProvider
 {
-	DefaultListModel listModel;
-	JList list;
+	DefaultListModel<Algorithm> listModel;
+	JList<Algorithm> list;
 	JScrollPane propertyScroll;
 	JPanel propertyPanel;
 	HashMap<String, PropertyPanel> cards = new HashMap<String, PropertyPanel>();
@@ -132,8 +132,8 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel imple
 
 	private void buildLayout()
 	{
-		listModel = new DefaultListModel();
-		list = new JList(listModel);
+		listModel = new DefaultListModel<Algorithm>();
+		list = new JList<Algorithm>(listModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setVisibleRowCount(7);
 		final Font defaultFont = ((JLabel) list.getCellRenderer()).getFont();
@@ -144,7 +144,7 @@ public abstract class GenericWizardPanel extends AdvancedSimpleWizardPanel imple
 		{
 
 			@Override
-			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus)
 			{
 				Algorithm a = (Algorithm) value;

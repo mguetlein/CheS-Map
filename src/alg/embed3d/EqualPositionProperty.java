@@ -10,9 +10,9 @@ import main.Settings;
 import main.TaskProvider;
 import util.ArrayUtil;
 import util.StringUtil;
-import dataInterface.DefaultCompoundProperty;
+import dataInterface.DefaultNominalProperty;
 
-public class EqualPositionProperty extends DefaultCompoundProperty
+public class EqualPositionProperty extends DefaultNominalProperty
 {
 	static class MyVector3f extends Vector3f // to fix missing overwrite of equals(Object) in old vecmatch lib included in the cdk 1.14.18
 	{

@@ -9,7 +9,8 @@ import main.Settings;
 import util.ArrayUtil;
 import util.ObjectUtil;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.Type;
+import dataInterface.NominalProperty;
+import dataInterface.NumericProperty;
 
 public class ExportRUtil
 {
@@ -56,9 +57,10 @@ public class ExportRUtil
 		int count = 0;
 		for (CompoundProperty feature : features)
 		{
-			if (feature.getType() != Type.NOMINAL
-					|| (feature.getNominalDomain().length == 2 && feature.getNominalDomain()[0].equals("0") && feature
-							.getNominalDomain()[1].equals("1")))
+			if (feature instanceof NumericProperty
+					|| (((NominalProperty) feature).getDomain().length == 2
+							&& ((NominalProperty) feature).getDomain()[0].equals("0") && ((NominalProperty) feature)
+								.getDomain()[1].equals("1")))
 			{
 				featureNames2.add(feature.getName());
 				featureValues2.add(featureValues1.get(count));
@@ -66,9 +68,9 @@ public class ExportRUtil
 			else
 			{
 				Settings.LOGGER.info("Transforming nominal feature: " + feature.getName() + " "
-						+ ArrayUtil.toString(feature.getNominalDomain()));
+						+ ArrayUtil.toString(((NominalProperty) feature).getDomain()));
 
-				for (String val : feature.getNominalDomain())
+				for (String val : ((NominalProperty) feature).getDomain())
 				{
 					String name = feature.getName() + "_is_" + val;
 					featureNames2.add(name);
@@ -82,7 +84,7 @@ public class ExportRUtil
 					}
 					featureValues2.add(vals);
 					Settings.LOGGER.info("-> new feat: " + name + " " + ArrayUtil.toString(vals));
-					if (feature.getNominalDomain().length == 2)
+					if (((NominalProperty) feature).getDomain().length == 2)
 						break;
 				}
 			}

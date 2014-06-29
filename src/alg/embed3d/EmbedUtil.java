@@ -17,8 +17,9 @@ import util.StopWatchUtil;
 import util.Vector3fUtil;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertyOwner;
+import dataInterface.NominalProperty;
+import dataInterface.NumericProperty;
 
 public class EmbedUtil
 {
@@ -227,21 +228,19 @@ public class EmbedUtil
 			List<Double> v_i = new ArrayList<Double>();
 			for (int k = 0; k < features.size(); k++)
 			{
-				CompoundProperty feature = features.get(k);
-				if (feature.getType() == Type.NUMERIC)
+				if (features.get(k) instanceof NumericProperty)
 				{
+					NumericProperty feature = (NumericProperty) features.get(k);
 					Double v = c.getNormalizedValueCompleteDataset(feature);
 					if (v == null)
-						v = feature.getNormalizedMedianInCompleteDataset();
+						v = feature.getNormalizedMedian();
 					v_i.add(v);
 				}
 				else
 				{
-
-					if (feature.getType() != Type.NOMINAL)
-						throw new Error();
-					if (feature.getNominalDomain().length == 2 && feature.getNominalDomain()[0].equals("0")
-							&& feature.getNominalDomain()[1].equals("1"))
+					NominalProperty feature = (NominalProperty) features.get(k);
+					if (feature.getDomain().length == 2 && feature.getDomain()[0].equals("0")
+							&& feature.getDomain()[1].equals("1"))
 					{
 						if (c.getStringValue(feature) == null)
 							v_i.add(Double.parseDouble(feature.getModeNonNull()));
@@ -250,7 +249,7 @@ public class EmbedUtil
 					}
 					else
 					{
-						for (String val : feature.getNominalDomain())
+						for (String val : feature.getDomain())
 						{
 							if (ObjectUtil.equals(c.getStringValue(feature), val))
 								v_i.add(1.0);

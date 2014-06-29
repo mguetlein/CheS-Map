@@ -12,7 +12,8 @@ import org.openscience.cdk.interfaces.IMolecule;
 
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.Type;
+import dataInterface.NominalProperty;
+import dataInterface.NumericProperty;
 
 public class CompoundDataImpl implements CompoundData
 {
@@ -68,36 +69,30 @@ public class CompoundDataImpl implements CompoundData
 	}
 
 	@Override
-	public Double getDoubleValue(CompoundProperty p)
+	public Double getDoubleValue(NumericProperty p)
 	{
-		if (p.getType() != Type.NUMERIC)
-			throw new IllegalStateException();
 		return doubleValues.get(p);
 	}
 
 	@Override
-	public String getStringValue(CompoundProperty p)
+	public String getStringValue(NominalProperty p)
 	{
-		if (p.getType() == Type.NUMERIC)
-			throw new IllegalStateException(p + " is numeric!");
 		return stringValues.get(p);
 	}
 
 	@Override
-	public Double getNormalizedValueCompleteDataset(CompoundProperty p)
+	public Double getNormalizedValueCompleteDataset(NumericProperty p)
 	{
-		if (p.getType() != Type.NUMERIC)
-			throw new IllegalStateException();
 		return normalizedValuesCompleteDataset.get(p);
 	}
 
 	@Override
 	public String getFormattedValue(CompoundProperty p)
 	{
-		if (p.getType() == Type.NUMERIC)
-			return p.getFormattedValue(getDoubleValue(p));
+		if (p instanceof NumericProperty)
+			return ((NumericProperty) p).getFormattedValue(getDoubleValue((NumericProperty) p));
 		else
-			return p.getFormattedValue(getStringValue(p));
+			return ((NominalProperty) p).getFormattedValue(getStringValue((NominalProperty) p));
 	}
 
 	@Override

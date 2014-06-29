@@ -36,17 +36,18 @@ import alg.embed3d.WekaPCA3DEmbedder;
 import data.DatasetFile;
 import data.cdk.CDKPropertySet;
 import data.fminer.FminerPropertySet;
-import data.fragments.StructuralFragmentProperties;
-import data.fragments.StructuralFragments;
-import data.integrated.IntegratedProperty;
+import data.fragments.FragmentProperties;
+import data.fragments.ListedFragments;
 import data.integrated.IntegratedPropertySet;
-import data.obdesc.OBDescriptorPropertySet;
+import data.obdesc.OBDescriptorSet;
 import data.obfingerprints.FingerprintType;
 import data.obfingerprints.OBFingerprintSet;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
+import dataInterface.CompoundPropertySet.Type;
 import dataInterface.FragmentPropertySet;
+import dataInterface.NominalProperty;
+import dataInterface.NumericProperty;
 
 public class MappingWorkflow
 {
@@ -178,15 +179,15 @@ public class MappingWorkflow
 		{
 			List<CompoundProperty> feats = new ArrayList<CompoundProperty>();
 			for (int i = 0; i < set.length; i++)
-				if (!set[i].isSmiles())
-					if ((onlyNumeric && set[i].getType() == Type.NUMERIC)
-							|| (!onlyNumeric && (set[i].isTypeAllowed(Type.NUMERIC) || set[i].getType() == Type.NOMINAL)))
+				if (!(set[i] instanceof NominalProperty && ((NominalProperty) set[i]).isSmiles()))
+					if ((onlyNumeric && set[i] instanceof NumericProperty)
+							|| (!onlyNumeric && (set[i].getCompoundPropertySet().isTypeAllowed(Type.NUMERIC) || set[i] instanceof NominalProperty)))
 						if (include == null || ArrayUtil.indexOf(include, set[i].getName()) != -1)
 							if (exclude == null || ArrayUtil.indexOf(exclude, set[i].getName()) == -1)
 								feats.add(set[i]);
 			for (CompoundProperty c : set)
 				if (nominal != null && ArrayUtil.indexOf(nominal, c.getName()) != -1)
-					c.setType(Type.NOMINAL);
+					c.getCompoundPropertySet().setType(Type.NOMINAL);
 			return ArrayUtil.toArray(CompoundProperty.class, feats);
 		}
 
@@ -197,7 +198,7 @@ public class MappingWorkflow
 			if (feats.contains(DescriptorCategory.integrated))
 			{
 				IntegratedPropertySet s[] = dataset.getIntegratedProperties();
-				IntegratedProperty p[] = new IntegratedProperty[s.length];
+				CompoundProperty p[] = new CompoundProperty[s.length];
 				for (int i = 0; i < p.length; i++)
 					p[i] = s[i].get();
 				features.put(
@@ -221,42 +222,42 @@ public class MappingWorkflow
 			{
 				if (fpMinFreq == -1)
 					fpMinFreq = Math.max(1, Math.min(10, dataset.numCompounds() / 10));
-				StructuralFragmentProperties.setMinFrequency(fpMinFreq);
-				StructuralFragmentProperties.setSkipOmniFragments(fpSkipOmnipresent);
-				System.out.println("set min frequency to " + StructuralFragmentProperties.getMinFrequency());
+				FragmentProperties.setMinFrequency(fpMinFreq);
+				FragmentProperties.setSkipOmniFragments(fpSkipOmnipresent);
+				System.out.println("set min frequency to " + FragmentProperties.getMinFrequency());
 				Settings.LOGGER.info("before computing structural fragment "
-						+ StructuralFragmentProperties.getMatchEngine() + " "
-						+ StructuralFragmentProperties.getMinFrequency() + " "
-						+ StructuralFragmentProperties.isSkipOmniFragments());
+						+ FragmentProperties.getMatchEngine() + " "
+						+ FragmentProperties.getMinFrequency() + " "
+						+ FragmentProperties.isSkipOmniFragments());
 			}
 
 			FragmentPropertySet fps[] = new FragmentPropertySet[0];
 			if (feats.contains(DescriptorCategory.obFP2))
-				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
-						FingerprintType.FP2) });
+				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
+						new OBFingerprintSet[] { OBFingerprintSet.getOBFingerprintSet(FingerprintType.FP2) });
 			if (feats.contains(DescriptorCategory.obFP3))
-				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
-						FingerprintType.FP3) });
+				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
+						new OBFingerprintSet[] { OBFingerprintSet.getOBFingerprintSet(FingerprintType.FP3) });
 			if (feats.contains(DescriptorCategory.obFP4))
-				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
-						FingerprintType.FP4) });
+				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
+						new OBFingerprintSet[] { OBFingerprintSet.getOBFingerprintSet(FingerprintType.FP4) });
 			if (feats.contains(DescriptorCategory.obMACCS))
-				fps = ArrayUtil.concat(FragmentPropertySet.class, fps, new OBFingerprintSet[] { new OBFingerprintSet(
-						FingerprintType.MACCS) });
+				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
+						new OBFingerprintSet[] { OBFingerprintSet.getOBFingerprintSet(FingerprintType.MACCS) });
 			if (feats.contains(DescriptorCategory.benigniBossa))
 				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
-						new FragmentPropertySet[] { StructuralFragments.instance
-								.findFromString(StructuralFragments.SMARTS_LIST_PREFIX + "ToxTree_BB_CarcMutRules") });
+						new FragmentPropertySet[] { ListedFragments.instance
+								.findFromString(ListedFragments.SMARTS_LIST_PREFIX + "ToxTree_BB_CarcMutRules") });
 			if (feats.contains(DescriptorCategory.fminer))
 				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
-						new FragmentPropertySet[] { new FminerPropertySet() });
+						new FragmentPropertySet[] { FminerPropertySet.INSTANCE });
 			if (fps.length > 0)
 				features.put(FeatureWizardPanel.STRUCTURAL_FRAGMENTS, fps);
 
 			if (feats.contains(DescriptorCategory.ob))
 				features.put(FeatureWizardPanel.OB_FEATURES, ArrayUtil.cast(
-						OBDescriptorPropertySet.class,
-						filterNotSuited(OBDescriptorPropertySet.getDescriptorProps(dataset, false), true, null, null,
+						OBDescriptorSet.class,
+						filterNotSuited(OBDescriptorSet.getDescriptorProps(dataset, false), true, null, null,
 								null)));
 			return features;
 		}

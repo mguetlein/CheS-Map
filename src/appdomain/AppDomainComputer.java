@@ -4,7 +4,8 @@ import java.util.List;
 
 import alg.Algorithm;
 import dataInterface.CompoundData;
-import dataInterface.CompoundProperty;
+import dataInterface.NominalProperty;
+import dataInterface.NumericProperty;
 
 public interface AppDomainComputer extends Algorithm
 {
@@ -13,10 +14,10 @@ public interface AppDomainComputer extends Algorithm
 			PropabilityDensityDomainComputer.INSTANCE };
 
 	public void computeAppDomain(/*DatasetFile dataset,*/List<CompoundData> compounds,
-			List<CompoundProperty> features, double[][] featureDistanceMatrix);
+			List<NumericProperty> features, double[][] featureDistanceMatrix);
 
-	public CompoundProperty getInsideAppDomainProperty();
+	public NominalProperty getInsideAppDomainProperty();
 
-	public CompoundProperty getPropabilityAppDomainProperty();
+	public NumericProperty getPropabilityAppDomainProperty();
 
 }

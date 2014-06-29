@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import main.Settings;
 import util.ArrayUtil;
 import util.DistanceMatrix;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertyOwner;
+import dataInterface.NominalProperty;
+import dataInterface.NumericProperty;
 import dist.SimilarityMeasure;
 import dist.SimilartiyCache;
 
@@ -23,15 +23,15 @@ public class DistanceUtil
 		int count = 0;
 		for (CompoundProperty p : props)
 		{
-			if (p.getType() == Type.NUMERIC)
+			if (p instanceof NumericProperty)
 			{
-				d1[count] = c1.getNormalizedValueCompleteDataset(p);
-				d2[count++] = c2.getNormalizedValueCompleteDataset(p);
+				d1[count] = c1.getNormalizedValueCompleteDataset((NumericProperty) p);
+				d2[count++] = c2.getNormalizedValueCompleteDataset((NumericProperty) p);
 			}
 			else
 			{
 				d1[count] = 0;
-				if (c1.getStringValue(p).equals(c2.getStringValue(p)))
+				if (c1.getStringValue((NominalProperty) p).equals(c2.getStringValue((NominalProperty) p)))
 					d2[count++] = 0;
 				else
 					d2[count++] = 1;
@@ -44,7 +44,7 @@ public class DistanceUtil
 
 	private static String valsKey(CompoundData c, List<CompoundProperty> props)
 	{
-		return Settings.MAPPED_DATASET.hashCode() + "#" + c.hashCode() + "#" + props.hashCode();
+		return c.hashCode() + "#" + props.hashCode();
 	}
 
 	private static Boolean[] booleanValues(CompoundData c, List<CompoundProperty> props)
@@ -56,16 +56,17 @@ public class DistanceUtil
 			int i = 0;
 			for (CompoundProperty p : props)
 			{
-				if (p.getType() == Type.NUMERIC)
+				if (p instanceof NumericProperty)
 					throw new IllegalStateException();
-				if (c.getStringValue(p) == null)
+				NominalProperty np = (NominalProperty) p;
+				if (c.getStringValue(np) == null)
 					b[i++] = null;
 				else
 				{
-					String dom[] = p.getNominalDomain();
+					String dom[] = np.getDomain();
 					if (dom.length != 2)
 						throw new IllegalStateException();
-					b[i++] = c.getStringValue(p).equals(dom[1]);
+					b[i++] = c.getStringValue(np).equals(dom[1]);
 				}
 			}
 			booleanValues.put(key, b);
@@ -77,9 +78,9 @@ public class DistanceUtil
 	{
 		for (CompoundProperty p : props)
 		{
-			if (p.getType() == Type.NUMERIC)
+			if (p instanceof NumericProperty)
 				return false;
-			if (p.getNominalDomain().length != 2)
+			if (((NominalProperty) p).getDomain().length != 2)
 				return false;
 		}
 		return true;

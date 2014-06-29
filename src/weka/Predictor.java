@@ -16,10 +16,11 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SelectedTag;
 import weka.core.converters.ArffLoader;
-import dataInterface.DefaultCompoundProperty;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.Type;
+import dataInterface.DefaultNumericProperty;
+import dataInterface.NominalProperty;
+import dataInterface.NumericProperty;
 
 public class Predictor
 {
@@ -36,14 +37,14 @@ public class Predictor
 			this.missClassfied = missClassfied;
 		}
 
-		public CompoundProperty createFeature()
+		public NumericProperty createFeature()
 		{
-			return new DefaultCompoundProperty("prediction", ".", ArrayUtil.toDoubleArray(prediction));
+			return new DefaultNumericProperty("prediction", ".", ArrayUtil.toDoubleArray(prediction));
 		}
 
-		public CompoundProperty createMissclassifiedFeature()
+		public NumericProperty createMissclassifiedFeature()
 		{
-			return new DefaultCompoundProperty(classification ? "miss-classified" : "error", ".",
+			return new DefaultNumericProperty(classification ? "miss-classified" : "error", ".",
 					ArrayUtil.toDoubleArray(missClassfied));
 		}
 	}
@@ -56,12 +57,12 @@ public class Predictor
 		{
 			if (classification)
 			{
-				if (clazz.getType() != Type.NOMINAL && clazz.getNominalDomain().length != 2)
+				if (clazz instanceof NominalProperty
+						&& ((NominalProperty) clazz).getDomain().length != 2)
 					throw new Error();
 			}
-			else if (clazz.getType() != Type.NUMERIC)
-				throw new Error();
-			final boolean swapPredictedDouble = classification && clazz.getNominalDomain()[0].equals("active");
+			final boolean swapPredictedDouble = classification
+					&& ((NominalProperty) clazz).getDomain()[0].equals("active");
 
 			List<CompoundProperty> p = new ArrayList<CompoundProperty>(features);
 			p.add(clazz);
@@ -189,7 +190,8 @@ public class Predictor
 			{
 				if (classification)
 				{
-					double actual = ArrayUtil.indexOf(clazz.getNominalDomain(), compounds.get(i).getStringValue(clazz));
+					double actual = ArrayUtil.indexOf(((NominalProperty) clazz).getDomain(), compounds
+							.get(i).getStringValue((NominalProperty) clazz));
 					if (actual == 0)
 						error[i] = 1 - predicted[i];
 					else
@@ -197,7 +199,7 @@ public class Predictor
 				}
 				else
 				{
-					double actual = compounds.get(i).getDoubleValue(clazz);
+					double actual = compounds.get(i).getDoubleValue((NumericProperty) clazz);
 					double sum = 0;
 					for (double d : predictions[i])
 						sum += Math.abs(actual - d);

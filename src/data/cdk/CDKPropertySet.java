@@ -18,28 +18,35 @@ import util.FileUtil.UnexpectedNumColsException;
 import util.ValueFileCache;
 import data.DatasetFile;
 import data.desc.DescriptorForMixturesHandler;
+import dataInterface.AbstractPropertySet;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.SubstructureType;
-import dataInterface.CompoundProperty.Type;
-import dataInterface.CompoundPropertySet;
+import dataInterface.DefaultNominalProperty;
+import dataInterface.DefaultNumericProperty;
+import dataInterface.FragmentProperty.SubstructureType;
 
-public class CDKPropertySet implements CompoundPropertySet
+public class CDKPropertySet extends AbstractPropertySet
 {
 	public static final CDKPropertySet[] DESCRIPTORS = new CDKPropertySet[CDKDescriptor.getDescriptors().length];
 	public static final CDKPropertySet[] NUMERIC_DESCRIPTORS = new CDKPropertySet[CDKDescriptor.getNumericDescriptors().length];
+	private static HashMap<CDKDescriptor, CDKPropertySet> sets = new HashMap<CDKDescriptor, CDKPropertySet>();
+
 	static
 	{
 		int count = 0;
 		for (CDKDescriptor d : CDKDescriptor.getDescriptors())
-			DESCRIPTORS[count++] = new CDKPropertySet(d);
+		{
+			CDKPropertySet set = new CDKPropertySet(d);
+			DESCRIPTORS[count++] = set;
+			sets.put(d, set);
+		}
 		count = 0;
 		for (CDKDescriptor d : CDKDescriptor.getNumericDescriptors())
-			NUMERIC_DESCRIPTORS[count++] = new CDKPropertySet(d);
+			NUMERIC_DESCRIPTORS[count++] = sets.get(d);
 	}
 
 	private CDKDescriptor desc;
 
-	public CDKPropertySet(CDKDescriptor desc)
+	private CDKPropertySet(CDKDescriptor desc)
 	{
 		this.desc = desc;
 	}
@@ -55,13 +62,25 @@ public class CDKPropertySet implements CompoundPropertySet
 		return desc.getSize();
 	}
 
-	private static DoubleKeyHashMap<String, DatasetFile, CDKProperty> props = new DoubleKeyHashMap<String, DatasetFile, CDKProperty>();
+	//private static DoubleKeyHashMap<String, DatasetFile, CompoundProperty> props = new DoubleKeyHashMap<String, DatasetFile, CompoundProperty>();
 
-	public static CDKProperty createCDKProperty(CDKDescriptor desc, DatasetFile dataset, int index)
+	private DoubleKeyHashMap<Integer, DatasetFile, CompoundProperty> props = new DoubleKeyHashMap<Integer, DatasetFile, CompoundProperty>();
+
+	public static CompoundProperty createCDKProperty(CDKDescriptor desc, DatasetFile dataset, int index)
 	{
-		if (!props.containsKeyPair(desc.getFeatureName(index), dataset))
-			props.put(desc.getFeatureName(index), dataset, new CDKProperty(desc, index));
-		return props.get(desc.getFeatureName(index), dataset);
+		CDKPropertySet s = sets.get(desc);
+		if (!s.props.containsKeyPair(index, dataset))
+		{
+			CompoundProperty p;
+			String name = desc.getFeatureName(index);
+			String description = desc + " (CDK Descriptor)";
+			if (desc.isNumeric())
+				p = new DefaultNumericProperty(s, name, description);
+			else
+				p = new DefaultNominalProperty(s, name, description);
+			s.props.put(index, dataset, p);
+		}
+		return s.props.get(index, dataset);
 	}
 
 	@Override
@@ -80,19 +99,18 @@ public class CDKPropertySet implements CompoundPropertySet
 		CDKDescriptor desc = CDKDescriptor.fromString(s);
 		if (desc == null)
 			return null;
-		return new CDKPropertySet(desc);
+		return sets.get(desc);
 	}
 
-	public static CDKProperty fromString(String s, Type t, DatasetFile dataset)
+	public static CompoundProperty fromString(String s, Type t, DatasetFile dataset)
 	{
-		CDKProperty p = CDKPropertySet.fromFeatureName(s, dataset);
-		if (!p.isTypeAllowed(t))
+		CompoundProperty p = CDKPropertySet.fromFeatureName(s, dataset);
+		if (p.getCompoundPropertySet().getType() != t)
 			throw new IllegalArgumentException();
-		p.setType(t);
 		return p;
 	}
 
-	public static CDKProperty fromFeatureName(String s, DatasetFile dataset)
+	public static CompoundProperty fromFeatureName(String s, DatasetFile dataset)
 	{
 		for (CDKDescriptor d : CDKDescriptor.getNumericDescriptors())
 			for (int i = 0; i < d.getSize(); i++)
@@ -101,11 +119,11 @@ public class CDKPropertySet implements CompoundPropertySet
 		return null;
 	}
 
-	@Override
-	public boolean equals(Object o)
-	{
-		return (o instanceof CDKPropertySet) && ((CDKPropertySet) o).desc.equals(desc);
-	}
+	//	@Override
+	//	public boolean equals(Object o)
+	//	{
+	//		return (o instanceof CDKPropertySet) && ((CDKPropertySet) o).desc.equals(desc);
+	//	}
 
 	@Override
 	public String getDescription()
@@ -232,7 +250,7 @@ public class CDKPropertySet implements CompoundPropertySet
 			ValueFileCache.writeCacheDouble(cache, vv);
 		}
 		for (int j = 0; j < getSize(); j++)
-			createCDKProperty(desc, dataset, j).setDoubleValues(vv.get(j));
+			((DefaultNumericProperty) createCDKProperty(desc, dataset, j)).setDoubleValues(vv.get(j));
 
 		return true;
 	}

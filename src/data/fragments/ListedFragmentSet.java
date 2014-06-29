@@ -21,29 +21,27 @@ import util.FileUtil.UnexpectedNumColsException;
 import data.CDKSmartsHandler;
 import data.DatasetFile;
 import data.OpenBabelSmartsHandler;
-import dataInterface.CompoundProperty.SubstructureType;
-import dataInterface.CompoundProperty.Type;
+import dataInterface.FragmentProperty.SubstructureType;
 import dataInterface.FragmentPropertySet;
 
-public class StructuralFragmentSet extends FragmentPropertySet
+public class ListedFragmentSet extends FragmentPropertySet
 {
 	String description;
-	String name;
 
-	HashMap<MatchEngine, List<StructuralFragment>> fragments;
+	HashMap<MatchEngine, List<ListedFragmentProperty>> fragments;
 	DoubleKeyHashMap<MatchEngine, DatasetFile, String> cacheFile = new DoubleKeyHashMap<MatchEngine, DatasetFile, String>();
-	DoubleKeyHashMap<MatchEngine, DatasetFile, List<StructuralFragment>> computedFragments = new DoubleKeyHashMap<MatchEngine, DatasetFile, List<StructuralFragment>>();
+	DoubleKeyHashMap<MatchEngine, DatasetFile, List<ListedFragmentProperty>> computedFragments = new DoubleKeyHashMap<MatchEngine, DatasetFile, List<ListedFragmentProperty>>();
 
-	public StructuralFragmentSet(String name, String description,
-			HashMap<MatchEngine, List<StructuralFragment>> fragments)
+	public ListedFragmentSet(String name, String description,
+			HashMap<MatchEngine, List<ListedFragmentProperty>> fragments)
 	{
+		super(name, SubstructureType.MATCH);
 		this.fragments = fragments;
 		this.description = description;
-		this.name = name;
 
 		for (MatchEngine m : fragments.keySet())
-			for (StructuralFragment fragment : fragments.get(m))
-				fragment.setStructuralFragmentSet(this);
+			for (ListedFragmentProperty fragment : fragments.get(m))
+				fragment.setListedFragmentSet(this);
 	}
 
 	public String toString()
@@ -54,17 +52,17 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	@Override
 	public int getSize(DatasetFile d)
 	{
-		if (computedFragments.get(StructuralFragmentProperties.getMatchEngine(), d) == null)
+		if (computedFragments.get(FragmentProperties.getMatchEngine(), d) == null)
 			throw new Error("mine " + this + " fragments first, number is not fixed");
-		return computedFragments.get(StructuralFragmentProperties.getMatchEngine(), d).size();
+		return computedFragments.get(FragmentProperties.getMatchEngine(), d).size();
 	}
 
 	@Override
-	public StructuralFragment get(DatasetFile d, int index)
+	public ListedFragmentProperty get(DatasetFile d, int index)
 	{
-		if (computedFragments.get(StructuralFragmentProperties.getMatchEngine(), d) == null)
+		if (computedFragments.get(FragmentProperties.getMatchEngine(), d) == null)
 			throw new Error("mine " + this + " fragments first, number is not fixed");
-		return computedFragments.get(StructuralFragmentProperties.getMatchEngine(), d).get(index);
+		return computedFragments.get(FragmentProperties.getMatchEngine(), d).get(index);
 	}
 
 	@Override
@@ -82,7 +80,7 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	@Override
 	public Binary getBinary()
 	{
-		if (StructuralFragmentProperties.getMatchEngine() == MatchEngine.OpenBabel)
+		if (FragmentProperties.getMatchEngine() == MatchEngine.OpenBabel)
 			return BinHandler.BABEL_BINARY;
 		else
 			return null;
@@ -96,16 +94,16 @@ public class StructuralFragmentSet extends FragmentPropertySet
 			for (DatasetFile d : computedFragments.keySet2(m))
 			{
 				computedFragments.get(m, d).clear();
-				for (StructuralFragment a : fragments.get(m))
+				for (ListedFragmentProperty a : fragments.get(m))
 					addFragment(a, d, m);
 			}
 		}
 	}
 
-	private void addFragment(StructuralFragment a, DatasetFile d, MatchEngine m)
+	private void addFragment(ListedFragmentProperty a, DatasetFile d, MatchEngine m)
 	{
-		boolean skip = StructuralFragmentProperties.isSkipOmniFragments() && a.getFrequency() == d.numCompounds();
-		boolean frequent = a.getFrequency() >= StructuralFragmentProperties.getMinFrequency();
+		boolean skip = FragmentProperties.isSkipOmniFragments() && a.getFrequency() == d.numCompounds();
+		boolean frequent = a.getFrequency() >= FragmentProperties.getMinFrequency();
 		if (!skip && frequent)
 			computedFragments.get(m, d).add(a);
 	}
@@ -117,15 +115,9 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	}
 
 	@Override
-	public SubstructureType getSubstructureType()
-	{
-		return SubstructureType.MATCH;
-	}
-
-	@Override
 	public boolean isComputed(DatasetFile dataset)
 	{
-		return computedFragments.get(StructuralFragmentProperties.getMatchEngine(), dataset) != null;
+		return computedFragments.get(FragmentProperties.getMatchEngine(), dataset) != null;
 	}
 
 	private void writeToFile(String file, List<boolean[]> matches)
@@ -157,15 +149,15 @@ public class StructuralFragmentSet extends FragmentPropertySet
 
 	private String getSmartsMatchCacheFile(DatasetFile dataset)
 	{
-		if (cacheFile.get(StructuralFragmentProperties.getMatchEngine(), dataset) == null)
+		if (cacheFile.get(FragmentProperties.getMatchEngine(), dataset) == null)
 		{
 			cacheFile.put(
-					StructuralFragmentProperties.getMatchEngine(),
+					FragmentProperties.getMatchEngine(),
 					dataset,
-					dataset.getSmartsMatchesFilePath(StructuralFragmentProperties.getMatchEngine(),
-							fragments.get(StructuralFragmentProperties.getMatchEngine())));
+					dataset.getSmartsMatchesFilePath(FragmentProperties.getMatchEngine(),
+							fragments.get(FragmentProperties.getMatchEngine())));
 		}
-		return cacheFile.get(StructuralFragmentProperties.getMatchEngine(), dataset);
+		return cacheFile.get(FragmentProperties.getMatchEngine(), dataset);
 	}
 
 	@Override
@@ -177,15 +169,15 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	@Override
 	public boolean compute(DatasetFile dataset)
 	{
-		Settings.LOGGER.info("Computing structural fragment " + StructuralFragmentProperties.getMatchEngine() + " "
-				+ StructuralFragmentProperties.getMinFrequency() + " "
-				+ StructuralFragmentProperties.isSkipOmniFragments() + " " + dataset.getSDF());
+		Settings.LOGGER.info("Computing structural fragment " + FragmentProperties.getMatchEngine() + " "
+				+ FragmentProperties.getMinFrequency() + " "
+				+ FragmentProperties.isSkipOmniFragments() + " " + dataset.getSDF());
 
 		List<String> smarts = new ArrayList<String>();
-		for (StructuralFragment fragment : fragments.get(StructuralFragmentProperties.getMatchEngine()))
+		for (ListedFragmentProperty fragment : fragments.get(FragmentProperties.getMatchEngine()))
 			smarts.add(fragment.getSmarts());
 		List<Integer> minNumMatches = new ArrayList<Integer>();
-		for (StructuralFragment fragment : fragments.get(StructuralFragmentProperties.getMatchEngine()))
+		for (ListedFragmentProperty fragment : fragments.get(FragmentProperties.getMatchEngine()))
 			minNumMatches.add(fragment.getMinNumMatches());
 
 		String smartsMatchFile = getSmartsMatchCacheFile(dataset);
@@ -205,9 +197,9 @@ public class StructuralFragmentSet extends FragmentPropertySet
 		}
 		if (matches == null)
 		{
-			if (StructuralFragmentProperties.getMatchEngine() == MatchEngine.CDK)
+			if (FragmentProperties.getMatchEngine() == MatchEngine.CDK)
 				matches = new CDKSmartsHandler().match(smarts, minNumMatches, dataset);
-			else if (StructuralFragmentProperties.getMatchEngine() == MatchEngine.OpenBabel)
+			else if (FragmentProperties.getMatchEngine() == MatchEngine.OpenBabel)
 				matches = new OpenBabelSmartsHandler().match(smarts, minNumMatches, dataset);
 			else
 				throw new Error("illegal match engine");
@@ -218,8 +210,8 @@ public class StructuralFragmentSet extends FragmentPropertySet
 		}
 
 		//		if (!computedFragments.containsKeyPair(StructuralFragmentProperties.getMatchEngine(), dataset))
-		computedFragments.put(StructuralFragmentProperties.getMatchEngine(), dataset,
-				new ArrayList<StructuralFragment>());
+		computedFragments.put(FragmentProperties.getMatchEngine(), dataset,
+				new ArrayList<ListedFragmentProperty>());
 
 		int count = 0;
 		for (boolean[] match : matches)
@@ -236,10 +228,10 @@ public class StructuralFragmentSet extends FragmentPropertySet
 				else
 					m[i] = "0";
 			}
-			StructuralFragment fragment = fragments.get(StructuralFragmentProperties.getMatchEngine()).get(count);
+			ListedFragmentProperty fragment = fragments.get(FragmentProperties.getMatchEngine()).get(count);
 			fragment.setFrequency(f);
 			fragment.setStringValues(m);
-			addFragment(fragment, dataset, StructuralFragmentProperties.getMatchEngine());
+			addFragment(fragment, dataset, FragmentProperties.getMatchEngine());
 			count++;
 		}
 		return true;
@@ -254,9 +246,9 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	@Override
 	public String getNameIncludingParams()
 	{
-		return toString() + "_" + StructuralFragmentProperties.getMatchEngine() + "_"
-				+ StructuralFragmentProperties.getMinFrequency() + "_"
-				+ StructuralFragmentProperties.isSkipOmniFragments();
+		return toString() + "_" + FragmentProperties.getMatchEngine() + "_"
+				+ FragmentProperties.getMinFrequency() + "_"
+				+ FragmentProperties.isSkipOmniFragments();
 	}
 
 	@Override
@@ -268,6 +260,6 @@ public class StructuralFragmentSet extends FragmentPropertySet
 	@Override
 	public boolean isComputationSlow()
 	{
-		return StructuralFragmentProperties.getMatchEngine() == MatchEngine.CDK && fragments.size() > 1000;
+		return FragmentProperties.getMatchEngine() == MatchEngine.CDK && fragments.size() > 1000;
 	}
 }

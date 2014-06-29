@@ -56,16 +56,17 @@ import util.FileUtil;
 import util.FileUtil.UnexpectedNumColsException;
 import util.ListUtil;
 import util.ValueFileCache;
-import data.integrated.IntegratedProperty;
 import data.integrated.IntegratedPropertySet;
-import dataInterface.CompoundProperty.Type;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertySet.Type;
+import dataInterface.NominalProperty;
 
 public class FeatureService
 {
 	private HashMap<DatasetFile, IMolecule[]> fileToCompounds = new HashMap<DatasetFile, IMolecule[]>();
 	private HashMap<DatasetFile, Boolean> fileHas3D = new HashMap<DatasetFile, Boolean>();
 	private HashMap<DatasetFile, LinkedHashSet<IntegratedPropertySet>> integratedProperties = new HashMap<DatasetFile, LinkedHashSet<IntegratedPropertySet>>();
-	private HashMap<DatasetFile, IntegratedPropertySet> integratedSmiles = new HashMap<DatasetFile, IntegratedPropertySet>();
+	private HashMap<DatasetFile, NominalProperty> integratedSmiles = new HashMap<DatasetFile, NominalProperty>();
 	private HashMap<DatasetFile, String[]> cdkSmiles = new HashMap<DatasetFile, String[]>();
 
 	public FeatureService()
@@ -438,8 +439,8 @@ public class FeatureService
 					if (key.toString().toUpperCase().equals("STRUCTURE_SMILES")
 							|| key.toString().toUpperCase().equals("SMILES"))
 					{
-						integratedSmiles.put(dataset, p);
-						p.get().setSmiles(true);
+						integratedSmiles.put(dataset, (NominalProperty) p.get());
+						((NominalProperty) p.get()).setSmiles(true);
 					}
 				}
 				if (!TaskProvider.isRunning())
@@ -514,7 +515,7 @@ public class FeatureService
 			// convert string to double
 			for (IntegratedPropertySet p : integratedProperties.get(dataset))
 			{
-				IntegratedProperty prop = p.get();
+				CompoundProperty prop = p.get();
 				List<Object> l = propVals.get(p);
 				while (l.size() < mCount)
 				{
@@ -524,30 +525,30 @@ public class FeatureService
 				String stringValues[] = new String[l.size()];
 				l.toArray(stringValues);
 
-				prop.setStringValues(stringValues);
+				p.setStringValues(stringValues);
 
 				Double doubleValues[] = ArrayUtil.parse(stringValues);
 				if (doubleValues != null)
 				{
 					// numericSdfProperties.get(f).add(p);
-					prop.setTypeAllowed(Type.NOMINAL, true);
-					prop.setTypeAllowed(Type.NUMERIC, true);
-					if (guessNominalFeatureType(prop.numDistinctValuesInCompleteDataset(), stringValues.length, true))
-						prop.setType(Type.NOMINAL);
+					p.setTypeAllowed(Type.NOMINAL, true);
+					p.setTypeAllowed(Type.NUMERIC, true);
+					if (guessNominalFeatureType(prop.numDistinctValues(), stringValues.length, true))
+						p.setType(Type.NOMINAL);
 					else
-						prop.setType(Type.NUMERIC);
+						p.setType(Type.NUMERIC);
 				}
 				else
 				{
-					prop.setTypeAllowed(Type.NOMINAL, true);
-					prop.setTypeAllowed(Type.NUMERIC, false);
-					if (guessNominalFeatureType(prop.numDistinctValuesInCompleteDataset(), stringValues.length, false))
-						prop.setType(Type.NOMINAL);
+					p.setTypeAllowed(Type.NOMINAL, true);
+					p.setTypeAllowed(Type.NUMERIC, false);
+					if (guessNominalFeatureType(prop.numDistinctValues(), stringValues.length, false))
+						p.setType(Type.NOMINAL);
 					else
-						prop.setType(null);
+						p.setType(null);
 				}
-				if (prop.getType() == Type.NUMERIC || prop.isTypeAllowed(Type.NUMERIC))
-					prop.setDoubleValues(doubleValues);
+				if (p.getType() == Type.NUMERIC || p.isTypeAllowed(Type.NUMERIC))
+					p.setDoubleValues(doubleValues);
 			}
 
 			IMolecule res[] = new IMolecule[mols.size()];
@@ -582,7 +583,7 @@ public class FeatureService
 	{
 		if (integratedSmiles.containsKey(dataset))
 		{
-			String smiles[] = integratedSmiles.get(dataset).get().getStringValuesInCompleteDataset();
+			String smiles[] = integratedSmiles.get(dataset).getStringValues();
 			SmilesGenerator sg = null;
 			for (int i = 0; i < smiles.length; i++)
 				if (smiles[i] == null || smiles[i].length() == 0)

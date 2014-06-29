@@ -20,13 +20,12 @@ import util.CountedSet;
 import data.DatasetFile;
 import data.cdk.CDKDescriptor;
 import data.fragments.MatchEngine;
-import dataInterface.CompoundProperty.SubstructureType;
-import dataInterface.FragmentProperty;
+import dataInterface.DefaultFragmentProperty;
+import dataInterface.FragmentProperty.SubstructureType;
 import dataInterface.FragmentPropertySet;
 
 public class CDKFingerprintSet extends FragmentPropertySet
 {
-
 	public static final CDKFingerprintSet[] FINGERPRINTS = new CDKFingerprintSet[2];
 	static
 	{
@@ -36,7 +35,6 @@ public class CDKFingerprintSet extends FragmentPropertySet
 					StandardSubstructureSets.getFunctionalGroupSMARTS()));
 			FINGERPRINTS[1] = new CDKFingerprintSet("CDK Klekota-Roth Biological Activity",
 					new KlekotaRothFingerprinter());
-
 		}
 		catch (Exception e)
 		{
@@ -46,86 +44,11 @@ public class CDKFingerprintSet extends FragmentPropertySet
 
 	SubstructureFingerprinter fingerprinter;
 
-	//	String name;
-
-	public CDKFingerprintSet(String name, SubstructureFingerprinter fingerprinter)
+	private CDKFingerprintSet(String name, SubstructureFingerprinter fingerprinter)
 	{
 		super(name, SubstructureType.MATCH);
 		this.fingerprinter = fingerprinter;
-		//		this.name = name;
 	}
-
-	//	private HashMap<DatasetFile, List<CDKFingerprintProperty>> props = new HashMap<DatasetFile, List<CDKFingerprintProperty>>();
-	//	private HashMap<DatasetFile, List<CDKFingerprintProperty>> filteredProps = new HashMap<DatasetFile, List<CDKFingerprintProperty>>();
-
-	//	@Override
-	//	public int getSize(DatasetFile d)
-	//	{
-	//		if (filteredProps.get(d) == null)
-	//			throw new Error("mine fragments first, number is not fixed");
-	//		return filteredProps.get(d).size();
-	//	}
-
-	//	@Override
-	//	public CDKFingerprintProperty get(DatasetFile d, int index)
-	//	{
-	//		if (filteredProps.get(d) == null)
-	//			throw new Error("mine fragments first, number is not fixed");
-	//		return filteredProps.get(d).get(index);
-	//	}
-
-	//	@Override
-	//	public boolean isSizeDynamic()
-	//	{
-	//		return true;
-	//	}
-
-	//	@Override
-	//	public boolean isComputed(DatasetFile dataset)
-	//	{
-	//		return filteredProps.get(dataset) != null;
-	//	}
-
-	//	@Override
-	//	public boolean isCached(DatasetFile dataset)
-	//	{
-	//		return false;
-	//	}
-
-	//	@Override
-	//	public Binary getBinary()
-	//	{
-	//		return null;
-	//	}
-
-	//	@Override
-	//	public SubstructureType getSubstructureType()
-	//	{
-	//		return SubstructureType.MATCH;
-	//	}
-
-	//	@Override
-	//	protected void updateFragments()
-	//	{
-	//		for (DatasetFile d : props.keySet())
-	//		{
-	//			List<CDKFingerprintProperty> filteredList = new ArrayList<CDKFingerprintProperty>();
-	//			for (CDKFingerprintProperty p : props.get(d))
-	//			{
-	//				boolean frequent = p.getFrequency() >= StructuralFragmentProperties.getMinFrequency();
-	//				boolean skipOmni = StructuralFragmentProperties.isSkipOmniFragments()
-	//						&& p.getFrequency() == d.numCompounds();
-	//				if (frequent && !skipOmni)
-	//					filteredList.add(p);
-	//			}
-	//			filteredProps.put(d, filteredList);
-	//		}
-	//	}
-
-	//	public String toString()
-	//	{
-	//		return name;
-	//	}
 
 	public static CDKFingerprintSet fromString(String string)
 	{
@@ -150,17 +73,11 @@ public class CDKFingerprintSet extends FragmentPropertySet
 				CDKDescriptor.getAPILink(fingerprinter.getClass()));
 	}
 
-	//	@Override
-	//	public Type getType()
-	//	{
-	//		return Type.NOMINAL;
-	//	}
-
 	@Override
 	public boolean compute(DatasetFile dataset)
 	{
-		List<FragmentProperty> ps = new ArrayList<FragmentProperty>();
-		HashMap<FragmentProperty, String[]> hash = new HashMap<FragmentProperty, String[]>();
+		List<DefaultFragmentProperty> ps = new ArrayList<DefaultFragmentProperty>();
+		HashMap<DefaultFragmentProperty, String[]> hash = new HashMap<DefaultFragmentProperty, String[]>();
 
 		TaskProvider.debug("Computing CDK fingerprint for compounds");
 		for (int m = 0; m < dataset.numCompounds(); m++)
@@ -178,8 +95,8 @@ public class CDKFingerprintSet extends FragmentPropertySet
 					{
 						String smarts = fingerprinter.getSubstructure(i);
 						//						CDKFingerprintProperty prop = CDKFingerprintProperty.create(this, smarts, smarts);
-						FragmentProperty prop = new FragmentProperty(this, smarts, "Structural Fragment", smarts,
-								MatchEngine.CDK);
+						DefaultFragmentProperty prop = new DefaultFragmentProperty(this, smarts, "Structural Fragment",
+								smarts, MatchEngine.CDK);
 						if (ps.indexOf(prop) == -1)
 							ps.add(prop);
 						String values[] = hash.get(prop);
@@ -203,7 +120,7 @@ public class CDKFingerprintSet extends FragmentPropertySet
 			if (!TaskProvider.isRunning())
 				return false;
 		}
-		for (FragmentProperty p : ps)
+		for (DefaultFragmentProperty p : ps)
 		{
 			String values[] = hash.get(p);
 			CountedSet<String> cs = CountedSet.fromArray(values);
@@ -218,20 +135,6 @@ public class CDKFingerprintSet extends FragmentPropertySet
 		updateFragments();
 		return true;
 	}
-
-	//	@Override
-	//	public boolean isSelectedForMapping()
-	//	{
-	//		return true;
-	//	}
-
-	//	@Override
-	//	public String getNameIncludingParams()
-	//	{
-	//		return toString() + "_" + StructuralFragmentProperties.getMatchEngine() + "_"
-	//				+ StructuralFragmentProperties.getMinFrequency() + "_"
-	//				+ StructuralFragmentProperties.isSkipOmniFragments();
-	//	}
 
 	@Override
 	public boolean isSizeDynamicHigh(DatasetFile dataset)

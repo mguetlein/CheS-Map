@@ -20,32 +20,43 @@ import util.ArrayUtil;
 import util.ExternalToolUtil;
 import util.ListUtil;
 import data.DatasetFile;
+import data.fragments.FragmentProperties;
 import data.fragments.MatchEngine;
-import data.fragments.StructuralFragmentProperties;
-import dataInterface.CompoundProperty.SubstructureType;
-import dataInterface.CompoundProperty.Type;
-import dataInterface.FragmentProperty;
+import dataInterface.DefaultFragmentProperty;
+import dataInterface.FragmentProperty.SubstructureType;
 import dataInterface.FragmentPropertySet;
 
 public class OBFingerprintSet extends FragmentPropertySet
 {
 	public static final OBFingerprintSet[] VISIBLE_FINGERPRINTS = new OBFingerprintSet[FingerprintType.visible_values().length];
 	public static final OBFingerprintSet[] HIDDEN_FINGERPRINTS = new OBFingerprintSet[FingerprintType.hidden_values().length];
+	private static HashMap<FingerprintType, OBFingerprintSet> sets = new HashMap<FingerprintType, OBFingerprintSet>();
 
 	static
 	{
 		int count = 0;
 		for (FingerprintType t : FingerprintType.visible_values())
-			VISIBLE_FINGERPRINTS[count++] = new OBFingerprintSet(t);
+		{
+			VISIBLE_FINGERPRINTS[count] = new OBFingerprintSet(t);
+			sets.put(t, VISIBLE_FINGERPRINTS[count++]);
+		}
 		count = 0;
 		for (FingerprintType t : FingerprintType.hidden_values())
-			HIDDEN_FINGERPRINTS[count++] = new OBFingerprintSet(t);
+		{
+			HIDDEN_FINGERPRINTS[count] = new OBFingerprintSet(t);
+			sets.put(t, HIDDEN_FINGERPRINTS[count++]);
+		}
 	}
 
 	FingerprintType type;
 	String description;
 
-	public OBFingerprintSet(FingerprintType type)
+	public static OBFingerprintSet getOBFingerprintSet(FingerprintType type)
+	{
+		return sets.get(type);
+	}
+
+	private OBFingerprintSet(FingerprintType type)
 	{
 		super();
 		this.type = type;
@@ -77,77 +88,11 @@ public class OBFingerprintSet extends FragmentPropertySet
 		}
 	}
 
-	//	private HashMap<DatasetFile, List<OBFingerprintProperty>> props = new HashMap<DatasetFile, List<OBFingerprintProperty>>();
-	//	private HashMap<DatasetFile, List<OBFingerprintProperty>> filteredProps = new HashMap<DatasetFile, List<OBFingerprintProperty>>();
-
-	//	@Override
-	//	public int getSize(DatasetFile d)
-	//	{
-	//		if (filteredProps.get(d) == null)
-	//			throw new Error("mine fragments first, number is not fixed");
-	//		return filteredProps.get(d).size();
-	//	}
-	//
-	//	@Override
-	//	public OBFingerprintProperty get(DatasetFile d, int index)
-	//	{
-	//		if (filteredProps.get(d) == null)
-	//			throw new Error("mine fragments first, number is not fixed");
-	//		return filteredProps.get(d).get(index);
-	//	}
-	//
-	//	@Override
-	//	public boolean isSizeDynamic()
-	//	{
-	//		return true;
-	//	}
-
-	//	@Override
-	//	public SubstructureType getSubstructureType()
-	//	{
-	//		return substructureType;
-	//	}
-
-	//	@Override
-	//	public boolean isComputed(DatasetFile dataset)
-	//	{
-	//		return filteredProps.get(dataset) != null;
-	//	}
-	//
-	//	@Override
-	//	public boolean isCached(DatasetFile dataset)
-	//	{
-	//		return false;
-	//	}
-
 	@Override
 	public Binary getBinary()
 	{
 		return BinHandler.BABEL_BINARY;
 	}
-
-	//	@Override
-	//	protected void updateFragments()
-	//	{
-	//		for (DatasetFile d : props.keySet())
-	//		{
-	//			List<OBFingerprintProperty> filteredList = new ArrayList<OBFingerprintProperty>();
-	//			for (OBFingerprintProperty p : props.get(d))
-	//			{
-	//				boolean frequent = p.getFrequency(d) >= StructuralFragmentProperties.getMinFrequency();
-	//				boolean skipOmni = StructuralFragmentProperties.isSkipOmniFragments()
-	//						&& p.getFrequency(d) == d.numCompounds();
-	//				if (frequent && !skipOmni)
-	//					filteredList.add(p);
-	//			}
-	//			filteredProps.put(d, filteredList);
-	//		}
-	//	}
-	//
-	//	public String toString()
-	//	{
-	//		return name;
-	//	}
 
 	public static OBFingerprintSet fromString(String string)
 	{
@@ -176,63 +121,6 @@ public class OBFingerprintSet extends FragmentPropertySet
 	{
 		return type;
 	}
-
-	// public List<String> compute(DatasetFile dataset) throws IOException
-	// {
-	// if (dataset.getSDFPath(false) == null)
-	// FeatureService.writeSDFFile(dataset);
-	//
-	// String filepath = Settings.destinationFile(dataset.getLocalPath(), dataset.getName() + ".fingerprint.hex");
-	//
-	// String cmd = Settings.BABEL_BINARY.getLocation() + " " + dataset.getSDFPath(false) + " -ofpt -xf" + type
-	// + " -xho";
-	// TaskProvider.task().verbose("Running babel: " + cmd);
-	// ExternalToolUtil.run("ob-fingerprints", cmd, new File(filepath));
-	//
-	// TaskProvider.task().verbose("Parsing fingerprints");
-	// BufferedReader buffy = new BufferedReader(new FileReader(new File(filepath)));
-	// String s = null;
-	// String hex = "";
-	// List<String> hexFingerprints = new ArrayList<String>();
-	// int hexSize = getSize(dataset) / 4;
-	//
-	// while ((s = buffy.readLine()) != null)
-	// {
-	// // babel 2.3.0
-	// if (!CharUtil.isHexChar(s.charAt(0)))
-	// continue;
-	// StringTokenizer tok = new StringTokenizer(s, " ");
-	// while (tok.hasMoreElements())
-	// {
-	// String ss = tok.nextToken();
-	// // Settings.LOGGER.info(ss);
-	// hex += ss;
-	// if (hex.length() == hexSize)
-	// {
-	// // Settings.LOGGER.info(hexFingerprints.size() + " : " + hex);
-	// hexFingerprints.add(hex);
-	// hex = "";
-	// }
-	// else if (hex.length() > hexSize)
-	// throw new Error("to long (" + hex.length() + " > " + hexSize + ") : " + hex);
-	// }
-	// }
-	// if (hex.length() != 0)
-	// throw new Error("hex-leftover: " + hex);
-	//
-	// List<String> binFingerprints = new ArrayList<String>();
-	// for (String string : hexFingerprints)
-	// {
-	// String bin = "";
-	// for (int i = 0; i < string.length(); i++)
-	// bin += StringUtil.concatChar(Integer.toBinaryString(Character.digit(string.charAt(i), 16)), 4, '0',
-	// false);
-	// // Settings.LOGGER.info(binFingerprints.size() + " : " + bin);
-	// binFingerprints.add(bin);
-	// }
-	//
-	// return binFingerprints;
-	// }
 
 	static class FPFragment
 	{
@@ -277,134 +165,158 @@ public class OBFingerprintSet extends FragmentPropertySet
 
 		private static FPFragment[] parseFP3Fragment(String line) throws IOException
 		{
-			if (fp3Fragments.size() == 0)
+			BufferedReader buffy = null;
+			try
 			{
-				BufferedReader buffy = new BufferedReader(new FileReader(new File(
-						BinHandler.getOBFileOrig("patterns.txt"))));
-				String s = "";
-				while ((s = buffy.readLine()) != null)
+				if (fp3Fragments.size() == 0)
 				{
-					if (!s.startsWith("#") && s.trim().length() > 0)
+					buffy = new BufferedReader(new FileReader(new File(BinHandler.getOBFileOrig("patterns.txt"))));
+					String s = "";
+					while ((s = buffy.readLine()) != null)
 					{
-						String ss[] = s.split("\\s");
-						if (ss.length < 3)
-							throw new Error("WTF: " + ArrayUtil.toString(ss));
-						FPFragment f = new FPFragment();
-						f.line = s;
-						f.smarts = ss[0];
-						String name = "";
-						for (int i = 2; i < ss.length; i++)
-							name += " " + ss[i];
-						f.name = name;
-						fp3Fragments.put(ss[1], f);
+						if (!s.startsWith("#") && s.trim().length() > 0)
+						{
+							String ss[] = s.split("\\s");
+							if (ss.length < 3)
+								throw new Error("WTF: " + ArrayUtil.toString(ss));
+							FPFragment f = new FPFragment();
+							f.line = s;
+							f.smarts = ss[0];
+							String name = "";
+							for (int i = 2; i < ss.length; i++)
+								name += " " + ss[i];
+							f.name = name;
+							fp3Fragments.put(ss[1], f);
+						}
 					}
 				}
+				List<FPFragment> l = new ArrayList<FPFragment>();
+				for (String s : line.split("\\s"))
+				{
+					if (!fp3Fragments.containsKey(s))
+						throw new Error("key not found: " + s + ", keys: " + fp3Fragments.keySet());
+					l.add(fp3Fragments.get(s));
+				}
+				FPFragment f[] = new FPFragment[l.size()];
+				return l.toArray(f);
 			}
-			List<FPFragment> l = new ArrayList<FPFragment>();
-			for (String s : line.split("\\s"))
+			finally
 			{
-				if (!fp3Fragments.containsKey(s))
-					throw new Error("key not found: " + s + ", keys: " + fp3Fragments.keySet());
-				l.add(fp3Fragments.get(s));
+				if (buffy != null)
+					buffy.close();
 			}
-			FPFragment f[] = new FPFragment[l.size()];
-			return l.toArray(f);
 		}
 
 		private static HashMap<String, FPFragment> fp4Fragments = new HashMap<String, FPFragment>();
 
 		private static FPFragment[] parseFP4Fragment(String line) throws IOException
 		{
-			if (fp4Fragments.size() == 0)
+			BufferedReader buffy = null;
+			try
 			{
-				BufferedReader buffy = new BufferedReader(new FileReader(
-						BinHandler.getOBFileOrig("SMARTS_InteLigand.txt")));
-				String s = "";
-				while ((s = buffy.readLine()) != null)
+				if (fp4Fragments.size() == 0)
 				{
-					if (!s.startsWith("#") && s.trim().length() > 0)
+					buffy = new BufferedReader(new FileReader(BinHandler.getOBFileOrig("SMARTS_InteLigand.txt")));
+					String s = "";
+					while ((s = buffy.readLine()) != null)
 					{
-						int i = s.indexOf(':');
-						if (i == -1)
-							throw new Error("WTF: " + line);
-						FPFragment f = new FPFragment();
-						f.line = s;
-						f.smarts = s.substring(i + 1).trim();
-						String name = s.substring(0, i).trim();
-						f.name = name;
-						fp4Fragments.put(name, f);
+						if (!s.startsWith("#") && s.trim().length() > 0)
+						{
+							int i = s.indexOf(':');
+							if (i == -1)
+								throw new Error("WTF: " + line);
+							FPFragment f = new FPFragment();
+							f.line = s;
+							f.smarts = s.substring(i + 1).trim();
+							String name = s.substring(0, i).trim();
+							f.name = name;
+							fp4Fragments.put(name, f);
+						}
 					}
 				}
+				List<FPFragment> l = new ArrayList<FPFragment>();
+				for (String s : line.split("\\s"))
+				{
+					if (!fp4Fragments.containsKey(s))
+						throw new Error("key not found: " + s + ", keys: " + fp4Fragments.keySet());
+					l.add(fp4Fragments.get(s));
+				}
+				FPFragment f[] = new FPFragment[l.size()];
+				return l.toArray(f);
 			}
-			List<FPFragment> l = new ArrayList<FPFragment>();
-			for (String s : line.split("\\s"))
+			finally
 			{
-				if (!fp4Fragments.containsKey(s))
-					throw new Error("key not found: " + s + ", keys: " + fp4Fragments.keySet());
-				l.add(fp4Fragments.get(s));
+				if (buffy != null)
+					buffy.close();
 			}
-			FPFragment f[] = new FPFragment[l.size()];
-			return l.toArray(f);
 		}
 
 		private static HashMap<String, FPFragment> maccsFragments = new HashMap<String, FPFragment>();
 
 		private static FPFragment[] parseMACCSFragment(String line) throws IOException
 		{
-			// Settings.LOGGER.warn("frags: " + line);
-			if (maccsFragments.size() == 0)
+			BufferedReader buffy = null;
+			try
 			{
-				// 155:('*!@[CH2]!@*',0), # A!CH2!A
-				BufferedReader buffy = new BufferedReader(new FileReader(
-						new File(BinHandler.getOBFileOrig("MACCS.txt"))));
-				String s = "";
-				while ((s = buffy.readLine()) != null)
+				// Settings.LOGGER.warn("frags: " + line);
+				if (maccsFragments.size() == 0)
 				{
-					if (!s.trim().startsWith("#") && s.trim().length() > 0)
+					// 155:('*!@[CH2]!@*',0), # A!CH2!A
+					buffy = new BufferedReader(new FileReader(new File(BinHandler.getOBFileOrig("MACCS.txt"))));
+					String s = "";
+					while ((s = buffy.readLine()) != null)
 					{
-						// Settings.LOGGER.warn(s);
-						Pattern pattern = Pattern.compile("^\\s*([0-9]++\\:)\\(\\'(.*)\\',[0-9]\\),.*#(.*)$");
-						Matcher matcher = pattern.matcher(s);
-						boolean matchFound = matcher.find();
-						if (!matchFound)
-							throw new Error("WTF: " + s);
-						// for (int i = 0; i <= matcher.groupCount(); i++)
-						// Settings.LOGGER.warn(i + " " + matcher.group(i));
-						FPFragment f = new FPFragment();
-						f.line = s;
-						f.smarts = matcher.group(2);
-						String name = matcher.group(3);
-						int i = name.indexOf("FIX:");
-						if (i == -1)
-							i = name.indexOf("*NOTE*");
-						if (i != -1)
-							name = name.substring(0, i);
-						String space = name.startsWith(" ") ? "" : " ";
-						f.name = name.trim();
-						String key = (matcher.group(1) + space + name).trim();
-						maccsFragments.put(key, f);
+						if (!s.trim().startsWith("#") && s.trim().length() > 0)
+						{
+							// Settings.LOGGER.warn(s);
+							Pattern pattern = Pattern.compile("^\\s*([0-9]++\\:)\\(\\'(.*)\\',[0-9]\\),.*#(.*)$");
+							Matcher matcher = pattern.matcher(s);
+							boolean matchFound = matcher.find();
+							if (!matchFound)
+								throw new Error("WTF: " + s);
+							// for (int i = 0; i <= matcher.groupCount(); i++)
+							// Settings.LOGGER.warn(i + " " + matcher.group(i));
+							FPFragment f = new FPFragment();
+							f.line = s;
+							f.smarts = matcher.group(2);
+							String name = matcher.group(3);
+							int i = name.indexOf("FIX:");
+							if (i == -1)
+								i = name.indexOf("*NOTE*");
+							if (i != -1)
+								name = name.substring(0, i);
+							String space = name.startsWith(" ") ? "" : " ";
+							f.name = name.trim();
+							String key = (matcher.group(1) + space + name).trim();
+							maccsFragments.put(key, f);
+						}
 					}
 				}
-			}
-			List<FPFragment> l = new ArrayList<FPFragment>();
-			boolean minFreq = false;
-			for (String s : line.split("\\t"))
-			{
-				s = s.trim();
-				if (minFreq && s.matches("^\\*[2-4].*"))
-					s = s.substring(2).trim();
-				if (s.matches(".*\\*[2-4]$"))
-					s = s.substring(0, s.length() - 2).trim();
-				// Settings.LOGGER.warn("key: " + s);
-				if (!maccsFragments.containsKey(s))
-					throw new Error("key not found: '" + s + "', keys: "
-							+ ListUtil.toString(new ArrayList<String>(maccsFragments.keySet()), "\n"));
-				minFreq = s.matches(".*>(\\s)*[1-3].*");
-				l.add(maccsFragments.get(s));
+				List<FPFragment> l = new ArrayList<FPFragment>();
+				boolean minFreq = false;
+				for (String s : line.split("\\t"))
+				{
+					s = s.trim();
+					if (minFreq && s.matches("^\\*[2-4].*"))
+						s = s.substring(2).trim();
+					if (s.matches(".*\\*[2-4]$"))
+						s = s.substring(0, s.length() - 2).trim();
+					// Settings.LOGGER.warn("key: " + s);
+					if (!maccsFragments.containsKey(s))
+						throw new Error("key not found: '" + s + "', keys: "
+								+ ListUtil.toString(new ArrayList<String>(maccsFragments.keySet()), "\n"));
+					minFreq = s.matches(".*>(\\s)*[1-3].*");
+					l.add(maccsFragments.get(s));
 
+				}
+				FPFragment f[] = new FPFragment[l.size()];
+				return l.toArray(f);
 			}
-			FPFragment f[] = new FPFragment[l.size()];
-			return l.toArray(f);
+			finally
+			{
+				if (buffy != null)
+					buffy.close();
+			}
 		}
 
 		private static String BONDS[] = { null, "-", "=", "#", null, ":" };
@@ -491,9 +403,8 @@ public class OBFingerprintSet extends FragmentPropertySet
 		BufferedReader buffy = null;
 		try
 		{
-			Settings.LOGGER.info("computing structural fragment " + StructuralFragmentProperties.getMatchEngine() + " "
-					+ StructuralFragmentProperties.getMinFrequency() + " "
-					+ StructuralFragmentProperties.isSkipOmniFragments());
+			Settings.LOGGER.info("computing structural fragment " + FragmentProperties.getMatchEngine() + " "
+					+ FragmentProperties.getMinFrequency() + " " + FragmentProperties.isSkipOmniFragments());
 
 			List<String[]> featureValues = new ArrayList<String[]>();
 
@@ -520,7 +431,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 			// else
 			// {
 
-			LinkedHashMap<FragmentProperty, List<Integer>> occurences = new LinkedHashMap<FragmentProperty, List<Integer>>();
+			LinkedHashMap<DefaultFragmentProperty, List<Integer>> occurences = new LinkedHashMap<DefaultFragmentProperty, List<Integer>>();
 
 			tmp = File.createTempFile(dataset.getShortName(), "OBfingerprint");
 			String cmd[] = { BinHandler.BABEL_BINARY.getLocation(), "-isdf", dataset.getSDF(), "-ofpt", "-xf",
@@ -552,7 +463,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 						// OBFingerprintProperty prop = new OBFingerprintProperty(fpFragment, type);
 						//						OBFingerprintProperty prop = OBFingerprintProperty.createCDKProperty(type, fpFragment.name.trim(),
 						//								fpFragment.smarts);
-						FragmentProperty prop = new FragmentProperty(this, fpFragment.name.trim(),
+						DefaultFragmentProperty prop = new DefaultFragmentProperty(this, fpFragment.name.trim(),
 								"Structural Fragment", fpFragment.smarts, MatchEngine.OpenBabel);
 
 						if (!occurences.containsKey(prop))
@@ -568,7 +479,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 			if (dataset.numCompounds() - 1 != count)
 				throw new Error("num compounds not correct " + dataset.numCompounds() + " " + count);
 
-			for (FragmentProperty p : occurences.keySet())
+			for (DefaultFragmentProperty p : occurences.keySet())
 			{
 				p.setFrequency(occurences.get(p).size());
 
@@ -579,8 +490,8 @@ public class OBFingerprintSet extends FragmentPropertySet
 				p.setStringValues(featureValue);
 			}
 
-			List<FragmentProperty> ps = new ArrayList<FragmentProperty>();
-			for (FragmentProperty obFingerprintProperty : occurences.keySet())
+			List<DefaultFragmentProperty> ps = new ArrayList<DefaultFragmentProperty>();
+			for (DefaultFragmentProperty obFingerprintProperty : occurences.keySet())
 				ps.add(obFingerprintProperty);
 
 			props.put(dataset, ps);
@@ -619,16 +530,15 @@ public class OBFingerprintSet extends FragmentPropertySet
 	@Override
 	public String getNameIncludingParams()
 	{
-		return toString() + "_" + StructuralFragmentProperties.getMatchEngine() + "_"
-				+ StructuralFragmentProperties.getMinFrequency() + "_"
-				+ StructuralFragmentProperties.isSkipOmniFragments();
+		return toString() + "_" + FragmentProperties.getMatchEngine() + "_" + FragmentProperties.getMinFrequency()
+				+ "_" + FragmentProperties.isSkipOmniFragments();
 	}
 
 	@Override
 	public boolean isSizeDynamicHigh(DatasetFile dataset)
 	{
 		return type == FingerprintType.FP2 && dataset.numCompounds() >= 100
-				&& StructuralFragmentProperties.getMinFrequency() <= 2;
+				&& FragmentProperties.getMinFrequency() <= 2;
 	}
 
 	@Override

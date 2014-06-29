@@ -3,16 +3,15 @@ package dataInterface;
 import java.util.List;
 
 import util.StringUtil;
-import dataInterface.CompoundProperty.Type;
 
 public class CompoundPropertySetUtil
 {
-	public static Type getType(CompoundPropertySet[] set)
+	public static CompoundPropertySet.Type getType(CompoundPropertySet[] set)
 	{
-		Type type = null;
+		CompoundPropertySet.Type type = null;
 		for (CompoundPropertySet s : set)
 		{
-			CompoundProperty.Type t = s.getType();
+			CompoundPropertySet.Type t = s.getType();
 			if (t == null || (type != null && type != t))
 				return null;
 			else
@@ -21,7 +20,7 @@ public class CompoundPropertySetUtil
 		return type;
 	}
 
-	public static Type getType(CompoundPropertySet set)
+	public static CompoundPropertySet.Type getType(CompoundPropertySet set)
 	{
 		return getType(new CompoundPropertySet[] { set });
 	}

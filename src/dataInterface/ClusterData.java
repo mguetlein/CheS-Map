@@ -29,7 +29,7 @@ public interface ClusterData extends CompoundPropertyOwner
 
 	public String getSummaryStringValue(CompoundProperty p, boolean html);
 
-	public CountedSet<String> getNominalSummary(CompoundProperty p);
+	public CountedSet<String> getNominalSummary(NominalProperty p);
 
 	public int numMissingValues(CompoundProperty p);
 

@@ -8,8 +8,9 @@ import alg.FeatureComputer;
 import data.integrated.IntegratedPropertySet;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
+import dataInterface.NominalProperty;
+import dataInterface.NumericProperty;
 
 public class DefaultFeatureComputer implements FeatureComputer
 {
@@ -89,13 +90,13 @@ public class DefaultFeatureComputer implements FeatureComputer
 			Double d[] = null;
 			String s[] = null;
 			Double n[] = null;
-			if (p.getType() == Type.NUMERIC)
+			if (p instanceof NumericProperty)
 			{
-				d = p.getDoubleValuesInCompleteDataset();
-				n = p.getNormalizedValuesInCompleteDataset();
+				d = ((NumericProperty) p).getDoubleValues();
+				n = ((NumericProperty) p).getNormalizedValues();
 			}
 			else
-				s = p.getStringValuesInCompleteDataset();
+				s = ((NominalProperty) p).getStringValues();
 
 			if ((d != null && d.length != numCompounds) || (s != null && s.length != numCompounds))
 				throw new Error("illegal num features " + p + ", is:" + (d != null ? d.length : s.length)
@@ -108,7 +109,7 @@ public class DefaultFeatureComputer implements FeatureComputer
 			{
 				CompoundDataImpl c = (CompoundDataImpl) compounds.get(i);
 
-				if (p.getType() == Type.NUMERIC)
+				if (p instanceof NumericProperty)
 				{
 					c.setDoubleValue(p, d[i]);
 					c.setNormalizedValueCompleteDataset(p, n[i]);

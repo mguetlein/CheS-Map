@@ -3,22 +3,26 @@ package data.integrated;
 import gui.binloc.Binary;
 import util.DoubleKeyHashMap;
 import data.DatasetFile;
+import dataInterface.AbstractPropertySet;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.SubstructureType;
-import dataInterface.CompoundProperty.Type;
-import dataInterface.CompoundPropertySet;
+import dataInterface.DefaultNominalProperty;
+import dataInterface.DefaultNumericProperty;
+import dataInterface.FragmentProperty.SubstructureType;
 
-public class IntegratedPropertySet implements CompoundPropertySet
+public class IntegratedPropertySet extends AbstractPropertySet
 {
 	private String propertyName;
 	private boolean selectedForMapping;
-	private IntegratedProperty prop;
+
+	private DefaultNominalProperty propNominal;
+	private DefaultNumericProperty propNumeric;
 
 	private IntegratedPropertySet(String property)
 	{
 		//super(property, /*property + "." + dataset.toString() + "." + dataset.getMD5(),*/"Included in Dataset");
 		this.propertyName = property;
-		prop = new IntegratedProperty(property);
+		propNominal = new DefaultNominalProperty(this, propertyName, "Included in Dataset");
+		propNumeric = new DefaultNumericProperty(this, propertyName, "Included in Dataset");
 	}
 
 	private static DoubleKeyHashMap<String, DatasetFile, IntegratedPropertySet> sets = new DoubleKeyHashMap<String, DatasetFile, IntegratedPropertySet>();
@@ -33,9 +37,9 @@ public class IntegratedPropertySet implements CompoundPropertySet
 	public static IntegratedPropertySet fromString(String property, Type t, DatasetFile dataset)
 	{
 		IntegratedPropertySet p = create(property, dataset);
-		if (!p.prop.isTypeAllowed(t))
+		if (!p.isTypeAllowed(t))
 			throw new IllegalArgumentException();
-		p.prop.setType(t);
+		p.setType(t);
 		return p;
 	}
 
@@ -71,12 +75,15 @@ public class IntegratedPropertySet implements CompoundPropertySet
 	{
 		if (index != 0)
 			throw new Error("only one prop available");
-		return prop;
+		return get();
 	}
 
-	public IntegratedProperty get()
+	public CompoundProperty get()
 	{
-		return prop;
+		if (getType() == Type.NUMERIC)
+			return propNumeric;
+		else
+			return propNominal;
 	}
 
 	@Override
@@ -146,12 +153,6 @@ public class IntegratedPropertySet implements CompoundPropertySet
 	}
 
 	@Override
-	public Type getType()
-	{
-		return prop.getType();
-	}
-
-	@Override
 	public String getDescription()
 	{
 		return "Included in Dataset";
@@ -161,6 +162,16 @@ public class IntegratedPropertySet implements CompoundPropertySet
 	public SubstructureType getSubstructureType()
 	{
 		return null;
+	}
+
+	public void setStringValues(String values[])
+	{
+		propNominal.setStringValues(values);
+	}
+
+	public void setDoubleValues(Double values[])
+	{
+		propNumeric.setDoubleValues(values);
 	}
 
 }

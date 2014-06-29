@@ -14,17 +14,16 @@ import util.ArrayUtil;
 import util.DoubleArraySummary;
 import data.DatasetFile;
 import data.cdk.CDKProperty;
-import data.obdesc.OBDescriptorPropertySet;
+import data.obdesc.OBDescriptorSet;
 import data.obfingerprints.OBFingerprintSet;
-import dataInterface.CompoundProperty.Type;
 import freechart.FreeChartUtil;
 
 public class CompoundPropertyUtil
 {
-	public static boolean isExportedFPProperty(CompoundProperty p)
+	public static boolean isExportedFPProperty(NominalProperty p)
 	{
-		return (p.getType() != Type.NUMERIC && p.getNominalDomain().length == 2 && p.getNominalDomain()[0].equals("0")
-				&& p.getNominalDomain()[1].equals("1") && p.toString().matches("^OB-.*:.*"));
+		return (p.getDomain().length == 2 && p.getDomain()[0].equals("0")
+				&& p.getDomain()[1].equals("1") && p.toString().matches("^OB-.*:.*"));
 	}
 
 	//	public static boolean isExportedFPPropertyInMappedDataset(CompoundProperty p)
@@ -48,7 +47,7 @@ public class CompoundPropertyUtil
 	{
 		if (p instanceof CDKProperty)
 			return "CDK:" + p.toString();
-		if (p instanceof OBDescriptorPropertySet)
+		if (p instanceof OBDescriptorSet)
 			return "OB:" + p.toString();
 		if (p.getCompoundPropertySet() instanceof OBFingerprintSet)
 			return "OB-" + ((OBFingerprintSet) p.getCompoundPropertySet()).getOBType() + ":" + p.toString();
@@ -78,16 +77,16 @@ public class CompoundPropertyUtil
 			int count = 0;
 			for (CompoundProperty p : props)
 			{
-				if (p.getType() == Type.NUMERIC)
+				if (p instanceof NumericProperty)
 				{
-					Double val = vv.getNormalizedValueCompleteDataset(p);
+					Double val = vv.getNormalizedValueCompleteDataset((NumericProperty) p);
 					if (val == null)
-						d[count++] = p.getNormalizedMedianInCompleteDataset() + "";
+						d[count++] = ((NumericProperty) p).getNormalizedMedian() + "";
 					else
 						d[count++] = val + "";
 				}
 				else
-					d[count++] = vv.getStringValue(p);
+					d[count++] = vv.getStringValue((NominalProperty) p);
 			}
 			v.add(d);
 		}
@@ -142,38 +141,39 @@ public class CompoundPropertyUtil
 
 	private static HashMap<String, Color[]> mapping = new HashMap<String, Color[]>();
 
-	public static Color[] getNominalColors(CompoundProperty p)
+	public static Color[] getNominalColors(NominalProperty p)
 	{
-		if (p.getType() != Type.NOMINAL)
-			throw new IllegalArgumentException();
-
-		String key = p.toString() + "#" + p.getNominalDomain().hashCode() + "#"
-				+ (p.isSmartsProperty() ? CompoundPropertyUtil.HIGHILIGHT_MATCH_COLORS : p.getHighlightColorSequence());
+		String key = p.toString()
+				+ "#"
+				+ p.getDomain().hashCode()
+				+ "#"
+				+ (p instanceof FragmentProperty ? CompoundPropertyUtil.HIGHILIGHT_MATCH_COLORS : p
+						.getHighlightColorSequence());
 		if (!mapping.containsKey(key))
 		{
 			Color col[];
-			if (p.isSmartsProperty())
+			if (p instanceof FragmentProperty)
 				col = CompoundPropertyUtil.HIGHILIGHT_MATCH_COLORS;
 			else
 			{
 				col = p.getHighlightColorSequence();
 				if (col == null)
 					col = AVAILABLE_COLORS;
-				while (p.getNominalDomain().length > col.length)
+				while (p.getDomain().length > col.length)
 					col = ArrayUtil.concat(col, col);
-				if (p.getNominalDomain().length < col.length)
-					col = Arrays.copyOfRange(col, 0, p.getNominalDomain().length);
+				if (p.getDomain().length < col.length)
+					col = Arrays.copyOfRange(col, 0, p.getDomain().length);
 			}
 			mapping.put(key, col);
 		}
 		return mapping.get(key);
 	}
 
-	public static Color getNominalColor(CompoundProperty p, String val)
+	public static Color getNominalColor(NominalProperty p, String val)
 	{
-		int index = ArrayUtil.indexOf(p.getNominalDomain(), val);
+		int index = ArrayUtil.indexOf(p.getDomain(), val);
 		if (index == -1)
-			throw new IllegalStateException(val + " not found in " + ArrayUtil.toString(p.getNominalDomain())
+			throw new IllegalStateException(val + " not found in " + ArrayUtil.toString(p.getDomain())
 					+ " for property " + p);
 		return getNominalColors(p)[index];
 	}
@@ -181,7 +181,7 @@ public class CompoundPropertyUtil
 	public static boolean containsSmartsProperty(List<CompoundProperty> list)
 	{
 		for (CompoundProperty p : list)
-			if (p.isSmartsProperty())
+			if (p instanceof FragmentProperty)
 				return true;
 		return false;
 	}
@@ -263,10 +263,11 @@ public class CompoundPropertyUtil
 			else
 			{
 				CompoundProperty pMatch = notRedundant.get(matchIndex);
-				if ((p.isSmartsProperty() && !pMatch.isSmartsProperty()) // only the new p is smarts
-						|| (p.isSmartsProperty() && pMatch.isSmartsProperty() // if both are smarts 
+				if ((p instanceof FragmentProperty && !(pMatch instanceof FragmentProperty)) // only the new p is smarts
+						|| (p instanceof FragmentProperty && pMatch instanceof FragmentProperty // if both are smarts 
 						// use the shorter one
-						&& SmartsUtil.getLength(p.getSmarts()) < SmartsUtil.getLength(pMatch.getSmarts())))
+						&& SmartsUtil.getLength(((FragmentProperty) p).getSmarts()) < SmartsUtil
+								.getLength(((FragmentProperty) pMatch).getSmarts())))
 				{
 					notRedundant.set(matchIndex, p); // replace pMatch
 					redundantIndices.put(pMatch, matchIndex);
@@ -279,20 +280,21 @@ public class CompoundPropertyUtil
 		for (CompoundProperty p : redundantIndices.keySet())
 		{
 			redundant.put(p, notRedundant.get(redundantIndices.get(p)));
-			if (p.isSmartsProperty() && redundant.get(p).isSmartsProperty())
-				Settings.LOGGER.debug("skip " + p.getSmarts() + " because of " + redundant.get(p).getSmarts());
+			if (p instanceof FragmentProperty && redundant.get(p) instanceof FragmentProperty)
+				Settings.LOGGER.debug("skip " + ((FragmentProperty) p).getSmarts() + " because of "
+						+ ((FragmentProperty) redundant.get(p)).getSmarts());
 		}
 		return redundant;
 	}
 
 	private static boolean isRedundant(CompoundProperty p1, CompoundProperty p2, int compoundSubset[])
 	{
-		if (p1.getType() == Type.NUMERIC && p2.getType() == Type.NUMERIC)
-			return ArrayUtil.equals(p1.getDoubleValuesInCompleteDataset(), p2.getDoubleValuesInCompleteDataset(),
-					compoundSubset);
-		else if (p1.getType() == Type.NOMINAL && p2.getType() == Type.NOMINAL)
-			return ArrayUtil.redundant(p1.getStringValuesInCompleteDataset(), p2.getStringValuesInCompleteDataset(),
-					compoundSubset);
+		if (p1 instanceof NumericProperty && p2 instanceof NumericProperty)
+			return ArrayUtil.equals(((NumericProperty) p1).getDoubleValues(),
+					((NumericProperty) p2).getDoubleValues(), compoundSubset);
+		else if (p1 instanceof NominalProperty && p2 instanceof NominalProperty)
+			return ArrayUtil.redundant(((NominalProperty) p1).getStringValues(),
+					((NominalProperty) p2).getStringValues(), compoundSubset);
 		else
 			return false;
 	}

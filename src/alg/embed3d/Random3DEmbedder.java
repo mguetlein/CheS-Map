@@ -51,7 +51,7 @@ public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedde
 	}
 
 	@Override
-	public CompoundProperty getCorrelationProperty(CorrelationType t)
+	public CorrelationProperty getCorrelationProperty(CorrelationType t)
 	{
 		return null;
 	}

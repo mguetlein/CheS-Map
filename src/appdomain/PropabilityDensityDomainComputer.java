@@ -67,7 +67,7 @@ public class PropabilityDensityDomainComputer extends AbstractAppDomainComputer
 		{
 			for (int j = 0; j < d[0].length; j++)
 			{
-				d[i][j] = features.get(j).getNormalizedValuesInCompleteDataset()[i];
+				d[i][j] = features.get(j).getNormalizedValues()[i];
 			}
 		}
 

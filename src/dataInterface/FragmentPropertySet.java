@@ -9,9 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import data.DatasetFile;
-import data.fragments.StructuralFragmentProperties;
-import dataInterface.CompoundProperty.SubstructureType;
-import dataInterface.CompoundProperty.Type;
+import data.fragments.FragmentProperties;
+import dataInterface.FragmentProperty.SubstructureType;
 
 public abstract class FragmentPropertySet implements CompoundPropertySet
 {
@@ -27,7 +26,7 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 
 	public FragmentPropertySet()
 	{
-		StructuralFragmentProperties.addPropertyChangeListenerToProperties(new PropertyChangeListener()
+		FragmentProperties.addPropertyChangeListenerToProperties(new PropertyChangeListener()
 		{
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
@@ -48,8 +47,8 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 		return false;
 	}
 
-	protected HashMap<DatasetFile, List<FragmentProperty>> props = new HashMap<DatasetFile, List<FragmentProperty>>();
-	private HashMap<DatasetFile, List<FragmentProperty>> filteredProps = new HashMap<DatasetFile, List<FragmentProperty>>();
+	protected HashMap<DatasetFile, List<DefaultFragmentProperty>> props = new HashMap<DatasetFile, List<DefaultFragmentProperty>>();
+	private HashMap<DatasetFile, List<DefaultFragmentProperty>> filteredProps = new HashMap<DatasetFile, List<DefaultFragmentProperty>>();
 
 	@Override
 	public int getSize(DatasetFile d)
@@ -60,7 +59,7 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 	}
 
 	@Override
-	public FragmentProperty get(DatasetFile d, int index)
+	public DefaultFragmentProperty get(DatasetFile d, int index)
 	{
 		if (filteredProps.get(d) == null)
 			throw new Error("mine fragments first, number is not fixed");
@@ -83,11 +82,11 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 	{
 		for (DatasetFile d : props.keySet())
 		{
-			List<FragmentProperty> filteredList = new ArrayList<FragmentProperty>();
-			for (FragmentProperty p : props.get(d))
+			List<DefaultFragmentProperty> filteredList = new ArrayList<DefaultFragmentProperty>();
+			for (DefaultFragmentProperty p : props.get(d))
 			{
-				boolean frequent = p.getFrequency() >= StructuralFragmentProperties.getMinFrequency();
-				boolean skipOmni = StructuralFragmentProperties.isSkipOmniFragments()
+				boolean frequent = p.getFrequency() >= FragmentProperties.getMinFrequency();
+				boolean skipOmni = FragmentProperties.isSkipOmniFragments()
 						&& p.getFrequency() == d.numCompounds();
 				if (frequent && !skipOmni)
 					filteredList.add(p);
@@ -111,9 +110,9 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 	@Override
 	public String getNameIncludingParams()
 	{
-		return toString() + "_" + StructuralFragmentProperties.getMatchEngine() + "_"
-				+ StructuralFragmentProperties.getMinFrequency() + "_"
-				+ StructuralFragmentProperties.isSkipOmniFragments();
+		return toString() + "_" + FragmentProperties.getMatchEngine() + "_"
+				+ FragmentProperties.getMinFrequency() + "_"
+				+ FragmentProperties.isSkipOmniFragments();
 	}
 
 	@Override
@@ -132,6 +131,25 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 	public SubstructureType getSubstructureType()
 	{
 		return substructureType;
+	}
+
+	@Override
+	public void setType(Type type)
+	{
+		//		if (type != Type.NOMINAL)
+		throw new IllegalStateException();
+	}
+
+	@Override
+	public boolean isTypeAllowed(Type type)
+	{
+		return type == Type.NOMINAL;
+	}
+
+	@Override
+	public void setTypeAllowed(Type type, boolean allowed)
+	{
+		throw new IllegalStateException();
 	}
 
 	//	public void clearProperties()

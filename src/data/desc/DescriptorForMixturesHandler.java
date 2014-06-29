@@ -18,7 +18,7 @@ import util.ArrayUtil;
 import data.DatasetFile;
 import data.cdk.CDKDescriptor;
 import data.obdesc.OBDescriptorFactory;
-import dataInterface.CompoundProperty.Type;
+import dataInterface.CompoundPropertySet.Type;
 
 public class DescriptorForMixturesHandler
 {

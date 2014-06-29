@@ -11,7 +11,7 @@ import alg.Algorithm;
 import alg.build3d.ThreeDBuilder;
 import appdomain.AppDomainComputer;
 import data.fragments.MatchEngine;
-import data.fragments.StructuralFragment;
+import data.fragments.ListedFragmentProperty;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundPropertySet;
 import dataInterface.CompoundPropertyUtil;
@@ -80,10 +80,10 @@ public class FilenameProvider
 		return Settings.destinationFile(dataset, getEncodedSettingsIncludingFeatures(app) + "." + param);
 	}
 
-	public String getSmartsMatchesFilePath(MatchEngine matchEngine, List<StructuralFragment> fragments)
+	public String getSmartsMatchesFilePath(MatchEngine matchEngine, List<ListedFragmentProperty> fragments)
 	{
 		String allSmartsStrings = "";
-		for (StructuralFragment fragment : fragments)
+		for (ListedFragmentProperty fragment : fragments)
 			allSmartsStrings += fragment.getSmarts();
 		String enc = StringUtil.getMD5(matchEngine + allSmartsStrings);
 		return Settings.destinationFile(dataset, enc + ".matches.csv");

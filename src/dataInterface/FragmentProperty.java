@@ -2,37 +2,21 @@ package dataInterface;
 
 import data.fragments.MatchEngine;
 
-public class FragmentProperty extends DefaultCompoundProperty
+public interface FragmentProperty extends NominalProperty
 {
-	public FragmentProperty(FragmentPropertySet set, String name, String description, String smarts,
-			MatchEngine matchEngine)
+	public static enum SubstructureType
 	{
-		//super(name, uniqueName, description);
-		super(name, description);
-		this.set = set;
-		setSmarts(smarts);
-		setSmartsMatchEngine(matchEngine);
-		setTypeAllowed(Type.NUMERIC, false);
-		setType(Type.NOMINAL);
+		MINE, MATCH
 	}
 
-	protected Integer freq;
-	protected FragmentPropertySet set;
+	public String getSmarts();
 
-	public void setFrequency(int f)
-	{
-		freq = f;
-	}
+	public MatchEngine getSmartsMatchEngine();
 
-	public int getFrequency()
-	{
-		return freq;
-	}
+	public SubstructureType getSubstructureType();
 
-	@Override
-	public FragmentPropertySet getCompoundPropertySet()
-	{
-		return set;
-	}
+	public void setFrequency(int f);
+
+	public int getFrequency();
 
 }

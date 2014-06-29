@@ -11,9 +11,11 @@ import main.Settings;
 import util.ArrayUtil;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
-import dataInterface.DefaultCompoundProperty;
 import dataInterface.CompoundData;
-import dataInterface.CompoundProperty;
+import dataInterface.DefaultNominalProperty;
+import dataInterface.DefaultNumericProperty;
+import dataInterface.NominalProperty;
+import dataInterface.NumericProperty;
 
 public abstract class AbstractAppDomainComputer implements AppDomainComputer
 {
@@ -36,12 +38,12 @@ public abstract class AbstractAppDomainComputer implements AppDomainComputer
 
 	//	protected DatasetFile dataset;
 	protected List<CompoundData> compounds;
-	protected List<CompoundProperty> features;
+	protected List<NumericProperty> features;
 
 	public abstract void computeAppDomain();
 
 	public void computeAppDomain(//DatasetFile dataset, 
-			List<CompoundData> compounds, List<CompoundProperty> features, double[][] featureDistanceMatrix)
+			List<CompoundData> compounds, List<NumericProperty> features, double[][] featureDistanceMatrix)
 	{
 		//		this.dataset = dataset;
 		this.compounds = compounds;
@@ -52,20 +54,21 @@ public abstract class AbstractAppDomainComputer implements AppDomainComputer
 	}
 
 	@Override
-	public CompoundProperty getInsideAppDomainProperty()
+	public NominalProperty getInsideAppDomainProperty()
 	{
 		//		return AppDomainPropertySet.create(getShortName(), dataset, inside,
 		//				dataset.getAppDomainValuesFilePath(this, getShortName() + "inside"));
-		return new DefaultCompoundProperty(getShortName() + "-inside", ".", ArrayUtil.toStringArray(ArrayUtil
+		return new DefaultNominalProperty(getShortName() + "-inside", ".", ArrayUtil.toStringArray(ArrayUtil
 				.toBooleanArray(inside)));
 	}
 
 	@Override
-	public CompoundProperty getPropabilityAppDomainProperty()
+	public NumericProperty getPropabilityAppDomainProperty()
 	{
 		//		return AppDomainPropertySet.create(getShortName(), dataset, pValues,
 		//				dataset.getAppDomainValuesFilePath(this, getShortName() + "propability"));
-		return new DefaultCompoundProperty(getShortName() + "-propability", ".", ArrayUtil.toDoubleArray(pValues));
+		return new DefaultNumericProperty(getShortName() + "-propability", ".",
+				ArrayUtil.toDoubleArray(pValues));
 	}
 
 	@Override

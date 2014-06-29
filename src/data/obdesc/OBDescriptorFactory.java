@@ -11,7 +11,7 @@ import util.ArrayUtil;
 import util.CollectionUtil;
 import util.ExternalToolUtil;
 import util.FileUtil;
-import dataInterface.CompoundProperty.Type;
+import dataInterface.CompoundPropertySet.Type;
 
 public class OBDescriptorFactory
 {
