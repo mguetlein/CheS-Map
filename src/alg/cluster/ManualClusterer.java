@@ -15,6 +15,7 @@ import util.ArrayUtil;
 import alg.AlgorithmException;
 import alg.DistanceMeasure;
 import data.DatasetFile;
+import data.integrated.IntegratedPropertySet;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
@@ -63,10 +64,10 @@ public class ManualClusterer extends AbstractDatasetClusterer
 			throws Exception
 	{
 		CompoundProperty clusterProp = null;
-		for (CompoundProperty c : dataset.getIntegratedProperties())
+		for (IntegratedPropertySet c : dataset.getIntegratedProperties())
 			if (c.toString().equals(clusterFeature.getValue().toString()))
 			{
-				clusterProp = c;
+				clusterProp = c.get();
 				break;
 			}
 		if (clusterProp == null)
@@ -81,7 +82,7 @@ public class ManualClusterer extends AbstractDatasetClusterer
 				CompoundData m = compounds.get(compoundIndex);
 
 				Integer intVals[] = new Integer[0];
-				if (clusterProp.getType() == Type.NUMERIC && clusterProp.isInteger(dataset))
+				if (clusterProp.getType() == Type.NUMERIC && clusterProp.isInteger())
 				{
 					if (m.getDoubleValue(clusterProp) != null)
 						intVals = new Integer[] { m.getDoubleValue(clusterProp).intValue() };
@@ -114,7 +115,7 @@ public class ManualClusterer extends AbstractDatasetClusterer
 		}
 		catch (NumberFormatException e)
 		{
-			String domain[] = clusterProp.getNominalDomain(dataset);
+			String domain[] = clusterProp.getNominalDomain();
 
 			for (int compoundIndex = 0; compoundIndex < compounds.size(); compoundIndex++)
 			{

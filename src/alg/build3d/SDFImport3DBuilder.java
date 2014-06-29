@@ -83,12 +83,12 @@ public class SDFImport3DBuilder extends AbstractReal3DBuilder
 					+ "' not available in dataset");
 		List<String> vals = new ArrayList<String>();
 		if (property.getType() != Type.NUMERIC)
-			vals = ArrayUtil.toList(property.getStringValues(dataset));
-		else if (property.isInteger(dataset))
-			for (Double d : property.getDoubleValues(dataset))
+			vals = ArrayUtil.toList(property.getStringValuesInCompleteDataset());
+		else if (property.isInteger())
+			for (Double d : property.getDoubleValuesInCompleteDataset())
 				vals.add(String.valueOf(d.intValue()));
 		else
-			for (Double d : property.getDoubleValues(dataset))
+			for (Double d : property.getDoubleValuesInCompleteDataset())
 				vals.add(String.valueOf(d));
 		for (String v : vals)
 			if (v == null || v.length() == 0)

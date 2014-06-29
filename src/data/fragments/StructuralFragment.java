@@ -1,24 +1,34 @@
 package data.fragments;
 
-import dataInterface.AbstractFragmentProperty;
-import dataInterface.CompoundPropertySet;
+import dataInterface.FragmentProperty;
 
-public class StructuralFragment extends AbstractFragmentProperty
+public class StructuralFragment extends FragmentProperty
 {
-	StructuralFragmentSet set;
+	//	StructuralFragmentSet set;
 	int minNumMatches;
 
-	public StructuralFragment(String name, MatchEngine matchEngine, String file, String smarts, int minNumMatches)
+	//	public StructuralFragment(String name, MatchEngine matchEngine, String file, String smarts, int minNumMatches)
+	//	{
+	//		super(name, //name + "_" + matchEngine + "_" + file, 
+	//				"Structural Fragment, matched with " + matchEngine, smarts, matchEngine);
+	//		this.minNumMatches = minNumMatches;
+	//	}
+	//
+	//	@Override
+	//	public CompoundPropertySet getCompoundPropertySet()
+	//	{
+	//		return set;
+	//	}
+
+	public StructuralFragment(String name, String description, String smarts, MatchEngine matchEngine, int minNumMatches)
 	{
-		super(name, name + "_" + matchEngine + "_" + file, "Structural Fragment, matched with " + matchEngine, smarts,
-				matchEngine);
+		super(null, name, description, smarts, matchEngine);
 		this.minNumMatches = minNumMatches;
 	}
 
-	@Override
-	public CompoundPropertySet getCompoundPropertySet()
+	public void setStructuralFragmentSet(StructuralFragmentSet set)
 	{
-		return set;
+		this.set = set;
 	}
 
 	public int getMinNumMatches()

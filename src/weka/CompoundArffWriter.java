@@ -64,7 +64,8 @@ public class CompoundArffWriter implements ArffWritable
 	@Override
 	public String getAttributeName(int attribute)
 	{
-		return features.get(attribute).getUniqueName();
+		//return features.get(attribute).getUniqueName();
+		return features.get(attribute).getName() + "_" + features.get(attribute).getClass().getSimpleName();
 	}
 
 	@Override
@@ -75,7 +76,7 @@ public class CompoundArffWriter implements ArffWritable
 		else
 		{
 			String s = "{";
-			for (String o : features.get(attribute).getNominalDomainInMappedDataset())
+			for (String o : features.get(attribute).getNominalDomain())
 			{
 				if (o != null && o.length() > 1)
 					s += "\"" + o + "\",";

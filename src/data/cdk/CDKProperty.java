@@ -1,20 +1,16 @@
 package data.cdk;
 
-import java.util.HashMap;
-
 import util.ArrayUtil;
-import dataInterface.AbstractCompoundProperty;
+import dataInterface.DefaultCompoundProperty;
 
-public class CDKProperty extends AbstractCompoundProperty
+public class CDKProperty extends DefaultCompoundProperty
 {
 	private CDKDescriptor desc;
 	private int index;
 
-	private static HashMap<String, CDKProperty> instances = new HashMap<String, CDKProperty>();
-
-	private CDKProperty(CDKDescriptor desc, int index)
+	public CDKProperty(CDKDescriptor desc, int index)
 	{
-		super(getCDKPropertyName(desc, index), desc + " (CDK Descriptor)");
+		super(desc.getFeatureName(index), desc + " (CDK Descriptor)");
 
 		this.desc = desc;
 		this.index = index;
@@ -31,27 +27,6 @@ public class CDKProperty extends AbstractCompoundProperty
 		}
 	}
 
-	private static String getCDKPropertyName(CDKDescriptor desc, int index)
-	{
-		return desc.getFeatureName(index);
-	}
-
-	public static CDKProperty fromString(String s, Type t)
-	{
-		CDKProperty p = CDKPropertySet.fromFeatureName(s);
-		if (!p.isTypeAllowed(t))
-			throw new IllegalArgumentException();
-		p.setType(t);
-		return p;
-	}
-
-	public static CDKProperty create(CDKDescriptor desc, int index)
-	{
-		if (!instances.containsKey(getCDKPropertyName(desc, index)))
-			instances.put(getCDKPropertyName(desc, index), new CDKProperty(desc, index));
-		return instances.get(getCDKPropertyName(desc, index));
-	}
-
 	@Override
 	public CDKPropertySet getCompoundPropertySet()
 	{
@@ -62,9 +37,5 @@ public class CDKProperty extends AbstractCompoundProperty
 	public boolean equals(Object o)
 	{
 		return (o instanceof CDKProperty) && ((CDKProperty) o).desc.equals(desc) && ((CDKProperty) o).index == index;
-	}
-
-	public static void main(String args[])
-	{
 	}
 }

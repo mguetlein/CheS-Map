@@ -267,13 +267,13 @@ public class CompoundPropertyPanel extends JPanel
 		String[] c = new String[] { "Index", selectedPropertySet.get(dataset, selectedPropertyIndex).toString() };
 		if (selectedProperty.getType() == Type.NUMERIC)
 		{
-			o = selectedProperty.getDoubleValues(dataset);
-			n = selectedProperty.getNormalizedValues(dataset);
+			o = selectedProperty.getDoubleValuesInCompleteDataset();
+			n = selectedProperty.getNormalizedValuesInCompleteDataset();
 			c = ArrayUtil.concat(c, new String[] { selectedPropertySet.get(dataset, selectedPropertyIndex).toString()
 					+ " normalized" });
 		}
 		else
-			o = selectedProperty.getStringValues(dataset);
+			o = selectedProperty.getStringValuesInCompleteDataset();
 
 		Object v[][] = new Object[o.length][selectedProperty.getType() == Type.NUMERIC ? 3 : 2];
 		for (int i = 0; i < o.length; i++)
@@ -297,7 +297,7 @@ public class CompoundPropertyPanel extends JPanel
 					boolean hasFocus, int row, int column)
 			{
 				if (value instanceof Double)
-					if (column == 1 && selectedProperty.isInteger(dataset))
+					if (column == 1 && selectedProperty.isInteger())
 						value = StringUtil.formatDouble((Double) value, 0);
 					else
 						value = StringUtil.formatDouble((Double) value, 3);
@@ -354,10 +354,11 @@ public class CompoundPropertyPanel extends JPanel
 			nominalFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NOMINAL));
 			numericFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NUMERIC));
 
-			if (prop.get(dataset, propIndex).numMissingValues(dataset) > 0)
+			if (prop.get(dataset, propIndex).numMissingValuesInCompleteDataset() > 0)
 			{
 				missingValuesLabel.setVisible(true);
-				missingValuesLabel.setText("Missing values: " + prop.get(dataset, propIndex).numMissingValues(dataset));
+				missingValuesLabel.setText("Missing values: "
+						+ prop.get(dataset, propIndex).numMissingValuesInCompleteDataset());
 			}
 			else
 				missingValuesLabel.setVisible(false);
@@ -369,11 +370,10 @@ public class CompoundPropertyPanel extends JPanel
 			{
 				nominalFeatureButton.setSelected(true);
 
-				String values[] = new String[selectedProperty.getNominalDomain(dataset).length];
+				String values[] = new String[selectedProperty.getNominalDomain().length];
 				for (int i = 0; i < values.length; i++)
-					values[i] = selectedProperty.getFormattedValue(selectedProperty.getNominalDomain(dataset)[i],
-							dataset);
-				int counts[] = selectedProperty.getNominalDomainCounts(dataset);
+					values[i] = selectedProperty.getFormattedValue(selectedProperty.getNominalDomain()[i]);
+				int counts[] = selectedProperty.getNominalDomainCounts();
 				//				CountedSet<String> set = CountedSet.fromArray(selectedProperty.getStringValues(dataset));
 				//				List<String> values = set.values(new DefaultComparator<String>());
 				//				if (values.contains(null))
@@ -391,7 +391,7 @@ public class CompoundPropertyPanel extends JPanel
 			else if (type == Type.NUMERIC)
 			{
 				numericFeatureButton.setSelected(true);
-				List<Double> vals = ArrayUtil.removeNullValues(selectedProperty.getDoubleValues(dataset));
+				List<Double> vals = ArrayUtil.removeNullValues(selectedProperty.getDoubleValuesInCompleteDataset());
 
 				//List<Double> vals = ArrayUtil.toList(selectedProperty.getNormalizedValues(dataset));
 
@@ -408,7 +408,7 @@ public class CompoundPropertyPanel extends JPanel
 			}
 			else
 			{
-				CountedSet<String> set = CountedSet.fromArray(selectedProperty.getStringValues(dataset));
+				CountedSet<String> set = CountedSet.fromArray(selectedProperty.getStringValuesInCompleteDataset());
 				p = new MessageLabel(Message.warningMessage("This feature ('" + selectedProperty.toString()
 						+ "') is most likely not suited for clustering and embedding.\n"
 						+ "It is not numeric, and it has '" + set.getNumValues() + "' distinct values."));

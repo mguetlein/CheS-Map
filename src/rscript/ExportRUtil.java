@@ -57,9 +57,8 @@ public class ExportRUtil
 		for (CompoundProperty feature : features)
 		{
 			if (feature.getType() != Type.NOMINAL
-					|| (feature.getNominalDomainInMappedDataset().length == 2
-							&& feature.getNominalDomainInMappedDataset()[0].equals("0") && feature
-								.getNominalDomainInMappedDataset()[1].equals("1")))
+					|| (feature.getNominalDomain().length == 2 && feature.getNominalDomain()[0].equals("0") && feature
+							.getNominalDomain()[1].equals("1")))
 			{
 				featureNames2.add(feature.getName());
 				featureValues2.add(featureValues1.get(count));
@@ -67,9 +66,9 @@ public class ExportRUtil
 			else
 			{
 				Settings.LOGGER.info("Transforming nominal feature: " + feature.getName() + " "
-						+ ArrayUtil.toString(feature.getNominalDomainInMappedDataset()));
+						+ ArrayUtil.toString(feature.getNominalDomain()));
 
-				for (String val : feature.getNominalDomainInMappedDataset())
+				for (String val : feature.getNominalDomain())
 				{
 					String name = feature.getName() + "_is_" + val;
 					featureNames2.add(name);
@@ -83,7 +82,7 @@ public class ExportRUtil
 					}
 					featureValues2.add(vals);
 					Settings.LOGGER.info("-> new feat: " + name + " " + ArrayUtil.toString(vals));
-					if (feature.getNominalDomainInMappedDataset().length == 2)
+					if (feature.getNominalDomain().length == 2)
 						break;
 				}
 			}

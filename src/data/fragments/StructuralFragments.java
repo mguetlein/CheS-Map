@@ -19,7 +19,6 @@ import data.CDKSmartsHandler;
 import data.cdkfingerprints.CDKFingerprintSet;
 import data.fminer.FminerPropertySet;
 import data.obfingerprints.OBFingerprintSet;
-import dataInterface.AbstractCompoundProperty;
 import dataInterface.CompoundProperty.SubstructureType;
 import dataInterface.FragmentPropertySet;
 
@@ -57,7 +56,7 @@ public class StructuralFragments
 	public void reset(String showWarningForFile)
 	{
 		fragmentListAll.clear();
-		AbstractCompoundProperty.clearPropertyOfType(StructuralFragment.class);
+		//AbstractCompoundProperty.clearPropertyOfType(StructuralFragment.class);
 
 		for (OBFingerprintSet fp : OBFingerprintSet.VISIBLE_FINGERPRINTS)
 			fragmentListAll.add(fp);
@@ -119,8 +118,8 @@ public class StructuralFragments
 						for (MatchEngine m : MatchEngine.values())
 						{
 							a.get(m).add(
-									new StructuralFragment(finalName, m, FileUtil.getFilename(filename, false),
-											line[1], line.length == 2 ? 0 : Integer.parseInt(line[2])));
+									new StructuralFragment(finalName, "Structural Fragment, matched with " + m,
+											line[1], m, line.length == 2 ? 0 : Integer.parseInt(line[2])));
 						}
 					}
 					else

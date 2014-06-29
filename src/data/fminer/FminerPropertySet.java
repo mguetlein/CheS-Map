@@ -4,7 +4,6 @@ import gui.binloc.Binary;
 import gui.binloc.BinaryLocator;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import main.BinHandler;
@@ -12,36 +11,39 @@ import main.Settings;
 import util.ArrayUtil;
 import util.FminerWrapper;
 import data.DatasetFile;
+import data.fragments.MatchEngine;
 import data.fragments.StructuralFragmentProperties;
-import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.SubstructureType;
-import dataInterface.CompoundProperty.Type;
+import dataInterface.FragmentProperty;
 import dataInterface.FragmentPropertySet;
 
 public class FminerPropertySet extends FragmentPropertySet
 {
-	String name = "fminer";
-
-	@Override
-	public String toString()
+	public FminerPropertySet()
 	{
-		return name;
+		super("fminer", SubstructureType.MINE);
 	}
 
-	@Override
-	public boolean isComputed(DatasetFile dataset)
-	{
-		return props.get(dataset) != null;
-	}
+	//	@Override
+	//	public String toString()
+	//	{
+	//		return name;
+	//	}
 
-	@Override
-	public boolean isCached(DatasetFile dataset)
-	{
-		return false;
-	}
+	//	@Override
+	//	public boolean isComputed(DatasetFile dataset)
+	//	{
+	//		return props.get(dataset) != null;
+	//	}
 
-	private HashMap<DatasetFile, List<FminerProperty>> props = new HashMap<DatasetFile, List<FminerProperty>>();
-	private HashMap<DatasetFile, List<FminerProperty>> filteredProps = new HashMap<DatasetFile, List<FminerProperty>>();
+	//	@Override
+	//	public boolean isCached(DatasetFile dataset)
+	//	{
+	//		return false;
+	//	}
+	//
+	//	private HashMap<DatasetFile, List<FminerProperty>> props = new HashMap<DatasetFile, List<FminerProperty>>();
+	//	private HashMap<DatasetFile, List<FminerProperty>> filteredProps = new HashMap<DatasetFile, List<FminerProperty>>();
 
 	@Override
 	public boolean compute(DatasetFile dataset)
@@ -56,20 +58,22 @@ public class FminerPropertySet extends FragmentPropertySet
 					BinHandler.FMINER_BINARY.getBBRCLib(), System.getenv().get("LD_LIBRARY_PATH"),
 					BinHandler.BABEL_BINARY.getLocation(), dataset.getSmiles(),
 					StructuralFragmentProperties.getMinFrequency());
-			List<FminerProperty> properties = new ArrayList<FminerProperty>();
+			List<FragmentProperty> properties = new ArrayList<FragmentProperty>();
 			for (int i = 0; i < fw.getSmarts().length; i++)
 			{
-				FminerProperty p = FminerProperty.create(this, fw.getSmarts()[i]);
+				FragmentProperty p = new FragmentProperty(this, fw.getSmarts()[i], "Structural Fragment",
+						fw.getSmarts()[i], MatchEngine.OpenBabel);
+				//				FminerProperty p = FminerProperty.create(this, fw.getSmarts()[i]);
 
 				Boolean h[] = ArrayUtil.toBooleanArray(fw.getHitsForSmarts(i));
 
-				p.setFrequency(dataset, ArrayUtil.occurences(h, Boolean.TRUE));
+				p.setFrequency(ArrayUtil.occurences(h, Boolean.TRUE));
 
 				String[] featureValue = new String[dataset.numCompounds()];
 				for (int j = 0; j < dataset.numCompounds(); j++)
 					featureValue[j] = h[j] ? "1" : "0";
 				//				featureValues.add(featureValue);
-				p.setStringValues(dataset, featureValue);
+				p.setStringValues(featureValue);
 
 				properties.add(p);
 			}
@@ -84,11 +88,11 @@ public class FminerPropertySet extends FragmentPropertySet
 		}
 	}
 
-	@Override
-	public boolean isSizeDynamic()
-	{
-		return true;
-	}
+	//	@Override
+	//	public boolean isSizeDynamic()
+	//	{
+	//		return true;
+	//	}
 
 	@Override
 	public boolean isSizeDynamicHigh(DatasetFile dataset)
@@ -96,27 +100,27 @@ public class FminerPropertySet extends FragmentPropertySet
 		return true;
 	}
 
-	@Override
-	public SubstructureType getSubstructureType()
-	{
-		return SubstructureType.MINE;
-	}
+	//	@Override
+	//	public SubstructureType getSubstructureType()
+	//	{
+	//		return SubstructureType.MINE;
+	//	}
 
-	@Override
-	public int getSize(DatasetFile d)
-	{
-		if (filteredProps.get(d) == null)
-			throw new Error("mine fragments first, number is not fixed");
-		return filteredProps.get(d).size();
-	}
-
-	@Override
-	public CompoundProperty get(DatasetFile d, int index)
-	{
-		if (filteredProps.get(d) == null)
-			throw new Error("mine fragments first, number is not fixed");
-		return filteredProps.get(d).get(index);
-	}
+	//	@Override
+	//	public int getSize(DatasetFile d)
+	//	{
+	//		if (filteredProps.get(d) == null)
+	//			throw new Error("mine fragments first, number is not fixed");
+	//		return filteredProps.get(d).size();
+	//	}
+	//
+	//	@Override
+	//	public CompoundProperty get(DatasetFile d, int index)
+	//	{
+	//		if (filteredProps.get(d) == null)
+	//			throw new Error("mine fragments first, number is not fixed");
+	//		return filteredProps.get(d).get(index);
+	//	}
 
 	@Override
 	public String getDescription()
@@ -124,11 +128,11 @@ public class FminerPropertySet extends FragmentPropertySet
 		return "yet to come";
 	}
 
-	@Override
-	public Type getType()
-	{
-		return Type.NOMINAL;
-	}
+	//	@Override
+	//	public Type getType()
+	//	{
+	//		return Type.NOMINAL;
+	//	}
 
 	@Override
 	public Binary getBinary()
@@ -136,16 +140,16 @@ public class FminerPropertySet extends FragmentPropertySet
 		return BinHandler.FMINER_BINARY;
 	}
 
-	@Override
-	public boolean isSelectedForMapping()
-	{
-		return true;
-	}
+	//	@Override
+	//	public boolean isSelectedForMapping()
+	//	{
+	//		return true;
+	//	}
 
 	@Override
 	public String getNameIncludingParams()
 	{
-		return "todo";
+		return "TODO";
 	}
 
 	@Override
@@ -154,22 +158,22 @@ public class FminerPropertySet extends FragmentPropertySet
 		return false;
 	}
 
-	@Override
-	protected void updateFragments()
-	{
-		for (DatasetFile d : props.keySet())
-		{
-			List<FminerProperty> filteredList = new ArrayList<FminerProperty>();
-			for (FminerProperty p : props.get(d))
-			{
-				boolean frequent = p.getFrequency(d) >= StructuralFragmentProperties.getMinFrequency();
-				boolean skipOmni = StructuralFragmentProperties.isSkipOmniFragments()
-						&& p.getFrequency(d) == d.numCompounds();
-				if (frequent && !skipOmni)
-					filteredList.add(p);
-			}
-			filteredProps.put(d, filteredList);
-		}
-	}
+	//	@Override
+	//	protected void updateFragments()
+	//	{
+	//		for (DatasetFile d : props.keySet())
+	//		{
+	//			List<FminerProperty> filteredList = new ArrayList<FminerProperty>();
+	//			for (FminerProperty p : props.get(d))
+	//			{
+	//				boolean frequent = p.getFrequency() >= StructuralFragmentProperties.getMinFrequency();
+	//				boolean skipOmni = StructuralFragmentProperties.isSkipOmniFragments()
+	//						&& p.getFrequency() == d.numCompounds();
+	//				if (frequent && !skipOmni)
+	//					filteredList.add(p);
+	//			}
+	//			filteredProps.put(d, filteredList);
+	//		}
+	//	}
 
 }

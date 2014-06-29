@@ -56,43 +56,45 @@ import util.FileUtil;
 import util.FileUtil.UnexpectedNumColsException;
 import util.ListUtil;
 import util.ValueFileCache;
+import data.integrated.IntegratedProperty;
+import data.integrated.IntegratedPropertySet;
 import dataInterface.CompoundProperty.Type;
 
 public class FeatureService
 {
 	private HashMap<DatasetFile, IMolecule[]> fileToCompounds = new HashMap<DatasetFile, IMolecule[]>();
 	private HashMap<DatasetFile, Boolean> fileHas3D = new HashMap<DatasetFile, Boolean>();
-	private HashMap<DatasetFile, LinkedHashSet<IntegratedProperty>> integratedProperties = new HashMap<DatasetFile, LinkedHashSet<IntegratedProperty>>();
-	private HashMap<DatasetFile, IntegratedProperty> integratedSmiles = new HashMap<DatasetFile, IntegratedProperty>();
+	private HashMap<DatasetFile, LinkedHashSet<IntegratedPropertySet>> integratedProperties = new HashMap<DatasetFile, LinkedHashSet<IntegratedPropertySet>>();
+	private HashMap<DatasetFile, IntegratedPropertySet> integratedSmiles = new HashMap<DatasetFile, IntegratedPropertySet>();
 	private HashMap<DatasetFile, String[]> cdkSmiles = new HashMap<DatasetFile, String[]>();
 
 	public FeatureService()
 	{
 	}
 
-	public IntegratedProperty[] getIntegratedProperties(DatasetFile dataset)
+	public IntegratedPropertySet[] getIntegratedProperties(DatasetFile dataset)
 	{
-		return ArrayUtil.toArray(IntegratedProperty.class, integratedProperties.get(dataset));
+		return ArrayUtil.toArray(IntegratedPropertySet.class, integratedProperties.get(dataset));
 	}
 
-	public IntegratedProperty getIntegratedClusterProperty(DatasetFile dataset)
+	public IntegratedPropertySet getIntegratedClusterProperty(DatasetFile dataset)
 	{
-		IntegratedProperty cProp = null;
-		for (IntegratedProperty integratedProperty : integratedProperties.get(dataset))
+		IntegratedPropertySet cProp = null;
+		for (IntegratedPropertySet integratedProperty : integratedProperties.get(dataset))
 			if (integratedProperty.toString().toLowerCase().equals("cluster"))
 			{
 				cProp = integratedProperty;
 				break;
 			}
 		if (cProp == null)
-			for (IntegratedProperty integratedProperty : integratedProperties.get(dataset))
+			for (IntegratedPropertySet integratedProperty : integratedProperties.get(dataset))
 				if (integratedProperty.toString().toLowerCase().equals("clusters"))
 				{
 					cProp = integratedProperty;
 					break;
 				}
 		if (cProp == null)
-			for (IntegratedProperty integratedProperty : integratedProperties.get(dataset))
+			for (IntegratedPropertySet integratedProperty : integratedProperties.get(dataset))
 				if (integratedProperty.toString().matches("(?i).*cluster.*"))
 				{
 					cProp = integratedProperty;
@@ -388,7 +390,7 @@ public class FeatureService
 			TaskProvider.debug("Parsing file with CDK");
 
 			Vector<IMolecule> mols = new Vector<IMolecule>();
-			integratedProperties.put(dataset, new LinkedHashSet<IntegratedProperty>());
+			integratedProperties.put(dataset, new LinkedHashSet<IntegratedPropertySet>());
 
 			int mCount = 0;
 			File file = new File(dataset.getLocalPath());
@@ -424,20 +426,20 @@ public class FeatureService
 			}
 
 			List<Integer> illegalCompounds = new ArrayList<Integer>();
-			HashMap<IntegratedProperty, List<Object>> propVals = new HashMap<IntegratedProperty, List<Object>>();
+			HashMap<IntegratedPropertySet, List<Object>> propVals = new HashMap<IntegratedPropertySet, List<Object>>();
 
 			for (IAtomContainer iAtomContainer : list)
 			{
 				IMolecule mol = (IMolecule) iAtomContainer;
 				for (Object key : mol.getProperties().keySet())
 				{
-					IntegratedProperty p = IntegratedProperty.create(key.toString(), dataset);
+					IntegratedPropertySet p = IntegratedPropertySet.create(key.toString(), dataset);
 					integratedProperties.get(dataset).add(p);
 					if (key.toString().toUpperCase().equals("STRUCTURE_SMILES")
 							|| key.toString().toUpperCase().equals("SMILES"))
 					{
 						integratedSmiles.put(dataset, p);
-						p.setSmiles(true);
+						p.get().setSmiles(true);
 					}
 				}
 				if (!TaskProvider.isRunning())
@@ -451,11 +453,11 @@ public class FeatureService
 				TaskProvider.verbose("Loaded " + (mCount + 1) + "/" + list.size() + " compounds");
 
 				Map<Object, Object> props = mol.getProperties();
-				for (IntegratedProperty p : integratedProperties.get(dataset))
+				for (IntegratedPropertySet p : integratedProperties.get(dataset))
 				{
 					if (!propVals.containsKey(p))
 						propVals.put(p, new ArrayList<Object>());
-					propVals.get(p).add(props.get(p.getName()));
+					propVals.get(p).add(props.get(p.get().getName()));
 				}
 
 				mol = (IMolecule) AtomContainerManipulator.removeHydrogens(mol);
@@ -510,8 +512,9 @@ public class FeatureService
 			Settings.LOGGER.info(mols.size() + " compounds found");
 
 			// convert string to double
-			for (IntegratedProperty p : integratedProperties.get(dataset))
+			for (IntegratedPropertySet p : integratedProperties.get(dataset))
 			{
+				IntegratedProperty prop = p.get();
 				List<Object> l = propVals.get(p);
 				while (l.size() < mCount)
 				{
@@ -521,30 +524,30 @@ public class FeatureService
 				String stringValues[] = new String[l.size()];
 				l.toArray(stringValues);
 
-				p.setStringValues(dataset, stringValues);
+				prop.setStringValues(stringValues);
 
 				Double doubleValues[] = ArrayUtil.parse(stringValues);
 				if (doubleValues != null)
 				{
 					// numericSdfProperties.get(f).add(p);
-					p.setTypeAllowed(Type.NOMINAL, true);
-					p.setTypeAllowed(Type.NUMERIC, true);
-					if (guessNominalFeatureType(p.numDistinctValues(dataset), stringValues.length, true))
-						p.setType(Type.NOMINAL);
+					prop.setTypeAllowed(Type.NOMINAL, true);
+					prop.setTypeAllowed(Type.NUMERIC, true);
+					if (guessNominalFeatureType(prop.numDistinctValuesInCompleteDataset(), stringValues.length, true))
+						prop.setType(Type.NOMINAL);
 					else
-						p.setType(Type.NUMERIC);
+						prop.setType(Type.NUMERIC);
 				}
 				else
 				{
-					p.setTypeAllowed(Type.NOMINAL, true);
-					p.setTypeAllowed(Type.NUMERIC, false);
-					if (guessNominalFeatureType(p.numDistinctValues(dataset), stringValues.length, false))
-						p.setType(Type.NOMINAL);
+					prop.setTypeAllowed(Type.NOMINAL, true);
+					prop.setTypeAllowed(Type.NUMERIC, false);
+					if (guessNominalFeatureType(prop.numDistinctValuesInCompleteDataset(), stringValues.length, false))
+						prop.setType(Type.NOMINAL);
 					else
-						p.setType(null);
+						prop.setType(null);
 				}
-				if (p.getType() == Type.NUMERIC || p.isTypeAllowed(Type.NUMERIC))
-					p.setDoubleValues(dataset, doubleValues);
+				if (prop.getType() == Type.NUMERIC || prop.isTypeAllowed(Type.NUMERIC))
+					prop.setDoubleValues(doubleValues);
 			}
 
 			IMolecule res[] = new IMolecule[mols.size()];
@@ -579,7 +582,7 @@ public class FeatureService
 	{
 		if (integratedSmiles.containsKey(dataset))
 		{
-			String smiles[] = integratedSmiles.get(dataset).getStringValues(dataset);
+			String smiles[] = integratedSmiles.get(dataset).get().getStringValuesInCompleteDataset();
 			SmilesGenerator sg = null;
 			for (int i = 0; i < smiles.length; i++)
 				if (smiles[i] == null || smiles[i].length() == 0)

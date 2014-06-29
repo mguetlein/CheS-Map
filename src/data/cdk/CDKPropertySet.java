@@ -13,6 +13,7 @@ import main.TaskProvider;
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.qsar.IMolecularDescriptor;
 
+import util.DoubleKeyHashMap;
 import util.FileUtil.UnexpectedNumColsException;
 import util.ValueFileCache;
 import data.DatasetFile;
@@ -54,10 +55,19 @@ public class CDKPropertySet implements CompoundPropertySet
 		return desc.getSize();
 	}
 
+	private static DoubleKeyHashMap<String, DatasetFile, CDKProperty> props = new DoubleKeyHashMap<String, DatasetFile, CDKProperty>();
+
+	public static CDKProperty createCDKProperty(CDKDescriptor desc, DatasetFile dataset, int index)
+	{
+		if (!props.containsKeyPair(desc.getFeatureName(index), dataset))
+			props.put(desc.getFeatureName(index), dataset, new CDKProperty(desc, index));
+		return props.get(desc.getFeatureName(index), dataset);
+	}
+
 	@Override
 	public CompoundProperty get(DatasetFile dataset, int index)
 	{
-		return CDKProperty.create(desc, index);
+		return createCDKProperty(desc, dataset, index);
 	}
 
 	public String toString()
@@ -73,12 +83,21 @@ public class CDKPropertySet implements CompoundPropertySet
 		return new CDKPropertySet(desc);
 	}
 
-	public static CDKProperty fromFeatureName(String s)
+	public static CDKProperty fromString(String s, Type t, DatasetFile dataset)
+	{
+		CDKProperty p = CDKPropertySet.fromFeatureName(s, dataset);
+		if (!p.isTypeAllowed(t))
+			throw new IllegalArgumentException();
+		p.setType(t);
+		return p;
+	}
+
+	public static CDKProperty fromFeatureName(String s, DatasetFile dataset)
 	{
 		for (CDKDescriptor d : CDKDescriptor.getNumericDescriptors())
 			for (int i = 0; i < d.getSize(); i++)
 				if (d.getFeatureName(i).equals(s))
-					return CDKProperty.create(d, i);
+					return createCDKProperty(d, dataset, i);
 		return null;
 	}
 
@@ -117,7 +136,7 @@ public class CDKPropertySet implements CompoundPropertySet
 	@Override
 	public boolean isComputed(DatasetFile dataset)
 	{
-		return CDKProperty.create(desc, 0).isValuesSet(dataset);
+		return createCDKProperty(desc, dataset, 0).isValuesSet();
 	}
 
 	private String cacheFile(DatasetFile dataset)
@@ -213,7 +232,7 @@ public class CDKPropertySet implements CompoundPropertySet
 			ValueFileCache.writeCacheDouble(cache, vv);
 		}
 		for (int j = 0; j < getSize(); j++)
-			CDKProperty.create(desc, j).setDoubleValues(dataset, vv.get(j));
+			createCDKProperty(desc, dataset, j).setDoubleValues(vv.get(j));
 
 		return true;
 	}

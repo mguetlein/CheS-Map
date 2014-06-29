@@ -16,10 +16,10 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SelectedTag;
 import weka.core.converters.ArffLoader;
+import dataInterface.DefaultCompoundProperty;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
-import dataInterface.NumericDynamicCompoundProperty;
 
 public class Predictor
 {
@@ -38,40 +38,13 @@ public class Predictor
 
 		public CompoundProperty createFeature()
 		{
-			return new NumericDynamicCompoundProperty(ArrayUtil.toDoubleArray(prediction))
-			{
-
-				@Override
-				public String getName()
-				{
-					return "prediction";
-				}
-
-				@Override
-				public String getDescription()
-				{
-					return ".";
-				}
-			};
+			return new DefaultCompoundProperty("prediction", ".", ArrayUtil.toDoubleArray(prediction));
 		}
 
 		public CompoundProperty createMissclassifiedFeature()
 		{
-			return new NumericDynamicCompoundProperty(ArrayUtil.toDoubleArray(missClassfied))
-			{
-
-				@Override
-				public String getName()
-				{
-					return classification ? "miss-classified" : "error";
-				}
-
-				@Override
-				public String getDescription()
-				{
-					return ".";
-				}
-			};
+			return new DefaultCompoundProperty(classification ? "miss-classified" : "error", ".",
+					ArrayUtil.toDoubleArray(missClassfied));
 		}
 	}
 
@@ -83,13 +56,12 @@ public class Predictor
 		{
 			if (classification)
 			{
-				if (clazz.getType() != Type.NOMINAL && clazz.getNominalDomainInMappedDataset().length != 2)
+				if (clazz.getType() != Type.NOMINAL && clazz.getNominalDomain().length != 2)
 					throw new Error();
 			}
 			else if (clazz.getType() != Type.NUMERIC)
 				throw new Error();
-			final boolean swapPredictedDouble = classification
-					&& clazz.getNominalDomainInMappedDataset()[0].equals("active");
+			final boolean swapPredictedDouble = classification && clazz.getNominalDomain()[0].equals("active");
 
 			List<CompoundProperty> p = new ArrayList<CompoundProperty>(features);
 			p.add(clazz);
@@ -217,8 +189,7 @@ public class Predictor
 			{
 				if (classification)
 				{
-					double actual = ArrayUtil.indexOf(clazz.getNominalDomainInMappedDataset(), compounds.get(i)
-							.getStringValue(clazz));
+					double actual = ArrayUtil.indexOf(clazz.getNominalDomain(), compounds.get(i).getStringValue(clazz));
 					if (actual == 0)
 						error[i] = 1 - predicted[i];
 					else

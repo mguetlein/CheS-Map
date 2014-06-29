@@ -1,50 +1,54 @@
-package data;
+package data.integrated;
 
 import gui.binloc.Binary;
 import util.DoubleKeyHashMap;
-import dataInterface.AbstractCompoundProperty;
+import data.DatasetFile;
 import dataInterface.CompoundProperty;
+import dataInterface.CompoundProperty.SubstructureType;
+import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
 
-public class IntegratedProperty extends AbstractCompoundProperty implements CompoundPropertySet
+public class IntegratedPropertySet implements CompoundPropertySet
 {
-	String property;
+	private String propertyName;
 	private boolean selectedForMapping;
+	private IntegratedProperty prop;
 
-	private static DoubleKeyHashMap<String, DatasetFile, IntegratedProperty> instances = new DoubleKeyHashMap<String, DatasetFile, IntegratedProperty>();
-
-	private IntegratedProperty(String property, DatasetFile dataset)
+	private IntegratedPropertySet(String property)
 	{
-		super(property, property + "." + dataset.toString() + "." + dataset.getMD5(), "Included in Dataset");
-		this.property = property;
+		//super(property, /*property + "." + dataset.toString() + "." + dataset.getMD5(),*/"Included in Dataset");
+		this.propertyName = property;
+		prop = new IntegratedProperty(property);
 	}
 
-	public static IntegratedProperty create(String property, DatasetFile dataset)
+	private static DoubleKeyHashMap<String, DatasetFile, IntegratedPropertySet> sets = new DoubleKeyHashMap<String, DatasetFile, IntegratedPropertySet>();
+
+	public static IntegratedPropertySet create(String property, DatasetFile dataset)
 	{
-		if (!instances.containsKeyPair(property, dataset))
-			instances.put(property, dataset, new IntegratedProperty(property, dataset));
-		return instances.get(property, dataset);
+		if (!sets.containsKeyPair(property, dataset))
+			sets.put(property, dataset, new IntegratedPropertySet(property));
+		return sets.get(property, dataset);
 	}
 
-	public static IntegratedProperty fromString(String property, Type t, DatasetFile dataset)
+	public static IntegratedPropertySet fromString(String property, Type t, DatasetFile dataset)
 	{
-		IntegratedProperty p = create(property, dataset);
-		if (!p.isTypeAllowed(t))
+		IntegratedPropertySet p = create(property, dataset);
+		if (!p.prop.isTypeAllowed(t))
 			throw new IllegalArgumentException();
-		p.setType(t);
+		p.prop.setType(t);
 		return p;
 	}
 
 	@Override
 	public String toString()
 	{
-		return property;
+		return propertyName;
 	}
 
 	@Override
 	public boolean equals(Object o)
 	{
-		return (o instanceof IntegratedProperty) && ((IntegratedProperty) o).property.equals(property);
+		return (o instanceof IntegratedPropertySet) && ((IntegratedPropertySet) o).propertyName.equals(propertyName);
 	}
 
 	@Override
@@ -53,7 +57,7 @@ public class IntegratedProperty extends AbstractCompoundProperty implements Comp
 	 */
 	public int hashCode()
 	{
-		return property.hashCode();
+		return propertyName.hashCode();
 	}
 
 	@Override
@@ -67,13 +71,12 @@ public class IntegratedProperty extends AbstractCompoundProperty implements Comp
 	{
 		if (index != 0)
 			throw new Error("only one prop available");
-		return this;
+		return prop;
 	}
 
-	@Override
-	public CompoundPropertySet getCompoundPropertySet()
+	public IntegratedProperty get()
 	{
-		return this;
+		return prop;
 	}
 
 	@Override
@@ -140,6 +143,24 @@ public class IntegratedProperty extends AbstractCompoundProperty implements Comp
 	public boolean isSensitiveTo3D()
 	{
 		return false;
+	}
+
+	@Override
+	public Type getType()
+	{
+		return prop.getType();
+	}
+
+	@Override
+	public String getDescription()
+	{
+		return "Included in Dataset";
+	}
+
+	@Override
+	public SubstructureType getSubstructureType()
+	{
+		return null;
 	}
 
 }

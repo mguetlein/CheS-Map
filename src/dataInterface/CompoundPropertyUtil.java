@@ -14,24 +14,23 @@ import util.ArrayUtil;
 import util.DoubleArraySummary;
 import data.DatasetFile;
 import data.cdk.CDKProperty;
-import data.obdesc.OBDescriptorProperty;
-import data.obfingerprints.OBFingerprintProperty;
+import data.obdesc.OBDescriptorPropertySet;
+import data.obfingerprints.OBFingerprintSet;
 import dataInterface.CompoundProperty.Type;
 import freechart.FreeChartUtil;
 
 public class CompoundPropertyUtil
 {
-	public static boolean isExportedFPProperty(CompoundProperty p, DatasetFile d)
+	public static boolean isExportedFPProperty(CompoundProperty p)
 	{
-		return (p.getType() != Type.NUMERIC && p.getNominalDomain(d).length == 2
-				&& p.getNominalDomain(d)[0].equals("0") && p.getNominalDomain(d)[1].equals("1") && p.toString()
-				.matches("^OB-.*:.*"));
+		return (p.getType() != Type.NUMERIC && p.getNominalDomain().length == 2 && p.getNominalDomain()[0].equals("0")
+				&& p.getNominalDomain()[1].equals("1") && p.toString().matches("^OB-.*:.*"));
 	}
 
-	public static boolean isExportedFPPropertyInMappedDataset(CompoundProperty p)
-	{
-		return isExportedFPProperty(p, Settings.MAPPED_DATASET);
-	}
+	//	public static boolean isExportedFPPropertyInMappedDataset(CompoundProperty p)
+	//	{
+	//		return isExportedFPProperty(p, Settings.MAPPED_DATASET);
+	//	}
 
 	public static String stripExportString(CompoundProperty p)
 	{
@@ -49,10 +48,10 @@ public class CompoundPropertyUtil
 	{
 		if (p instanceof CDKProperty)
 			return "CDK:" + p.toString();
-		if (p instanceof OBDescriptorProperty)
+		if (p instanceof OBDescriptorPropertySet)
 			return "OB:" + p.toString();
-		if (p instanceof OBFingerprintProperty)
-			return "OB-" + ((OBFingerprintProperty) p).getOBType() + ":" + p.toString();
+		if (p.getCompoundPropertySet() instanceof OBFingerprintSet)
+			return "OB-" + ((OBFingerprintSet) p.getCompoundPropertySet()).getOBType() + ":" + p.toString();
 		return p.toString();
 	}
 
@@ -83,7 +82,7 @@ public class CompoundPropertyUtil
 				{
 					Double val = vv.getNormalizedValueCompleteDataset(p);
 					if (val == null)
-						d[count++] = p.getNormalizedMedian(dataset) + "";
+						d[count++] = p.getNormalizedMedianInCompleteDataset() + "";
 					else
 						d[count++] = val + "";
 				}
@@ -148,7 +147,7 @@ public class CompoundPropertyUtil
 		if (p.getType() != Type.NOMINAL)
 			throw new IllegalArgumentException();
 
-		String key = p.toString() + "#" + p.getNominalDomainInMappedDataset().hashCode() + "#"
+		String key = p.toString() + "#" + p.getNominalDomain().hashCode() + "#"
 				+ (p.isSmartsProperty() ? CompoundPropertyUtil.HIGHILIGHT_MATCH_COLORS : p.getHighlightColorSequence());
 		if (!mapping.containsKey(key))
 		{
@@ -160,10 +159,10 @@ public class CompoundPropertyUtil
 				col = p.getHighlightColorSequence();
 				if (col == null)
 					col = AVAILABLE_COLORS;
-				while (p.getNominalDomainInMappedDataset().length > col.length)
+				while (p.getNominalDomain().length > col.length)
 					col = ArrayUtil.concat(col, col);
-				if (p.getNominalDomainInMappedDataset().length < col.length)
-					col = Arrays.copyOfRange(col, 0, p.getNominalDomainInMappedDataset().length);
+				if (p.getNominalDomain().length < col.length)
+					col = Arrays.copyOfRange(col, 0, p.getNominalDomain().length);
 			}
 			mapping.put(key, col);
 		}
@@ -172,10 +171,10 @@ public class CompoundPropertyUtil
 
 	public static Color getNominalColor(CompoundProperty p, String val)
 	{
-		int index = ArrayUtil.indexOf(p.getNominalDomainInMappedDataset(), val);
+		int index = ArrayUtil.indexOf(p.getNominalDomain(), val);
 		if (index == -1)
-			throw new IllegalStateException(val + " not found in "
-					+ ArrayUtil.toString(p.getNominalDomainInMappedDataset()) + " for property " + p);
+			throw new IllegalStateException(val + " not found in " + ArrayUtil.toString(p.getNominalDomain())
+					+ " for property " + p);
 		return getNominalColors(p)[index];
 	}
 
@@ -238,7 +237,7 @@ public class CompoundPropertyUtil
 	{
 		HashMap<CompoundProperty, CompoundProperty> redundant = getRedundantFeatures(features, null);
 		for (CompoundProperty p : redundant.keySet())
-			p.setRedundantPropInMappedDataset(redundant.get(p));
+			p.setRedundantProp(redundant.get(p));
 	}
 
 	public static HashMap<CompoundProperty, CompoundProperty> getRedundantFeatures(List<CompoundProperty> features,
@@ -289,11 +288,11 @@ public class CompoundPropertyUtil
 	private static boolean isRedundant(CompoundProperty p1, CompoundProperty p2, int compoundSubset[])
 	{
 		if (p1.getType() == Type.NUMERIC && p2.getType() == Type.NUMERIC)
-			return ArrayUtil.equals(p1.getDoubleValuesInCompleteMappedDataset(),
-					p2.getDoubleValuesInCompleteMappedDataset(), compoundSubset);
+			return ArrayUtil.equals(p1.getDoubleValuesInCompleteDataset(), p2.getDoubleValuesInCompleteDataset(),
+					compoundSubset);
 		else if (p1.getType() == Type.NOMINAL && p2.getType() == Type.NOMINAL)
-			return ArrayUtil.redundant(p1.getStringValues(Settings.MAPPED_DATASET),
-					p2.getStringValues(Settings.MAPPED_DATASET), compoundSubset);
+			return ArrayUtil.redundant(p1.getStringValuesInCompleteDataset(), p2.getStringValuesInCompleteDataset(),
+					compoundSubset);
 		else
 			return false;
 	}

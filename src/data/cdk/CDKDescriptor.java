@@ -190,6 +190,11 @@ public class CDKDescriptor
 		return -1;
 	}
 
+	//	private static String getCDKPropertyName(CDKDescriptor desc, int index)
+	//	{
+	//		return desc.getFeatureName(index);
+	//	}
+
 	public String toString()
 	{
 		return name;

@@ -27,7 +27,7 @@ public class LeverageAppDomainComputer extends AbstractAppDomainComputer
 		{
 			for (int j = 0; j < d[0].length; j++)
 			{
-				d[i][j] = features.get(j).getNormalizedValuesInCompleteMappedDataset()[i];
+				d[i][j] = features.get(j).getNormalizedValuesInCompleteDataset()[i];
 			}
 		}
 		Matrix data = new Matrix(d);

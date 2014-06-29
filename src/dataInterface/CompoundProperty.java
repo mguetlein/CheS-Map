@@ -4,7 +4,6 @@ import gui.property.ColorGradient;
 
 import java.awt.Color;
 
-import data.DatasetFile;
 import data.fragments.MatchEngine;
 
 public interface CompoundProperty
@@ -18,6 +17,8 @@ public interface CompoundProperty
 	{
 		MINE, MATCH
 	}
+
+	public boolean isValuesSet();
 
 	public String getName();
 
@@ -43,55 +44,34 @@ public interface CompoundProperty
 
 	public CompoundPropertySet getCompoundPropertySet();
 
-	public String getUniqueName();
+	//	public String getUniqueName();
 
-	public String[] getNominalDomain(DatasetFile dataset);
+	public String[] getNominalDomain();
 
-	public int[] getNominalDomainCounts(DatasetFile dataset);
+	public int[] getNominalDomainCounts();
 
-	public String[] getNominalDomainInMappedDataset();
+	public String[] getStringValuesInCompleteDataset();
 
-	public String[] getStringValues(DatasetFile dataset);
-
-	public String[] getStringValuesInCompleteMappedDataset();
-
-	public String getFormattedValueInMappedDataset(Object doubleOrString);
-
-	public String getFormattedValue(Object doubleOrString, DatasetFile dataset);
+	public String getFormattedValue(Object doubleOrString);
 
 	public String getFormattedNullValue();
 
-	public Double[] getDoubleValues(DatasetFile dataset);
+	public Double[] getDoubleValuesInCompleteDataset();
 
-	public Double[] getDoubleValuesInCompleteMappedDataset();
+	public Double[] getNormalizedValuesInCompleteDataset();
 
-	public Double[] getNormalizedValues(DatasetFile dataset);
+	public Double[] getNormalizedLogValuesInCompleteDataset();
 
-	public Double[] getNormalizedValuesInCompleteMappedDataset();
+	public Double getNormalizedMedianInCompleteDataset();
 
-	public Double[] getNormalizedLogValues(DatasetFile dataset);
+	public String getModeNonNull();
 
-	public Double getNormalizedMedian(DatasetFile dataset);
-
-	public Double getNormalizedMedianInCompleteMappedDataset();
-
-	public String getModeNonNull(DatasetFile dataset);
-
-	public String getModeNonNullInMappedDataset();
-
-	public int numMissingValues(DatasetFile dataset);
-
-	public int numMissingValuesInMappedDataset();
+	public int numMissingValuesInCompleteDataset();
 
 	/** excluding null */
-	public int numDistinctValues(DatasetFile dataset);
+	public int numDistinctValuesInCompleteDataset();
 
-	/** excluding null */
-	public int numDistinctValuesInMappedDataset();
-
-	public Boolean isInteger(DatasetFile dataset);
-
-	public Boolean isIntegerInMappedDataset();
+	public Boolean isInteger();
 
 	public boolean isLogHighlightingEnabled();
 
@@ -105,14 +85,10 @@ public interface CompoundProperty
 
 	public void setHighlightColorSequence(Color[] seq);
 
-	public Boolean hasSmallDoubleValues(DatasetFile dataset);
+	public Boolean hasSmallDoubleValues();
 
-	public Boolean hasSmallDoubleValuesInMappedDataset();
+	public CompoundProperty getRedundantProp();
 
-	public CompoundProperty getRedundantProp(DatasetFile dataset);
-
-	public CompoundProperty getRedundantPropInMappedDataset();
-
-	public void setRedundantPropInMappedDataset(CompoundProperty b);
+	public void setRedundantProp(CompoundProperty b);
 
 }

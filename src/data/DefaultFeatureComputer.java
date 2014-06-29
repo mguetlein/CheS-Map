@@ -5,6 +5,7 @@ import java.util.List;
 
 import main.TaskProvider;
 import alg.FeatureComputer;
+import data.integrated.IntegratedPropertySet;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.Type;
@@ -44,8 +45,8 @@ public class DefaultFeatureComputer implements FeatureComputer
 			TaskProvider.update("Compute feature " + (count + 1) + "/" + compoundPropertySets.length + " : "
 					+ propSet.toString());
 
-			if (propSet instanceof IntegratedProperty)
-				((IntegratedProperty) propSet).setSelectedForMapping(true);
+			if (propSet instanceof IntegratedPropertySet)
+				((IntegratedPropertySet) propSet).setSelectedForMapping(true);
 
 			boolean computed = true;
 			if (!propSet.isComputed(dataset))
@@ -67,12 +68,12 @@ public class DefaultFeatureComputer implements FeatureComputer
 			count++;
 		}
 
-		for (IntegratedProperty p : dataset.getIntegratedProperties())
+		for (IntegratedPropertySet p : dataset.getIntegratedProperties())
 			if (!props.contains(p))
 			{
 				p.setSelectedForMapping(false);
-				props.add(p);
-				properties.add(p);
+				props.add(p.get());
+				properties.add(p.get());
 			}
 
 		String[] smiles = dataset.getSmiles();
@@ -90,11 +91,11 @@ public class DefaultFeatureComputer implements FeatureComputer
 			Double n[] = null;
 			if (p.getType() == Type.NUMERIC)
 			{
-				d = p.getDoubleValues(dataset);
-				n = p.getNormalizedValues(dataset);
+				d = p.getDoubleValuesInCompleteDataset();
+				n = p.getNormalizedValuesInCompleteDataset();
 			}
 			else
-				s = p.getStringValues(dataset);
+				s = p.getStringValuesInCompleteDataset();
 
 			if ((d != null && d.length != numCompounds) || (s != null && s.length != numCompounds))
 				throw new Error("illegal num features " + p + ", is:" + (d != null ? d.length : s.length)

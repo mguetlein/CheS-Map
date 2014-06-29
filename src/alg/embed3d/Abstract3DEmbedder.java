@@ -146,18 +146,15 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 					TaskProvider.debug("Store embedding " + t.name() + " to: " + corrValueFilenames.get(t));
 					FileUtil.writeStringToFile(corrValueFilenames.get(t), correlationValue.get(t) + "");
 
-					corrPropValues.put(t,
-							EmbedUtil.computeCorrelations(t, positions, getFeatureDistanceMatrix()));
-					ValueFileCache.writeCacheDouble2(corrPropFilenames.get(t),
-							ArrayUtil.toList(corrPropValues.get(t)));
+					corrPropValues.put(t, EmbedUtil.computeCorrelations(t, positions, getFeatureDistanceMatrix()));
+					ValueFileCache.writeCacheDouble2(corrPropFilenames.get(t), ArrayUtil.toList(corrPropValues.get(t)));
 				}
 			}
 		}
 		if (!Settings.BIG_DATA)
 		{
 			for (CorrelationType t : CorrelationType.types())
-				correlationProp.put(t, CorrelationPropertySet.create(t, dataset, corrPropValues.get(t),
-						corrPropFilenames.get(t)));
+				correlationProp.put(t, new CorrelationProperty(t, corrPropValues.get(t)));
 		}
 
 		if (positions.size() != instances.size())

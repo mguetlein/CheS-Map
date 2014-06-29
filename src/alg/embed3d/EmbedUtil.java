@@ -232,7 +232,7 @@ public class EmbedUtil
 				{
 					Double v = c.getNormalizedValueCompleteDataset(feature);
 					if (v == null)
-						v = feature.getNormalizedMedianInCompleteMappedDataset();
+						v = feature.getNormalizedMedianInCompleteDataset();
 					v_i.add(v);
 				}
 				else
@@ -240,18 +240,17 @@ public class EmbedUtil
 
 					if (feature.getType() != Type.NOMINAL)
 						throw new Error();
-					if (feature.getNominalDomainInMappedDataset().length == 2
-							&& feature.getNominalDomainInMappedDataset()[0].equals("0")
-							&& feature.getNominalDomainInMappedDataset()[1].equals("1"))
+					if (feature.getNominalDomain().length == 2 && feature.getNominalDomain()[0].equals("0")
+							&& feature.getNominalDomain()[1].equals("1"))
 					{
 						if (c.getStringValue(feature) == null)
-							v_i.add(Double.parseDouble(feature.getModeNonNullInMappedDataset()));
+							v_i.add(Double.parseDouble(feature.getModeNonNull()));
 						else
 							v_i.add(Double.parseDouble(c.getStringValue(feature)));
 					}
 					else
 					{
-						for (String val : feature.getNominalDomainInMappedDataset())
+						for (String val : feature.getNominalDomain())
 						{
 							if (ObjectUtil.equals(c.getStringValue(feature), val))
 								v_i.add(1.0);

@@ -15,10 +15,9 @@ import alg.build3d.UseOrigStructures;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
 import alg.embed3d.CorrelationType;
-import alg.embed3d.EqualPositionPropertySet;
+import alg.embed3d.EqualPositionProperty;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
-import appdomain.AppDomainComputer;
 import data.ClusteringData;
 import data.CompoundDataImpl;
 import data.DatasetFile;
@@ -26,7 +25,6 @@ import data.DefaultFeatureComputer;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
 import dataInterface.CompoundPropertyUtil;
 
@@ -182,7 +180,7 @@ public class CheSMapping
 		int unique = 0;
 		int redundant = 0;
 		for (CompoundProperty p : clustering.getFeatures())
-			if (p.numDistinctValuesInMappedDataset() > 1)
+			if (p.numDistinctValuesInCompleteDataset() > 1)
 				featuresWithInfo.add(p);
 			else
 			{
@@ -194,7 +192,7 @@ public class CheSMapping
 			CompoundPropertyUtil.determineRedundantFeatures(featuresWithInfo);
 			List<CompoundProperty> rem = new ArrayList<CompoundProperty>();
 			for (CompoundProperty p : featuresWithInfo)
-				if (p.getRedundantPropInMappedDataset() != null)
+				if (p.getRedundantProp() != null)
 				{
 					redundant++;
 					Settings.LOGGER.info("skipping redundant prop: " + p);
@@ -327,40 +325,6 @@ public class CheSMapping
 			throw new IllegalStateException("internal error: num clustered compounds does not fit");
 	}
 
-	private void computedAppDomain(DatasetFile dataset, ClusteringData clustering,
-			List<CompoundProperty> featuresWithInfo)
-	{
-		for (CompoundProperty p : featuresWithInfo)
-			if (p.getType() != Type.NUMERIC || p.numMissingValues(dataset) > 0)
-				return;
-
-		//AppDomainComputer appDomain[] = new AppDomainComputer[] { AppDomainHelper.select() };
-		AppDomainComputer appDomain[] = AppDomainComputer.APP_DOMAIN_COMPUTERS;
-		if (appDomain != null && appDomain.length > 0)
-		{
-			List<CompoundProperty> props = new ArrayList<CompoundProperty>();
-			for (AppDomainComputer ad : appDomain)
-			{
-				ad.computeAppDomain(clustering.getCompounds(), featuresWithInfo, clustering.getThreeDEmbedder()
-						.getFeatureDistanceMatrix().getValues());
-				props.add(ad.getInsideAppDomainProperty());
-				props.add(ad.getPropabilityAppDomainProperty());
-				for (int i = 0; i < clustering.getNumCompounds(false); i++)
-				{
-					((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(
-							ad.getPropabilityAppDomainProperty(),
-							ad.getPropabilityAppDomainProperty().getDoubleValues(dataset)[i]);
-					((CompoundDataImpl) clustering.getCompounds().get(i)).setStringValue(
-							ad.getInsideAppDomainProperty(),
-							ad.getInsideAppDomainProperty().getStringValues(dataset)[i]);
-				}
-			}
-
-			for (CompoundProperty p : props)
-				clustering.addAdditionalProperty(p, false);
-		}
-	}
-
 	@SuppressWarnings("unchecked")
 	private void embedDataset(DatasetFile dataset, ClusteringData clustering, List<CompoundProperty> featuresWithInfo)
 	{
@@ -456,7 +420,7 @@ public class CheSMapping
 					CompoundProperty p = embedder.getCorrelationProperty(t);
 					for (int i = 0; i < clustering.getNumCompounds(false); i++)
 						((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(p,
-								p.getDoubleValues(dataset)[i]);
+								p.getDoubleValuesInCompleteDataset()[i]);
 					clustering.addAdditionalProperty(p, true);
 				}
 			}
@@ -466,13 +430,14 @@ public class CheSMapping
 
 		if (embedder != randomEmbedder)
 		{
-			EqualPositionPropertySet eqPos = EqualPositionPropertySet.create(dataset, embedder.getPositions(),
-					dataset.getEmbeddingResultsFilePath("eq-pos"));
+			//			EqualPositionProperty eqPos = EqualPositionProperty.create(dataset, embedder.getPositions(),
+			//					dataset.getEmbeddingResultsFilePath("eq-pos"));
+			EqualPositionProperty eqPos = EqualPositionProperty.create(embedder.getPositions());
 			if (eqPos != null)
 			{
 				for (int i = 0; i < clustering.getNumCompounds(false); i++)
 					((CompoundDataImpl) clustering.getCompounds().get(i)).setStringValue(eqPos,
-							eqPos.getStringValues(dataset)[i]);
+							eqPos.getStringValuesInCompleteDataset()[i]);
 				clustering.addAdditionalProperty(eqPos, false);
 			}
 		}

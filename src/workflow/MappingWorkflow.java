@@ -34,12 +34,13 @@ import alg.cluster.NoClusterer;
 import alg.embed3d.ThreeDEmbedder;
 import alg.embed3d.WekaPCA3DEmbedder;
 import data.DatasetFile;
-import data.IntegratedProperty;
 import data.cdk.CDKPropertySet;
 import data.fminer.FminerPropertySet;
 import data.fragments.StructuralFragmentProperties;
 import data.fragments.StructuralFragments;
-import data.obdesc.OBDescriptorProperty;
+import data.integrated.IntegratedProperty;
+import data.integrated.IntegratedPropertySet;
+import data.obdesc.OBDescriptorPropertySet;
 import data.obfingerprints.FingerprintType;
 import data.obfingerprints.OBFingerprintSet;
 import dataInterface.CompoundProperty;
@@ -194,10 +195,16 @@ public class MappingWorkflow
 			HashMap<String, CompoundPropertySet[]> features = new HashMap<String, CompoundPropertySet[]>();
 
 			if (feats.contains(DescriptorCategory.integrated))
-				features.put(FeatureWizardPanel.INTEGRATED_FEATURES, ArrayUtil.cast(
-						IntegratedProperty.class,
-						filterNotSuited(dataset.getIntegratedProperties(), false, includeIntegrated, excludeIntegrated,
-								nominalIntegrated)));
+			{
+				IntegratedPropertySet s[] = dataset.getIntegratedProperties();
+				IntegratedProperty p[] = new IntegratedProperty[s.length];
+				for (int i = 0; i < p.length; i++)
+					p[i] = s[i].get();
+				features.put(
+						FeatureWizardPanel.INTEGRATED_FEATURES,
+						ArrayUtil.cast(IntegratedPropertySet.class,
+								filterNotSuited(p, false, includeIntegrated, excludeIntegrated, nominalIntegrated)));
+			}
 
 			if (feats.contains(DescriptorCategory.cdk))
 			{
@@ -247,10 +254,10 @@ public class MappingWorkflow
 				features.put(FeatureWizardPanel.STRUCTURAL_FRAGMENTS, fps);
 
 			if (feats.contains(DescriptorCategory.ob))
-				features.put(
-						FeatureWizardPanel.OB_FEATURES,
-						ArrayUtil.cast(OBDescriptorProperty.class,
-								filterNotSuited(OBDescriptorProperty.getDescriptors(false), true, null, null, null)));
+				features.put(FeatureWizardPanel.OB_FEATURES, ArrayUtil.cast(
+						OBDescriptorPropertySet.class,
+						filterNotSuited(OBDescriptorPropertySet.getDescriptorProps(dataset, false), true, null, null,
+								null)));
 			return features;
 		}
 	}

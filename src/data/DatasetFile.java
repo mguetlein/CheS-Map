@@ -8,6 +8,7 @@ import main.TaskProvider;
 
 import org.openscience.cdk.interfaces.IMolecule;
 
+import data.integrated.IntegratedPropertySet;
 import util.FileUtil;
 import util.StringUtil;
 
@@ -195,12 +196,12 @@ public class DatasetFile extends FilenameProvider
 
 	final static FeatureService featureService = new FeatureService();
 
-	public IntegratedProperty[] getIntegratedProperties()
+	public IntegratedPropertySet[] getIntegratedProperties()
 	{
 		return featureService.getIntegratedProperties(this);
 	}
 
-	public IntegratedProperty getIntegratedClusterProperty()
+	public IntegratedPropertySet getIntegratedClusterProperty()
 	{
 		return featureService.getIntegratedClusterProperty(this);
 	}

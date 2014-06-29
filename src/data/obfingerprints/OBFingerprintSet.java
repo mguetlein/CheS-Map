@@ -20,9 +20,11 @@ import util.ArrayUtil;
 import util.ExternalToolUtil;
 import util.ListUtil;
 import data.DatasetFile;
+import data.fragments.MatchEngine;
 import data.fragments.StructuralFragmentProperties;
 import dataInterface.CompoundProperty.SubstructureType;
 import dataInterface.CompoundProperty.Type;
+import dataInterface.FragmentProperty;
 import dataInterface.FragmentPropertySet;
 
 public class OBFingerprintSet extends FragmentPropertySet
@@ -41,12 +43,11 @@ public class OBFingerprintSet extends FragmentPropertySet
 	}
 
 	FingerprintType type;
-	String name;
 	String description;
-	SubstructureType substructureType;
 
 	public OBFingerprintSet(FingerprintType type)
 	{
+		super();
 		this.type = type;
 
 		switch (type)
@@ -76,48 +77,48 @@ public class OBFingerprintSet extends FragmentPropertySet
 		}
 	}
 
-	private HashMap<DatasetFile, List<OBFingerprintProperty>> props = new HashMap<DatasetFile, List<OBFingerprintProperty>>();
-	private HashMap<DatasetFile, List<OBFingerprintProperty>> filteredProps = new HashMap<DatasetFile, List<OBFingerprintProperty>>();
+	//	private HashMap<DatasetFile, List<OBFingerprintProperty>> props = new HashMap<DatasetFile, List<OBFingerprintProperty>>();
+	//	private HashMap<DatasetFile, List<OBFingerprintProperty>> filteredProps = new HashMap<DatasetFile, List<OBFingerprintProperty>>();
 
-	@Override
-	public int getSize(DatasetFile d)
-	{
-		if (filteredProps.get(d) == null)
-			throw new Error("mine fragments first, number is not fixed");
-		return filteredProps.get(d).size();
-	}
+	//	@Override
+	//	public int getSize(DatasetFile d)
+	//	{
+	//		if (filteredProps.get(d) == null)
+	//			throw new Error("mine fragments first, number is not fixed");
+	//		return filteredProps.get(d).size();
+	//	}
+	//
+	//	@Override
+	//	public OBFingerprintProperty get(DatasetFile d, int index)
+	//	{
+	//		if (filteredProps.get(d) == null)
+	//			throw new Error("mine fragments first, number is not fixed");
+	//		return filteredProps.get(d).get(index);
+	//	}
+	//
+	//	@Override
+	//	public boolean isSizeDynamic()
+	//	{
+	//		return true;
+	//	}
 
-	@Override
-	public OBFingerprintProperty get(DatasetFile d, int index)
-	{
-		if (filteredProps.get(d) == null)
-			throw new Error("mine fragments first, number is not fixed");
-		return filteredProps.get(d).get(index);
-	}
+	//	@Override
+	//	public SubstructureType getSubstructureType()
+	//	{
+	//		return substructureType;
+	//	}
 
-	@Override
-	public boolean isSizeDynamic()
-	{
-		return true;
-	}
-
-	@Override
-	public SubstructureType getSubstructureType()
-	{
-		return substructureType;
-	}
-
-	@Override
-	public boolean isComputed(DatasetFile dataset)
-	{
-		return filteredProps.get(dataset) != null;
-	}
-
-	@Override
-	public boolean isCached(DatasetFile dataset)
-	{
-		return false;
-	}
+	//	@Override
+	//	public boolean isComputed(DatasetFile dataset)
+	//	{
+	//		return filteredProps.get(dataset) != null;
+	//	}
+	//
+	//	@Override
+	//	public boolean isCached(DatasetFile dataset)
+	//	{
+	//		return false;
+	//	}
 
 	@Override
 	public Binary getBinary()
@@ -125,28 +126,28 @@ public class OBFingerprintSet extends FragmentPropertySet
 		return BinHandler.BABEL_BINARY;
 	}
 
-	@Override
-	protected void updateFragments()
-	{
-		for (DatasetFile d : props.keySet())
-		{
-			List<OBFingerprintProperty> filteredList = new ArrayList<OBFingerprintProperty>();
-			for (OBFingerprintProperty p : props.get(d))
-			{
-				boolean frequent = p.getFrequency(d) >= StructuralFragmentProperties.getMinFrequency();
-				boolean skipOmni = StructuralFragmentProperties.isSkipOmniFragments()
-						&& p.getFrequency(d) == d.numCompounds();
-				if (frequent && !skipOmni)
-					filteredList.add(p);
-			}
-			filteredProps.put(d, filteredList);
-		}
-	}
-
-	public String toString()
-	{
-		return name;
-	}
+	//	@Override
+	//	protected void updateFragments()
+	//	{
+	//		for (DatasetFile d : props.keySet())
+	//		{
+	//			List<OBFingerprintProperty> filteredList = new ArrayList<OBFingerprintProperty>();
+	//			for (OBFingerprintProperty p : props.get(d))
+	//			{
+	//				boolean frequent = p.getFrequency(d) >= StructuralFragmentProperties.getMinFrequency();
+	//				boolean skipOmni = StructuralFragmentProperties.isSkipOmniFragments()
+	//						&& p.getFrequency(d) == d.numCompounds();
+	//				if (frequent && !skipOmni)
+	//					filteredList.add(p);
+	//			}
+	//			filteredProps.put(d, filteredList);
+	//		}
+	//	}
+	//
+	//	public String toString()
+	//	{
+	//		return name;
+	//	}
 
 	public static OBFingerprintSet fromString(String string)
 	{
@@ -519,7 +520,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 			// else
 			// {
 
-			LinkedHashMap<OBFingerprintProperty, List<Integer>> occurences = new LinkedHashMap<OBFingerprintProperty, List<Integer>>();
+			LinkedHashMap<FragmentProperty, List<Integer>> occurences = new LinkedHashMap<FragmentProperty, List<Integer>>();
 
 			tmp = File.createTempFile(dataset.getShortName(), "OBfingerprint");
 			String cmd[] = { BinHandler.BABEL_BINARY.getLocation(), "-isdf", dataset.getSDF(), "-ofpt", "-xf",
@@ -549,8 +550,11 @@ public class OBFingerprintSet extends FragmentPropertySet
 					for (FPFragment fpFragment : frag)
 					{
 						// OBFingerprintProperty prop = new OBFingerprintProperty(fpFragment, type);
-						OBFingerprintProperty prop = OBFingerprintProperty.create(type, fpFragment.name.trim(),
-								fpFragment.smarts);
+						//						OBFingerprintProperty prop = OBFingerprintProperty.createCDKProperty(type, fpFragment.name.trim(),
+						//								fpFragment.smarts);
+						FragmentProperty prop = new FragmentProperty(this, fpFragment.name.trim(),
+								"Structural Fragment", fpFragment.smarts, MatchEngine.OpenBabel);
+
 						if (!occurences.containsKey(prop))
 							occurences.put(prop, new ArrayList<Integer>());
 						occurences.get(prop).add(count);
@@ -564,19 +568,19 @@ public class OBFingerprintSet extends FragmentPropertySet
 			if (dataset.numCompounds() - 1 != count)
 				throw new Error("num compounds not correct " + dataset.numCompounds() + " " + count);
 
-			for (OBFingerprintProperty p : occurences.keySet())
+			for (FragmentProperty p : occurences.keySet())
 			{
-				p.setFrequency(dataset, occurences.get(p).size());
+				p.setFrequency(occurences.get(p).size());
 
 				String[] featureValue = new String[dataset.numCompounds()];
 				for (int i = 0; i < dataset.numCompounds(); i++)
 					featureValue[i] = occurences.get(p).contains(new Integer(i)) ? "1" : "0";
 				featureValues.add(featureValue);
-				p.setStringValues(dataset, featureValue);
+				p.setStringValues(featureValue);
 			}
 
-			List<OBFingerprintProperty> ps = new ArrayList<OBFingerprintProperty>();
-			for (OBFingerprintProperty obFingerprintProperty : occurences.keySet())
+			List<FragmentProperty> ps = new ArrayList<FragmentProperty>();
+			for (FragmentProperty obFingerprintProperty : occurences.keySet())
 				ps.add(obFingerprintProperty);
 
 			props.put(dataset, ps);

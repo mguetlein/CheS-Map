@@ -52,11 +52,11 @@ import com.jgoodies.forms.layout.FormLayout;
 import data.DatasetFile;
 import data.FeatureLoader;
 import data.FeatureService;
-import data.IntegratedProperty;
 import data.cdk.CDKPropertySet;
 import data.fragments.StructuralFragmentProperties;
 import data.fragments.StructuralFragments;
-import data.obdesc.OBDescriptorProperty;
+import data.integrated.IntegratedPropertySet;
+import data.obdesc.OBDescriptorPropertySet;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundProperty.SubstructureType;
 import dataInterface.CompoundProperty.Type;
@@ -263,7 +263,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 				if (BinHandler.BABEL_BINARY.isFound())
 				{
 					selector.addElementList(new String[] { PC_FEATURES, OB_FEATURES },
-							OBDescriptorProperty.getDescriptors(true));
+							OBDescriptorPropertySet.getDescriptors(true));
 					update();
 				}
 			}
@@ -594,13 +594,13 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		CompoundPropertySet[] selected = selector.getSelected();
 		selector.clearElements();
 
-		IntegratedProperty[] integrated = dataset.getIntegratedProperties();
+		IntegratedPropertySet[] integrated = dataset.getIntegratedProperties();
 		selector.addElementList(INTEGRATED_FEATURES, integrated);
 		selector.addElements(PC_FEATURES);
 		for (CDKPropertySet p : CDKPropertySet.NUMERIC_DESCRIPTORS)
 			for (String clazz : p.getDictionaryClass())
 				selector.addElements(new String[] { PC_FEATURES, CDK_FEATURES, clazz }, p);
-		selector.addElements(new String[] { PC_FEATURES, OB_FEATURES }, OBDescriptorProperty.getDescriptors(false));
+		selector.addElements(new String[] { PC_FEATURES, OB_FEATURES }, OBDescriptorPropertySet.getDescriptors(false));
 		selector.addElements(STRUCTURAL_FRAGMENTS);
 		selector.addElementList(new String[] { STRUCTURAL_FRAGMENTS, MINE_STRUCTURAL_FRAGMENTS },
 				StructuralFragments.instance.getSets(SubstructureType.MINE));
@@ -647,7 +647,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			Type t = Type.valueOf(string.substring(index + 1));
 			String feat = string.substring(0, index);
 
-			IntegratedProperty p = IntegratedProperty.fromString(feat, t, dataset);
+			IntegratedPropertySet p = IntegratedPropertySet.fromString(feat, t, dataset);
 			features.add(p);
 		}
 
@@ -660,7 +660,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 				throw new Error("no type in serialized compound prop");
 			Type t = Type.valueOf(string.substring(index + 1));
 			String feat = string.substring(0, index);
-			IntegratedProperty.fromString(feat, t, dataset);
+			IntegratedPropertySet.fromString(feat, t, dataset);
 		}
 
 		String cdkFeatures = (String) props.get(propKeyCDK);
@@ -683,7 +683,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 				throw new Error("no type in serialized compound prop");
 			Type t = Type.valueOf(string.substring(index + 1));
 			String feat = string.substring(0, index);
-			OBDescriptorProperty p = OBDescriptorProperty.fromString(feat, t);
+			OBDescriptorPropertySet p = OBDescriptorPropertySet.fromString(feat, t);
 			features.add(p);
 		}
 
@@ -725,7 +725,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 	{
 		if (features.containsKey(INTEGRATED_FEATURES) && features.get(INTEGRATED_FEATURES).length > 0)
 		{
-			IntegratedProperty[] integratedProps = ArrayUtil.cast(IntegratedProperty.class,
+			IntegratedPropertySet[] integratedProps = ArrayUtil.cast(IntegratedPropertySet.class,
 					features.get(INTEGRATED_FEATURES));
 			String[] serializedProps = new String[integratedProps.length];
 			for (int i = 0; i < serializedProps.length; i++)
@@ -738,7 +738,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		if (dataset.getIntegratedProperties().length > 0)
 		{
 			List<String> serializedProps = new ArrayList<String>();
-			for (CompoundProperty p : dataset.getIntegratedProperties())
+			for (IntegratedPropertySet p : dataset.getIntegratedProperties())
 				if ((!features.containsKey(INTEGRATED_FEATURES) || ArrayUtil.indexOf(features.get(INTEGRATED_FEATURES),
 						p) == -1) && p.getType() != null)
 					serializedProps.add(p + "#" + p.getType());
@@ -756,7 +756,8 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 
 		if (features.containsKey(OB_FEATURES) && features.get(OB_FEATURES).length > 0)
 		{
-			OBDescriptorProperty[] obFeats = ArrayUtil.cast(OBDescriptorProperty.class, features.get(OB_FEATURES));
+			OBDescriptorPropertySet[] obFeats = ArrayUtil
+					.cast(OBDescriptorPropertySet.class, features.get(OB_FEATURES));
 			String[] serilizedOBFeats = new String[obFeats.length];
 			for (int i = 0; i < serilizedOBFeats.length; i++)
 				serilizedOBFeats[i] = obFeats[i] + "#" + obFeats[i].getType();
@@ -808,18 +809,18 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		for (CompoundPropertySet[] feats : features.values())
 			for (CompoundPropertySet feature : feats)
 			{
-				if (feature instanceof IntegratedProperty || feature instanceof OBDescriptorProperty)
+				if (feature instanceof IntegratedPropertySet || feature instanceof OBDescriptorPropertySet)
 				{
 					CompoundProperty feat = (CompoundProperty) feature;
-					if (feature instanceof IntegratedProperty)
+					if (feature instanceof IntegratedPropertySet)
 					{
-						if (FeatureService.guessNominalFeatureType(feat.numDistinctValues(dataset),
+						if (FeatureService.guessNominalFeatureType(feat.numDistinctValuesInCompleteDataset(),
 								dataset.numCompounds(), feat.isTypeAllowed(Type.NUMERIC)))
 							feat.setType(Type.NOMINAL);
 						else
 							feat.setType(Type.NUMERIC);
 					}
-					else if (feature instanceof OBDescriptorProperty)
+					else if (feature instanceof OBDescriptorPropertySet)
 					{
 						if (feat.isTypeAllowed(Type.NUMERIC))
 							feat.setType(Type.NUMERIC);

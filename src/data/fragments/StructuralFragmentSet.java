@@ -43,7 +43,7 @@ public class StructuralFragmentSet extends FragmentPropertySet
 
 		for (MatchEngine m : fragments.keySet())
 			for (StructuralFragment fragment : fragments.get(m))
-				fragment.set = this;
+				fragment.setStructuralFragmentSet(this);
 	}
 
 	public String toString()
@@ -104,8 +104,8 @@ public class StructuralFragmentSet extends FragmentPropertySet
 
 	private void addFragment(StructuralFragment a, DatasetFile d, MatchEngine m)
 	{
-		boolean skip = StructuralFragmentProperties.isSkipOmniFragments() && a.getFrequency(d) == d.numCompounds();
-		boolean frequent = a.getFrequency(d) >= StructuralFragmentProperties.getMinFrequency();
+		boolean skip = StructuralFragmentProperties.isSkipOmniFragments() && a.getFrequency() == d.numCompounds();
+		boolean frequent = a.getFrequency() >= StructuralFragmentProperties.getMinFrequency();
 		if (!skip && frequent)
 			computedFragments.get(m, d).add(a);
 	}
@@ -237,8 +237,8 @@ public class StructuralFragmentSet extends FragmentPropertySet
 					m[i] = "0";
 			}
 			StructuralFragment fragment = fragments.get(StructuralFragmentProperties.getMatchEngine()).get(count);
-			fragment.setFrequency(dataset, f);
-			fragment.setStringValues(dataset, m);
+			fragment.setFrequency(f);
+			fragment.setStringValues(m);
 			addFragment(fragment, dataset, StructuralFragmentProperties.getMatchEngine());
 			count++;
 		}

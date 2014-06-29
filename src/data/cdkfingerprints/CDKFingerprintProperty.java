@@ -1,33 +1,27 @@
 package data.cdkfingerprints;
 
-import java.util.HashMap;
 
-import data.fragments.MatchEngine;
-import dataInterface.AbstractFragmentProperty;
-
-public class CDKFingerprintProperty extends AbstractFragmentProperty
+public class CDKFingerprintProperty //extends AbstractFragmentProperty
 {
-	CDKFingerprintSet set;
-
-	private CDKFingerprintProperty(CDKFingerprintSet set, String name, String smarts)
-	{
-		super(name, set + "_" + name + "_" + smarts, "Structural Fragment", smarts, MatchEngine.CDK);
-		this.set = set;
-	}
-
-	private static HashMap<String, CDKFingerprintProperty> instances = new HashMap<String, CDKFingerprintProperty>();
-
-	static CDKFingerprintProperty create(CDKFingerprintSet set, String name, String smarts)
-	{
-		String key = set + "_" + name + "_" + smarts;
-		if (!instances.containsKey(key))
-			instances.put(key, new CDKFingerprintProperty(set, name, smarts));
-		return instances.get(key);
-	}
-
-	@Override
-	public CDKFingerprintSet getCompoundPropertySet()
-	{
-		return set;
-	}
+	//
+	//	public CDKFingerprintProperty(CDKFingerprintSet set, String name, String smarts)
+	//	{
+	//		super(set, name, /*set + "_" + name + "_" + smarts,*/"Structural Fragment", smarts, MatchEngine.CDK);
+	//	}
+	//
+	//	//	private static HashMap<String, CDKFingerprintProperty> instances = new HashMap<String, CDKFingerprintProperty>();
+	//	//
+	//	//	static CDKFingerprintProperty create(CDKFingerprintSet set, String name, String smarts)
+	//	//	{
+	//	//		String key = set + "_" + name + "_" + smarts;
+	//	//		if (!instances.containsKey(key))
+	//	//			instances.put(key, new CDKFingerprintProperty(set, name, smarts));
+	//	//		return instances.get(key);
+	//	//	}
+	//
+	//	@Override
+	//	public CDKFingerprintSet getCompoundPropertySet()
+	//	{
+	//		return (CDKFingerprintSet) getCompoundPropertySet();
+	//	}
 }

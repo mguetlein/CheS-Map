@@ -21,8 +21,7 @@ public class CentroidAppDomainComputer extends DistanceBasedAppDomainComputer
 			{
 				CompoundProperty f = features.get(j);
 				dist += Math.pow(
-						f.getNormalizedMedianInCompleteMappedDataset()
-								- f.getNormalizedValuesInCompleteMappedDataset()[i], 2);
+						f.getNormalizedMedianInCompleteDataset() - f.getNormalizedValuesInCompleteDataset()[i], 2);
 			}
 			trainingDistances[i] = Math.sqrt(dist);
 		}

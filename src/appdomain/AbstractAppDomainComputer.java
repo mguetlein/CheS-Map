@@ -11,10 +11,9 @@ import main.Settings;
 import util.ArrayUtil;
 import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
+import dataInterface.DefaultCompoundProperty;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.NominalDynamicCompoundProperty;
-import dataInterface.NumericDynamicCompoundProperty;
 
 public abstract class AbstractAppDomainComputer implements AppDomainComputer
 {
@@ -57,21 +56,8 @@ public abstract class AbstractAppDomainComputer implements AppDomainComputer
 	{
 		//		return AppDomainPropertySet.create(getShortName(), dataset, inside,
 		//				dataset.getAppDomainValuesFilePath(this, getShortName() + "inside"));
-		return new NominalDynamicCompoundProperty(ArrayUtil.toStringArray(ArrayUtil.toBooleanArray(inside)))
-		{
-
-			@Override
-			public String getName()
-			{
-				return getShortName() + "-inside";
-			}
-
-			@Override
-			public String getDescription()
-			{
-				return ".";
-			}
-		};
+		return new DefaultCompoundProperty(getShortName() + "-inside", ".", ArrayUtil.toStringArray(ArrayUtil
+				.toBooleanArray(inside)));
 	}
 
 	@Override
@@ -79,21 +65,7 @@ public abstract class AbstractAppDomainComputer implements AppDomainComputer
 	{
 		//		return AppDomainPropertySet.create(getShortName(), dataset, pValues,
 		//				dataset.getAppDomainValuesFilePath(this, getShortName() + "propability"));
-		return new NumericDynamicCompoundProperty(ArrayUtil.toDoubleArray(pValues))
-		{
-
-			@Override
-			public String getName()
-			{
-				return getShortName() + "-propability";
-			}
-
-			@Override
-			public String getDescription()
-			{
-				return ".";
-			}
-		};
+		return new DefaultCompoundProperty(getShortName() + "-propability", ".", ArrayUtil.toDoubleArray(pValues));
 	}
 
 	@Override

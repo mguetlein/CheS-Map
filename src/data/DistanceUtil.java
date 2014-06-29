@@ -62,7 +62,7 @@ public class DistanceUtil
 					b[i++] = null;
 				else
 				{
-					String dom[] = p.getNominalDomainInMappedDataset();
+					String dom[] = p.getNominalDomain();
 					if (dom.length != 2)
 						throw new IllegalStateException();
 					b[i++] = c.getStringValue(p).equals(dom[1]);
@@ -79,7 +79,7 @@ public class DistanceUtil
 		{
 			if (p.getType() == Type.NUMERIC)
 				return false;
-			if (p.getNominalDomainInMappedDataset().length != 2)
+			if (p.getNominalDomain().length != 2)
 				return false;
 		}
 		return true;
