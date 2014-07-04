@@ -481,4 +481,9 @@ public class CheSMapping
 		return dataset;
 	}
 
+	public int getNumFeatureSets()
+	{
+		return featureComputer.getNumFeatureSets();
+	}
+
 }

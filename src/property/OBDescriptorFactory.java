@@ -1,4 +1,4 @@
-package data.obdesc;
+package property;
 
 import java.io.File;
 import java.nio.channels.IllegalSelectorException;

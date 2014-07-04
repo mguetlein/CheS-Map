@@ -8,7 +8,8 @@ import main.TaskProvider;
 
 import org.openscience.cdk.interfaces.IMolecule;
 
-import data.integrated.IntegratedPropertySet;
+import property.IntegratedPropertySet;
+import property.PropertySetProvider;
 import util.FileUtil;
 import util.StringUtil;
 
@@ -152,12 +153,15 @@ public class DatasetFile extends FilenameProvider
 		int index = instances.indexOf(d);
 		if (index == -1)
 		{
-			//			Settings.LOGGER.debug("New dataset " + d.getShortName());
+			//			System.err.println("New dataset " + d.getShortName());
 			instances.add(d);
 			return d;
 		}
 		else
+		{
+			//			System.err.println("Old dataset " + d.getShortName());
 			return instances.get(index);
+		}
 	}
 
 	public static DatasetFile fromString(String s)
@@ -209,6 +213,13 @@ public class DatasetFile extends FilenameProvider
 	public boolean isLoaded()
 	{
 		return featureService.isLoaded(this);
+	}
+
+	public void clear()
+	{
+		PropertySetProvider.INSTANCE.clearComputedProperties(this);
+		featureService.clear(this);
+		instances.remove(this);
 	}
 
 	public static void clearFiles(String sdfFile)

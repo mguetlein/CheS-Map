@@ -1,9 +1,10 @@
-package data.cdkfingerprints;
+package property;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import main.Settings;
@@ -18,7 +19,6 @@ import org.openscience.cdk.interfaces.IMolecule;
 import util.ArrayUtil;
 import util.CountedSet;
 import data.DatasetFile;
-import data.cdk.CDKDescriptor;
 import data.fragments.MatchEngine;
 import dataInterface.DefaultFragmentProperty;
 import dataInterface.FragmentProperty.SubstructureType;
@@ -26,13 +26,15 @@ import dataInterface.FragmentPropertySet;
 
 public class CDKFingerprintSet extends FragmentPropertySet
 {
-	public static final CDKFingerprintSet[] FINGERPRINTS = new CDKFingerprintSet[2];
+	static final CDKFingerprintSet[] FINGERPRINTS = new CDKFingerprintSet[2];
+	static CDKFingerprintSet FUNCTIONAL_GROUPS;
 	static
 	{
 		try
 		{
-			FINGERPRINTS[0] = new CDKFingerprintSet("CDK Functional Groups", new SubstructureFingerprinter(
+			FUNCTIONAL_GROUPS = new CDKFingerprintSet("CDK Functional Groups", new SubstructureFingerprinter(
 					StandardSubstructureSets.getFunctionalGroupSMARTS()));
+			FINGERPRINTS[0] = FUNCTIONAL_GROUPS;
 			FINGERPRINTS[1] = new CDKFingerprintSet("CDK Klekota-Roth Biological Activity",
 					new KlekotaRothFingerprinter());
 		}
@@ -76,7 +78,7 @@ public class CDKFingerprintSet extends FragmentPropertySet
 	@Override
 	public boolean compute(DatasetFile dataset)
 	{
-		List<DefaultFragmentProperty> ps = new ArrayList<DefaultFragmentProperty>();
+		LinkedHashMap<String, DefaultFragmentProperty> smartsToProp = new LinkedHashMap<String, DefaultFragmentProperty>();
 		HashMap<DefaultFragmentProperty, String[]> hash = new HashMap<DefaultFragmentProperty, String[]>();
 
 		TaskProvider.debug("Computing CDK fingerprint for compounds");
@@ -94,18 +96,16 @@ public class CDKFingerprintSet extends FragmentPropertySet
 					if (bs.get(i))
 					{
 						String smarts = fingerprinter.getSubstructure(i);
-						//						CDKFingerprintProperty prop = CDKFingerprintProperty.create(this, smarts, smarts);
-						DefaultFragmentProperty prop = new DefaultFragmentProperty(this, smarts, "Structural Fragment",
-								smarts, MatchEngine.CDK);
-						if (ps.indexOf(prop) == -1)
-							ps.add(prop);
-						String values[] = hash.get(prop);
-						if (values == null)
+						if (!smartsToProp.containsKey(smarts))
 						{
-							values = new String[dataset.numCompounds()];
+							smartsToProp.put(smarts, new DefaultFragmentProperty(this, smarts, "Structural Fragment",
+									smarts, MatchEngine.CDK));
+							String values[] = new String[dataset.numCompounds()];
 							Arrays.fill(values, "0");
-							hash.put(prop, values);
+							hash.put(smartsToProp.get(smarts), values);
 						}
+						DefaultFragmentProperty prop = smartsToProp.get(smarts);
+						String values[] = hash.get(prop);
 						if (m > values.length - 1)
 							throw new IllegalStateException("illegal index: " + m + ", length: " + values.length + ", "
 									+ ArrayUtil.toString(values));
@@ -120,7 +120,8 @@ public class CDKFingerprintSet extends FragmentPropertySet
 			if (!TaskProvider.isRunning())
 				return false;
 		}
-		for (DefaultFragmentProperty p : ps)
+		List<DefaultFragmentProperty> ps = new ArrayList<DefaultFragmentProperty>();
+		for (DefaultFragmentProperty p : smartsToProp.values())
 		{
 			String values[] = hash.get(p);
 			CountedSet<String> cs = CountedSet.fromArray(values);
@@ -129,6 +130,7 @@ public class CDKFingerprintSet extends FragmentPropertySet
 			p.setFrequency(cs.getCount("1"));
 			//			Settings.LOGGER.println("freq: " + p.getSmarts() + " " + cs.getCount("1"));
 			p.setStringValues(values);
+			ps.add(p);
 		}
 
 		props.put(dataset, ps);

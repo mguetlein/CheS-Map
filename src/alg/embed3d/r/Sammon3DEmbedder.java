@@ -56,11 +56,18 @@ public class Sammon3DEmbedder extends AbstractRTo3DEmbedder
 	DoubleProperty tol = new DoubleProperty("Tolerance for stopping, in units of stress (tol)", 0.0001, 0.0, 1.0,
 			0.00001);
 	DistanceProperty dist_sim = new DistanceProperty(getName());
+	IntegerProperty randomSeed = new IntegerProperty("Random seed", "Sammon random seed", 1);
+
+	@Override
+	public Property getRandomSeedProperty()
+	{
+		return randomSeed;
+	}
 
 	@Override
 	public Property[] getProperties()
 	{
-		return new Property[] { niter, magic, tol, dist_sim };
+		return new Property[] { niter, magic, tol, dist_sim, randomSeed };
 	}
 
 	public void enableTanimoto()
@@ -85,6 +92,7 @@ public class Sammon3DEmbedder extends AbstractRTo3DEmbedder
 		s.add(dist_sim.loadPackage());
 		s.add(rCode);
 		s.add("df = read.table(args[1])");
+		s.add("set.seed(" + randomSeed.getValue() + ")");
 		//s.add("save.image(\"/tmp/image.R\")");
 		s.add("res <- sammon_duplicates(df, k=3, niter=" + niter.getValue() + ", magic=" + magic.getValue() + ", tol="
 				+ tol.getValue() + ", " + dist_sim_str + " )");
@@ -145,10 +153,9 @@ public class Sammon3DEmbedder extends AbstractRTo3DEmbedder
 			+ "  }\n"// 
 			+ "  rownames(result)<-NULL\n"// 
 			+ "  result\n"// 
-			+ "}\n"
-			+ "sammon_duplicates <- function( data, dist_method=NULL, sim_method=NULL, ... ) {\n"// 
-			+ "  di <- duplicate_indices(data)\n"
-			+ "  u <- unique(data)\n"// 
+			+ "}\n" //
+			+ "sammon_duplicates <- function( data, dist_method=NULL, sim_method=NULL, k=3, ... ) {\n"// 
+			+ "  di <- duplicate_indices(data)\n" + "  u <- unique(data)\n"// 
 			+ "  print(paste('unique data points',nrow(u),'of',nrow(data)))\n"//
 			+ "  if(nrow(u) <= 4) stop(\"number of unqiue datapoints <= 4\")\n"//
 			+ "  if (!is.null(dist_method)) {\n" //
@@ -159,8 +166,13 @@ public class Sammon3DEmbedder extends AbstractRTo3DEmbedder
 			+ "     print(paste(\"similarity used: \",sim_method))\n"//
 			+ "     distance = pr_simil2dist(simil(u, method=sim_method))\n"//
 			+ "  }\n"//
-			+ "  else stop(\"neither sim_method nor dist_method given\")\n"
-			+ "  points_unique <- sammon(distance, ...)$points\n"// 
+			+ "  else stop(\"neither sim_method nor dist_method given\")\n" //
+			+ "  scale <- cmdscale(distance, k)\n"//
+			+ "  if (any(duplicated(scale))) {\n"//
+			+ "  	print(\"jittering the initial configuration\")\n"//
+			+ "  	scale <- jitter(scale)\n"//
+			+ "  }\n"//
+			+ "  points_unique <- sammon(distance, y=scale, k, ...)$points\n"// 
 			+ "  points <- add_duplicates(points_unique, di)\n"// 
 			+ "  points\n"// 
 			+ "}\n"// 

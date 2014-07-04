@@ -1,4 +1,4 @@
-package data.integrated;
+package property;
 
 import gui.binloc.Binary;
 import util.DoubleKeyHashMap;
@@ -27,6 +27,12 @@ public class IntegratedPropertySet extends AbstractPropertySet
 
 	private static DoubleKeyHashMap<String, DatasetFile, IntegratedPropertySet> sets = new DoubleKeyHashMap<String, DatasetFile, IntegratedPropertySet>();
 
+	@Override
+	public void clearComputedProperties(DatasetFile d)
+	{
+		sets.removeWithKey2(d);
+	}
+
 	public static IntegratedPropertySet create(String property, DatasetFile dataset)
 	{
 		if (!sets.containsKeyPair(property, dataset))
@@ -34,13 +40,20 @@ public class IntegratedPropertySet extends AbstractPropertySet
 		return sets.get(property, dataset);
 	}
 
-	public static IntegratedPropertySet fromString(String property, Type t, DatasetFile dataset)
+	static IntegratedPropertySet fromString(String property, Type t, DatasetFile dataset)
 	{
 		IntegratedPropertySet p = create(property, dataset);
 		if (!p.isTypeAllowed(t))
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("Type " + t + " is not allowed for prop " + property + " from dataset "
+					+ dataset);
 		p.setType(t);
 		return p;
+	}
+
+	@Override
+	public String serialize()
+	{
+		return this + "#" + getType();
 	}
 
 	@Override

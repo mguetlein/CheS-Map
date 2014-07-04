@@ -10,20 +10,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import main.Settings;
+import property.CDKPropertySet;
+import property.OBDescriptorSet;
+import property.OBFingerprintSet;
 import util.ArrayUtil;
 import util.DoubleArraySummary;
 import data.DatasetFile;
-import data.cdk.CDKProperty;
-import data.obdesc.OBDescriptorSet;
-import data.obfingerprints.OBFingerprintSet;
 import freechart.FreeChartUtil;
 
 public class CompoundPropertyUtil
 {
 	public static boolean isExportedFPProperty(NominalProperty p)
 	{
-		return (p.getDomain().length == 2 && p.getDomain()[0].equals("0")
-				&& p.getDomain()[1].equals("1") && p.toString().matches("^OB-.*:.*"));
+		return (p.getDomain().length == 2 && p.getDomain()[0].equals("0") && p.getDomain()[1].equals("1") && p
+				.toString().matches("^OB-.*:.*"));
 	}
 
 	//	public static boolean isExportedFPPropertyInMappedDataset(CompoundProperty p)
@@ -45,9 +45,9 @@ public class CompoundPropertyUtil
 
 	public static String propToExportString(CompoundProperty p)
 	{
-		if (p instanceof CDKProperty)
+		if (p.getCompoundPropertySet() instanceof CDKPropertySet)
 			return "CDK:" + p.toString();
-		if (p instanceof OBDescriptorSet)
+		if (p.getCompoundPropertySet() instanceof OBDescriptorSet)
 			return "OB:" + p.toString();
 		if (p.getCompoundPropertySet() instanceof OBFingerprintSet)
 			return "OB-" + ((OBFingerprintSet) p.getCompoundPropertySet()).getOBType() + ":" + p.toString();
@@ -280,7 +280,8 @@ public class CompoundPropertyUtil
 		for (CompoundProperty p : redundantIndices.keySet())
 		{
 			redundant.put(p, notRedundant.get(redundantIndices.get(p)));
-			if (p instanceof FragmentProperty && redundant.get(p) instanceof FragmentProperty)
+			if (Settings.SKIP_REDUNDANT_FEATURES && p instanceof FragmentProperty
+					&& redundant.get(p) instanceof FragmentProperty)
 				Settings.LOGGER.debug("skip " + ((FragmentProperty) p).getSmarts() + " because of "
 						+ ((FragmentProperty) redundant.get(p)).getSmarts());
 		}
@@ -290,8 +291,8 @@ public class CompoundPropertyUtil
 	private static boolean isRedundant(CompoundProperty p1, CompoundProperty p2, int compoundSubset[])
 	{
 		if (p1 instanceof NumericProperty && p2 instanceof NumericProperty)
-			return ArrayUtil.equals(((NumericProperty) p1).getDoubleValues(),
-					((NumericProperty) p2).getDoubleValues(), compoundSubset);
+			return ArrayUtil.equals(((NumericProperty) p1).getDoubleValues(), ((NumericProperty) p2).getDoubleValues(),
+					compoundSubset);
 		else if (p1 instanceof NominalProperty && p2 instanceof NominalProperty)
 			return ArrayUtil.redundant(((NominalProperty) p1).getStringValues(),
 					((NominalProperty) p2).getStringValues(), compoundSubset);

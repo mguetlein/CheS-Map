@@ -5,7 +5,6 @@ import gui.Build3DWizardPanel;
 import gui.ClusterWizardPanel;
 import gui.DatasetWizardPanel;
 import gui.EmbedWizardPanel;
-import gui.FeatureWizardPanel;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
@@ -14,7 +13,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -25,8 +23,13 @@ import main.BinHandler;
 import main.CheSMapping;
 import main.PropHandler;
 import main.Settings;
+import property.IntegratedPropertySet;
+import property.OBDescriptorSet;
+import property.PropertySetProvider;
+import property.PropertySetProvider.PropertySetShortcut;
 import util.ArrayUtil;
 import util.FileUtil;
+import util.ListUtil;
 import alg.align3d.ThreeDAligner;
 import alg.build3d.ThreeDBuilder;
 import alg.cluster.DatasetClusterer;
@@ -34,20 +37,10 @@ import alg.cluster.NoClusterer;
 import alg.embed3d.ThreeDEmbedder;
 import alg.embed3d.WekaPCA3DEmbedder;
 import data.DatasetFile;
-import data.cdk.CDKPropertySet;
-import data.fminer.FminerPropertySet;
 import data.fragments.FragmentProperties;
-import data.fragments.ListedFragments;
-import data.integrated.IntegratedPropertySet;
-import data.obdesc.OBDescriptorSet;
-import data.obfingerprints.FingerprintType;
-import data.obfingerprints.OBFingerprintSet;
-import dataInterface.CompoundProperty;
+import data.fragments.MatchEngine;
 import dataInterface.CompoundPropertySet;
 import dataInterface.CompoundPropertySet.Type;
-import dataInterface.FragmentPropertySet;
-import dataInterface.NominalProperty;
-import dataInterface.NumericProperty;
 
 public class MappingWorkflow
 {
@@ -121,12 +114,38 @@ public class MappingWorkflow
 		return null;
 	}
 
-	/**
-	 * for selecting descriptor groups as in feature-wizard via string (i.e. command-line)
-	 */
-	public enum DescriptorCategory
+	private static List<CompoundPropertySet> setTypeAndFilter(CompoundPropertySet[] set, String[] integratedInclude,
+			String[] integratedExclude, String[] integratedSetTypeNumeric, String[] integratedSetTypeNominal)
 	{
-		integrated, cdk, ob, obFP2, obFP3, obFP4, obMACCS, fminer, benigniBossa
+		List<CompoundPropertySet> feats = new ArrayList<CompoundPropertySet>();
+		for (int i = 0; i < set.length; i++)
+		{
+			if (set[i].isSmiles())
+				continue;
+			if (set[i] instanceof OBDescriptorSet && set[i].getType() != Type.NUMERIC)
+				continue;
+			if (set[i].getType() == null && set[i].isTypeAllowed(Type.NUMERIC))
+				throw new IllegalStateException("type should have been set beforehand");
+
+			if (set[i] instanceof IntegratedPropertySet)
+			{
+				if (integratedInclude != null && ArrayUtil.indexOf(integratedInclude, set[i].toString()) == -1)
+					continue;
+				if (integratedExclude != null && ArrayUtil.indexOf(integratedExclude, set[i].toString()) != -1)
+					continue;
+				if (integratedSetTypeNumeric != null
+						&& ArrayUtil.indexOf(integratedSetTypeNumeric, set[i].toString()) != -1)
+					set[i].setType(Type.NUMERIC);
+				if (integratedSetTypeNominal != null
+						&& ArrayUtil.indexOf(integratedSetTypeNominal, set[i].toString()) != -1)
+					set[i].setType(Type.NOMINAL);
+				if (set[i].getType() == null)
+					throw new IllegalStateException("integrated feature '" + set[i]
+							+ "' is probably not suited for embedding, skip it or set type manually");
+			}
+			feats.add(set[i]);
+		}
+		return feats;
 	}
 
 	/**
@@ -134,131 +153,92 @@ public class MappingWorkflow
 	 */
 	public static class DescriptorSelection
 	{
-		List<DescriptorCategory> feats;
+		List<PropertySetProvider.PropertySetShortcut> feats;
 		String includeIntegrated[];
 		String excludeIntegrated[];
-		String nominalIntegrated[];
+		String setNumericIntegrated[];
+		String setNominalIntegrated[];
 		int fpMinFreq = -1;
 		boolean fpSkipOmnipresent = true;
+		private MatchEngine matchEngine = MatchEngine.OpenBabel;
+		List<CompoundPropertySet> features;
 
 		public DescriptorSelection(String featString)
 		{
-			this(featString, null, null, null);
+			this(featString, null, null, null, null);
 		}
 
 		public DescriptorSelection(String featString, String includeIntegrated, String excludeIntegrated,
-				String nominalIntegrated)
+				String setNumericIntegrated, String setNominalIntegrated)
 		{
-			feats = new ArrayList<DescriptorCategory>();
-			for (String featStr : featString.split(","))
-				feats.add(DescriptorCategory.valueOf(featStr));
-			if (feats.contains(null) || feats.size() == 0)
-				throw new IllegalArgumentException(featString);
+			this(parse(featString), includeIntegrated, excludeIntegrated, setNumericIntegrated, setNominalIntegrated);
+		}
 
+		private static PropertySetShortcut[] parse(String s)
+		{
+			List<PropertySetShortcut> feats = new ArrayList<PropertySetShortcut>();
+			for (String featStr : s.split(","))
+				feats.add(PropertySetProvider.PropertySetShortcut.valueOf(featStr));
+			if (feats.contains(null) || feats.size() == 0)
+				throw new IllegalArgumentException(s);
+			return ListUtil.toArray(feats);
+		}
+
+		public DescriptorSelection(PropertySetProvider.PropertySetShortcut... feats)
+		{
+			this(feats, null, null, null, null);
+		}
+
+		public DescriptorSelection(PropertySetProvider.PropertySetShortcut feat, String includeIntegrated,
+				String excludeIntegrated, String setNumericIntegrated, String setNominalIntegrated)
+		{
+			this(new PropertySetShortcut[] { feat }, includeIntegrated, excludeIntegrated, setNumericIntegrated,
+					setNominalIntegrated);
+		}
+
+		public DescriptorSelection(PropertySetProvider.PropertySetShortcut feats[], String includeIntegrated,
+				String excludeIntegrated, String setNumericIntegrated, String setNominalIntegrated)
+		{
+			if (feats == null || feats.length == 0)
+				throw new IllegalArgumentException();
+
+			this.feats = ArrayUtil.toList(feats);
 			if (includeIntegrated != null)
 				this.includeIntegrated = includeIntegrated.split(",");
 			if (excludeIntegrated != null)
 				this.excludeIntegrated = excludeIntegrated.split(",");
-			if (nominalIntegrated != null)
-				this.nominalIntegrated = nominalIntegrated.split(",");
+			if (setNumericIntegrated != null)
+				this.setNumericIntegrated = setNumericIntegrated.split(",");
+			if (setNominalIntegrated != null)
+				this.setNominalIntegrated = setNominalIntegrated.split(",");
 		}
 
-		public DescriptorSelection(DescriptorCategory... feats)
-		{
-			this.feats = ArrayUtil.toList(feats);
-		}
-
-		public void setFingerprintSettings(int minFrequency, boolean skipOmnipresent)
+		public void setFingerprintSettings(int minFrequency, boolean skipOmnipresent, MatchEngine matchEngine)
 		{
 			this.fpMinFreq = minFrequency;
 			this.fpSkipOmnipresent = skipOmnipresent;
+			this.matchEngine = matchEngine;
 		}
 
-		private CompoundProperty[] filterNotSuited(CompoundProperty[] set, boolean onlyNumeric, String[] include,
-				String[] exclude, String[] nominal)
+		public List<CompoundPropertySet> getFeatures(DatasetFile dataset)
 		{
-			List<CompoundProperty> feats = new ArrayList<CompoundProperty>();
-			for (int i = 0; i < set.length; i++)
-				if (!(set[i] instanceof NominalProperty && ((NominalProperty) set[i]).isSmiles()))
-					if ((onlyNumeric && set[i] instanceof NumericProperty)
-							|| (!onlyNumeric && (set[i].getCompoundPropertySet().isTypeAllowed(Type.NUMERIC) || set[i] instanceof NominalProperty)))
-						if (include == null || ArrayUtil.indexOf(include, set[i].getName()) != -1)
-							if (exclude == null || ArrayUtil.indexOf(exclude, set[i].getName()) == -1)
-								feats.add(set[i]);
-			for (CompoundProperty c : set)
-				if (nominal != null && ArrayUtil.indexOf(nominal, c.getName()) != -1)
-					c.getCompoundPropertySet().setType(Type.NOMINAL);
-			return ArrayUtil.toArray(CompoundProperty.class, feats);
-		}
-
-		public HashMap<String, CompoundPropertySet[]> getFeatures(DatasetFile dataset)
-		{
-			HashMap<String, CompoundPropertySet[]> features = new HashMap<String, CompoundPropertySet[]>();
-
-			if (feats.contains(DescriptorCategory.integrated))
-			{
-				IntegratedPropertySet s[] = dataset.getIntegratedProperties();
-				CompoundProperty p[] = new CompoundProperty[s.length];
-				for (int i = 0; i < p.length; i++)
-					p[i] = s[i].get();
-				features.put(
-						FeatureWizardPanel.INTEGRATED_FEATURES,
-						ArrayUtil.cast(IntegratedPropertySet.class,
-								filterNotSuited(p, false, includeIntegrated, excludeIntegrated, nominalIntegrated)));
-			}
-
-			if (feats.contains(DescriptorCategory.cdk))
-			{
-				List<CDKPropertySet> feats = new ArrayList<CDKPropertySet>();
-				for (CDKPropertySet p : CDKPropertySet.NUMERIC_DESCRIPTORS)
-					if (!p.toString().equals("Ionization Potential"))
-						feats.add(p);
-				features.put(FeatureWizardPanel.CDK_FEATURES, ArrayUtil.toArray(feats));
-			}
-
-			if (feats.contains(DescriptorCategory.obFP2) || feats.contains(DescriptorCategory.obFP3)
-					|| feats.contains(DescriptorCategory.obFP4) || feats.contains(DescriptorCategory.obMACCS)
-					|| feats.contains(DescriptorCategory.fminer) || feats.contains(DescriptorCategory.benigniBossa))
+			if (features == null)
 			{
 				if (fpMinFreq == -1)
 					fpMinFreq = Math.max(1, Math.min(10, dataset.numCompounds() / 10));
 				FragmentProperties.setMinFrequency(fpMinFreq);
 				FragmentProperties.setSkipOmniFragments(fpSkipOmnipresent);
-				System.out.println("set min frequency to " + FragmentProperties.getMinFrequency());
-				Settings.LOGGER.info("before computing structural fragment "
-						+ FragmentProperties.getMatchEngine() + " "
-						+ FragmentProperties.getMinFrequency() + " "
-						+ FragmentProperties.isSkipOmniFragments());
+				FragmentProperties.setMatchEngine(matchEngine);
+				Settings.LOGGER.info("before computing structural fragment " + FragmentProperties.getMatchEngine()
+						+ " " + FragmentProperties.getMinFrequency() + " " + FragmentProperties.isSkipOmniFragments());
+
+				CompoundPropertySet featuresArray[] = PropertySetProvider.INSTANCE.getDescriptorSets(dataset,
+						ArrayUtil.toArray(feats));
+				features = setTypeAndFilter(featuresArray, includeIntegrated, excludeIntegrated, setNumericIntegrated,
+						setNominalIntegrated);
+				Settings.LOGGER.debug(features.size() + " feature-sets selected for " + ListUtil.toString(feats)
+						+ " (unfiltered: " + featuresArray.length + ")");
 			}
-
-			FragmentPropertySet fps[] = new FragmentPropertySet[0];
-			if (feats.contains(DescriptorCategory.obFP2))
-				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
-						new OBFingerprintSet[] { OBFingerprintSet.getOBFingerprintSet(FingerprintType.FP2) });
-			if (feats.contains(DescriptorCategory.obFP3))
-				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
-						new OBFingerprintSet[] { OBFingerprintSet.getOBFingerprintSet(FingerprintType.FP3) });
-			if (feats.contains(DescriptorCategory.obFP4))
-				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
-						new OBFingerprintSet[] { OBFingerprintSet.getOBFingerprintSet(FingerprintType.FP4) });
-			if (feats.contains(DescriptorCategory.obMACCS))
-				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
-						new OBFingerprintSet[] { OBFingerprintSet.getOBFingerprintSet(FingerprintType.MACCS) });
-			if (feats.contains(DescriptorCategory.benigniBossa))
-				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
-						new FragmentPropertySet[] { ListedFragments.instance
-								.findFromString(ListedFragments.SMARTS_LIST_PREFIX + "ToxTree_BB_CarcMutRules") });
-			if (feats.contains(DescriptorCategory.fminer))
-				fps = ArrayUtil.concat(FragmentPropertySet.class, fps,
-						new FragmentPropertySet[] { FminerPropertySet.INSTANCE });
-			if (fps.length > 0)
-				features.put(FeatureWizardPanel.STRUCTURAL_FRAGMENTS, fps);
-
-			if (feats.contains(DescriptorCategory.ob))
-				features.put(FeatureWizardPanel.OB_FEATURES, ArrayUtil.cast(
-						OBDescriptorSet.class,
-						filterNotSuited(OBDescriptorSet.getDescriptorProps(dataset, false), true, null, null,
-								null)));
 			return features;
 		}
 	}
@@ -296,10 +276,15 @@ public class MappingWorkflow
 
 		if (featureSelection != null)
 		{
-			FeatureWizardPanel features = new FeatureWizardPanel();
-			features.updateIntegratedFeatures(datasetProvider.getDatasetFile());
-			features.exportFeaturesToMappingWorkflow(featureSelection.getFeatures(datasetProvider.getDatasetFile()),
-					props);
+			//			FeatureWizardPanel features = new FeatureWizardPanel();
+			//			features.updateFeatures(datasetProvider.getDatasetFile());
+			//			features.exportFeaturesToMappingWorkflow(featureSelection.getFeatures(datasetProvider.getDatasetFile()),
+			//					props);
+
+			CompoundPropertySet features[] = ArrayUtil.toArray(CompoundPropertySet.class,
+					featureSelection.getFeatures(datasetProvider.getDatasetFile()));
+			PropertySetProvider.INSTANCE.exportFeaturesToMappingWorkflow(features, props,
+					datasetProvider.getDatasetFile());
 		}
 
 		ClusterWizardPanel cluster = new ClusterWizardPanel();
@@ -320,8 +305,8 @@ public class MappingWorkflow
 	{
 		Properties props = new Properties();
 		for (MappingWorkflowProvider p : new MappingWorkflowProvider[] { new DatasetWizardPanel(),
-				new Build3DWizardPanel(), new FeatureWizardPanel(), new ClusterWizardPanel(), new EmbedWizardPanel(),
-				new AlignWizardPanel() })
+				new Build3DWizardPanel(), PropertySetProvider.INSTANCE, new ClusterWizardPanel(),
+				new EmbedWizardPanel(), new AlignWizardPanel() })
 			p.exportSettingsToMappingWorkflow(props);
 		return props;
 	}
@@ -383,9 +368,10 @@ public class MappingWorkflow
 			return null;
 		ThreeDBuilder builder = (ThreeDBuilder) new Build3DWizardPanel().getAlgorithmFromMappingWorkflow(
 				workflowMappingProps, true);
-		FeatureWizardPanel f = new FeatureWizardPanel();
-		f.updateIntegratedFeatures(dataset);
-		CompoundPropertySet features[] = f.getFeaturesFromMappingWorkflow(workflowMappingProps, true);
+		//		FeatureWizardPanel f = new FeatureWizardPanel();
+		//		f.updateFeatures(dataset);
+		CompoundPropertySet features[] = PropertySetProvider.INSTANCE.getFeaturesFromMappingWorkflow(
+				workflowMappingProps, true, dataset);
 		DatasetClusterer clusterer = (DatasetClusterer) new ClusterWizardPanel().getAlgorithmFromMappingWorkflow(
 				workflowMappingProps, true);
 		ThreeDEmbedder embedder = (ThreeDEmbedder) new EmbedWizardPanel().getAlgorithmFromMappingWorkflow(
@@ -406,7 +392,7 @@ public class MappingWorkflow
 	public static void createAndStoreMappingWorkflow(String datasetFile, String workflowOutfile)
 	{
 		createAndStoreMappingWorkflow(datasetFile, workflowOutfile, new DescriptorSelection(
-				DescriptorCategory.integrated), NoClusterer.INSTANCE);
+				PropertySetProvider.PropertySetShortcut.integrated), NoClusterer.INSTANCE);
 	}
 
 	/**
@@ -448,8 +434,8 @@ public class MappingWorkflow
 
 		//		String input = Settings.destinationFile("knime_input.csv");
 		String input = "/home/martin/data/caco2.sdf";
-		Properties props = MappingWorkflow.createMappingWorkflow(input, new DescriptorSelection(DescriptorCategory.ob),
-				null, null);
+		Properties props = MappingWorkflow.createMappingWorkflow(input, new DescriptorSelection(
+				PropertySetProvider.PropertySetShortcut.ob), null, null);
 		CheSMapping mapping = MappingWorkflow.createMappingFromMappingWorkflow(props, "");
 		mapping.doMapping();
 		//		ClusteringData data = mapping.doMapping();

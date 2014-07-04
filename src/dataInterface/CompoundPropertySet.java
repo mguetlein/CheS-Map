@@ -25,7 +25,11 @@ public interface CompoundPropertySet
 
 	public CompoundProperty get(DatasetFile d, int index);
 
+	public void clearComputedProperties(DatasetFile d);
+
 	public String getDescription();
+
+	public String serialize();
 
 	public void setType(Type type);
 
@@ -46,4 +50,11 @@ public interface CompoundPropertySet
 	public boolean isSensitiveTo3D();
 
 	public SubstructureType getSubstructureType();
+
+	public void setSmiles(boolean smiles);
+
+	public boolean isSmiles();
+
+	public boolean isHiddenFromGUI();
+
 }

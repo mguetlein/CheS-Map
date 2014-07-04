@@ -66,7 +66,7 @@ public class CompoundArffWriter implements ArffWritable
 	public String getAttributeName(int attribute)
 	{
 		//return features.get(attribute).getUniqueName();
-		return features.get(attribute).getName() + "_" + features.get(attribute).getClass().getSimpleName();
+		return features.get(attribute).getName() + "_" + features.get(attribute).hashCode();
 	}
 
 	@Override

@@ -187,7 +187,7 @@ public class CheSMapperWizard extends WizardDialog
 		if (dataset.getDatasetFile() != null)
 		{
 			create3D.update(dataset.getDatasetFile(), null, null);
-			features.updateIntegratedFeatures(dataset.getDatasetFile());
+			features.updateFeatures(dataset.getDatasetFile());
 			if (features.getFeatureInfo() != null)
 			{
 				cluster.update(dataset.getDatasetFile(), features.getFeatureInfo(), cluster.getDatasetClusterer());

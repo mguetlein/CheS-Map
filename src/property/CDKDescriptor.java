@@ -1,4 +1,4 @@
-package data.cdk;
+package property;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -30,7 +30,7 @@ import util.ArrayUtil;
 
 public class CDKDescriptor
 {
-	public static final DescriptorEngine ENGINE = new DescriptorEngine(DescriptorEngine.MOLECULAR);
+	static final DescriptorEngine ENGINE = new DescriptorEngine(DescriptorEngine.MOLECULAR);
 	private static CDKDescriptor[] CDK_DESCRIPTORS;
 	private static CDKDescriptor[] CDK_NUMERIC_DESCRIPTORS;
 
@@ -41,7 +41,12 @@ public class CDKDescriptor
 		return CDK_NUMERIC_DESCRIPTORS;
 	}
 
-	public static synchronized CDKDescriptor[] getDescriptors()
+	public static void loadDescriptors()
+	{
+		getDescriptors();
+	}
+
+	static synchronized CDKDescriptor[] getDescriptors()
 	{
 		if (CDK_DESCRIPTORS == null)
 		{

@@ -19,11 +19,11 @@ import org.openscience.cdk.io.ISimpleChemObjectReader;
 import org.openscience.cdk.io.ReaderFactory;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 
+import property.IntegratedPropertySet;
 import util.ArrayUtil;
 import alg.AlgorithmException.ThreeDBuilderException;
 import data.DatasetFile;
 import data.FeatureService.SDFReader;
-import data.integrated.IntegratedPropertySet;
 import dataInterface.CompoundProperty;
 import dataInterface.NominalProperty;
 import dataInterface.NumericProperty;

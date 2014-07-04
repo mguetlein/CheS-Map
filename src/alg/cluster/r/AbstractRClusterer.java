@@ -16,7 +16,6 @@ import util.ExternalToolUtil;
 import util.FileUtil;
 import alg.AlgorithmException.ClusterException;
 import alg.cluster.AbstractDatasetClusterer;
-import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
@@ -24,10 +23,6 @@ import dataInterface.CompoundPropertyUtil;
 
 public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 {
-	public static final DatasetClusterer[] R_CLUSTERER = new AbstractRClusterer[] { KMeansRClusterer.INSTANCE,
-			CascadeKMeansRClusterer.INSTANCE, HierarchicalRClusterer.INSTANCE,
-			DynamicTreeCutHierarchicalRClusterer.INSTANCE };//, MahalanobisFixedPointClusterer.INSTANCE };
-
 	@Override
 	public Binary getBinary()
 	{

@@ -1,4 +1,4 @@
-package data.fminer;
+package property;
 
 import gui.binloc.Binary;
 import gui.binloc.BinaryLocator;
@@ -19,7 +19,7 @@ import dataInterface.FragmentPropertySet;
 
 public class FminerPropertySet extends FragmentPropertySet
 {
-	public static FminerPropertySet INSTANCE = new FminerPropertySet();
+	static FminerPropertySet INSTANCE = new FminerPropertySet();
 
 	private FminerPropertySet()
 	{
@@ -96,5 +96,11 @@ public class FminerPropertySet extends FragmentPropertySet
 	public boolean isComputationSlow()
 	{
 		return false;
+	}
+
+	@Override
+	public boolean isHiddenFromGUI()
+	{
+		return true;
 	}
 }

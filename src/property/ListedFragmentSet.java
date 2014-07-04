@@ -1,4 +1,4 @@
-package data.fragments;
+package property;
 
 import gui.binloc.Binary;
 
@@ -21,6 +21,8 @@ import util.FileUtil.UnexpectedNumColsException;
 import data.CDKSmartsHandler;
 import data.DatasetFile;
 import data.OpenBabelSmartsHandler;
+import data.fragments.FragmentProperties;
+import data.fragments.MatchEngine;
 import dataInterface.FragmentProperty.SubstructureType;
 import dataInterface.FragmentPropertySet;
 
@@ -32,8 +34,7 @@ public class ListedFragmentSet extends FragmentPropertySet
 	DoubleKeyHashMap<MatchEngine, DatasetFile, String> cacheFile = new DoubleKeyHashMap<MatchEngine, DatasetFile, String>();
 	DoubleKeyHashMap<MatchEngine, DatasetFile, List<ListedFragmentProperty>> computedFragments = new DoubleKeyHashMap<MatchEngine, DatasetFile, List<ListedFragmentProperty>>();
 
-	public ListedFragmentSet(String name, String description,
-			HashMap<MatchEngine, List<ListedFragmentProperty>> fragments)
+	ListedFragmentSet(String name, String description, HashMap<MatchEngine, List<ListedFragmentProperty>> fragments)
 	{
 		super(name, SubstructureType.MATCH);
 		this.fragments = fragments;
@@ -42,6 +43,14 @@ public class ListedFragmentSet extends FragmentPropertySet
 		for (MatchEngine m : fragments.keySet())
 			for (ListedFragmentProperty fragment : fragments.get(m))
 				fragment.setListedFragmentSet(this);
+	}
+
+	@Override
+	public void clearComputedProperties(DatasetFile d)
+	{
+		super.clearComputedProperties(d);
+		cacheFile.removeWithKey2(d);
+		computedFragments.removeWithKey2(d);
 	}
 
 	public String toString()
@@ -170,8 +179,8 @@ public class ListedFragmentSet extends FragmentPropertySet
 	public boolean compute(DatasetFile dataset)
 	{
 		Settings.LOGGER.info("Computing structural fragment " + FragmentProperties.getMatchEngine() + " "
-				+ FragmentProperties.getMinFrequency() + " "
-				+ FragmentProperties.isSkipOmniFragments() + " " + dataset.getSDF());
+				+ FragmentProperties.getMinFrequency() + " " + FragmentProperties.isSkipOmniFragments() + " "
+				+ dataset.getSDF());
 
 		List<String> smarts = new ArrayList<String>();
 		for (ListedFragmentProperty fragment : fragments.get(FragmentProperties.getMatchEngine()))
@@ -210,8 +219,7 @@ public class ListedFragmentSet extends FragmentPropertySet
 		}
 
 		//		if (!computedFragments.containsKeyPair(StructuralFragmentProperties.getMatchEngine(), dataset))
-		computedFragments.put(FragmentProperties.getMatchEngine(), dataset,
-				new ArrayList<ListedFragmentProperty>());
+		computedFragments.put(FragmentProperties.getMatchEngine(), dataset, new ArrayList<ListedFragmentProperty>());
 
 		int count = 0;
 		for (boolean[] match : matches)
@@ -246,9 +254,8 @@ public class ListedFragmentSet extends FragmentPropertySet
 	@Override
 	public String getNameIncludingParams()
 	{
-		return toString() + "_" + FragmentProperties.getMatchEngine() + "_"
-				+ FragmentProperties.getMinFrequency() + "_"
-				+ FragmentProperties.isSkipOmniFragments();
+		return toString() + "_" + FragmentProperties.getMatchEngine() + "_" + FragmentProperties.getMinFrequency()
+				+ "_" + FragmentProperties.isSkipOmniFragments();
 	}
 
 	@Override

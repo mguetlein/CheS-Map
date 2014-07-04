@@ -115,7 +115,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		{
 			Settings.LOGGER.info("Read cached embedding results from: " + embedFilename);
 			positions = ValueFileCache.readCachePosition2(embedFilename, instances.size());
-			if (!Settings.BIG_DATA)
+			if (!Settings.BIG_DATA && instances.size() > 2)
 			{
 				for (CorrelationType t : CorrelationType.types())
 				{
@@ -137,7 +137,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 			positions = embed(dataset, instances, features); //, trainInstances
 			TaskProvider.debug("Store embedding results to: " + embedFilename);
 			ValueFileCache.writeCachePosition2(embedFilename, positions);
-			if (!Settings.BIG_DATA)
+			if (!Settings.BIG_DATA && instances.size() > 2)
 			{
 				for (CorrelationType t : CorrelationType.types())
 				{
@@ -151,7 +151,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 				}
 			}
 		}
-		if (!Settings.BIG_DATA)
+		if (!Settings.BIG_DATA && instances.size() > 2)
 		{
 			for (CorrelationType t : CorrelationType.types())
 				correlationProp.put(t, new CorrelationProperty(t, corrPropValues.get(t)));

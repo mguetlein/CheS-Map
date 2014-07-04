@@ -10,12 +10,12 @@ import gui.property.SelectProperty;
 import java.util.ArrayList;
 import java.util.List;
 
+import property.IntegratedPropertySet;
 import main.Settings;
 import util.ArrayUtil;
 import alg.AlgorithmException;
 import alg.DistanceMeasure;
 import data.DatasetFile;
-import data.integrated.IntegratedPropertySet;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.NominalProperty;

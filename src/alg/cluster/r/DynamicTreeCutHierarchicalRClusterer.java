@@ -74,4 +74,9 @@ public class DynamicTreeCutHierarchicalRClusterer extends AbstractRClusterer
 		return distance.getDistanceMeasure();
 	}
 
+	public void setMinClusterSize(int minClusterSize)
+	{
+		this.minClusterSize.setValue(minClusterSize);
+	}
+
 }

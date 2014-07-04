@@ -14,10 +14,10 @@ import org.openscience.cdk.interfaces.IMoleculeSet;
 import org.openscience.cdk.io.SDFWriter;
 import org.openscience.cdk.smiles.SmilesGenerator;
 
+import property.CDKDescriptor;
+import property.OBDescriptorFactory;
 import util.ArrayUtil;
 import data.DatasetFile;
-import data.cdk.CDKDescriptor;
-import data.obdesc.OBDescriptorFactory;
 import dataInterface.CompoundPropertySet.Type;
 
 public class DescriptorForMixturesHandler

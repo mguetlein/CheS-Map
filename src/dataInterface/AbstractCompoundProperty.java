@@ -1,5 +1,6 @@
 package dataInterface;
 
+
 public abstract class AbstractCompoundProperty implements CompoundProperty
 {
 	protected String name;

@@ -42,6 +42,12 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 	}
 
 	@Override
+	public String serialize()
+	{
+		return toString();
+	}
+
+	@Override
 	public boolean isSensitiveTo3D()
 	{
 		return false;
@@ -49,6 +55,13 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 
 	protected HashMap<DatasetFile, List<DefaultFragmentProperty>> props = new HashMap<DatasetFile, List<DefaultFragmentProperty>>();
 	private HashMap<DatasetFile, List<DefaultFragmentProperty>> filteredProps = new HashMap<DatasetFile, List<DefaultFragmentProperty>>();
+
+	@Override
+	public void clearComputedProperties(DatasetFile d)
+	{
+		props.remove(d);
+		filteredProps.remove(d);
+	}
 
 	@Override
 	public int getSize(DatasetFile d)
@@ -86,8 +99,7 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 			for (DefaultFragmentProperty p : props.get(d))
 			{
 				boolean frequent = p.getFrequency() >= FragmentProperties.getMinFrequency();
-				boolean skipOmni = FragmentProperties.isSkipOmniFragments()
-						&& p.getFrequency() == d.numCompounds();
+				boolean skipOmni = FragmentProperties.isSkipOmniFragments() && p.getFrequency() == d.numCompounds();
 				if (frequent && !skipOmni)
 					filteredList.add(p);
 			}
@@ -110,9 +122,8 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 	@Override
 	public String getNameIncludingParams()
 	{
-		return toString() + "_" + FragmentProperties.getMatchEngine() + "_"
-				+ FragmentProperties.getMinFrequency() + "_"
-				+ FragmentProperties.isSkipOmniFragments();
+		return toString() + "_" + FragmentProperties.getMatchEngine() + "_" + FragmentProperties.getMinFrequency()
+				+ "_" + FragmentProperties.isSkipOmniFragments();
 	}
 
 	@Override
@@ -150,6 +161,24 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 	public void setTypeAllowed(Type type, boolean allowed)
 	{
 		throw new IllegalStateException();
+	}
+
+	@Override
+	public void setSmiles(boolean smiles)
+	{
+		throw new IllegalStateException();
+	}
+
+	@Override
+	public boolean isSmiles()
+	{
+		return false;
+	}
+
+	@Override
+	public boolean isHiddenFromGUI()
+	{
+		return false;
 	}
 
 	//	public void clearProperties()

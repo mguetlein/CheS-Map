@@ -10,7 +10,6 @@ import util.ToStringComparator;
 public class DefaultNominalProperty extends AbstractCompoundProperty implements NominalProperty
 {
 	private Color[] colorSequence = null;
-	private boolean isSmiles;
 	private String[] domain;
 	private int[] domainCounts;
 	private String[] stringValues;
@@ -26,18 +25,6 @@ public class DefaultNominalProperty extends AbstractCompoundProperty implements 
 	public DefaultNominalProperty(CompoundPropertySet set, String name, String description)
 	{
 		super(set, name, description);
-	}
-
-	@Override
-	public boolean isSmiles()
-	{
-		return isSmiles;
-	}
-
-	@Override
-	public void setSmiles(boolean isSmiles)
-	{
-		this.isSmiles = isSmiles;
 	}
 
 	@Override

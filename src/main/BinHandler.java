@@ -18,11 +18,11 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
+import property.OBDescriptorFactory;
 import util.FileUtil;
 import util.ImageLoader;
 import util.OSUtil;
 import babel.OBWrapper;
-import data.obdesc.OBDescriptorFactory;
 
 public class BinHandler
 {

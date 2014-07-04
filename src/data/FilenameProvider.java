@@ -4,6 +4,7 @@ import gui.property.PropertyUtil;
 
 import java.util.List;
 
+import property.ListedFragmentProperty;
 import main.Settings;
 import util.ArrayUtil;
 import util.StringUtil;
@@ -11,7 +12,6 @@ import alg.Algorithm;
 import alg.build3d.ThreeDBuilder;
 import appdomain.AppDomainComputer;
 import data.fragments.MatchEngine;
-import data.fragments.ListedFragmentProperty;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundPropertySet;
 import dataInterface.CompoundPropertyUtil;

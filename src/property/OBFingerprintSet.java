@@ -1,4 +1,4 @@
-package data.obfingerprints;
+package property;
 
 import gui.binloc.Binary;
 
@@ -28,35 +28,29 @@ import dataInterface.FragmentPropertySet;
 
 public class OBFingerprintSet extends FragmentPropertySet
 {
-	public static final OBFingerprintSet[] VISIBLE_FINGERPRINTS = new OBFingerprintSet[FingerprintType.visible_values().length];
-	public static final OBFingerprintSet[] HIDDEN_FINGERPRINTS = new OBFingerprintSet[FingerprintType.hidden_values().length];
-	private static HashMap<FingerprintType, OBFingerprintSet> sets = new HashMap<FingerprintType, OBFingerprintSet>();
+	static final OBFingerprintSet[] FINGERPRINTS;
 
 	static
 	{
+		FINGERPRINTS = new OBFingerprintSet[OBFingerprintType.values().length];
 		int count = 0;
-		for (FingerprintType t : FingerprintType.visible_values())
-		{
-			VISIBLE_FINGERPRINTS[count] = new OBFingerprintSet(t);
-			sets.put(t, VISIBLE_FINGERPRINTS[count++]);
-		}
-		count = 0;
-		for (FingerprintType t : FingerprintType.hidden_values())
-		{
-			HIDDEN_FINGERPRINTS[count] = new OBFingerprintSet(t);
-			sets.put(t, HIDDEN_FINGERPRINTS[count++]);
-		}
+		for (OBFingerprintType t : OBFingerprintType.values())
+			FINGERPRINTS[count++] = new OBFingerprintSet(t);
 	}
 
-	FingerprintType type;
+	OBFingerprintType type;
 	String description;
+	final boolean hidden;
 
-	public static OBFingerprintSet getOBFingerprintSet(FingerprintType type)
+	static OBFingerprintSet getOBFingerprintSet(OBFingerprintType type)
 	{
-		return sets.get(type);
+		for (OBFingerprintSet s : FINGERPRINTS)
+			if (s.getOBType() == type)
+				return s;
+		throw new IllegalArgumentException();
 	}
 
-	private OBFingerprintSet(FingerprintType type)
+	private OBFingerprintSet(OBFingerprintType type)
 	{
 		super();
 		this.type = type;
@@ -67,25 +61,35 @@ public class OBFingerprintSet extends FragmentPropertySet
 				name = Settings.text("features.struct.fp2");
 				description = Settings.text("features.struct.fp2.desc");
 				substructureType = SubstructureType.MINE;
+				hidden = false;
 				break;
 			case FP3:
 				name = Settings.text("features.struct.fp3");
 				description = Settings.text("features.struct.fp3.desc");
 				substructureType = SubstructureType.MATCH;
+				hidden = true;
 				break;
 			case FP4:
 				name = Settings.text("features.struct.fp4");
 				description = Settings.text("features.struct.fp4.desc");
 				substructureType = SubstructureType.MATCH;
+				hidden = true;
 				break;
 			case MACCS:
 				name = Settings.text("features.struct.maccs");
 				description = Settings.text("features.struct.maccs.desc");
 				substructureType = SubstructureType.MATCH;
+				hidden = true;
 				break;
 			default:
 				throw new Error("Unknown type");
 		}
+	}
+
+	@Override
+	public boolean isHiddenFromGUI()
+	{
+		return hidden;
 	}
 
 	@Override
@@ -96,7 +100,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 
 	public static OBFingerprintSet fromString(String string)
 	{
-		return new OBFingerprintSet(FingerprintType.valueOf(string));
+		return new OBFingerprintSet(OBFingerprintType.valueOf(string));
 	}
 
 	@Override
@@ -117,7 +121,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 		return Type.NOMINAL;
 	}
 
-	public FingerprintType getOBType()
+	public OBFingerprintType getOBType()
 	{
 		return type;
 	}
@@ -130,7 +134,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 
 		private static HashMap<String, FPFragment> uniqueFragments = new HashMap<String, FPFragment>();
 
-		public static FPFragment[] parse(FingerprintType type, String line) throws IOException
+		public static FPFragment[] parse(OBFingerprintType type, String line) throws IOException
 		{
 			FPFragment[] newF;
 			switch (type)
@@ -431,7 +435,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 			// else
 			// {
 
-			LinkedHashMap<DefaultFragmentProperty, List<Integer>> occurences = new LinkedHashMap<DefaultFragmentProperty, List<Integer>>();
+			LinkedHashMap<FPFragment, List<Integer>> occurences = new LinkedHashMap<FPFragment, List<Integer>>();
 
 			tmp = File.createTempFile(dataset.getShortName(), "OBfingerprint");
 			String cmd[] = { BinHandler.BABEL_BINARY.getLocation(), "-isdf", dataset.getSDF(), "-ofpt", "-xf",
@@ -460,15 +464,9 @@ public class OBFingerprintSet extends FragmentPropertySet
 					FPFragment frag[] = FPFragment.parse(type, s);
 					for (FPFragment fpFragment : frag)
 					{
-						// OBFingerprintProperty prop = new OBFingerprintProperty(fpFragment, type);
-						//						OBFingerprintProperty prop = OBFingerprintProperty.createCDKProperty(type, fpFragment.name.trim(),
-						//								fpFragment.smarts);
-						DefaultFragmentProperty prop = new DefaultFragmentProperty(this, fpFragment.name.trim(),
-								"Structural Fragment", fpFragment.smarts, MatchEngine.OpenBabel);
-
-						if (!occurences.containsKey(prop))
-							occurences.put(prop, new ArrayList<Integer>());
-						occurences.get(prop).add(count);
+						if (!occurences.containsKey(fpFragment))
+							occurences.put(fpFragment, new ArrayList<Integer>());
+						occurences.get(fpFragment).add(count);
 					}
 				}
 			}
@@ -479,20 +477,21 @@ public class OBFingerprintSet extends FragmentPropertySet
 			if (dataset.numCompounds() - 1 != count)
 				throw new Error("num compounds not correct " + dataset.numCompounds() + " " + count);
 
-			for (DefaultFragmentProperty p : occurences.keySet())
+			List<DefaultFragmentProperty> ps = new ArrayList<DefaultFragmentProperty>();
+			for (FPFragment fp : occurences.keySet())
 			{
-				p.setFrequency(occurences.get(p).size());
+				DefaultFragmentProperty p = new DefaultFragmentProperty(this, fp.name.trim(), "Structural Fragment",
+						fp.smarts, MatchEngine.OpenBabel);
+				p.setFrequency(occurences.get(fp).size());
 
 				String[] featureValue = new String[dataset.numCompounds()];
 				for (int i = 0; i < dataset.numCompounds(); i++)
-					featureValue[i] = occurences.get(p).contains(new Integer(i)) ? "1" : "0";
+					featureValue[i] = occurences.get(fp).contains(new Integer(i)) ? "1" : "0";
 				featureValues.add(featureValue);
 				p.setStringValues(featureValue);
-			}
 
-			List<DefaultFragmentProperty> ps = new ArrayList<DefaultFragmentProperty>();
-			for (DefaultFragmentProperty obFingerprintProperty : occurences.keySet())
-				ps.add(obFingerprintProperty);
+				ps.add(p);
+			}
 
 			props.put(dataset, ps);
 			updateFragments();
@@ -537,7 +536,7 @@ public class OBFingerprintSet extends FragmentPropertySet
 	@Override
 	public boolean isSizeDynamicHigh(DatasetFile dataset)
 	{
-		return type == FingerprintType.FP2 && dataset.numCompounds() >= 100
+		return type == OBFingerprintType.FP2 && dataset.numCompounds() >= 100
 				&& FragmentProperties.getMinFrequency() <= 2;
 	}
 

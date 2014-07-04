@@ -1,4 +1,4 @@
-package data.fragments;
+package property;
 
 import io.JarUtil;
 
@@ -16,16 +16,13 @@ import util.FileUtil.CSVFile;
 import util.ListUtil;
 import util.StringUtil;
 import data.CDKSmartsHandler;
-import data.cdkfingerprints.CDKFingerprintSet;
-import data.fminer.FminerPropertySet;
-import data.obfingerprints.OBFingerprintSet;
+import data.fragments.MatchEngine;
 import dataInterface.FragmentProperty.SubstructureType;
 import dataInterface.FragmentPropertySet;
 
 public class ListedFragments
 {
 	List<FragmentPropertySet> fragmentListAll = new ArrayList<FragmentPropertySet>();
-	List<FragmentPropertySet> extendedFragmentListAll = new ArrayList<FragmentPropertySet>();
 
 	private static final String[] included = new String[] { "patterns.csv", "SMARTS_InteLigand.csv", "MACCS.csv",
 			"DNA.csv", "Phospholipidosis.csv", "Protein.csv", "ToxTree_BB_CarcMutRules.csv",
@@ -44,20 +41,31 @@ public class ListedFragments
 		nameSuffixes.put("MACCS", "(OpenBabel MACCS)");
 	}
 
-	public static ListedFragments instance = new ListedFragments();
+	private static final ListedFragments instance = new ListedFragments();
+
+	//inits to add listeners 
+	public static void init()
+	{
+		instance.toString();
+	}
 
 	private ListedFragments()
 	{
 		for (String f : included)
 			JarUtil.extractFromJAR("structural_fragments/" + f, Settings.getFragmentFileDestination(f), false);
-		reset(null);
+		doReset(null);
 	}
 
-	public void reset(String showWarningForFile)
+	public static void reset(String showWarningForFile)
+	{
+		instance.doReset(showWarningForFile);
+	}
+
+	public void doReset(String showWarningForFile)
 	{
 		fragmentListAll.clear();
 
-		for (OBFingerprintSet fp : OBFingerprintSet.VISIBLE_FINGERPRINTS)
+		for (OBFingerprintSet fp : OBFingerprintSet.FINGERPRINTS)
 			fragmentListAll.add(fp);
 
 		for (CDKFingerprintSet fp : CDKFingerprintSet.FINGERPRINTS)
@@ -158,40 +166,31 @@ public class ListedFragments
 			}
 		}
 
-		extendedFragmentListAll.clear();
-		for (FragmentPropertySet f : fragmentListAll)
-			extendedFragmentListAll.add(f);
-		for (OBFingerprintSet fp : OBFingerprintSet.HIDDEN_FINGERPRINTS)
-			extendedFragmentListAll.add(fp);
-		extendedFragmentListAll.add(FminerPropertySet.INSTANCE);
+		fragmentListAll.add(FminerPropertySet.INSTANCE);
 	}
 
-	public int getNumSets()
+	public static int getNumSets()
 	{
-		return fragmentListAll.size();
+		return instance.fragmentListAll.size();
 	}
 
-	public FragmentPropertySet[] getSets(SubstructureType type)
+	public static FragmentPropertySet[] getSets(SubstructureType type)
 	{
 		List<FragmentPropertySet> l = new ArrayList<FragmentPropertySet>();
-		for (FragmentPropertySet f : fragmentListAll)
+		for (FragmentPropertySet f : instance.fragmentListAll)
 			if (f.getSubstructureType() == type)
 				l.add(f);
 		return ListUtil.toArray(FragmentPropertySet.class, l);
 	}
 
-	//	public FragmentPropertySet getSet(int i)
-	//	{
-	//		return fragmentList.get(i);
-	//	}
-
-	public FragmentPropertySet findFromString(String string)
+	public static FragmentPropertySet findFromString(String string)
 	{
-		for (FragmentPropertySet a : extendedFragmentListAll)
+		for (FragmentPropertySet a : instance.fragmentListAll)
 		{
 			if (a.toString().equals(string))
 				return a;
 		}
 		return null;
 	}
+
 }

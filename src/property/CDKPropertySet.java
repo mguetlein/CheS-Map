@@ -1,11 +1,13 @@
-package data.cdk;
+package property;
 
 import gui.binloc.Binary;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
 import main.Settings;
 import main.TaskProvider;
@@ -13,6 +15,7 @@ import main.TaskProvider;
 import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.qsar.IMolecularDescriptor;
 
+import util.ArrayUtil;
 import util.DoubleKeyHashMap;
 import util.FileUtil.UnexpectedNumColsException;
 import util.ValueFileCache;
@@ -20,14 +23,17 @@ import data.DatasetFile;
 import data.desc.DescriptorForMixturesHandler;
 import dataInterface.AbstractPropertySet;
 import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertySet;
 import dataInterface.DefaultNominalProperty;
 import dataInterface.DefaultNumericProperty;
 import dataInterface.FragmentProperty.SubstructureType;
 
 public class CDKPropertySet extends AbstractPropertySet
 {
-	public static final CDKPropertySet[] DESCRIPTORS = new CDKPropertySet[CDKDescriptor.getDescriptors().length];
-	public static final CDKPropertySet[] NUMERIC_DESCRIPTORS = new CDKPropertySet[CDKDescriptor.getNumericDescriptors().length];
+	private static final CDKPropertySet[] DESCRIPTORS = new CDKPropertySet[CDKDescriptor.getDescriptors().length];
+	private static final CDKPropertySet[] NUMERIC_DESCRIPTORS = new CDKPropertySet[CDKDescriptor
+			.getNumericDescriptors().length];
+	private static LinkedHashMap<String, CDKPropertySet[]> NUMERIC_CLASSES = new LinkedHashMap<String, CDKPropertySet[]>();
 	private static HashMap<CDKDescriptor, CDKPropertySet> sets = new HashMap<CDKDescriptor, CDKPropertySet>();
 
 	static
@@ -42,6 +48,24 @@ public class CDKPropertySet extends AbstractPropertySet
 		count = 0;
 		for (CDKDescriptor d : CDKDescriptor.getNumericDescriptors())
 			NUMERIC_DESCRIPTORS[count++] = sets.get(d);
+
+		for (CDKPropertySet set : NUMERIC_DESCRIPTORS)
+			for (String s : set.desc.getDictionaryClass())
+			{
+				if (!NUMERIC_CLASSES.containsKey(s))
+					NUMERIC_CLASSES.put(s, new CDKPropertySet[0]);
+				NUMERIC_CLASSES.put(s, ArrayUtil.push(CDKPropertySet.class, NUMERIC_CLASSES.get(s), set));
+			}
+	}
+
+	static Set<String> getNumericDescriptorClasses()
+	{
+		return NUMERIC_CLASSES.keySet();
+	}
+
+	static CompoundPropertySet[] getNumericDescriptorsForClass(String cdkClass)
+	{
+		return NUMERIC_CLASSES.get(cdkClass);
 	}
 
 	private CDKDescriptor desc;
@@ -66,7 +90,13 @@ public class CDKPropertySet extends AbstractPropertySet
 
 	private DoubleKeyHashMap<Integer, DatasetFile, CompoundProperty> props = new DoubleKeyHashMap<Integer, DatasetFile, CompoundProperty>();
 
-	public static CompoundProperty createCDKProperty(CDKDescriptor desc, DatasetFile dataset, int index)
+	@Override
+	public void clearComputedProperties(DatasetFile d)
+	{
+		props.removeWithKey2(d);
+	}
+
+	static CompoundProperty createCDKProperty(CDKDescriptor desc, DatasetFile dataset, int index)
 	{
 		CDKPropertySet s = sets.get(desc);
 		if (!s.props.containsKeyPair(index, dataset))
@@ -94,7 +124,7 @@ public class CDKPropertySet extends AbstractPropertySet
 		return desc.toString();
 	}
 
-	public static CDKPropertySet fromString(String s)
+	static CDKPropertySet fromString(String s)
 	{
 		CDKDescriptor desc = CDKDescriptor.fromString(s);
 		if (desc == null)
@@ -102,7 +132,13 @@ public class CDKPropertySet extends AbstractPropertySet
 		return sets.get(desc);
 	}
 
-	public static CompoundProperty fromString(String s, Type t, DatasetFile dataset)
+	@Override
+	public String serialize()
+	{
+		return desc.toString();
+	}
+
+	static CompoundProperty fromString(String s, Type t, DatasetFile dataset)
 	{
 		CompoundProperty p = CDKPropertySet.fromFeatureName(s, dataset);
 		if (p.getCompoundPropertySet().getType() != t)
@@ -110,7 +146,7 @@ public class CDKPropertySet extends AbstractPropertySet
 		return p;
 	}
 
-	public static CompoundProperty fromFeatureName(String s, DatasetFile dataset)
+	static CompoundProperty fromFeatureName(String s, DatasetFile dataset)
 	{
 		for (CDKDescriptor d : CDKDescriptor.getNumericDescriptors())
 			for (int i = 0; i < d.getSize(); i++)

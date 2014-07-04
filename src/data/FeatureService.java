@@ -51,12 +51,12 @@ import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 
+import property.IntegratedPropertySet;
 import util.ArrayUtil;
 import util.FileUtil;
 import util.FileUtil.UnexpectedNumColsException;
 import util.ListUtil;
 import util.ValueFileCache;
-import data.integrated.IntegratedPropertySet;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundPropertySet.Type;
 import dataInterface.NominalProperty;
@@ -66,7 +66,7 @@ public class FeatureService
 	private HashMap<DatasetFile, IMolecule[]> fileToCompounds = new HashMap<DatasetFile, IMolecule[]>();
 	private HashMap<DatasetFile, Boolean> fileHas3D = new HashMap<DatasetFile, Boolean>();
 	private HashMap<DatasetFile, LinkedHashSet<IntegratedPropertySet>> integratedProperties = new HashMap<DatasetFile, LinkedHashSet<IntegratedPropertySet>>();
-	private HashMap<DatasetFile, NominalProperty> integratedSmiles = new HashMap<DatasetFile, NominalProperty>();
+	private HashMap<DatasetFile, IntegratedPropertySet> integratedSmiles = new HashMap<DatasetFile, IntegratedPropertySet>();
 	private HashMap<DatasetFile, String[]> cdkSmiles = new HashMap<DatasetFile, String[]>();
 
 	public FeatureService()
@@ -116,6 +116,8 @@ public class FeatureService
 			fileToCompounds.remove(dataset);
 			fileHas3D.remove(dataset);
 			integratedProperties.remove(dataset);
+			integratedSmiles.remove(dataset);
+			cdkSmiles.remove(dataset);
 		}
 	}
 
@@ -439,8 +441,8 @@ public class FeatureService
 					if (key.toString().toUpperCase().equals("STRUCTURE_SMILES")
 							|| key.toString().toUpperCase().equals("SMILES"))
 					{
-						integratedSmiles.put(dataset, (NominalProperty) p.get());
-						((NominalProperty) p.get()).setSmiles(true);
+						integratedSmiles.put(dataset, p);
+						p.setSmiles(true);
 					}
 				}
 				if (!TaskProvider.isRunning())
@@ -583,7 +585,7 @@ public class FeatureService
 	{
 		if (integratedSmiles.containsKey(dataset))
 		{
-			String smiles[] = integratedSmiles.get(dataset).getStringValues();
+			String smiles[] = ((NominalProperty) integratedSmiles.get(dataset).get()).getStringValues();
 			SmilesGenerator sg = null;
 			for (int i = 0; i < smiles.length; i++)
 				if (smiles[i] == null || smiles[i].length() == 0)

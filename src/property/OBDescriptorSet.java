@@ -1,4 +1,4 @@
-package data.obdesc;
+package property;
 
 import gui.binloc.Binary;
 
@@ -28,7 +28,12 @@ public class OBDescriptorSet implements CompoundPropertySet
 	private static OBDescriptorSet[] descriptors;
 	private static HashMap<String, OBDescriptorSet> sets = new HashMap<String, OBDescriptorSet>();
 
-	public synchronized static OBDescriptorSet[] getDescriptors(boolean forceReload)
+	public static void loadDescriptors(boolean forceReload)
+	{
+		getDescriptors(forceReload);
+	}
+
+	synchronized static OBDescriptorSet[] getDescriptors(boolean forceReload)
 	{
 		if (descriptors == null || forceReload)
 		{
@@ -55,7 +60,7 @@ public class OBDescriptorSet implements CompoundPropertySet
 		return descriptors;
 	}
 
-	public synchronized static CompoundProperty[] getDescriptorProps(DatasetFile dataset, boolean forceReload)
+	synchronized static CompoundProperty[] getDescriptorProps(DatasetFile dataset, boolean forceReload)
 	{
 		OBDescriptorSet[] sets = getDescriptors(forceReload);
 		CompoundProperty[] props = new CompoundProperty[sets.length];
@@ -112,6 +117,12 @@ public class OBDescriptorSet implements CompoundPropertySet
 
 	private HashMap<DatasetFile, CompoundProperty> props = new HashMap<DatasetFile, CompoundProperty>();
 
+	@Override
+	public void clearComputedProperties(DatasetFile d)
+	{
+		props.remove(d);
+	}
+
 	private CompoundProperty createOBDescriptorProperty(DatasetFile dataset)
 	{
 		if (!props.containsKey(dataset))
@@ -124,6 +135,12 @@ public class OBDescriptorSet implements CompoundPropertySet
 			props.put(dataset, p);
 		}
 		return props.get(dataset);
+	}
+
+	@Override
+	public String serialize()
+	{
+		return toString() + "#" + defaultType;
 	}
 
 	public static OBDescriptorSet fromString(String toString, Type type)
@@ -187,7 +204,7 @@ public class OBDescriptorSet implements CompoundPropertySet
 		{
 			((DefaultNominalProperty) createOBDescriptorProperty(dataset)).setStringValues(vals);
 		}
-		else if (getType() == Type.NOMINAL)
+		else if (getType() == Type.NUMERIC)
 		{
 			DefaultNumericProperty prop = (DefaultNumericProperty) createOBDescriptorProperty(dataset);
 			Double dVals[] = ArrayUtil.parse(vals);
@@ -280,6 +297,24 @@ public class OBDescriptorSet implements CompoundPropertySet
 	public SubstructureType getSubstructureType()
 	{
 		return null;
+	}
+
+	@Override
+	public boolean isSmiles()
+	{
+		return false;
+	}
+
+	@Override
+	public void setSmiles(boolean smiles)
+	{
+		throw new IllegalStateException();
+	}
+
+	@Override
+	public boolean isHiddenFromGUI()
+	{
+		return false;
 	}
 
 }

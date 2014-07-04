@@ -433,20 +433,25 @@ public class DatasetWizardPanel extends WizardPanel implements DatasetMappingWor
 
 					if (showLoadDialog)
 					{
-						if (wizard != null && !wizard.isVisible())
+						if (wizard != null)
 						{
-							Thread th = new Thread(new Runnable()
+							if (wizard.isVisible())
+								new TaskDialog(task, wizard);
+							else
 							{
-								@Override
-								public void run()
+								Thread th = new Thread(new Runnable()
 								{
-									while (!wizard.isVisible())
-										ThreadUtil.sleep(100);
-									if (task.isRunning())
-										new TaskDialog(task, wizard);
-								}
-							});
-							th.start();
+									@Override
+									public void run()
+									{
+										while (!wizard.isVisible())
+											ThreadUtil.sleep(100);
+										if (task.isRunning())
+											new TaskDialog(task, wizard);
+									}
+								});
+								th.start();
+							}
 						}
 						else
 							new TaskDialog(task, Settings.TOP_LEVEL_FRAME_SCREEN);

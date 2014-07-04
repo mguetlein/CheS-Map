@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import main.TaskProvider;
+import property.IntegratedPropertySet;
 import alg.FeatureComputer;
-import data.integrated.IntegratedPropertySet;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundPropertySet;
@@ -136,6 +136,12 @@ public class DefaultFeatureComputer implements FeatureComputer
 	public List<CompoundData> getCompounds()
 	{
 		return compounds;
+	}
+
+	@Override
+	public int getNumFeatureSets()
+	{
+		return compoundPropertySets.length;
 	}
 
 }
