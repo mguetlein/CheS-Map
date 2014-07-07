@@ -44,6 +44,11 @@ public class ClusterWizardPanel extends GenericWizardPanel
 	private static final DatasetClusterer DEFAULT = WekaClusterer.getNewInstance(new CascadeSimpleKMeans(),
 			DEFAULT_CLUSTERER_PROPS);
 
+	public static DatasetClusterer getDefaultClusterAlgorithm()
+	{
+		return DEFAULT;
+	}
+
 	public ClusterWizardPanel()
 	{
 		this(null);
