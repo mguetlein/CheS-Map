@@ -229,22 +229,7 @@ public class DatasetLoader implements DatasetMappingWorkflowProvider
 			Settings.LOGGER.error(e);
 			task.cancel();
 			TaskProvider.removeTask();
-
-			int res = JOptionPane
-					.showConfirmDialog(
-							Settings.TOP_LEVEL_FRAME,
-							"Could not read "
-									+ e.illegalCompounds.size()
-									+ " compound/s in dataset: "
-									+ d.getPath()
-									+ "\nIndices of compounds that could not be loaded: "
-									+ ListUtil.toString(e.illegalCompounds)
-									+ "\n\nDo you want to skip the faulty compounds, store the correct compounds in a new file, and reload this new file?",
-							"Dataset faulty", JOptionPane.YES_NO_OPTION);
-			if (res == JOptionPane.YES_OPTION)
-				return loadFiltered(d, e.illegalCompounds);
-			else
-				return null;
+			return loadFiltered(d, e.illegalCompounds);
 		}
 		catch (Throwable e)
 		{
@@ -264,26 +249,48 @@ public class DatasetLoader implements DatasetMappingWorkflowProvider
 		}
 	}
 
-	private DatasetFile loadFiltered(DatasetFile d, List<Integer> illegalCompounds)
+	private DatasetFile loadFiltered(final DatasetFile d, final List<Integer> illegalCompounds)
 	{
-		String parent = FileUtil.getParent(d.getLocalPath());
-		String cleanedFile = parent + File.separator + d.getShortName() + "_cleaned." + d.getFileExtension();
-		JFileChooser fc = new JFileChooser(parent);
-		fc.setSelectedFile(new File(cleanedFile));
-		int res2 = fc.showSaveDialog(Settings.TOP_LEVEL_FRAME);
-		if (res2 != JFileChooser.APPROVE_OPTION)
-			return null;
-		if (fc.getSelectedFile().exists())
+		final StringBuffer cleanedFile = new StringBuffer();
+		SwingUtil.invokeAndWait(new Runnable()
 		{
-			int res3 = JOptionPane.showConfirmDialog(Settings.TOP_LEVEL_FRAME, "File '"
-					+ fc.getSelectedFile().getAbsolutePath() + "' already exists. Overwrite?",
-					"Overwrite existing file?", JOptionPane.YES_NO_OPTION);
-			if (res3 != JOptionPane.YES_OPTION)
-				return null;
-		}
-		cleanedFile = fc.getSelectedFile().getAbsolutePath();
+			public void run()
+			{
+				int res = JOptionPane.showConfirmDialog(
+						Settings.TOP_LEVEL_FRAME,
+						"Could not read "
+								+ illegalCompounds.size()
+								+ " compound/s in dataset: "
+								+ d.getPath()
+								+ "\nIndices of compounds that could not be loaded: "
+								+ ListUtil.toString(illegalCompounds)
+								+ "\n\nDo you want to skip the faulty compounds, store the correct compounds in a new file, and reload this new file?",
+						"Dataset faulty", JOptionPane.YES_NO_OPTION);
+				if (res != JOptionPane.YES_OPTION)
+					return;
+				String parent = FileUtil.getParent(d.getLocalPath());
+				String file = parent + File.separator + d.getShortName() + "_cleaned." + d.getFileExtension();
+				JFileChooser fc = new JFileChooser(parent);
+				fc.setSelectedFile(new File(file));
+				int res2 = fc.showSaveDialog(Settings.TOP_LEVEL_FRAME);
+				if (res2 != JFileChooser.APPROVE_OPTION)
+					return;
+				if (fc.getSelectedFile().exists())
+				{
+					int res3 = JOptionPane.showConfirmDialog(Settings.TOP_LEVEL_FRAME, "File '"
+							+ fc.getSelectedFile().getAbsolutePath() + "' already exists. Overwrite?",
+							"Overwrite existing file?", JOptionPane.YES_NO_OPTION);
+					if (res3 != JOptionPane.YES_OPTION)
+						return;
+				}
+				cleanedFile.append(fc.getSelectedFile().getAbsolutePath());
+			}
+		});
+		String cleanedFileStr = cleanedFile.toString();
+		if (cleanedFileStr.length() == 0)
+			return null;
 		if (d.getFileExtension().matches("(?i)sdf"))
-			SDFUtil.filter_exclude(d.getSDF(), cleanedFile, illegalCompounds, false);
+			SDFUtil.filter_exclude(d.getSDF(), cleanedFileStr, illegalCompounds, false);
 		else if (d.getFileExtension().matches("(?i)csv"))
 		{
 			String all = FileUtil.readStringFromFile(d.getLocalPath());
@@ -295,11 +302,9 @@ public class DatasetLoader implements DatasetMappingWorkflowProvider
 					cleaned.append("\n");
 				}
 			}
-			FileUtil.writeStringToFile(cleanedFile, cleaned.toString());
+			FileUtil.writeStringToFile(cleanedFileStr, cleaned.toString());
 			ThreadUtil.sleep(1000);
 		}
-		final String fCleanedFile = cleanedFile;
-		return load(fCleanedFile);
+		return load(cleanedFileStr);
 	}
-
 }
