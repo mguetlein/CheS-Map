@@ -3,7 +3,7 @@ package workflow;
 import gui.AlignWizardPanel;
 import gui.Build3DWizardPanel;
 import gui.ClusterWizardPanel;
-import gui.DatasetWizardPanel;
+import gui.DatasetLoader;
 import gui.EmbedWizardPanel;
 
 import java.io.BufferedOutputStream;
@@ -269,22 +269,21 @@ public class MappingWorkflow
 	{
 		Properties props = new Properties();
 
-		DatasetWizardPanel datasetProvider = new DatasetWizardPanel();
-		datasetProvider.exportDatasetToMappingWorkflow(datasetFile, Settings.BIG_DATA, props);
-		if (datasetProvider.getDatasetFile() == null)
+		DatasetMappingWorkflowProvider datasetProvider = new DatasetLoader(false);
+		DatasetFile dataset = datasetProvider.exportDatasetToMappingWorkflow(datasetFile, Settings.BIG_DATA, props);
+		if (dataset == null)
 			throw new IllegalArgumentException("Could not load dataset file: " + datasetFile);
 
 		if (featureSelection != null)
 		{
 			//			FeatureWizardPanel features = new FeatureWizardPanel();
-			//			features.updateFeatures(datasetProvider.getDatasetFile());
+			//			features.updateFeatures(dataset);
 			//			features.exportFeaturesToMappingWorkflow(featureSelection.getFeatures(datasetProvider.getDatasetFile()),
 			//					props);
 
 			CompoundPropertySet features[] = ArrayUtil.toArray(CompoundPropertySet.class,
-					featureSelection.getFeatures(datasetProvider.getDatasetFile()));
-			PropertySetProvider.INSTANCE.exportFeaturesToMappingWorkflow(features, props,
-					datasetProvider.getDatasetFile());
+					featureSelection.getFeatures(dataset));
+			PropertySetProvider.INSTANCE.exportFeaturesToMappingWorkflow(features, props, dataset);
 		}
 
 		ClusterWizardPanel cluster = new ClusterWizardPanel();
@@ -304,7 +303,7 @@ public class MappingWorkflow
 	public static Properties exportSettingsToMappingWorkflow()
 	{
 		Properties props = new Properties();
-		for (MappingWorkflowProvider p : new MappingWorkflowProvider[] { new DatasetWizardPanel(),
+		for (MappingWorkflowProvider p : new MappingWorkflowProvider[] { new DatasetLoader(false),
 				new Build3DWizardPanel(), PropertySetProvider.INSTANCE, new ClusterWizardPanel(),
 				new EmbedWizardPanel(), new AlignWizardPanel() })
 			p.exportSettingsToMappingWorkflow(props);
@@ -362,7 +361,7 @@ public class MappingWorkflow
 	public static CheSMapping createMappingFromMappingWorkflow(Properties workflowMappingProps,
 			String alternateDatasetDir)
 	{
-		DatasetFile dataset = new DatasetWizardPanel(true).getDatasetFromMappingWorkflow(workflowMappingProps, true,
+		DatasetFile dataset = new DatasetLoader(true).getDatasetFromMappingWorkflow(workflowMappingProps, true,
 				alternateDatasetDir);
 		if (dataset == null)
 			return null;

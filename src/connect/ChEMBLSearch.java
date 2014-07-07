@@ -1,6 +1,6 @@
 package connect;
 
-import gui.DatasetLoader;
+import gui.DatasetWizardPanel;
 import gui.TextPanel;
 import gui.property.IntegerProperty;
 import gui.property.Property;
@@ -18,6 +18,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import main.PropHandler;
@@ -94,8 +95,8 @@ public class ChEMBLSearch
 
 	private static ChEMBLSearch cs;
 
-	public static void searchDialog(final JFrame parent, final String outfileBasename, final DatasetLoader loader,
-			boolean storeProperties)
+	public static void searchDialog(final JFrame parent, final String outfileBasename,
+			final DatasetWizardPanel datasetWizardPanel, boolean storeProperties)
 	{
 		if (cs == null)
 		{
@@ -230,8 +231,18 @@ public class ChEMBLSearch
 								toCSV(outf, cs.similarCompounds);
 							}
 							task.finish();
-							if (loader != null && outfileBasename != null)
-								loader.load(outf, false);
+							if (datasetWizardPanel != null && outfileBasename != null)
+							{
+								final String fOutf = outf;
+								SwingUtilities.invokeLater(new Runnable()
+								{
+									@Override
+									public void run()
+									{
+										datasetWizardPanel.load(fOutf);
+									}
+								});
+							}
 						}
 					}
 				}
