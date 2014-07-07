@@ -218,6 +218,7 @@ public class DatasetLoader implements DatasetMappingWorkflowProvider
 			if (d.numCompounds() == 0)
 				throw new Exception("No compounds in file");
 			task.finish();
+			TaskProvider.removeTask();
 			return d;
 		}
 		catch (final IllegalCompoundsException e)
