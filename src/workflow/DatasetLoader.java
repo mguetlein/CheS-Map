@@ -1,4 +1,4 @@
-package gui;
+package workflow;
 
 import io.SDFUtil;
 
@@ -23,7 +23,6 @@ import util.StringUtil;
 import util.SwingUtil;
 import util.ThreadUtil;
 import util.VectorUtil;
-import workflow.DatasetMappingWorkflowProvider;
 import data.DatasetFile;
 import data.FeatureService.IllegalCompoundsException;
 
@@ -37,6 +36,8 @@ public class DatasetLoader implements DatasetMappingWorkflowProvider
 	public DatasetLoader(boolean showLoadDialog)
 	{
 		this.showLoadDialog = showLoadDialog;
+		if (showLoadDialog && Settings.TOP_LEVEL_FRAME == null)
+			Settings.LOGGER.error("load dialog only shows alongside wizard or viewer");
 	}
 
 	public Vector<DatasetFile> loadRecentlyLoadedDatasets()
@@ -175,28 +176,23 @@ public class DatasetLoader implements DatasetMappingWorkflowProvider
 		final Task task = TaskProvider.initTask("Loading dataset file");
 		if (showLoadDialog)
 		{
-			if (Settings.TOP_LEVEL_FRAME != null)
-			{
-				if (Settings.TOP_LEVEL_FRAME.isVisible())
-					new TaskDialog(task, Settings.TOP_LEVEL_FRAME);
-				else
-				{
-					Thread th = new Thread(new Runnable()
-					{
-						@Override
-						public void run()
-						{
-							while (!Settings.TOP_LEVEL_FRAME.isVisible())
-								ThreadUtil.sleep(100);
-							if (task.isRunning())
-								new TaskDialog(task, Settings.TOP_LEVEL_FRAME);
-						}
-					});
-					th.start();
-				}
-			}
+			if (Settings.TOP_LEVEL_FRAME != null && Settings.TOP_LEVEL_FRAME.isVisible())
+				new TaskDialog(task, Settings.TOP_LEVEL_FRAME);
 			else
-				new TaskDialog(task, null);
+			{
+				Thread th = new Thread(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						while (Settings.TOP_LEVEL_FRAME == null || !Settings.TOP_LEVEL_FRAME.isVisible())
+							ThreadUtil.sleep(100);
+						if (task.isRunning())
+							new TaskDialog(task, Settings.TOP_LEVEL_FRAME);
+					}
+				});
+				th.start();
+			}
 		}
 
 		TaskProvider.update("Load dataset: " + d.getName());

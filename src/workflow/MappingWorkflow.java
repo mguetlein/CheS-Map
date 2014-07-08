@@ -1,11 +1,5 @@
 package workflow;
 
-import gui.AlignWizardPanel;
-import gui.Build3DWizardPanel;
-import gui.ClusterWizardPanel;
-import gui.DatasetLoader;
-import gui.EmbedWizardPanel;
-
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -285,12 +279,8 @@ public class MappingWorkflow
 					featureSelection.getFeatures(dataset));
 			PropertySetProvider.INSTANCE.exportFeaturesToMappingWorkflow(features, props, dataset);
 		}
-
-		ClusterWizardPanel cluster = new ClusterWizardPanel();
-		cluster.exportAlgorithmToMappingWorkflow(clusterer, props);
-
-		EmbedWizardPanel emb = new EmbedWizardPanel();
-		emb.exportAlgorithmToMappingWorkflow(embedder, props);
+		new ClustererProvider().exportAlgorithmToMappingWorkflow(clusterer, props);
+		new EmbedderProvider().exportAlgorithmToMappingWorkflow(embedder, props);
 
 		return props;
 	}
@@ -304,8 +294,8 @@ public class MappingWorkflow
 	{
 		Properties props = new Properties();
 		for (MappingWorkflowProvider p : new MappingWorkflowProvider[] { new DatasetLoader(false),
-				new Build3DWizardPanel(), PropertySetProvider.INSTANCE, new ClusterWizardPanel(),
-				new EmbedWizardPanel(), new AlignWizardPanel() })
+				new BuilderProvider(), PropertySetProvider.INSTANCE, new ClustererProvider(), new EmbedderProvider(),
+				new AlignerProvider() })
 			p.exportSettingsToMappingWorkflow(props);
 		return props;
 	}
@@ -361,21 +351,21 @@ public class MappingWorkflow
 	public static CheSMapping createMappingFromMappingWorkflow(Properties workflowMappingProps,
 			String alternateDatasetDir)
 	{
-		DatasetFile dataset = new DatasetLoader(true).getDatasetFromMappingWorkflow(workflowMappingProps, true,
-				alternateDatasetDir);
+		DatasetFile dataset = new DatasetLoader(Settings.TOP_LEVEL_FRAME != null).getDatasetFromMappingWorkflow(
+				workflowMappingProps, true, alternateDatasetDir);
 		if (dataset == null)
 			return null;
-		ThreeDBuilder builder = (ThreeDBuilder) new Build3DWizardPanel().getAlgorithmFromMappingWorkflow(
+		ThreeDBuilder builder = (ThreeDBuilder) new BuilderProvider().getAlgorithmFromMappingWorkflow(
 				workflowMappingProps, true);
 		//		FeatureWizardPanel f = new FeatureWizardPanel();
 		//		f.updateFeatures(dataset);
 		CompoundPropertySet features[] = PropertySetProvider.INSTANCE.getFeaturesFromMappingWorkflow(
 				workflowMappingProps, true, dataset);
-		DatasetClusterer clusterer = (DatasetClusterer) new ClusterWizardPanel().getAlgorithmFromMappingWorkflow(
+		DatasetClusterer clusterer = (DatasetClusterer) new ClustererProvider().getAlgorithmFromMappingWorkflow(
 				workflowMappingProps, true);
-		ThreeDEmbedder embedder = (ThreeDEmbedder) new EmbedWizardPanel().getAlgorithmFromMappingWorkflow(
+		ThreeDEmbedder embedder = (ThreeDEmbedder) new EmbedderProvider().getAlgorithmFromMappingWorkflow(
 				workflowMappingProps, true);
-		ThreeDAligner aligner = (ThreeDAligner) new AlignWizardPanel().getAlgorithmFromMappingWorkflow(
+		ThreeDAligner aligner = (ThreeDAligner) new AlignerProvider().getAlgorithmFromMappingWorkflow(
 				workflowMappingProps, true);
 		PropHandler.storeProperties();
 		return new CheSMapping(dataset, features, clusterer, builder, embedder, aligner);

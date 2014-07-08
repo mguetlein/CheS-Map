@@ -29,6 +29,7 @@ import javax.swing.event.ListSelectionListener;
 import main.PropHandler;
 import main.Settings;
 import util.SwingUtil;
+import workflow.DatasetLoader;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.factories.ButtonBarFactory;

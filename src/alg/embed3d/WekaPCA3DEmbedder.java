@@ -29,7 +29,13 @@ import dataInterface.CompoundProperty;
 public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 {
 	public static final WekaPCA3DEmbedder INSTANCE = new WekaPCA3DEmbedder(null);
-	public static final WekaPCA3DEmbedder INSTANCE_NO_PROBS = new WekaPCA3DEmbedder(new Property[0]);
+	public static final WekaPCA3DEmbedder INSTANCE_NO_PROBS = new WekaPCA3DEmbedder(new Property[0])
+	{
+		public Property[] getProperties()
+		{
+			return null;
+		}
+	};
 
 	PrincipalComponents pca = new PrincipalComponents();
 	Instances resultData;
