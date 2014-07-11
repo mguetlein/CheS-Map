@@ -104,12 +104,12 @@ public class FeatureService
 		return cProp;
 	}
 
-	public boolean isLoaded(DatasetFile dataset)
+	public synchronized boolean isLoaded(DatasetFile dataset)
 	{
 		return (fileToCompounds.get(dataset) != null);
 	}
 
-	public void clear(DatasetFile dataset)
+	public synchronized void clear(DatasetFile dataset)
 	{
 		if (fileToCompounds.get(dataset) != null)
 		{
@@ -562,12 +562,12 @@ public class FeatureService
 		}
 	}
 
-	public int numCompounds(DatasetFile dataset)
+	public synchronized int numCompounds(DatasetFile dataset)
 	{
 		return fileToCompounds.get(dataset).length;
 	}
 
-	public IMolecule[] getCompounds(DatasetFile dataset)
+	public synchronized IMolecule[] getCompounds(DatasetFile dataset)
 	{
 		try
 		{
@@ -581,7 +581,7 @@ public class FeatureService
 		}
 	}
 
-	public String[] getSmiles(DatasetFile dataset)
+	public synchronized String[] getSmiles(DatasetFile dataset)
 	{
 		if (integratedSmiles.containsKey(dataset))
 		{
@@ -628,7 +628,7 @@ public class FeatureService
 		return cdkSmiles.get(dataset);
 	}
 
-	public boolean has3D(DatasetFile dataset)
+	public synchronized boolean has3D(DatasetFile dataset)
 	{
 		// loadSdf(dataset);
 
