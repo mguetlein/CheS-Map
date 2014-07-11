@@ -38,8 +38,10 @@ public class PropertySetProvider implements FeatureMappingWorkflowProvider
 
 	private PropertySetCategory integrated = new IntegratedPropertySetCategory();
 
+	private PropertySetCategory fragments = new StructuralFragmentsCategory();
+
 	private PropertySetCategory root = new PropertySetCategory("root", new PropertySetCategory[] { integrated,
-			pcFeatures, new StructuralFragmentsCategory() });
+			pcFeatures, fragments });
 
 	public PropertySetCategory getRoot()
 	{
@@ -54,6 +56,11 @@ public class PropertySetProvider implements FeatureMappingWorkflowProvider
 	public PropertySetCategory getIntegratedCategory()
 	{
 		return integrated;
+	}
+
+	public PropertySetCategory getStructuralFragmentCategory()
+	{
+		return fragments;
 	}
 
 	public void addToSelector(Selector<PropertySetCategory, CompoundPropertySet> selector, DatasetFile dataset)
@@ -381,4 +388,5 @@ public class PropertySetProvider implements FeatureMappingWorkflowProvider
 				return null;
 		}
 	}
+
 }

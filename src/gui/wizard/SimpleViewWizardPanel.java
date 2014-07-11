@@ -1,6 +1,8 @@
 package gui.wizard;
 
 import gui.CheSMapperWizard;
+import gui.property.Property;
+import gui.property.PropertyComponent;
 import gui.property.PropertyPanel;
 
 import java.awt.BorderLayout;
@@ -36,6 +38,7 @@ public abstract class SimpleViewWizardPanel extends AbstractWizardPanel //implem
 	private boolean selfUpdate = false;
 	private static final String ADAVANCED = "Advanced >>";
 	private static final String SIMPLE = "<< Simple";
+	private PropertyPanel propPanel;
 
 	protected SimpleViewAlgorithmProvider getAlgProvider()
 	{
@@ -91,12 +94,10 @@ public abstract class SimpleViewWizardPanel extends AbstractWizardPanel //implem
 	protected JPanel createSimpleView()
 	{
 		yesSelected = getAlgProvider().isYesDefault();
-		final PropertyPanel propPanel;
+		propPanel = null;
 		if (getAlgProvider().getYesAlgorithm().getProperties() != null)
 			propPanel = new PropertyPanel(getAlgProvider().getYesAlgorithm().getProperties(),
 					PropHandler.getProperties(), PropHandler.getPropertiesFile());
-		else
-			propPanel = null;
 		String yesText = "";
 		if (yesSelected)
 			yesText = "recommended";
@@ -119,10 +120,13 @@ public abstract class SimpleViewWizardPanel extends AbstractWizardPanel //implem
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				yesSelected = e.getSource() == buttonYes;
-				if (propPanel != null)
-					propPanel.setEnabled(yesSelected);
-				wizard.update();
+				if (buttonYes.isSelected() != yesSelected)
+				{
+					yesSelected = buttonYes.isSelected();
+					if (propPanel != null)
+						propPanel.setEnabled(yesSelected);
+					wizard.update();
+				}
 			}
 		};
 		buttonYes.addActionListener(a);
@@ -144,11 +148,32 @@ public abstract class SimpleViewWizardPanel extends AbstractWizardPanel //implem
 		b.append(buttonNo, b.getLayout().getColumnCount());
 		b.setBorder(new EmptyBorder(5, 0, 0, 0));
 
-		buttonYes.setSelected(getAlgProvider().isYesSelectedFromProps());
+		yesSelected = getAlgProvider().isYesSelectedFromProps();
+		buttonYes.setSelected(yesSelected);
 		if (propPanel != null)
-			propPanel.setEnabled(buttonYes.isSelected());
+			propPanel.setEnabled(yesSelected);
 
 		return b.getPanel();
+	}
+
+	public PropertyComponent getComponentForProperty(Property p)
+	{
+		if (simpleSelected)
+		{
+			if (yesSelected)
+			{
+				if (propPanel == null)
+					throw new IllegalArgumentException();
+				for (int i = 0; i < getSelectedAlgorithm().getProperties().length; i++)
+					if (getSelectedAlgorithm().getProperties()[i] == p)
+						return propPanel.getComponentForProperty(p);
+				throw new IllegalArgumentException();
+			}
+			else
+				throw new IllegalArgumentException();
+		}
+		else
+			return super.getComponentForProperty(p);
 	}
 
 	public void toggle(boolean simpleSelected)

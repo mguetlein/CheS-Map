@@ -6,6 +6,8 @@ import gui.Messages;
 import gui.MoreTextPanel;
 import gui.WizardPanel;
 import gui.binloc.Binary;
+import gui.property.Property;
+import gui.property.PropertyComponent;
 import gui.property.PropertyPanel;
 
 import java.awt.BorderLayout;
@@ -168,6 +170,8 @@ public abstract class AbstractWizardPanel extends WizardPanel
 					@Override
 					public void propertyChange(PropertyChangeEvent evt)
 					{
+						if (wizard.isClosed())
+							return;
 						if (bin.isFound())
 						{
 							list.repaint();
@@ -236,6 +240,7 @@ public abstract class AbstractWizardPanel extends WizardPanel
 
 			PropertyPanel clusterPropertyPanel = new PropertyPanel(listSelectedAlgorithm.getProperties(),
 					PropHandler.getProperties(), PropHandler.getPropertiesFile());
+
 			if (listSelectedAlgorithm.getProperties() != null)
 			{
 				if (listSelectedAlgorithm.getBinary() != null)
@@ -263,6 +268,16 @@ public abstract class AbstractWizardPanel extends WizardPanel
 		}
 		propertyScroll.getViewport().revalidate();
 		propertyScroll.getViewport().setViewPosition(new Point(0, 0));
+	}
+
+	public PropertyComponent getComponentForProperty(Property p)
+	{
+		if (getSelectedAlgorithm() == null || getSelectedAlgorithm().getProperties() == null)
+			throw new IllegalArgumentException();
+		for (int i = 0; i < getSelectedAlgorithm().getProperties().length; i++)
+			if (getSelectedAlgorithm().getProperties()[i] == p)
+				return cards.get(listSelectedAlgorithm.toString()).getComponentForProperty(p);
+		throw new IllegalArgumentException();
 	}
 
 	@Override

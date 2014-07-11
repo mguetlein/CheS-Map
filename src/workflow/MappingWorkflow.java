@@ -142,6 +142,46 @@ public class MappingWorkflow
 		return feats;
 	}
 
+	public static class FragmentSettings
+	{
+		private int minFreq = -1;
+		private boolean skipOmnipresent = true;
+		private MatchEngine matchEngine = MatchEngine.OpenBabel;
+
+		public FragmentSettings(int minFreq, boolean skipOmnipresent, MatchEngine matchEngine)
+		{
+			this.minFreq = minFreq;
+			this.skipOmnipresent = skipOmnipresent;
+			this.matchEngine = matchEngine;
+		}
+
+		public int getMinFreq()
+		{
+			return minFreq;
+		}
+
+		public boolean isSkipOmnipresent()
+		{
+			return skipOmnipresent;
+		}
+
+		public MatchEngine getMatchEngine()
+		{
+			return matchEngine;
+		}
+
+		public void apply(DatasetFile dataset)
+		{
+			if (minFreq == -1)
+				minFreq = Math.max(1, Math.min(10, dataset.numCompounds() / 10));
+			FragmentProperties.setMinFrequency(minFreq);
+			FragmentProperties.setSkipOmniFragments(skipOmnipresent);
+			FragmentProperties.setMatchEngine(matchEngine);
+			Settings.LOGGER.info("before computing structural fragment " + FragmentProperties.getMatchEngine() + " "
+					+ FragmentProperties.getMinFrequency() + " " + FragmentProperties.isSkipOmniFragments());
+		}
+	}
+
 	/**
 	 * creates hash-map with features (HashMap<String, CompoundPropertySet[]> features) as needed by feature-wizard panel
 	 */
@@ -152,9 +192,7 @@ public class MappingWorkflow
 		String excludeIntegrated[];
 		String setNumericIntegrated[];
 		String setNominalIntegrated[];
-		int fpMinFreq = -1;
-		boolean fpSkipOmnipresent = true;
-		private MatchEngine matchEngine = MatchEngine.OpenBabel;
+
 		List<CompoundPropertySet> features;
 
 		public DescriptorSelection(String featString)
@@ -207,33 +245,20 @@ public class MappingWorkflow
 				this.setNominalIntegrated = setNominalIntegrated.split(",");
 		}
 
-		public void setFingerprintSettings(int minFrequency, boolean skipOmnipresent, MatchEngine matchEngine)
+		public List<CompoundPropertySet> getFilteredFeatures(DatasetFile dataset)
 		{
-			this.fpMinFreq = minFrequency;
-			this.fpSkipOmnipresent = skipOmnipresent;
-			this.matchEngine = matchEngine;
+			CompoundPropertySet featuresArray[] = PropertySetProvider.INSTANCE.getDescriptorSets(dataset,
+					ArrayUtil.toArray(feats));
+			features = setTypeAndFilter(featuresArray, includeIntegrated, excludeIntegrated, setNumericIntegrated,
+					setNominalIntegrated);
+			Settings.LOGGER.debug(features.size() + " feature-sets selected for " + ListUtil.toString(feats)
+					+ " (unfiltered: " + featuresArray.length + ")");
+			return features;
 		}
 
-		public List<CompoundPropertySet> getFeatures(DatasetFile dataset)
+		public List<PropertySetProvider.PropertySetShortcut> getShortcuts()
 		{
-			if (features == null)
-			{
-				if (fpMinFreq == -1)
-					fpMinFreq = Math.max(1, Math.min(10, dataset.numCompounds() / 10));
-				FragmentProperties.setMinFrequency(fpMinFreq);
-				FragmentProperties.setSkipOmniFragments(fpSkipOmnipresent);
-				FragmentProperties.setMatchEngine(matchEngine);
-				Settings.LOGGER.info("before computing structural fragment " + FragmentProperties.getMatchEngine()
-						+ " " + FragmentProperties.getMinFrequency() + " " + FragmentProperties.isSkipOmniFragments());
-
-				CompoundPropertySet featuresArray[] = PropertySetProvider.INSTANCE.getDescriptorSets(dataset,
-						ArrayUtil.toArray(feats));
-				features = setTypeAndFilter(featuresArray, includeIntegrated, excludeIntegrated, setNumericIntegrated,
-						setNominalIntegrated);
-				Settings.LOGGER.debug(features.size() + " feature-sets selected for " + ListUtil.toString(feats)
-						+ " (unfiltered: " + featuresArray.length + ")");
-			}
-			return features;
+			return feats;
 		}
 	}
 
@@ -244,9 +269,11 @@ public class MappingWorkflow
 	 * @param featureSelection
 	 * @return
 	 */
-	public static Properties createMappingWorkflow(String datasetFile, DescriptorSelection featureSelection)
+	public static Properties createMappingWorkflow(String datasetFile, DescriptorSelection featureSelection,
+			FragmentSettings fragmentSettings)
 	{
-		return createMappingWorkflow(datasetFile, featureSelection, null, WekaPCA3DEmbedder.INSTANCE_NO_PROBS);
+		return createMappingWorkflow(datasetFile, featureSelection, fragmentSettings, null,
+				WekaPCA3DEmbedder.INSTANCE_NO_PROBS);
 	}
 
 	/**
@@ -259,7 +286,7 @@ public class MappingWorkflow
 	 * @return
 	 */
 	public static Properties createMappingWorkflow(String datasetFile, DescriptorSelection featureSelection,
-			DatasetClusterer clusterer, ThreeDEmbedder embedder)
+			FragmentSettings fragmentSettings, DatasetClusterer clusterer, ThreeDEmbedder embedder)
 	{
 		Properties props = new Properties();
 
@@ -275,8 +302,10 @@ public class MappingWorkflow
 			//			features.exportFeaturesToMappingWorkflow(featureSelection.getFeatures(datasetProvider.getDatasetFile()),
 			//					props);
 
+			if (fragmentSettings != null)
+				fragmentSettings.apply(dataset);
 			CompoundPropertySet features[] = ArrayUtil.toArray(CompoundPropertySet.class,
-					featureSelection.getFeatures(dataset));
+					featureSelection.getFilteredFeatures(dataset));
 			PropertySetProvider.INSTANCE.exportFeaturesToMappingWorkflow(features, props, dataset);
 		}
 		new ClustererProvider().exportAlgorithmToMappingWorkflow(clusterer, props);
@@ -381,7 +410,7 @@ public class MappingWorkflow
 	public static void createAndStoreMappingWorkflow(String datasetFile, String workflowOutfile)
 	{
 		createAndStoreMappingWorkflow(datasetFile, workflowOutfile, new DescriptorSelection(
-				PropertySetProvider.PropertySetShortcut.integrated), NoClusterer.INSTANCE);
+				PropertySetProvider.PropertySetShortcut.integrated), null, NoClusterer.INSTANCE);
 	}
 
 	/**
@@ -393,15 +422,17 @@ public class MappingWorkflow
 	 * @param ignoreIntegratedFeatures
 	 */
 	public static void createAndStoreMappingWorkflow(String datasetFile, String workflowOutfile,
-			DescriptorSelection features, DatasetClusterer clusterer)
+			DescriptorSelection features, FragmentSettings fragmentSettings, DatasetClusterer clusterer)
 	{
-		createAndStoreMappingWorkflow(datasetFile, workflowOutfile, features, clusterer, null);
+		createAndStoreMappingWorkflow(datasetFile, workflowOutfile, features, fragmentSettings, clusterer, null);
 	}
 
 	public static void createAndStoreMappingWorkflow(String datasetFile, String workflowOutfile,
-			DescriptorSelection features, DatasetClusterer clusterer, String additionalExplictProperties)
+			DescriptorSelection features, FragmentSettings fragmentSettings, DatasetClusterer clusterer,
+			String additionalExplictProperties)
 	{
-		Properties props = createMappingWorkflow(datasetFile, features, clusterer, WekaPCA3DEmbedder.INSTANCE);
+		Properties props = createMappingWorkflow(datasetFile, features, fragmentSettings, clusterer,
+				WekaPCA3DEmbedder.INSTANCE);
 		if (additionalExplictProperties != null)
 		{
 			for (String p : additionalExplictProperties.split(","))
@@ -424,7 +455,7 @@ public class MappingWorkflow
 		//		String input = Settings.destinationFile("knime_input.csv");
 		String input = "/home/martin/data/caco2.sdf";
 		Properties props = MappingWorkflow.createMappingWorkflow(input, new DescriptorSelection(
-				PropertySetProvider.PropertySetShortcut.ob), null, null);
+				PropertySetProvider.PropertySetShortcut.ob), null, null, null);
 		CheSMapping mapping = MappingWorkflow.createMappingFromMappingWorkflow(props, "");
 		mapping.doMapping();
 		//		ClusteringData data = mapping.doMapping();

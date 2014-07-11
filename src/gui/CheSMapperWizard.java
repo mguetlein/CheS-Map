@@ -184,6 +184,8 @@ public class CheSMapperWizard extends WizardDialog
 
 	protected void update(int status)
 	{
+		if (isClosed())
+			return;
 		if (dataset.getDatasetFile() != null)
 		{
 			create3D.update(dataset.getDatasetFile(), null, null);
@@ -203,6 +205,19 @@ public class CheSMapperWizard extends WizardDialog
 	{
 		chesMapping = new CheSMapping(dataset.getDatasetFile(), features.getSelectedFeatures(),
 				cluster.getDatasetClusterer(), create3D.get3DBuilder(), embed.get3DEmbedder(), align.getAlginer());
+	}
+
+	private boolean closed = false;
+
+	public boolean isClosed()
+	{
+		return closed;
+	}
+
+	protected void close(int returnValue)
+	{
+		closed = true;
+		super.close(returnValue);
 	}
 
 	public CheSMapping getChesMapping()

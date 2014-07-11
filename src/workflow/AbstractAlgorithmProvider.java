@@ -49,7 +49,7 @@ public abstract class AbstractAlgorithmProvider implements AlgorithmProvider
 		return getListAlgorithmFromProps(PropHandler.getProperties(), false);
 	}
 
-	private Algorithm getListAlgorithmFromProps(Properties props, boolean storeToSettings)
+	private Algorithm getListAlgorithmFromProps(Properties props, boolean storeToGlobalSettings)
 	{
 		Algorithm alg = getAlgorithmByName((String) props.get(getPropKeyMethod()));
 		if (alg == null)
@@ -57,8 +57,8 @@ public abstract class AbstractAlgorithmProvider implements AlgorithmProvider
 		if (alg.getProperties() != null)
 			for (Property p : alg.getProperties())
 				p.loadOrResetToDefault(props);
-		if (storeToSettings)
-			storeListAlgorithmToProps(alg, props);
+		if (storeToGlobalSettings)
+			storeListAlgorithmToProps(alg, PropHandler.getProperties());
 		return alg;
 	}
 
@@ -69,9 +69,9 @@ public abstract class AbstractAlgorithmProvider implements AlgorithmProvider
 	}
 
 	@Override
-	public Algorithm getAlgorithmFromMappingWorkflow(Properties mappingWorkflowProps, boolean storeToSettings)
+	public Algorithm getAlgorithmFromMappingWorkflow(Properties mappingWorkflowProps, boolean storeToGlobalSettings)
 	{
-		return getListAlgorithmFromProps(mappingWorkflowProps, storeToSettings);
+		return getListAlgorithmFromProps(mappingWorkflowProps, storeToGlobalSettings);
 	}
 
 	@Override

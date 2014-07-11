@@ -426,6 +426,8 @@ public class DatasetWizardPanel extends WizardPanel
 
 	public DatasetFile getDatasetFile()
 	{
+		if (dataset != null && !dataset.isLoaded())
+			throw new IllegalStateException();
 		return dataset;
 	}
 

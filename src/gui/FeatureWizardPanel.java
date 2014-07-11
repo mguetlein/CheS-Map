@@ -122,7 +122,7 @@ public class FeatureWizardPanel extends WizardPanel
 		JLabel label3 = new JLabel("Feature properties:");
 		label3.setFont(label3.getFont().deriveFont(Font.BOLD));
 
-		fragmentProperties = new StructuralFragmentPropertiesPanel();
+		fragmentProperties = new StructuralFragmentPropertiesPanel(wizard);
 
 		fragmentProperties.setBorder(new CompoundBorder(new EmptyBorder(0, 0, 10, 0), fragmentProperties.getBorder()));
 		DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout("p,fill:p:grow"));
@@ -235,6 +235,8 @@ public class FeatureWizardPanel extends WizardPanel
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
+				if (wizard.isClosed())
+					return;
 				if (BinHandler.BABEL_BINARY.isFound())
 				{
 					OBDescriptorSet.loadDescriptors(true);
@@ -332,6 +334,8 @@ public class FeatureWizardPanel extends WizardPanel
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
+				if (wizard.isClosed())
+					return;
 				update();
 			}
 		});
@@ -392,6 +396,8 @@ public class FeatureWizardPanel extends WizardPanel
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
+				if (wizard.isClosed())
+					return;
 				update();
 			}
 		});
@@ -555,9 +561,9 @@ public class FeatureWizardPanel extends WizardPanel
 
 		for (CompoundPropertySet m : PropertySetProvider.INSTANCE.getFeaturesFromMappingWorkflow(
 				PropHandler.getProperties(), false, dataset))
-			selector.setSelected(m);
+			selector.setSelected(m, false);
 
-		selector.setSelected(selected);
+		selector.setSelected(selected, false);
 
 		update();
 		selfUpdate = false;

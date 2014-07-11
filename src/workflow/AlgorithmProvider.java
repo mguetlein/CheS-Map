@@ -46,6 +46,6 @@ public interface AlgorithmProvider extends MappingWorkflowProvider
 	/**
 	 * loads algorithm from workflow-props (storeToSettings sets global-props accordingly, to have the correct settings available when starting the wizard)
 	 */
-	public Algorithm getAlgorithmFromMappingWorkflow(Properties mappingWorkflowProps, boolean storeToSettings);
+	public Algorithm getAlgorithmFromMappingWorkflow(Properties mappingWorkflowProps, boolean storeToGlobalSettings);
 
 }

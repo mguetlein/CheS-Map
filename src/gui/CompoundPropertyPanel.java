@@ -88,14 +88,14 @@ public class CompoundPropertyPanel extends JPanel
 	JPanel mainPanel;
 
 	private boolean selfUpdate = false;
-
 	DatasetFile dataset;
-
 	JPanel fragmentProps;
+	CheSMapperWizard wizard;
 
-	public CompoundPropertyPanel(FeatureWizardPanel featurePanel, Window owner)
+	public CompoundPropertyPanel(FeatureWizardPanel featurePanel, CheSMapperWizard wizard)
 	{
-		fragmentProps = featurePanel.getFragmentPropPanel().getSummaryPanel(owner);
+		fragmentProps = featurePanel.getFragmentPropPanel().getSummaryPanel(wizard);
+		this.wizard = wizard;
 		buildLayout();
 		addListeners();
 	}
@@ -247,6 +247,8 @@ public class CompoundPropertyPanel extends JPanel
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
+				if (wizard.isClosed())
+					return;
 				setSelectedPropertySet(selectedPropertySet);
 			}
 		});

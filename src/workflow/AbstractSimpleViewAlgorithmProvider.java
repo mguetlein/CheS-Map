@@ -42,12 +42,12 @@ public abstract class AbstractSimpleViewAlgorithmProvider extends AbstractAlgori
 		return isSimpleSelectedFromProps(PropHandler.getProperties(), false);
 	}
 
-	private boolean isSimpleSelectedFromProps(Properties props, boolean storeToSettings)
+	private boolean isSimpleSelectedFromProps(Properties props, boolean storeToGlobalSettings)
 	{
 		if (!props.containsKey(getPropKeySimple()))
 			props.put(getPropKeySimple(), "true");
 		String val = (String) props.get(getPropKeySimple());
-		if (storeToSettings)
+		if (storeToGlobalSettings)
 			PropHandler.put(getPropKeySimple(), val);
 		return val.equals("true");
 	}
@@ -58,12 +58,12 @@ public abstract class AbstractSimpleViewAlgorithmProvider extends AbstractAlgori
 		return isYesSelectedFromProps(PropHandler.getProperties(), false);
 	}
 
-	private boolean isYesSelectedFromProps(Properties mappingWorkflowProps, boolean storeToSettings)
+	private boolean isYesSelectedFromProps(Properties mappingWorkflowProps, boolean storeToGlobalSettings)
 	{
 		if (!mappingWorkflowProps.containsKey(getPropKeyYes()))
 			mappingWorkflowProps.put(getPropKeyYes(), isYesDefault() ? "true" : "false");
 		String val = (String) mappingWorkflowProps.get(getPropKeyYes());
-		if (storeToSettings)
+		if (storeToGlobalSettings)
 			PropHandler.put(getPropKeyYes(), val);
 		return val.equals("true");
 	}
@@ -81,26 +81,26 @@ public abstract class AbstractSimpleViewAlgorithmProvider extends AbstractAlgori
 	}
 
 	@Override
-	public Algorithm getAlgorithmFromMappingWorkflow(Properties mappingWorkflowProps, boolean storeToSettings)
+	public Algorithm getAlgorithmFromMappingWorkflow(Properties mappingWorkflowProps, boolean storeToGlobalSettings)
 	{
-		if (isSimpleSelectedFromProps(mappingWorkflowProps, storeToSettings))
+		if (isSimpleSelectedFromProps(mappingWorkflowProps, storeToGlobalSettings))
 		{
 			Algorithm alg;
-			if (isYesSelectedFromProps(mappingWorkflowProps, storeToSettings))
+			if (isYesSelectedFromProps(mappingWorkflowProps, storeToGlobalSettings))
 				alg = getYesAlgorithm();
 			else
 				alg = getNoAlgorithm();
 			if (alg.getProperties() != null)
 				for (Property p : alg.getProperties())
 					p.loadOrResetToDefault(mappingWorkflowProps);
-			if (storeToSettings)
+			if (storeToGlobalSettings)
 				if (alg.getProperties() != null)
 					for (Property p : alg.getProperties())
 						p.put(PropHandler.getProperties());
 			return alg;
 		}
 		else
-			return super.getAlgorithmFromMappingWorkflow(mappingWorkflowProps, storeToSettings);
+			return super.getAlgorithmFromMappingWorkflow(mappingWorkflowProps, storeToGlobalSettings);
 	}
 
 	@Override

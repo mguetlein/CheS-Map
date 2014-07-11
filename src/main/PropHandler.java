@@ -19,6 +19,11 @@ public class PropHandler
 		INSTANCE = new PropHandler(loadProperties);
 	}
 
+	public static void forceReload()
+	{
+		INSTANCE = new PropHandler(true);
+	}
+
 	private static PropHandler INSTANCE;
 
 	private static PropHandler instance()
