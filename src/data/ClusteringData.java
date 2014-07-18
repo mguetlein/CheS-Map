@@ -113,6 +113,8 @@ public class ClusteringData
 
 	public void addProperty(CompoundProperty property)
 	{
+		if (features.indexOf(property) != -1)
+			throw new IllegalStateException();
 		properties.add(property);
 	}
 
@@ -123,6 +125,8 @@ public class ClusteringData
 
 	public void addFeature(CompoundProperty feature)
 	{
+		if (properties.indexOf(feature) != -1)
+			throw new IllegalStateException();
 		features.add(feature);
 	}
 

@@ -69,13 +69,16 @@ public class DefaultFeatureComputer implements FeatureComputer
 			count++;
 		}
 
-		for (IntegratedPropertySet p : dataset.getIntegratedProperties())
+		for (IntegratedPropertySet set : dataset.getIntegratedProperties())
+		{
+			CompoundProperty p = set.get();
 			if (!props.contains(p))
 			{
-				p.setSelectedForMapping(false);
-				props.add(p.get());
-				properties.add(p.get());
+				set.setSelectedForMapping(false);
+				props.add(p);
+				properties.add(p);
 			}
+		}
 
 		String[] smiles = dataset.getSmiles();
 
