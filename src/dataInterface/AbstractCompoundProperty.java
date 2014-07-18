@@ -1,6 +1,5 @@
 package dataInterface;
 
-
 public abstract class AbstractCompoundProperty implements CompoundProperty
 {
 	protected String name;
@@ -39,15 +38,15 @@ public abstract class AbstractCompoundProperty implements CompoundProperty
 	}
 
 	@Override
-	public String toString()
+	public String getName()
 	{
 		return name;
 	}
 
 	@Override
-	public String getName()
+	public String toString()
 	{
-		return name;
+		return getName();
 	}
 
 	@Override
