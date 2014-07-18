@@ -114,4 +114,10 @@ public class DefaultNominalProperty extends AbstractCompoundProperty implements 
 	{
 		colorSequence = seq;
 	}
+
+	@Override
+	public boolean isUndefined()
+	{
+		return getCompoundPropertySet() != null && getCompoundPropertySet().getType() == null;
+	}
 }

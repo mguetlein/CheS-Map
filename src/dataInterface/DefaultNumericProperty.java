@@ -143,4 +143,9 @@ public class DefaultNumericProperty extends AbstractCompoundProperty implements 
 		this.colorGradient = colorGradient;
 	}
 
+	@Override
+	public boolean isUndefined()
+	{
+		return false;
+	}
 }
