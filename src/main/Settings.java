@@ -194,6 +194,7 @@ public class Settings
 		try
 		{
 			LOGGER = new Logger(LOG_FILE, true);
+			LOGGER.logFromStdErr();
 			LOGGER.info("Logger initialized ('" + LOG_FILE + "')");
 		}
 		catch (RuntimeException e)
