@@ -107,8 +107,6 @@ public class CheSMapping
 					TaskProvider.update(40, "Embed compounds into 3D space");
 					embedDataset(dataset, clustering, featuresWithInfo);
 
-					//computedAppDomain(dataset, clustering, featuresWithInfo);
-
 					if (clustering.getDatasetClusterer() != noClusterer
 							&& clustering.getThreeDEmbedder() != randomEmbedder
 							&& !clustering.getDatasetClusterer().getDistanceMeasure()
