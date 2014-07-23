@@ -16,6 +16,7 @@ import javax.swing.JOptionPane;
 import main.BinHandler;
 import main.CheSMapping;
 import main.PropHandler;
+import main.ScreenSetup;
 import main.Settings;
 import property.IntegratedPropertySet;
 import property.OBDescriptorSet;
@@ -27,7 +28,6 @@ import util.ListUtil;
 import alg.align3d.ThreeDAligner;
 import alg.build3d.ThreeDBuilder;
 import alg.cluster.DatasetClusterer;
-import alg.cluster.NoClusterer;
 import alg.embed3d.ThreeDEmbedder;
 import alg.embed3d.WekaPCA3DEmbedder;
 import data.DatasetFile;
@@ -108,8 +108,9 @@ public class MappingWorkflow
 		return null;
 	}
 
-	private static List<CompoundPropertySet> setTypeAndFilter(CompoundPropertySet[] set, String[] integratedInclude,
-			String[] integratedExclude, String[] integratedSetTypeNumeric, String[] integratedSetTypeNominal)
+	private static List<CompoundPropertySet> setTypeAndFilter(CompoundPropertySet[] set, boolean autoSelectIntegrated,
+			String[] integratedInclude, String[] integratedExclude, String[] integratedSetTypeNumeric,
+			String[] integratedSetTypeNominal)
 	{
 		List<CompoundPropertySet> feats = new ArrayList<CompoundPropertySet>();
 		for (int i = 0; i < set.length; i++)
@@ -123,19 +124,27 @@ public class MappingWorkflow
 
 			if (set[i] instanceof IntegratedPropertySet)
 			{
-				if (integratedInclude != null && ArrayUtil.indexOf(integratedInclude, set[i].toString()) == -1)
-					continue;
-				if (integratedExclude != null && ArrayUtil.indexOf(integratedExclude, set[i].toString()) != -1)
-					continue;
-				if (integratedSetTypeNumeric != null
-						&& ArrayUtil.indexOf(integratedSetTypeNumeric, set[i].toString()) != -1)
-					set[i].setType(Type.NUMERIC);
-				if (integratedSetTypeNominal != null
-						&& ArrayUtil.indexOf(integratedSetTypeNominal, set[i].toString()) != -1)
-					set[i].setType(Type.NOMINAL);
-				if (set[i].getType() == null)
-					throw new IllegalStateException("integrated feature '" + set[i]
-							+ "' is probably not suited for embedding, skip it or set type manually");
+				if (autoSelectIntegrated)
+				{
+					if (set[i].getType() == null)
+						continue;
+				}
+				else
+				{
+					if (integratedInclude != null && ArrayUtil.indexOf(integratedInclude, set[i].toString()) == -1)
+						continue;
+					if (integratedExclude != null && ArrayUtil.indexOf(integratedExclude, set[i].toString()) != -1)
+						continue;
+					if (integratedSetTypeNumeric != null
+							&& ArrayUtil.indexOf(integratedSetTypeNumeric, set[i].toString()) != -1)
+						set[i].setType(Type.NUMERIC);
+					if (integratedSetTypeNominal != null
+							&& ArrayUtil.indexOf(integratedSetTypeNominal, set[i].toString()) != -1)
+						set[i].setType(Type.NOMINAL);
+					if (set[i].getType() == null)
+						throw new IllegalStateException("integrated feature '" + set[i]
+								+ "' is probably not suited for embedding, skip it or set type manually");
+				}
 			}
 			feats.add(set[i]);
 		}
@@ -188,6 +197,8 @@ public class MappingWorkflow
 	public static class DescriptorSelection
 	{
 		List<PropertySetProvider.PropertySetShortcut> feats;
+
+		boolean autoSelectIntegrated;
 		String includeIntegrated[];
 		String excludeIntegrated[];
 		String setNumericIntegrated[];
@@ -195,15 +206,24 @@ public class MappingWorkflow
 
 		List<CompoundPropertySet> features;
 
-		public DescriptorSelection(String featString)
-		{
-			this(featString, null, null, null, null);
-		}
-
-		public DescriptorSelection(String featString, String includeIntegrated, String excludeIntegrated,
+		public static DescriptorSelection select(String featString, String includeIntegrated, String excludeIntegrated,
 				String setNumericIntegrated, String setNominalIntegrated)
 		{
-			this(parse(featString), includeIntegrated, excludeIntegrated, setNumericIntegrated, setNominalIntegrated);
+			return new DescriptorSelection(parse(featString), null, includeIntegrated, excludeIntegrated,
+					setNumericIntegrated, setNominalIntegrated);
+		}
+
+		public static DescriptorSelection select(PropertySetShortcut feat, String includeIntegrated,
+				String excludeIntegrated, String setNumericIntegrated, String setNominalIntegrated)
+		{
+			return new DescriptorSelection(new PropertySetShortcut[] { feat }, null, includeIntegrated,
+					excludeIntegrated, setNumericIntegrated, setNominalIntegrated);
+		}
+
+		public static DescriptorSelection autoSelectIntegrated()
+		{
+			return new DescriptorSelection(new PropertySetShortcut[] { PropertySetShortcut.integrated }, true, null,
+					null, null, null);
 		}
 
 		private static PropertySetShortcut[] parse(String s)
@@ -216,41 +236,36 @@ public class MappingWorkflow
 			return ListUtil.toArray(feats);
 		}
 
-		public DescriptorSelection(PropertySetProvider.PropertySetShortcut... feats)
-		{
-			this(feats, null, null, null, null);
-		}
-
-		public DescriptorSelection(PropertySetProvider.PropertySetShortcut feat, String includeIntegrated,
-				String excludeIntegrated, String setNumericIntegrated, String setNominalIntegrated)
-		{
-			this(new PropertySetShortcut[] { feat }, includeIntegrated, excludeIntegrated, setNumericIntegrated,
-					setNominalIntegrated);
-		}
-
-		public DescriptorSelection(PropertySetProvider.PropertySetShortcut feats[], String includeIntegrated,
-				String excludeIntegrated, String setNumericIntegrated, String setNominalIntegrated)
+		private DescriptorSelection(PropertySetProvider.PropertySetShortcut feats[], Boolean autoSelectIntegrated,
+				String includeIntegrated, String excludeIntegrated, String setNumericIntegrated,
+				String setNominalIntegrated)
 		{
 			if (feats == null || feats.length == 0)
 				throw new IllegalArgumentException();
 
 			this.feats = ArrayUtil.toList(feats);
-			if (includeIntegrated != null)
-				this.includeIntegrated = includeIntegrated.split(",");
-			if (excludeIntegrated != null)
-				this.excludeIntegrated = excludeIntegrated.split(",");
-			if (setNumericIntegrated != null)
-				this.setNumericIntegrated = setNumericIntegrated.split(",");
-			if (setNominalIntegrated != null)
-				this.setNominalIntegrated = setNominalIntegrated.split(",");
+
+			if (autoSelectIntegrated != null)
+				this.autoSelectIntegrated = autoSelectIntegrated;
+			else
+			{
+				if (includeIntegrated != null)
+					this.includeIntegrated = includeIntegrated.split(",");
+				if (excludeIntegrated != null)
+					this.excludeIntegrated = excludeIntegrated.split(",");
+				if (setNumericIntegrated != null)
+					this.setNumericIntegrated = setNumericIntegrated.split(",");
+				if (setNominalIntegrated != null)
+					this.setNominalIntegrated = setNominalIntegrated.split(",");
+			}
 		}
 
 		public List<CompoundPropertySet> getFilteredFeatures(DatasetFile dataset)
 		{
 			CompoundPropertySet featuresArray[] = PropertySetProvider.INSTANCE.getDescriptorSets(dataset,
 					ArrayUtil.toArray(feats));
-			features = setTypeAndFilter(featuresArray, includeIntegrated, excludeIntegrated, setNumericIntegrated,
-					setNominalIntegrated);
+			features = setTypeAndFilter(featuresArray, autoSelectIntegrated, includeIntegrated, excludeIntegrated,
+					setNumericIntegrated, setNominalIntegrated);
 			Settings.LOGGER.debug(features.size() + " feature-sets selected for " + ListUtil.toString(feats)
 					+ " (unfiltered: " + featuresArray.length + ")");
 			return features;
@@ -401,19 +416,6 @@ public class MappingWorkflow
 	}
 
 	/**
-	 * creates a workflow using the specified dataset-file and all integrated features
-	 * stores the workflow in a file
-	 * 
-	 * @param datasetFile
-	 * @param workflowOutfile
-	 */
-	public static void createAndStoreMappingWorkflow(String datasetFile, String workflowOutfile)
-	{
-		createAndStoreMappingWorkflow(datasetFile, workflowOutfile, new DescriptorSelection(
-				PropertySetProvider.PropertySetShortcut.integrated), null, NoClusterer.INSTANCE);
-	}
-
-	/**
 	 * creates a workflow using the specified dataset-file and the selected features
 	 * stores the workflow in a file
 	 * 
@@ -448,14 +450,15 @@ public class MappingWorkflow
 
 	public static void main(String args[])
 	{
+		ScreenSetup.INSTANCE = ScreenSetup.DEFAULT;
 		PropHandler.init(true);
 		BinHandler.init();
 		//		System.getenv().put("CM_BABEL_PATH", "/home/martin/opentox-ruby/openbabel-2.2.3/bin/babel");
 
 		//		String input = Settings.destinationFile("knime_input.csv");
-		String input = "/home/martin/data/caco2.sdf";
-		Properties props = MappingWorkflow.createMappingWorkflow(input, new DescriptorSelection(
-				PropertySetProvider.PropertySetShortcut.ob), null, null, null);
+		String input = "/home/martin/data/caco2/caco2.sdf";
+		Properties props = MappingWorkflow.createMappingWorkflow(input, DescriptorSelection.autoSelectIntegrated(),
+				null);
 		CheSMapping mapping = MappingWorkflow.createMappingFromMappingWorkflow(props, "");
 		mapping.doMapping();
 		//		ClusteringData data = mapping.doMapping();
