@@ -313,9 +313,9 @@ public class CheSMapping
 		int sum = 0;
 		for (ClusterData c : clusterer.getClusters())
 		{
-			if (c.getSize() == 0)
+			if (c.getNumCompounds() == 0)
 				throw new IllegalStateException("internal error: cluster has size 0");
-			sum += c.getSize();
+			sum += c.getNumCompounds();
 			clustering.addCluster(c);
 		}
 		if (sum != clustering.getCompounds().size())

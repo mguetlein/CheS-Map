@@ -10,6 +10,8 @@ public interface NominalProperty extends CompoundProperty
 
 	public String[] getStringValues();
 
+	public String getActiveValue();
+
 	public String getFormattedValue(String value);
 
 	public String getModeNonNull();

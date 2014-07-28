@@ -3,7 +3,7 @@ package dataInterface;
 import javax.swing.ImageIcon;
 import javax.vecmath.Vector3f;
 
-public interface CompoundData extends CompoundPropertyOwner
+public interface CompoundData extends SingleCompoundPropertyOwner
 {
 	public int getOrigIndex();
 

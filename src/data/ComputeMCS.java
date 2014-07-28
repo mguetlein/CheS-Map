@@ -43,7 +43,7 @@ public class ComputeMCS
 
 				TaskProvider.debug("Compute MCS for cluster " + count + "/" + clusters.size());
 
-				IMolecule mols[] = new IMolecule[c.getSize()];
+				IMolecule mols[] = new IMolecule[c.getNumCompounds()];
 				for (int i = 0; i < mols.length; i++)
 					mols[i] = allMols[c.getCompounds().get(i).getOrigIndex()];
 				IAtomContainer mcsMolecule = null;

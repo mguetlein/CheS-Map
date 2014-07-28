@@ -14,6 +14,7 @@ import property.CDKPropertySet;
 import property.OBDescriptorSet;
 import property.OBFingerprintSet;
 import util.ArrayUtil;
+import util.CountedSet;
 import util.DoubleArraySummary;
 import data.DatasetFile;
 import freechart.FreeChartUtil;
@@ -169,6 +170,36 @@ public class CompoundPropertyUtil
 		return mapping.get(key);
 	}
 
+	public static enum NominalColoring
+	{
+		TwoThirdMode, ActiveValueIncluded, Mode
+	}
+
+	public static String getNominalHighlightValue(NominalProperty p, CountedSet<String> values,
+			NominalColoring nominalColoring)
+	{
+		if (nominalColoring == NominalColoring.ActiveValueIncluded && p.getDomain().length == 2
+				&& p.getActiveValue() != null)
+		{
+			if (values.getCount(p.getActiveValue()) > 0)
+				return p.getActiveValue();
+			else
+				return values.getMode(false);
+		}
+		else if (nominalColoring == NominalColoring.Mode)
+		{
+			return values.getUniqueMode();
+		}
+		else
+		{
+			String mode = values.getMode(false);
+			if (values.getCount(mode) > values.getSum(false) * 2 / 3.0)
+				return mode;
+			else
+				return null;
+		}
+	}
+
 	public static Color getNominalColor(NominalProperty p, String val)
 	{
 		int index = ArrayUtil.indexOf(p.getDomain(), val);
@@ -299,4 +330,5 @@ public class CompoundPropertyUtil
 		else
 			return false;
 	}
+
 }

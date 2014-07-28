@@ -2,10 +2,9 @@ package dataInterface;
 
 import java.util.List;
 
-import util.CountedSet;
 import data.fragments.MatchEngine;
 
-public interface ClusterData extends CompoundPropertyOwner
+public interface ClusterData extends CompoundGroupWithProperties
 {
 	public String getName();
 
@@ -17,8 +16,6 @@ public interface ClusterData extends CompoundPropertyOwner
 
 	public int getOrigIndex();
 
-	public int getSize();
-
 	public List<CompoundData> getCompounds();
 
 	public String getSubstructureSmarts(SubstructureSmartsType type);
@@ -28,8 +25,6 @@ public interface ClusterData extends CompoundPropertyOwner
 	public boolean isAligned();
 
 	public String getSummaryStringValue(CompoundProperty p, boolean html);
-
-	public CountedSet<String> getNominalSummary(NominalProperty p);
 
 	public int numMissingValues(CompoundProperty p);
 

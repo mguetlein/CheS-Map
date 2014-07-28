@@ -15,6 +15,7 @@ public class DefaultNominalProperty extends AbstractCompoundProperty implements 
 	private String[] stringValues;
 	private String modeNonNull;
 	private Integer distinct;
+	private String activeValue;
 
 	public DefaultNominalProperty(String name, String description, String[] values)
 	{
@@ -41,6 +42,12 @@ public class DefaultNominalProperty extends AbstractCompoundProperty implements 
 	}
 
 	@Override
+	public String getActiveValue()
+	{
+		return activeValue;
+	}
+
+	@Override
 	public String getFormattedValue(String s)
 	{
 		if (s == null)
@@ -64,7 +71,11 @@ public class DefaultNominalProperty extends AbstractCompoundProperty implements 
 			String dom[] = ArrayUtil.toArray(set.values());
 			int domCounts[] = new int[dom.length];
 			for (int i = 0; i < domCounts.length; i++)
+			{
 				domCounts[i] = set.getCount(dom[i]);
+				if (dom.length == 2 && dom[i].matches("(?i)active|1|true"))
+					activeValue = dom[i];
+			}
 			Arrays.sort(dom, new ToStringComparator());
 			domain = dom;
 			domainCounts = domCounts;

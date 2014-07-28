@@ -103,7 +103,7 @@ public class ClusteringData
 			{
 				numMultiClusteredCompounds = 0;
 				for (ClusterData c : clusters)
-					numMultiClusteredCompounds += c.getSize();
+					numMultiClusteredCompounds += c.getNumCompounds();
 			}
 			return numMultiClusteredCompounds;
 		}

@@ -194,7 +194,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 		int i = 0;
 		for (ClusterData c : clusters)
 		{
-			if (c.getSize() == 0)
+			if (c.getNumCompounds() == 0)
 				toDelete.add(i);
 			i++;
 		}
@@ -220,7 +220,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 		int count = 0;
 		for (ClusterData c : clusters)
 		{
-			if (c.getSize() == 0)
+			if (c.getNumCompounds() == 0)
 				throw new Error("empty cluster");
 			((ClusterDataImpl) c).setOrigIndex(count);
 			((ClusterDataImpl) c).setName(clusterName(count++, c == unclusteredCompounds));
@@ -254,7 +254,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 			for (ClusterData c : clusters)
 			{
 				List<Integer> clusterIdx = new ArrayList<Integer>();
-				for (int k = 0; k < c.getSize(); k++)
+				for (int k = 0; k < c.getNumCompounds(); k++)
 					clusterIdx.add(cIdx++);
 				c.setCompoundClusterIndices(clusterIdx);
 			}
@@ -262,7 +262,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 
 		if (unclusteredCompounds != null)
 			TaskProvider.warning(Settings.text("cluster.warning.not-clustered-compounds",
-					unclusteredCompounds.getName(), unclusteredCompounds.getSize() + ""), Settings
+					unclusteredCompounds.getName(), unclusteredCompounds.getNumCompounds() + ""), Settings
 					.text("cluster.warning.not-clustered-compounds.desc"));
 
 		if (count == 0)

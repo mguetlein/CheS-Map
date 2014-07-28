@@ -206,19 +206,6 @@ public class ClusterDataImpl implements ClusterData
 		return ((DoubleArraySummary) getSummaryValue(p)).getMean();
 	}
 
-	@SuppressWarnings("unchecked")
-	public String getStringValue(NominalProperty p)
-	{
-		if (origIndicesFilter != null && origIndicesFilter.size() == 0)
-			return null;
-		CountedSet<String> set = (CountedSet<String>) getSummaryValue(p);
-		String mode = set.getMode(false);
-		if (set.getCount(mode) > set.getSum(false) * 2 / 3.0)
-			return mode;
-		else
-			return null;
-	}
-
 	@Override
 	public String getFormattedValue(CompoundProperty p)
 	{
@@ -255,7 +242,7 @@ public class ClusterDataImpl implements ClusterData
 	}
 
 	@Override
-	public int getSize()
+	public int getNumCompounds()
 	{
 		return compounds.size();
 	}

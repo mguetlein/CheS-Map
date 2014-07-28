@@ -152,11 +152,11 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 
 	private boolean alignWithCDK(DatasetFile dataset, ClusterData cluster, int index, String destFile)
 	{
-		int compoundOrigIndices[] = new int[cluster.getSize()];
-		IMolecule compounds[] = new IMolecule[cluster.getSize()];
+		int compoundOrigIndices[] = new int[cluster.getNumCompounds()];
+		IMolecule compounds[] = new IMolecule[cluster.getNumCompounds()];
 		String smarts = cluster.getSubstructureSmarts(getSubstructureSmartsType());
 
-		for (int k = 0; k < cluster.getSize(); k++)
+		for (int k = 0; k < cluster.getNumCompounds(); k++)
 		{
 			CompoundData comp = cluster.getCompounds().get(k);
 			compoundOrigIndices[k] = comp.getOrigIndex();
