@@ -80,6 +80,28 @@ public class CDKCompoundIcon
 		}
 	}
 
+	static IMolecule zeralenone;
+
+	public static MultiImageIcon createDemoIcon(boolean black, int width, int height, Layout layout,
+			boolean translucent)
+	{
+		try
+		{
+			if (zeralenone == null)
+			{
+				String smiles = "c12c(cc(cc2O)O)C=CCCCC(=O)CCC[C@@H](OC1=O)C";
+				SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+				zeralenone = sp.parseSmiles(smiles);
+			}
+			return createIcon(zeralenone, black, width, height, layout, translucent);
+		}
+		catch (CDKException e)
+		{
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 	public static MultiImageIcon createIcon(IMolecule iMolecule, boolean black, int width, int height, Layout layout,
 			boolean translucent) throws CDKException
 	{
@@ -176,11 +198,12 @@ public class CDKCompoundIcon
 		//String smiles = "BrN1C(=O)CCC1=O";
 		//		String smiles = "C=C-Cl.BrN1C(=O)CCC1=O";
 		//		String smiles = "[NH-]=[N+]=[NH-].[Na+]";
-		String smiles = "COc(ccc(c1)[N+])c1[N+].[O-]S([O-])(=O)=O";
+		String smiles = "CN1C2=C(C=C(Cl)C=C2)C(=NCC1=O)C1=CC=CC=C1.COc(ccc(c1)[N+])c1[N+].[O-]S([O-])(=O)=O";
 		//String smiles = "COc(ccc(c1)[N+])c1[N+]";
 		//String smiles = "c1ccccc1";
 		SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
 		IMolecule iMolecule = sp.parseSmiles(smiles);
+		//		iMolecule = MoleculeFactory.make
 
 		JPanel pB = new JPanel();
 		pB.setBackground(Color.BLACK);
