@@ -184,9 +184,10 @@ public class PropertySetProvider implements FeatureMappingWorkflowProvider
 			super("struct.match");
 		}
 
-		public String getDescription()
+		@Override
+		public String getDescriptionParam()
 		{
-			return Settings.text("features.struct.match.desc", Settings.STRUCTURAL_FRAGMENT_DIR + File.separator);
+			return Settings.STRUCTURAL_FRAGMENT_DIR + File.separator;
 		}
 
 		public boolean isSMARTSFragmentCategory()
@@ -254,9 +255,9 @@ public class PropertySetProvider implements FeatureMappingWorkflowProvider
 		}
 
 		@Override
-		public String getDescription()
+		public String getDescriptionParam()
 		{
-			return Settings.text("features.cdk", Settings.CDK_STRING);
+			return Settings.CDK_STRING;
 		}
 
 		public PropertySetCategory[] getSubCategory()
@@ -276,6 +277,12 @@ public class PropertySetProvider implements FeatureMappingWorkflowProvider
 					public CompoundPropertySet[] getPropertySet(DatasetFile dataset)
 					{
 						return CDKPropertySet.getNumericDescriptorsForClass(cdkClass);
+					}
+
+					@Override
+					public String getDescriptionParam()
+					{
+						return Settings.CDK_STRING;
 					}
 
 					@Override
@@ -322,6 +329,12 @@ public class PropertySetProvider implements FeatureMappingWorkflowProvider
 		public Binary getBinary()
 		{
 			return BinHandler.BABEL_BINARY;
+		}
+
+		@Override
+		public String getDescriptionParam()
+		{
+			return Settings.OPENBABEL_STRING;
 		}
 
 		public CompoundPropertySet[] getPropertySet(DatasetFile dataset)

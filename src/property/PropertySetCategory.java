@@ -38,7 +38,12 @@ public class PropertySetCategory
 
 	public String getDescription()
 	{
-		return Settings.text("features." + name + ".desc");
+		return Settings.text("features." + name + ".desc", getDescriptionParam());
+	}
+
+	public String getDescriptionParam()
+	{
+		return "";
 	}
 
 	/**
