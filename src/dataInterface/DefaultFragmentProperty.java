@@ -61,4 +61,17 @@ public class DefaultFragmentProperty extends DefaultNominalProperty implements F
 	{
 		return (FragmentPropertySet) set;
 	}
+
+	@Override
+	public String getFormattedValue(String s)
+	{
+		if (s == null) // not possible atm, but functionality may be changed
+			return getFormattedNullValue();
+		else if (s.equals("1"))
+			return "match";
+		else if (s.equals("0"))
+			return "no-match";
+		else
+			throw new IllegalStateException("illegal value " + s);
+	}
 }
