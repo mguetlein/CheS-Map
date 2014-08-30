@@ -7,11 +7,9 @@ import util.StringUtil;
 
 public class DefaultNumericProperty extends AbstractCompoundProperty implements NumericProperty
 {
-	private boolean logEnabled = false;
 	private ColorGradient colorGradient = null;
 	private Double[] doubleValues;
 	private Double[] normalizedValues;
-	private Double[] normalizedLogValues;
 	private Double median;
 	private Integer distinct;
 	private Boolean isInteger;
@@ -39,10 +37,8 @@ public class DefaultNumericProperty extends AbstractCompoundProperty implements 
 		vals = ArrayUtil.replaceNaN(vals, null);
 		Double normalized[] = ArrayUtil.normalize(vals, false);
 		setMissing(normalized);
-		Double normalizedLog[] = ArrayUtil.normalizeLog(vals, false);
 		doubleValues = vals;
 		normalizedValues = normalized;
-		normalizedLogValues = normalizedLog;
 		DoubleArraySummary sum = DoubleArraySummary.create(normalized);
 		median = sum.getMedian();
 		distinct = sum.getNumDistinct();
@@ -96,12 +92,6 @@ public class DefaultNumericProperty extends AbstractCompoundProperty implements 
 	}
 
 	@Override
-	public Double[] getNormalizedLogValues()
-	{
-		return normalizedLogValues;
-	}
-
-	@Override
 	public Double getNormalizedMedian()
 	{
 		return median;
@@ -117,18 +107,6 @@ public class DefaultNumericProperty extends AbstractCompoundProperty implements 
 	public Boolean hasSmallDoubleValues()
 	{
 		return hasSmallDoubleValues;
-	}
-
-	@Override
-	public boolean isLogHighlightingEnabled()
-	{
-		return logEnabled;
-	}
-
-	@Override
-	public void setLogHighlightingEnabled(boolean log)
-	{
-		this.logEnabled = log;
 	}
 
 	@Override

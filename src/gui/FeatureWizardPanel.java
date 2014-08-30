@@ -400,7 +400,7 @@ public class FeatureWizardPanel extends WizardPanel
 					return;
 				update();
 			}
-		});
+		}, false);
 	}
 
 	protected void updateFeatureProperties(PropertySetCategory highlightedCategory)

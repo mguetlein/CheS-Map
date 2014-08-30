@@ -33,7 +33,7 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 			{
 				updateFragments();
 			}
-		});
+		}, hasFixedMatchEngine());
 	}
 
 	public String toString()
@@ -122,8 +122,8 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 	@Override
 	public String getNameIncludingParams()
 	{
-		return toString() + "_" + FragmentProperties.getMatchEngine() + "_" + FragmentProperties.getMinFrequency()
-				+ "_" + FragmentProperties.isSkipOmniFragments();
+		return toString() + (hasFixedMatchEngine() ? "" : "_" + FragmentProperties.getMatchEngine()) + "_"
+				+ FragmentProperties.getMinFrequency() + "_" + FragmentProperties.isSkipOmniFragments();
 	}
 
 	@Override
@@ -180,6 +180,8 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 	{
 		return false;
 	}
+
+	public abstract boolean hasFixedMatchEngine();
 
 	//	public void clearProperties()
 	//	{

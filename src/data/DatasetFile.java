@@ -294,4 +294,5 @@ public class DatasetFile extends FilenameProvider
 			extension = FileUtil.getFilenamExtension(localPath);
 		return extension;
 	}
+
 }

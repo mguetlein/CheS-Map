@@ -30,10 +30,11 @@ public class FragmentProperties
 		return INSTANCE.fragmentProps;
 	}
 
-	public static void addPropertyChangeListenerToProperties(PropertyChangeListener l)
+	public static void addPropertyChangeListenerToProperties(PropertyChangeListener l, boolean ignoreMatchEngine)
 	{
 		for (Property p : INSTANCE.fragmentProps)
-			p.addPropertyChangeListener(l);
+			if (!ignoreMatchEngine || p != INSTANCE.matchEngine)
+				p.addPropertyChangeListener(l);
 	}
 
 	public static void addMatchEngingePropertyChangeListenerToProperties(PropertyChangeListener l)

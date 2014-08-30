@@ -545,4 +545,10 @@ public class OBFingerprintSet extends FragmentPropertySet
 	{
 		return false;
 	}
+
+	@Override
+	public boolean hasFixedMatchEngine()
+	{
+		return true;
+	}
 }

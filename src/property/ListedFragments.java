@@ -65,6 +65,8 @@ public class ListedFragments
 	{
 		fragmentListAll.clear();
 
+		fragmentListAll.add(MossFragmentSet.INSTANCE);
+
 		for (OBFingerprintSet fp : OBFingerprintSet.FINGERPRINTS)
 			fragmentListAll.add(fp);
 

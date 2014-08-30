@@ -269,4 +269,10 @@ public class ListedFragmentSet extends FragmentPropertySet
 	{
 		return FragmentProperties.getMatchEngine() == MatchEngine.CDK && fragments.size() > 1000;
 	}
+
+	@Override
+	public boolean hasFixedMatchEngine()
+	{
+		return false;
+	}
 }

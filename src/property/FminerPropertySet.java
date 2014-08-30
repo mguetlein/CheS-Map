@@ -103,4 +103,10 @@ public class FminerPropertySet extends FragmentPropertySet
 	{
 		return true;
 	}
+
+	@Override
+	public boolean hasFixedMatchEngine()
+	{
+		return true;
+	}
 }

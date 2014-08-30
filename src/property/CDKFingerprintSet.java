@@ -149,4 +149,10 @@ public class CDKFingerprintSet extends FragmentPropertySet
 	{
 		return fingerprinter.getSize() > 1000;
 	}
+
+	@Override
+	public boolean hasFixedMatchEngine()
+	{
+		return true;
+	}
 }

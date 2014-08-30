@@ -10,15 +10,9 @@ public interface NumericProperty extends CompoundProperty
 
 	public Double[] getNormalizedValues();
 
-	public Double[] getNormalizedLogValues();
-
 	public Double getNormalizedMedian();
 
 	public Boolean isInteger();
-
-	public boolean isLogHighlightingEnabled();
-
-	public void setLogHighlightingEnabled(boolean log);
 
 	public ColorGradient getHighlightColorGradient();
 
