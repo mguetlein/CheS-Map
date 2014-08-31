@@ -416,7 +416,7 @@ public class CheSMapping
 					CorrelationProperty p = embedder.getCorrelationProperty(t);
 					for (int i = 0; i < clustering.getNumCompounds(false); i++)
 						((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(p, p.getDoubleValues()[i]);
-					clustering.addAdditionalProperty(p, true);
+					clustering.addEmbedQualityProperty(p);
 				}
 			}
 		}
@@ -433,7 +433,7 @@ public class CheSMapping
 				for (int i = 0; i < clustering.getNumCompounds(false); i++)
 					((CompoundDataImpl) clustering.getCompounds().get(i)).setStringValue(eqPos,
 							eqPos.getStringValues()[i]);
-				clustering.addAdditionalProperty(eqPos, false);
+				clustering.addEqualPosProperty(eqPos);
 			}
 		}
 

@@ -74,14 +74,18 @@ public class EqualPositionProperty extends DefaultNominalProperty
 		//			map.put(uniqNameSuffix, new EqualPositionProperty(data, ids, uniqNameSuffix));
 		//		return map.get(uniqNameSuffix);
 
-		return new EqualPositionProperty(ids);
+		return new EqualPositionProperty(ids, numDistinctPos, numMultiCompounds, numCommonPos);
 	}
 
 	//	private static HashMap<String, EqualPositionProperty> map = new HashMap<String, EqualPositionProperty>();
 
-	private EqualPositionProperty(String ids[])
+	int numDistinctPositions;
+
+	private EqualPositionProperty(String ids[], int numDistinctPositions, int numMultiCompounds, int numCommonPos)
 	{
-		super(Settings.text("props.eq-pos"), Settings.text("props.eq-pos.desc"), ids);
+		super(Settings.text("props.eq-pos"), Settings.text("props.eq-pos.desc", numMultiCompounds + "", numCommonPos
+				+ ""), ids);
+		this.numDistinctPositions = numDistinctPositions;
 		//		setStringValues(data, ids);
 	}
 
@@ -91,93 +95,8 @@ public class EqualPositionProperty extends DefaultNominalProperty
 		return "unique";
 	}
 
-	//	@Override
-	//	public CompoundPropertySet getCompoundPropertySet()
-	//	{
-	//		return this;
-	//	}
-
-	//	@Override
-	//	public boolean isComputed(DatasetFile dataset)
-	//	{
-	//		return true;
-	//	}
-	//
-	//	@Override
-	//	public boolean isCached(DatasetFile dataset)
-	//	{
-	//		return true;
-	//	}
-	//
-	//	@Override
-	//	public boolean compute(DatasetFile dataset)
-	//	{
-	//		return true;
-	//	}
-	//
-	//	@Override
-	//	public boolean isSizeDynamic()
-	//	{
-	//		return false;
-	//	}
-	//
-	//	@Override
-	//	public boolean isSizeDynamicHigh(DatasetFile dataset)
-	//	{
-	//		return false;
-	//	}
-	//
-	//	@Override
-	//	public int getSize(DatasetFile d)
-	//	{
-	//		return 1;
-	//	}
-	//
-	//	@Override
-	//	public CompoundProperty get(DatasetFile d, int index)
-	//	{
-	//		return this;
-	//	}
-	//
-	//	@Override
-	//	public String getDescription()
-	//	{
-	//		return description;
-	//	}
-	//
-	//	@Override
-	//	public Type getType()
-	//	{
-	//		return Type.NOMINAL;
-	//	}
-	//
-	//	@Override
-	//	public Binary getBinary()
-	//	{
-	//		return null;
-	//	}
-	//
-	//	@Override
-	//	public boolean isSelectedForMapping()
-	//	{
-	//		return false;
-	//	}
-	//
-	//	@Override
-	//	public String getNameIncludingParams()
-	//	{
-	//		return name;
-	//	}
-	//
-	//	@Override
-	//	public boolean isComputationSlow()
-	//	{
-	//		return false;
-	//	}
-	//
-	//	@Override
-	//	public boolean isSensitiveTo3D()
-	//	{
-	//		return false;
-	//	}
+	public int numDistinct3DPositions()
+	{
+		return numDistinctPositions;
+	}
 }
