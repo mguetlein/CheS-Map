@@ -206,7 +206,7 @@ public class FeatureService
 					IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
 					List<IAtomContainer> l = ChemFileManipulator.getAllAtomContainers(content);
 					if (l.size() != 1)
-						throw new Error();
+						throw new Error("Could not read inchi: " + inch);
 					list.add(l.get(0));
 					reader.close();
 				}
@@ -436,6 +436,8 @@ public class FeatureService
 				IMolecule mol = (IMolecule) iAtomContainer;
 				for (Object key : mol.getProperties().keySet())
 				{
+					if (key == null)
+						throw new Error("null key in dataset, empty column header?");
 					IntegratedPropertySet p = IntegratedPropertySet.create(key.toString(), dataset);
 					integratedProperties.get(dataset).add(p);
 					if (key.toString().toUpperCase().equals("STRUCTURE_SMILES")
