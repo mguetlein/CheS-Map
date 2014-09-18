@@ -1,11 +1,15 @@
 package alg.cluster.r;
 
+import gui.FeatureWizardPanel.FeatureInfo;
+import gui.Messages;
 import gui.property.IntegerProperty;
 import gui.property.Property;
 import main.Settings;
 import alg.DistanceMeasure;
 import alg.cluster.ClusterApproach;
+import alg.cluster.DatasetClusterer;
 import alg.r.DistanceProperty;
+import data.DatasetFile;
 
 public class KMeansRClusterer extends AbstractRClusterer
 {
@@ -24,7 +28,7 @@ public class KMeansRClusterer extends AbstractRClusterer
 	@Override
 	public String getDescription()
 	{
-		return Settings.text("cluster.r.kmeans.desc", Settings.R_STRING);
+		return Settings.text("cluster.r.kmeans.desc", Settings.R_STRING) + "\n\n" + Settings.text("distance.desc");
 	}
 
 	@Override
@@ -82,5 +86,13 @@ public class KMeansRClusterer extends AbstractRClusterer
 	public DistanceMeasure getDistanceMeasure()
 	{
 		return distance.getDistanceMeasure();
+	}
+
+	@Override
+	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
+	{
+		Messages m = super.getMessages(dataset, featureInfo, clusterer);
+		distance.addWarning(m, featureInfo);
+		return m;
 	}
 }

@@ -14,7 +14,6 @@ import javax.vecmath.Vector3f;
 
 import main.Settings;
 import main.TaskProvider;
-import util.MessageUtil;
 import weka.CompoundArffWriter;
 import weka.WekaPropertyUtil;
 import weka.attributeSelection.PrincipalComponents;
@@ -115,15 +114,6 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 	protected boolean storesDistances()
 	{
 		return false;
-	}
-
-	@Override
-	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
-	{
-		Messages m = super.getMessages(dataset, featureInfo, clusterer);
-		if (dataset.numCompounds() >= 50 && featureInfo.isNumFeaturesHigh())
-			m.add(MessageUtil.slowMessage(featureInfo.getNumFeaturesWarning()));
-		return m;
 	}
 
 	@Override

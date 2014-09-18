@@ -1,5 +1,7 @@
 package alg.cluster.r;
 
+import gui.FeatureWizardPanel.FeatureInfo;
+import gui.Messages;
 import gui.property.IntegerProperty;
 import gui.property.Property;
 import gui.property.SelectProperty;
@@ -10,7 +12,9 @@ import main.Settings;
 import rscript.RScriptUtil;
 import alg.DistanceMeasure;
 import alg.cluster.ClusterApproach;
+import alg.cluster.DatasetClusterer;
 import alg.r.DistanceProperty;
+import data.DatasetFile;
 
 public class CascadeKMeansRClusterer extends AbstractRClusterer
 {
@@ -30,7 +34,8 @@ public class CascadeKMeansRClusterer extends AbstractRClusterer
 	@Override
 	public String getDescription()
 	{
-		return Settings.text("cluster.r.cascade-kmeans.desc", Settings.R_STRING);
+		return Settings.text("cluster.r.cascade-kmeans.desc", Settings.R_STRING) + "\n\n"
+				+ Settings.text("distance.desc");
 	}
 
 	@Override
@@ -94,6 +99,14 @@ public class CascadeKMeansRClusterer extends AbstractRClusterer
 	public int getMinK()
 	{
 		return minK.getMinValue();
+	}
+
+	@Override
+	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
+	{
+		Messages m = super.getMessages(dataset, featureInfo, clusterer);
+		distance.addWarning(m, featureInfo);
+		return m;
 	}
 
 	@Override

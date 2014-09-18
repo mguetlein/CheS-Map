@@ -69,7 +69,7 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
 		Messages m = super.getMessages(dataset, featureInfo, clusterer);
-		if (requiresFeatures() && !featureInfo.featuresSelected)
+		if (requiresFeatures() && !featureInfo.isFeaturesSelected())
 			m.add(Message.errorMessage(Settings.text("error.no-features")));
 		else if (getFixedNumClustersProperty() != null)
 			m.add(Message.infoMessage(Settings.text("cluster.info.fixed-k", getFixedNumClustersProperty()
@@ -105,6 +105,8 @@ public abstract class AbstractDatasetClusterer extends AbstractAlgorithm impleme
 		else
 		{
 			clusterAssignements = cluster(dataset, compounds, features);
+			if (!TaskProvider.isRunning())
+				return;
 			Settings.LOGGER.info("Store cluster results to: " + filename);
 			if (!interactive)
 				ValueFileCache.writeCacheInteger(filename, clusterAssignements);

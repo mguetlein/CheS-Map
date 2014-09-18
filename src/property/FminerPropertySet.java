@@ -69,12 +69,6 @@ public class FminerPropertySet extends FragmentPropertySet
 	}
 
 	@Override
-	public boolean isSizeDynamicHigh(DatasetFile dataset)
-	{
-		return true;
-	}
-
-	@Override
 	public String getDescription()
 	{
 		return "yet to come";
@@ -84,12 +78,6 @@ public class FminerPropertySet extends FragmentPropertySet
 	public Binary getBinary()
 	{
 		return BinHandler.FMINER_BINARY;
-	}
-
-	@Override
-	public String getNameIncludingParams()
-	{
-		return "TODO";
 	}
 
 	@Override

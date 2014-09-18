@@ -26,7 +26,7 @@ public abstract class Abstract3DBuilder extends AbstractAlgorithm implements Thr
 			if (Settings.BIG_DATA)
 				m.add(Message.warningMessage(Settings.text("build3d.slow-and-not-needed")));
 			else
-				m.add(MessageUtil.slowMessage(Settings.text("build3d.slow")));
+				m.add(MessageUtil.slowRuntimeMessage(Settings.text("build3d.slow")));
 		}
 		return m;
 	}

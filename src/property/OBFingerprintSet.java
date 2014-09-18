@@ -527,17 +527,9 @@ public class OBFingerprintSet extends FragmentPropertySet
 	}
 
 	@Override
-	public String getNameIncludingParams()
-	{
-		return toString() + "_" + FragmentProperties.getMatchEngine() + "_" + FragmentProperties.getMinFrequency()
-				+ "_" + FragmentProperties.isSkipOmniFragments();
-	}
-
-	@Override
 	public boolean isSizeDynamicHigh(DatasetFile dataset)
 	{
-		return type == OBFingerprintType.FP2 && dataset.numCompounds() >= 100
-				&& FragmentProperties.getMinFrequency() <= 2;
+		return type == OBFingerprintType.FP2 && FragmentProperties.getMinFrequency() <= 2;
 	}
 
 	@Override

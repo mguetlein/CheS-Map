@@ -47,7 +47,7 @@ public class Sammon3DEmbedder extends AbstractRTo3DEmbedder
 	@Override
 	public String getDescription()
 	{
-		return Settings.text("embed.r.sammon.desc", Settings.R_STRING);
+		return Settings.text("embed.r.sammon.desc", Settings.R_STRING) + "\n\n" + Settings.text("distance.desc");
 	}
 
 	IntegerProperty niter = new IntegerProperty("Maximum number of iterations (niter)", 100);
@@ -107,8 +107,7 @@ public class Sammon3DEmbedder extends AbstractRTo3DEmbedder
 	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
 		Messages m = super.getMessages(dataset, featureInfo, clusterer);
-		//			if (dataset.numCompounds() >= 50)
-		//				m.add(Message.slowMessage(Settings.text("embed.r.smacof.slow", PCAFeature3DEmbedder.getNameStatic())));
+		dist_sim.addWarning(m, featureInfo);
 		return m;
 	}
 

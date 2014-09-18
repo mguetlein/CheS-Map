@@ -78,6 +78,8 @@ public abstract class AbstractRTo3DEmbedder extends Abstract3DEmbedder
 							FileUtil.getAbsolutePathEscaped(new File(featureTableFile)),
 							FileUtil.getAbsolutePathEscaped(tmp), FileUtil.getAbsolutePathEscaped(tmpDist),
 							FileUtil.getAbsolutePathEscaped(tmpInfo) });
+			if (!TaskProvider.isRunning())
+				return null;
 			if (!tmp.exists())
 				throw new IllegalStateException("embedding failed:\n" + errorOut);
 

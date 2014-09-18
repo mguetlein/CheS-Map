@@ -150,6 +150,7 @@ public abstract class SimpleViewWizardPanel extends AbstractWizardPanel //implem
 
 		yesSelected = getAlgProvider().isYesSelectedFromProps();
 		buttonYes.setSelected(yesSelected);
+		buttonNo.setSelected(!yesSelected);
 		if (propPanel != null)
 			propPanel.setEnabled(yesSelected);
 

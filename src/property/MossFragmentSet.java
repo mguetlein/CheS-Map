@@ -1,14 +1,19 @@
 package property;
 
 import java.io.File;
+import java.io.FilterOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import main.Settings;
+import main.TaskProvider;
 import moss.Miner;
+import moss.Miner.MinerAbortable;
 import util.FileUtil;
+import util.StringUtil;
 import data.DatasetFile;
 import data.fragments.FragmentProperties;
 import data.fragments.MatchEngine;
@@ -55,12 +60,13 @@ public class MossFragmentSet extends FragmentPropertySet
 	public boolean isCached(DatasetFile dataset)
 	{
 		String path = getMossResultsFilePath(dataset);
-		return new File(path + "_1").exists() && new File(path + "_2").exists();
+		return Settings.CACHING_ENABLED && new File(path + "_1").exists() && new File(path + "_2").exists();
 	}
 
 	@Override
 	public boolean compute(DatasetFile dataset)
 	{
+		boolean done = false;
 		try
 		{
 			int intMinFreq = FragmentProperties.getMinFrequency();
@@ -94,18 +100,58 @@ public class MossFragmentSet extends FragmentPropertySet
 				FileUtil.writeStringToFile(infile, smiString.toString());
 
 				String cmd[] = new String[] { "-t0", "-ismi", "-s" + minFreq, infile, outfile1, outfile2 };
-				Miner.main(cmd);
+				//				Miner.main(cmd);
 
-				Settings.LOGGER.info("Moss result saved to: " + outfile1);
+				Miner miner = new Miner();
+				miner.setLog(new PrintStream(new FilterOutputStream(null))
+				{
+					@Override
+					public void println(String x)
+					{
+						TaskProvider.debug("MoSS: " + x);
+					}
+
+					@Override
+					public void print(String x)
+					{
+						if (!StringUtil.containsOnly(x, '\b'))
+							TaskProvider.verbose("MoSS: " + x);
+					}
+
+					@Override
+					public void println()
+					{
+					}
+				});
+				miner.init(cmd);
+				miner.setAborter(new MinerAbortable()
+				{
+					@Override
+					public boolean abort()
+					{
+						return !TaskProvider.isRunning();
+					}
+				});
+				miner.run();
+				if (!TaskProvider.isRunning())
+					return false;
+				if (miner.getError() != null)
+					throw miner.getError();
+				miner.stats();
+				Settings.LOGGER.info("MoSS result saved to: " + outfile1);
 			}
 			else
 			{
-				Settings.LOGGER.info("Moss result cached: " + outfile1);
+				Settings.LOGGER.info("MoSS result cached: " + outfile1);
 			}
+			if (!TaskProvider.isRunning())
+				return false;
 			String res1[] = FileUtil.readStringFromFile(outfile1).split("\n");
 			String res2[] = FileUtil.readStringFromFile(outfile2).split("\n");
 			if (res1.length != res2.length)
-				throw new IllegalStateException();
+				throw new IllegalStateException("MoSS failed");
+			if (res1.length == 0 || (res1.length == 1 && res1[0].trim().length() == 0))
+				throw new IllegalStateException("MoSS failed");
 			List<DefaultFragmentProperty> l = new ArrayList<DefaultFragmentProperty>();
 			for (int i = 0; i < res1.length; i++)
 			{
@@ -131,27 +177,36 @@ public class MossFragmentSet extends FragmentPropertySet
 				l.add(p);
 			}
 			props.put(dataset, l);
-
 			if (!minMinF.containsKey(dataset) || minMinF.get(dataset) > intMinFreq)
 			{
 				minMinF.put(dataset, intMinFreq);
 				lastProps.put(dataset, l);
 			}
-
-			updateFragments();
-			return true;
+			done = true;
 		}
-		catch (Exception e)
+		catch (Throwable e)
 		{
+			TaskProvider.warning("MoSS failed", e.getMessage());
 			Settings.LOGGER.error(e);
 			return false;
 		}
+		finally
+		{
+			if (!done && isCached(dataset))
+			{
+				String path = getMossResultsFilePath(dataset);
+				new File(path + "_1").delete();
+				new File(path + "_2").delete();
+			}
+		}
+		updateFragments();
+		return true;
 	}
 
 	@Override
 	public boolean isSizeDynamicHigh(DatasetFile dataset)
 	{
-		return true;
+		return FragmentProperties.getMinFrequency() <= 10;
 	}
 
 	@Override
@@ -163,7 +218,7 @@ public class MossFragmentSet extends FragmentPropertySet
 	@Override
 	public boolean isComputationSlow()
 	{
-		return false;
+		return true;
 	}
 
 	@Override

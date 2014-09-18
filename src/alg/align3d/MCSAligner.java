@@ -67,7 +67,7 @@ public class MCSAligner extends Abstract3DAligner
 		{
 			Messages m = super.getMessages(dataset, featureInfo, clusterer);
 			if (dataset.numCompounds() >= 50)
-				m.add(MessageUtil.slowMessage(Settings.text("align.mcs.slow", MaxFragAligner.getNameStatic())));
+				m.add(MessageUtil.slowRuntimeMessage(Settings.text("align.mcs.slow", MaxFragAligner.getNameStatic())));
 			return m;
 		}
 	}

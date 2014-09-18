@@ -360,12 +360,6 @@ public class CDKPropertySet extends AbstractPropertySet
 	}
 
 	@Override
-	public boolean isSizeDynamicHigh(DatasetFile dataset)
-	{
-		return false;
-	}
-
-	@Override
 	public boolean isComputationSlow()
 	{
 		return desc.isComputationSlow();

@@ -72,8 +72,8 @@ public class TSNEFeature3DEmbedder extends AbstractRTo3DEmbedder
 	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
 		Messages m = super.getMessages(dataset, featureInfo, clusterer);
-		if (dataset.numCompounds() >= 50 && featureInfo.isNumFeaturesHigh())
-			m.add(MessageUtil.slowMessage(featureInfo.getNumFeaturesWarning()));
+		if (featureInfo.isNumPairsHigh())
+			m.add(MessageUtil.slowRuntimeMessage(featureInfo.getNumPairsWarning()));
 		return m;
 	}
 

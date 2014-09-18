@@ -60,7 +60,7 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
 	{
 		Messages m = super.getMessages(dataset, featureInfo, clusterer);
-		if (requiresFeatures() && !featureInfo.featuresSelected)
+		if (requiresFeatures() && !featureInfo.isFeaturesSelected())
 			m.add(Message.errorMessage(Settings.text("error.no-features")));
 		//		else if (requiresFeatures() && !featureInfo.numericFeaturesSelected
 		//				&& (featureInfo.numFeatures < dataset.numCompounds() * 0.25))
@@ -135,6 +135,8 @@ public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements Th
 		else
 		{
 			positions = embed(dataset, instances, features); //, trainInstances
+			if (!TaskProvider.isRunning())
+				return;
 			TaskProvider.debug("Store embedding results to: " + embedFilename);
 			ValueFileCache.writeCachePosition2(embedFilename, positions);
 			if (!Settings.BIG_DATA && instances.size() > 2)

@@ -148,12 +148,6 @@ public class IntegratedPropertySet extends AbstractPropertySet
 	}
 
 	@Override
-	public boolean isSizeDynamicHigh(DatasetFile dataset)
-	{
-		return false;
-	}
-
-	@Override
 	public boolean isComputationSlow()
 	{
 		return false;

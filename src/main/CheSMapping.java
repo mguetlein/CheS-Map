@@ -293,6 +293,8 @@ public class CheSMapping
 		{
 			clustering.setDatasetClusterer(clusterer);
 			clusterer.clusterDataset(dataset, clustering.getCompounds(), featuresWithInfo);
+			if (!TaskProvider.isRunning())
+				return;
 		}
 		catch (Exception e)
 		{
@@ -356,6 +358,8 @@ public class CheSMapping
 
 			clustering.setThreeDEmbedder(embedder);
 			embedder.embedDataset(dataset, clustering.getCompounds(), featuresWithInfo); //, train
+			if (!TaskProvider.isRunning())
+				return;
 		}
 		catch (Exception e)
 		{

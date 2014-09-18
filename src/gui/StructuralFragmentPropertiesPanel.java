@@ -72,6 +72,22 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 		return new SummaryPanel(owner);
 	}
 
+	public void showDialog(Window owner)
+	{
+		babelPanel.setVisible(true);
+		SwingUtil.showInDialog(StructuralFragmentPropertiesPanel.this, "Settings for structural fragments", null,
+				new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						babelPanel.setVisible(FragmentProperties.getMatchEngine() == MatchEngine.OpenBabel);
+					}
+				}, Settings.TOP_LEVEL_FRAME);
+		if (owner != null)
+			owner.setVisible(true);
+	}
+
 	class SummaryPanel extends JPanel
 	{
 		LinkButton l;
@@ -93,18 +109,7 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 						@Override
 						public void run()
 						{
-							babelPanel.setVisible(true);
-							SwingUtil.showInDialog(StructuralFragmentPropertiesPanel.this,
-									"Settings for structural fragments", null, new Runnable()
-									{
-										@Override
-										public void run()
-										{
-											babelPanel.setVisible(FragmentProperties.getMatchEngine() == MatchEngine.OpenBabel);
-										}
-									}, Settings.TOP_LEVEL_FRAME);
-							if (owner != null)
-								owner.setVisible(true);
+							showDialog(owner);
 						}
 					});
 				}

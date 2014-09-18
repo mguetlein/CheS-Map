@@ -16,6 +16,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -53,6 +54,7 @@ import dataInterface.CompoundPropertySet;
 import dataInterface.CompoundPropertySet.Type;
 import dataInterface.CompoundPropertySetUtil;
 import dataInterface.FragmentPropertySet;
+import dataInterface.NominalProperty;
 
 public class FeatureWizardPanel extends WizardPanel
 {
@@ -448,41 +450,38 @@ public class FeatureWizardPanel extends WizardPanel
 
 		selector.repaintSelector();
 
+		featureInfo = new FeatureInfo(dataset, selector.getSelected());
+		numFeaturesLabel.setText("Number of selected features: " + featureInfo.numFeatures
+				+ (featureInfo.numFeaturesUnknown ? " + ?" : ""));
+
 		boolean notComputed = false;
+		boolean slowMiningFeatureSelected = false;
 		boolean slowFeaturesSelected = false;
-		msg = null;
-		featureInfo = new FeatureInfo();
 		for (CompoundPropertySet set : selector.getSelected())
 		{
-			featureInfo.featuresSelected = true;
-			if (set.isSizeDynamic() && !set.isComputed(dataset))
-			{
-				featureInfo.numFeaturesUnknown = true;
-				if (set.isSizeDynamicHigh(dataset))
-					featureInfo.numFeaturesUnknownHigh = true;
-			}
-			else
-			{
-				int num = set.getSize(dataset);
-				featureInfo.numFeatures += num;
-			}
-			if (set instanceof FragmentPropertySet)
-				featureInfo.smartsFeaturesSelected = true;
 			if (!set.isComputed(dataset))
 				notComputed = true;
 			if (!set.isComputed(dataset) && !(Settings.CACHING_ENABLED && set.isCached(dataset))
 					&& set.isComputationSlow())
+			{
 				slowFeaturesSelected = true;
-			if (set.getType() == Type.NUMERIC)
-				featureInfo.numericFeaturesSelected = true;
-			if (set.getType() == Type.NOMINAL)
-				featureInfo.nominalFeaturesSelected = true;
+				if (set instanceof FragmentPropertySet && set.isSizeDynamic())
+					slowMiningFeatureSelected = true;
+			}
 		}
-		numFeaturesLabel.setText("Number of selected features: " + featureInfo.numFeatures
-				+ (featureInfo.numFeaturesUnknown ? " + ?" : ""));
-
-		if (slowFeaturesSelected)
-			msg = MessageUtil.slowMessages(Settings.text("features.slow"));
+		msg = null;
+		if (slowMiningFeatureSelected)
+			msg = Messages.slowMessage(Settings.text("features.slowMining"), new AbstractAction(
+					"Settings for fragments")
+			{
+				@Override
+				public void actionPerformed(ActionEvent e)
+				{
+					fragmentProperties.showDialog(wizard);
+				}
+			});
+		else if (slowFeaturesSelected)
+			msg = MessageUtil.slowRuntimeMessages(Settings.text("features.slow"));
 		loadFeaturesButton.setVisible(notComputed);
 		if (!selfUpdate)
 			wizard.update();
@@ -498,31 +497,96 @@ public class FeatureWizardPanel extends WizardPanel
 
 	public static class FeatureInfo
 	{
-		public int numFeatures = 0;
-		public boolean numFeaturesUnknown = false;
-		public boolean numFeaturesUnknownHigh = false;
-		public boolean featuresSelected = false;
-		public boolean numericFeaturesSelected = false;
-		public boolean nominalFeaturesSelected = false;
-		public boolean smartsFeaturesSelected = false;
+		private int numFeatures = 0;
+		private int numCompounds = 0;
+		private boolean numFeaturesUnknown = false;
+		private boolean numUnknwonFeaturesHigh = false;
 
-		public boolean isNumFeaturesHigh()
+		private boolean featuresSelected = false;
+		private boolean numericFeature = false;
+		private boolean nonBinaryNominalFeature = false;
+		private boolean fragmentFeature = false;
+
+		public FeatureInfo(DatasetFile d, CompoundPropertySet sets[])
 		{
-			if (numFeatures >= 1000)
+			numCompounds = d.numCompounds();
+			for (CompoundPropertySet set : sets)
+			{
+				featuresSelected = true;
+				if (set.getType() == Type.NUMERIC)
+					numericFeature = true;
+				else if (set.getType() == Type.NOMINAL)
+				{
+					if (set instanceof FragmentPropertySet)
+						fragmentFeature = true;
+					else
+						for (int i = 0; i < set.getSize(d); i++)
+							if (((NominalProperty) set.get(d, i)).getDomain().length > 2)
+								nonBinaryNominalFeature = true;
+				}
+				else
+					throw new IllegalStateException();
+
+				if (set.isSizeDynamic() && !set.isComputed(d))
+				{
+					numFeaturesUnknown = true;
+					if (set.isSizeDynamicHigh(d))
+						numUnknwonFeaturesHigh = true;
+				}
+				else
+				{
+					int num = set.getSize(d);
+					numFeatures += num;
+				}
+			}
+		}
+
+		public boolean isFeaturesSelected()
+		{
+			return featuresSelected;
+		}
+
+		public boolean isFragmentFeatureSelected()
+		{
+			return fragmentFeature;
+		}
+
+		public boolean isNumericFeatureSelected()
+		{
+			return numericFeature;
+		}
+
+		public boolean isOnlyBinaryFeaturesSelected()
+		{
+			if (!featuresSelected)
+				throw new IllegalStateException();
+			return !numericFeature && !nonBinaryNominalFeature;
+		}
+
+		public boolean isOnlyNominalFeaturesSelected()
+		{
+			if (!featuresSelected)
+				throw new IllegalStateException();
+			return !numericFeature;
+		}
+
+		public boolean isNumPairsHigh()
+		{
+			if (numFeatures * numCompounds >= 250000)
 				return true;
 			if (numFeaturesUnknown)
-				return numFeaturesUnknownHigh;
+				return numUnknwonFeaturesHigh;
 			return false;
 		}
 
-		public String getNumFeaturesWarning()
+		public String getNumPairsWarning()
 		{
-			if (!isNumFeaturesHigh())
+			if (!isNumPairsHigh())
 				throw new IllegalStateException();
-			String msg = "The selected algorithm could run a long time because the number of features is ";
-			if (numFeatures >= 1000)
+			String msg = "The selected algorithm could run a long time because the number of compound feature pairs is ";
+			if (numFeatures * numCompounds >= 250000)
 			{
-				msg += "high (" + (numFeaturesUnknown ? ">=" : "") + numFeatures + ").";
+				msg += "high (" + (numFeaturesUnknown ? ">=" : "") + (numFeatures * numCompounds / 1000) + "k).";
 				//				if (smartsFeaturesSelected)
 				//					msg += " You could try to increase minimum-frequency ";
 				//				else

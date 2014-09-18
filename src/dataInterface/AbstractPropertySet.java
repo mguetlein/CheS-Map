@@ -3,6 +3,7 @@ package dataInterface;
 import java.util.HashSet;
 
 import util.ArrayUtil;
+import data.DatasetFile;
 
 public abstract class AbstractPropertySet implements CompoundPropertySet
 {
@@ -55,4 +56,9 @@ public abstract class AbstractPropertySet implements CompoundPropertySet
 		return false;
 	}
 
+	@Override
+	public boolean isSizeDynamicHigh(DatasetFile dataset)
+	{
+		throw new IllegalStateException();
+	}
 }

@@ -46,7 +46,7 @@ public abstract class Abstract3DAligner extends AbstractAlgorithm implements Thr
 			return Messages.warningMessage(Settings.text("align.warn.ignored-because-big-data"));
 		{
 			Messages m = super.getMessages(dataset, featureInfo, clusterer);
-			if (requiresStructuralFragments() && !featureInfo.smartsFeaturesSelected)
+			if (requiresStructuralFragments() && !featureInfo.isFragmentFeatureSelected())
 				m.add(Message.errorMessage(Settings.text("align.error.no-struct")));
 			return m;
 		}

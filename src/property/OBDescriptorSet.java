@@ -243,7 +243,7 @@ public class OBDescriptorSet implements CompoundPropertySet
 	@Override
 	public boolean isSizeDynamicHigh(DatasetFile dataset)
 	{
-		return false;
+		throw new IllegalStateException();
 	}
 
 	@Override

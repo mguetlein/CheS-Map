@@ -139,12 +139,6 @@ public class CDKFingerprintSet extends FragmentPropertySet
 	}
 
 	@Override
-	public boolean isSizeDynamicHigh(DatasetFile dataset)
-	{
-		return false;
-	}
-
-	@Override
 	public boolean isComputationSlow()
 	{
 		return fingerprinter.getSize() > 1000;

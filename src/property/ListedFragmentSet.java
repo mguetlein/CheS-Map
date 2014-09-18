@@ -252,19 +252,6 @@ public class ListedFragmentSet extends FragmentPropertySet
 	}
 
 	@Override
-	public String getNameIncludingParams()
-	{
-		return toString() + "_" + FragmentProperties.getMatchEngine() + "_" + FragmentProperties.getMinFrequency()
-				+ "_" + FragmentProperties.isSkipOmniFragments();
-	}
-
-	@Override
-	public boolean isSizeDynamicHigh(DatasetFile dataset)
-	{
-		return false;
-	}
-
-	@Override
 	public boolean isComputationSlow()
 	{
 		return FragmentProperties.getMatchEngine() == MatchEngine.CDK && fragments.size() > 1000;
