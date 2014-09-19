@@ -509,7 +509,7 @@ public class FeatureWizardPanel extends WizardPanel
 
 		public FeatureInfo(DatasetFile d, CompoundPropertySet sets[])
 		{
-			numCompounds = d.numCompounds();
+			numCompounds = (d == null ? 0 : d.numCompounds());
 			for (CompoundPropertySet set : sets)
 			{
 				featuresSelected = true;
