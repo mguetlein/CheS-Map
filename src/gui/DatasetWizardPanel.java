@@ -119,8 +119,11 @@ public class DatasetWizardPanel extends WizardPanel
 						}
 						else
 						{
-							PropHandler.put("dataset-current-dir", f.getParent());
-							PropHandler.storeProperties();
+							if (f.getParent() != null)
+							{
+								PropHandler.put("dataset-current-dir", f.getParent());
+								PropHandler.storeProperties();
+							}
 							//textField.setText(f.getPath());
 
 							if (FileUtil.getFilenamExtension(f.getAbsolutePath()).matches("(?i)ches"))
