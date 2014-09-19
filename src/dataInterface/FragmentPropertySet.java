@@ -183,15 +183,6 @@ public abstract class FragmentPropertySet implements CompoundPropertySet
 
 	public abstract boolean hasFixedMatchEngine();
 
-	@Override
-	public boolean isSizeDynamicHigh(DatasetFile dataset)
-	{
-		if (isSizeDynamic() && !isComputed(dataset))
-			throw new IllegalStateException("should be overridden");
-		else
-			throw new IllegalStateException("should not be called");
-	}
-
 	//	public void clearProperties()
 	//	{
 	//		props.clear();

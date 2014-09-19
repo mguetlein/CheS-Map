@@ -262,4 +262,10 @@ public class ListedFragmentSet extends FragmentPropertySet
 	{
 		return false;
 	}
+
+	@Override
+	public boolean isSizeDynamicHigh(DatasetFile dataset)
+	{
+		return false;
+	}
 }

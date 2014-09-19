@@ -97,4 +97,10 @@ public class FminerPropertySet extends FragmentPropertySet
 	{
 		return true;
 	}
+
+	@Override
+	public boolean isSizeDynamicHigh(DatasetFile dataset)
+	{
+		return false;
+	}
 }

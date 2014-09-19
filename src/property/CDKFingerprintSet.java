@@ -149,4 +149,10 @@ public class CDKFingerprintSet extends FragmentPropertySet
 	{
 		return true;
 	}
+
+	@Override
+	public boolean isSizeDynamicHigh(DatasetFile dataset)
+	{
+		return false;
+	}
 }

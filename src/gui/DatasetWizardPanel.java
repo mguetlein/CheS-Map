@@ -2,37 +2,39 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileFilter;
 
 import main.PropHandler;
 import main.Settings;
+import util.FileUtil;
+import util.ListUtil;
+import util.MessageUtil;
+import util.OSUtil;
+import util.StringUtil;
 import util.SwingUtil;
 import workflow.DatasetLoader;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.factories.ButtonBarFactory;
 import com.jgoodies.forms.layout.FormLayout;
 
 import connect.ChEMBLSearch;
@@ -40,13 +42,10 @@ import data.DatasetFile;
 
 public class DatasetWizardPanel extends WizardPanel
 {
-	JTextField textField;
 	JFileChooser chooser;
-	JList<DatasetFile> recentlyUsed;
-
-	JButton buttonLoad;
 
 	JLabel labelFile;
+	JLabel labelPath;
 	JLabel labelSize;
 	JLabel labelProps;
 	JLabel labelNumericProps;
@@ -55,6 +54,7 @@ public class DatasetWizardPanel extends WizardPanel
 
 	WizardDialog wizard;
 	Vector<DatasetFile> oldDatasets;
+	List<String> oldWorkflows;
 
 	private DatasetFile dataset;
 
@@ -69,41 +69,15 @@ public class DatasetWizardPanel extends WizardPanel
 		DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout(
 				"pref,5dlu,pref:grow(0.99),5dlu,right:p:grow(0.01),5dlu,right:p:grow(0.01)"));
 		int allCols = 7;
-		builder.append(new JLabel(
-				"Select dataset file (Copy a http link into the textfield to load a dataset from the internet):"),
-				allCols);
+
+		JLabel l = new JLabel("Select Dataset:");
+		l.setFont(l.getFont().deriveFont(Font.BOLD));
+		builder.append(l, allCols);
 		builder.nextLine();
-		textField = new JTextField(45);
-		textField.getDocument().addDocumentListener(new DocumentAdapter()
-		{
-			@Override
-			public void update(DocumentEvent e)
-			{
-				if (DatasetWizardPanel.this.wizard.isBlocked())
-					return;
-				String text = textField.getText().trim();
-				if (dataset != null && !dataset.getPath().equals(text))
-				{
-					dataset = null;
-					updateDataset();
-					buttonLoad.setEnabled(true);
-				}
-				else if (dataset == null)
-					buttonLoad.setEnabled(true);
-			}
-		});
-		textField.addKeyListener(new KeyAdapter()
-		{
-			public void keyPressed(KeyEvent e)
-			{
-				if (e.getKeyCode() == KeyEvent.VK_ENTER)
-				{
-					load(textField.getText());
-				}
-			}
-		});
-		builder.append(textField, 3);
-		JButton search = new JButton("Open file...");
+
+		//				"Select dataset file (Copy a http link into the textfield to load a dataset from the internet):"),
+
+		DownArrowButton search = new DownArrowButton("Open file");
 		search.addActionListener(new ActionListener()
 		{
 			@Override
@@ -115,6 +89,14 @@ public class DatasetWizardPanel extends WizardPanel
 					if (dir == null)
 						dir = System.getProperty("user.home");
 					chooser = new JFileChooser(new File(dir));
+					JPanel p = new JPanel(new BorderLayout());
+					MessageLabel m = new MessageLabel(
+							Message.infoMessage(
+									"To load a web file, paste URL into text field. Many chemical dataset formats supported (e.g., SDF, mol, cml, smi).",
+									MessageUtil.createURLAction(Settings.HOMEPAGE_FORMATS)));
+					m.setBorder(new EmptyBorder(5, 5, 5, 5));
+					p.add(m, BorderLayout.NORTH);
+					chooser.setAccessory(p);
 				}
 				int ret = chooser.showOpenDialog(DatasetWizardPanel.this.wizard);
 				if (ret == JFileChooser.APPROVE_OPTION)
@@ -122,15 +104,44 @@ public class DatasetWizardPanel extends WizardPanel
 					File f = chooser.getSelectedFile();
 					if (f != null)
 					{
-						PropHandler.put("dataset-current-dir", f.getParent());
-						PropHandler.storeProperties();
-						//textField.setText(f.getPath());
-						load(f.getPath());
+						String p = f.getAbsolutePath();
+						if (p.contains("http:"))
+						{
+							p = p.substring(p.indexOf("http:"));
+							if (!p.startsWith("http://"))
+							{
+								if (OSUtil.isWindows())
+									p = p.replaceAll("\\\\", "/");
+								if (!p.startsWith("http://"))
+									p = p.replaceFirst("http:/", "http://");
+							}
+							load(p);
+						}
+						else
+						{
+							PropHandler.put("dataset-current-dir", f.getParent());
+							PropHandler.storeProperties();
+							//textField.setText(f.getPath());
+
+							if (FileUtil.getFilenamExtension(f.getAbsolutePath()).matches("(?i)ches"))
+								importFile(f);
+							else
+								load(f.getPath());
+						}
 					}
 				}
 			}
 		});
-		builder.append(search);
+
+		DownArrowButton importButton = new DownArrowButton("Import wizard settings");
+		importButton.addActionListener(new ActionListener()
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				doImport();
+			}
+		});
 
 		JButton chemblSearch = new JButton("Search ChEMBL");
 		ActionListener al = new ActionListener()
@@ -143,85 +154,71 @@ public class DatasetWizardPanel extends WizardPanel
 			}
 		};
 		chemblSearch.addActionListener(al);
-		builder.append(chemblSearch);
+
+		JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+		p.setBorder(new EmptyBorder(0, -10, 10, 0));
+		p.add(search);
+		p.add(importButton);
+		p.add(chemblSearch);
+		builder.append(p, allCols);
 		builder.nextLine();
 
 		oldDatasets = datasetLoader.loadRecentlyLoadedDatasets();
-		final DefaultListModel<DatasetFile> m = new DefaultListModel<DatasetFile>();
-		for (DatasetFile d : oldDatasets)
-			m.addElement(d);
-		recentlyUsed = new JList<DatasetFile>(m);
-		recentlyUsed.setFont(recentlyUsed.getFont().deriveFont(Font.PLAIN));
-		recentlyUsed.setCellRenderer(new DefaultListCellRenderer()
+		JPopupMenu recentlyP = new JPopupMenu();
+		for (final DatasetFile d : oldDatasets)
 		{
-			@Override
-			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
-					boolean cellHasFocus)
+			//String s = "<html><b>" + d.getFullName() + "</b><br><span style=\"font-size:75%\">(" + d.getLocalPath()
+			String s = "<html><b>" + d.getName() + "</b><br><span style=\"font-size:75%\">(" + d.getPath()
+					+ ")</span></html>";
+			JMenuItem i = new JMenuItem(s);
+			i.setFont(i.getFont().deriveFont(Font.PLAIN));
+			i.addActionListener(new ActionListener()
 			{
-				DatasetFile d = (DatasetFile) value;
-				String s = "<html><b>" + d.getFullName() + "</b><br>(" + d.getLocalPath() + ")</html>";
-				setBorder(new EmptyBorder(0, 0, 3, 0));
-				return super.getListCellRendererComponent(list, s, index, isSelected, cellHasFocus);
-			}
-		});
-		recentlyUsed.setVisibleRowCount(7);
-		recentlyUsed.addListSelectionListener(new ListSelectionListener()
-		{
+				@Override
+				public void actionPerformed(ActionEvent e)
+				{
+					load(d.getPath());
+				}
+			});
+			recentlyP.add(i);
+		}
+		search.setPopupMenu(recentlyP);
 
-			@Override
-			public void valueChanged(ListSelectionEvent e)
-			{
-				if (recentlyUsed.getSelectedIndex() != -1)
-				{
-					//textField.setText(((Dataset) recentlyUsed.getSelectedValue()).getPath());
-					load(((DatasetFile) recentlyUsed.getSelectedValue()).getPath());
-				}
-			}
-		});
-		recentlyUsed.addKeyListener(new KeyAdapter()
+		String dir = PropHandler.get("workflow-list");
+		if (dir != null)
+			oldWorkflows = StringUtil.split(dir);
+		else
+			oldWorkflows = new ArrayList<String>();
+		JPopupMenu recentlyW = new JPopupMenu();
+		for (final String w : oldWorkflows)
 		{
-			public void keyReleased(KeyEvent e)
+			String s = "<html><b>" + FileUtil.getFilename(w) + "</b><br><span style=\"font-size:75%\">(" + w
+					+ ")</span></html>";
+			JMenuItem i = new JMenuItem(s);
+			i.setFont(i.getFont().deriveFont(Font.PLAIN));
+			i.addActionListener(new ActionListener()
 			{
-				if (e.getKeyCode() == KeyEvent.VK_DELETE && recentlyUsed.getSelectedIndex() != -1)
+				@Override
+				public void actionPerformed(ActionEvent e)
 				{
-					oldDatasets.remove(recentlyUsed.getSelectedIndex());
-					m.remove(recentlyUsed.getSelectedIndex());
+					importFile(new File(w));
 				}
-			}
-		});
+			});
+			recentlyW.add(i);
+		}
+		importButton.setPopupMenu(recentlyW);
 
 		//		builder.appendRow("top:pref:grow");
 
-		JScrollPane scroll = new JScrollPane(recentlyUsed);
-		HideablePanel hide = new HideablePanel("Recently used datasets", true);
-		hide.setHorizontalAlignement(SwingConstants.RIGHT);
-		hide.setBorder(new EmptyBorder(10, 0, 10, 0));
-		hide.addComponent(scroll);
-		builder.append(hide, allCols);
-		builder.nextLine();
-
-		buttonLoad = new JButton("Load Dataset");
-		buttonLoad.setEnabled(false);
-		buttonLoad.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(ActionEvent e)
-			{
-				load(textField.getText());
-			}
-		});
-
-		builder.append(ButtonBarFactory.buildRightAlignedBar(buttonLoad), allCols);
-		builder.nextLine();
-
 		//		builder.appendParagraphGapRow();
 		//		builder.nextLine();
-		JLabel l = new JLabel("Dataset Properties:");
+		l = new JLabel("Dataset Properties:");
 		l.setFont(l.getFont().deriveFont(Font.BOLD));
 		builder.append(l);
 		builder.nextLine();
 
 		labelFile = new JLabel("-");
+		labelPath = new JLabel("-");
 		labelSize = new JLabel("-");
 		labelProps = new JLabel("-");
 		labelNumericProps = new JLabel("-");
@@ -256,6 +253,10 @@ public class DatasetWizardPanel extends WizardPanel
 
 		builder.append("File:");
 		builder.append(labelFile, 3);
+		builder.nextLine();
+
+		builder.append("Path:");
+		builder.append(labelPath, 3);
 		builder.nextLine();
 
 		builder.append("Num compounds:");
@@ -302,28 +303,78 @@ public class DatasetWizardPanel extends WizardPanel
 		}
 	}
 
+	private void doImport()
+	{
+		JFileChooser chooser = null;
+		String dir = PropHandler.get("workflow-import-dir");
+		if (dir == null)
+			dir = PropHandler.get("workflow-export-dir");
+		if (dir == null)
+			dir = System.getProperty("user.home");
+		chooser = new JFileChooser(new File(dir));
+		JPanel p = new JPanel(new BorderLayout());
+		MessageLabel m = new MessageLabel(Message.infoMessage(
+				"Imports settings for all wizard steps. Settings can be exported in the viewer.",
+				MessageUtil.createURLAction(Settings.HOMEPAGE_EXPORT_SETTINGS)));
+		m.setBorder(new EmptyBorder(5, 5, 5, 5));
+		p.add(m, BorderLayout.NORTH);
+		chooser.setAccessory(p);
+		chooser.setFileFilter(new FileFilter()
+		{
+			@Override
+			public String getDescription()
+			{
+				return "CheS-Mapper Wizard Settings File (*.ches)";
+			}
+
+			@Override
+			public boolean accept(File f)
+			{
+				return f.isDirectory() || FileUtil.getFilenamExtension(f.getAbsolutePath()).matches("(?i)ches");
+			}
+		});
+		chooser.showOpenDialog(this);
+		final File f = chooser.getSelectedFile();
+		if (f != null && FileUtil.getFilenamExtension(f.getAbsolutePath()).matches("(?i)ches"))
+		{
+			importFile(f);
+		}
+	}
+
+	public void importFile(File f)
+	{
+		String p = f.getAbsolutePath();
+		if (oldWorkflows.contains(p))
+			oldWorkflows.remove(p);
+		oldWorkflows.add(0, p);
+		while (oldWorkflows.size() > 12)
+			oldWorkflows.remove(12);
+		PropHandler.put("workflow-list", ListUtil.toCSVString(oldWorkflows));
+		PropHandler.put("workflow-import-dir", f.getParent());
+		PropHandler.storeProperties();
+		((CheSMapperWizard) DatasetWizardPanel.this.wizard).initImport(f);
+	}
+
 	private void updateDataset()
 	{
 		if (dataset == null)
 		{
 			labelFile.setText("-");
+			labelPath.setText("-");
 			labelProps.setText("-");
 			labelSize.setText("-");
 			label3D.setText("-");
 			comboBoxBigData.setEnabled(false);
-			recentlyUsed.clearSelection();
 		}
 		else
 		{
-			labelFile.setText(dataset.getFullName());
+			labelFile.setText(dataset.getName());
+			labelPath.setText(dataset.getPath());
+			//			labelFile.setText(dataset.getFullName());
+			//			labelPath.setText(dataset.getLocalPath());
 			labelProps.setText(dataset.getIntegratedProperties().length + "");
 			labelSize.setText(dataset.numCompounds() + "");
 			label3D.setText(dataset.has3D() + "");
-			if (oldDatasets.indexOf(dataset) == -1)
-				if (oldDatasets.contains(dataset))
-					recentlyUsed.setSelectedValue(dataset, true);
-				else
-					recentlyUsed.clearSelection();
 			comboBoxBigData.setEnabled(true);
 		}
 		wizard.update();
@@ -351,9 +402,8 @@ public class DatasetWizardPanel extends WizardPanel
 			throw new IllegalArgumentException();
 
 		wizard.block(f);
-		if (!f.equals(textField.getText()))
-			textField.setText(f);
 		labelFile.setText("-");
+		labelPath.setText("-");
 		labelProps.setText("-");
 		labelNumericProps.setText("-");
 		labelSize.setText("-");
@@ -377,14 +427,7 @@ public class DatasetWizardPanel extends WizardPanel
 						public void run()
 						{
 							if (dataset != null)
-							{
-								if (dataset.isLocal() && !dataset.getLocalPath().equals(textField.getText()))
-									textField.setText(dataset.getLocalPath());
 								updateDataset();
-								buttonLoad.setEnabled(false);
-							}
-							else
-								buttonLoad.setEnabled(textField.getText().length() > 0);
 							wizard.unblock(f);
 						}
 					});
@@ -400,6 +443,8 @@ public class DatasetWizardPanel extends WizardPanel
 		if (oldDatasets.contains(dataset))
 			oldDatasets.removeElement(dataset);
 		oldDatasets.add(0, dataset);
+		while (oldDatasets.size() > 12)
+			oldDatasets.remove(12);
 		datasetLoader.store(oldDatasets, (Boolean) comboBoxBigData.getSelectedItem());
 	}
 

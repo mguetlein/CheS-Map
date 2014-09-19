@@ -14,29 +14,32 @@ import main.Settings;
 
 public class MessageUtil
 {
-	static Action RUNTIME_ACTION = new AbstractAction("more...")
+	public static Action createURLAction(final String link)
 	{
-		@Override
-		public void actionPerformed(ActionEvent e)
+		return new AbstractAction("more...")
 		{
-			try
+			@Override
+			public void actionPerformed(ActionEvent e)
 			{
-				Desktop.getDesktop().browse(new URI(Settings.HOMEPAGE_RUNTIME));
+				try
+				{
+					Desktop.getDesktop().browse(new URI(link));
+				}
+				catch (Exception ex)
+				{
+					ex.printStackTrace();
+				}
 			}
-			catch (Exception ex)
-			{
-				ex.printStackTrace();
-			}
-		}
-	};
+		};
+	}
 
 	public static Messages slowRuntimeMessages(String msg)
 	{
-		return Messages.slowMessage(msg, RUNTIME_ACTION);
+		return Messages.slowMessage(msg, createURLAction(Settings.HOMEPAGE_RUNTIME));
 	}
 
 	public static Message slowRuntimeMessage(String msg)
 	{
-		return Message.slowMessage(msg, RUNTIME_ACTION);
+		return Message.slowMessage(msg, createURLAction(Settings.HOMEPAGE_RUNTIME));
 	}
 }

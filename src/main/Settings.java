@@ -239,6 +239,8 @@ public class Settings
 	public static String HOMEPAGE_RUNTIME = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki/index.php?title=Supported_Formats,_Dataset_Size_and_Algorithm_Runtimes";
 	public static String HOMEPAGE_DOCUMENTATION = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki";
 	public static String HOMEPAGE_SPECIFICITY = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki/index.php?title=Working_with_the_3D_Viewer#Sorting_of_feature_values";
+	public static String HOMEPAGE_FORMATS = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki/index.php?title=Supported_Dataset_Formats_and_Size";
+	public static String HOMEPAGE_EXPORT_SETTINGS = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki/index.php?title=Export/Import_Wizard_Settings";
 
 	public static String CONTACT = "Martin Gütlein (ches-mapper@informatik.uni-freiburg.de)";
 
