@@ -29,18 +29,13 @@ public interface ThreeDEmbedder extends Algorithm
 
 	public DistanceMatrix getFeatureDistanceMatrix();
 
-	//	public double getRSquare();
+	public double getCorrelation(CorrelationType t);
 
-	public double getCCC();
-
-	//	public CompoundPropertyEmbedQuality getEmbedQuality(CompoundProperty p, DatasetFile dataset,
-	//			List<MolecularPropertyOwner> instances);
+	public CorrelationProperty getCorrelationProperty(CorrelationType t);
 
 	public boolean isLinear();
 
 	public boolean isLocalMapping();
-
-	public CompoundProperty getCCCProperty();
 
 	public DistanceMeasure getDistanceMeasure();
 

@@ -75,7 +75,7 @@ public class SMACOF3DEmbedder extends AbstractRTo3DEmbedder
 	{
 		Messages m = super.getMessages(dataset, featureInfo, clusterer);
 		if (dataset.numCompounds() >= 50)
-			m.add(MessageUtil.slowMessage(Settings.text("embed.r.smacof.slow", Sammon3DEmbedder.getNameStatic())));
+			m.add(MessageUtil.slowRuntimeMessage(Settings.text("embed.r.smacof.slow", Sammon3DEmbedder.getNameStatic())));
 		return m;
 	}
 

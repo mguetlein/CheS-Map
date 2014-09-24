@@ -231,7 +231,7 @@ public class Tools
 		return m;
 	}
 
-	public static double[] min(Vector points)
+	public static double[] min(Vector<?> points)
 	{
 		if (points == null)
 			return null;
@@ -253,7 +253,7 @@ public class Tools
 		return m;
 	}
 
-	public static double[] max(Vector points)
+	public static double[] max(Vector<?> points)
 	{
 		if (points == null)
 			return null;
@@ -300,7 +300,7 @@ public class Tools
 		return m;
 	}
 
-	public static double[] mean(Vector points)
+	public static double[] mean(Vector<?> points)
 	{
 		if (points == null)
 			return null;
@@ -329,7 +329,7 @@ public class Tools
 		return Math.round(1 + 3.332 * Math.log(numberOfPoints));
 	}
 
-	public static double Sxx(Vector points, double[] mx)
+	public static double Sxx(Vector<?> points, double[] mx)
 	{
 		int n = points.size();
 		if (n == 0)

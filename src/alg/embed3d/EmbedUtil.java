@@ -8,30 +8,80 @@ import java.util.Random;
 import javax.vecmath.Vector3f;
 
 import main.TaskProvider;
+
+import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
+
 import util.ArrayUtil;
 import util.ObjectUtil;
 import util.StopWatchUtil;
 import util.Vector3fUtil;
-import data.DatasetFile;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertyOwner;
+import dataInterface.NominalProperty;
+import dataInterface.NumericProperty;
 
 public class EmbedUtil
 {
-	public static double computeRSquare(List<Vector3f> positions, DistanceMatrix featureDistanceMatrix)
+	public static double computeCorrelation(CorrelationType type, List<Vector3f> positions,
+			DistanceMatrix featureDistanceMatrix)
 	{
+		double d1[][] = featureDistanceMatrix.getNormalizedValues();
 		double d2[][] = euclMatrix(positions);
 		normalizeDistanceMatrix(d2);
-		return computeRSquare(featureDistanceMatrix.getNormalizedValues(), d2);
+		switch (type)
+		{
+			case RSquare:
+				return computeRSquare(d1, d2);
+			case CCC:
+				return computeCCC(d1, d2);
+			case Pearson:
+				return computePearson(d1, d2);
+			default:
+				throw new Error("not yet implemented: " + type);
+		}
+
 	}
 
-	//	public static double computeRSquare(List<Vector3f> positions, List<CompoundData> instances,
-	//			List<CompoundProperty> features, DatasetFile dataset)
-	//	{
-	//		return computeRSquare(positions, euclMatrix(instances, features, dataset));
-	//	}
+	private static double computePearson(double[][] d1, double[][] d2)
+	{
+		double[] a1 = ArrayUtil.concatUpperTriangular(d1);
+		double[] a2 = ArrayUtil.concatUpperTriangular(d2);
+		//		StringBuffer s = new StringBuffer();
+		//		for (int i = 0; i < a2.length; i++)
+		//			s.append(a1[i] + "," + a2[i] + "\n");
+		//		FileUtil.writeStringToFile("/tmp/pearson.csv", s.toString());
+		PearsonsCorrelation pc = new PearsonsCorrelation();
+		return pc.correlation(a1, a2);
+	}
+
+	private static double[] computePearsons(double[][] d1, double[][] d2)
+	{
+		double a1[][] = ArrayUtil.removeDiagonale(d1);
+		double a2[][] = ArrayUtil.removeDiagonale(d2);
+		double[] p = new double[d1.length];
+		PearsonsCorrelation pc = new PearsonsCorrelation();
+		for (int i = 0; i < p.length; i++)
+			p[i] = pc.correlation(a1[i], a2[i]);
+		return p;
+	}
+
+	public static double[] computeCorrelations(CorrelationType type, List<Vector3f> positions,
+			DistanceMatrix featureDistanceMatrix)
+	{
+		double d1[][] = featureDistanceMatrix.getNormalizedValues();
+		double d2[][] = euclMatrix(positions);
+		normalizeDistanceMatrix(d2);
+		switch (type)
+		{
+			case CCC:
+				return computeCCCs(d1, d2);
+			case Pearson:
+				return computePearsons(d1, d2);
+			default:
+				throw new Error("not yet implemented: " + type);
+		}
+	}
 
 	private static double computeRSquare(double[][] m1, double[][] m2)
 	{
@@ -59,37 +109,6 @@ public class EmbedUtil
 				}
 		return 1 - ss_err / ss_tot;
 	}
-
-	public static double computeCCC(List<Vector3f> positions, DistanceMatrix featureDistanceMatrix)
-	{
-		return computeCCC(positions, Dimensions.xyz, featureDistanceMatrix);
-	}
-
-	public static double computeCCC(List<Vector3f> positions, Dimensions dims, DistanceMatrix featureDistanceMatrix)
-	{
-		double d2[][] = euclMatrix(positions, dims);
-		normalizeDistanceMatrix(d2);
-		return computeCCC(featureDistanceMatrix.getNormalizedValues(), d2);
-	}
-
-	//	public static double computeCCC(List<Vector3f> positions, List<CompoundData> instances,
-	//			List<CompoundProperty> features, DatasetFile dataset)
-	//	{
-	//		return computeCCC(positions, euclMatrix(instances, features, dataset));
-	//	}
-
-	public static double[] computeCCCs(List<Vector3f> positions, DistanceMatrix featureDistanceMatrix)
-	{
-		double d2[][] = euclMatrix(positions);
-		normalizeDistanceMatrix(d2);
-		return computeCCCs(featureDistanceMatrix.getNormalizedValues(), d2);
-	}
-
-	//	public static double[] computeCCCs(List<Vector3f> positions, List<CompoundData> instances,
-	//			List<CompoundProperty> features, DatasetFile dataset)
-	//	{
-	//		return computeCCCs(positions, euclMatrix(instances, features, dataset));
-	//	}
 
 	private static double[] computeCCCs(double[][] m1, double[][] m2)
 	{
@@ -196,46 +215,7 @@ public class EmbedUtil
 		//		Settings.LOGGER.println(ArrayUtil.toString(d));
 	}
 
-	//	private static HashMap<String, Double> euclCompoundDistance = new HashMap<String, Double>();
-	//
-	//	private static String keyDistance(DatasetFile dataset, CompoundData c1, CompoundData c2)
-	//	{
-	//		CompoundData c1_ = c1;
-	//		CompoundData c2_ = c2;
-	//		if (c1_.getOrigIndex() > c2.getOrigIndex())
-	//		{
-	//			c1_ = c2;
-	//			c2_ = c1;
-	//		}
-	//		return dataset.hashCode() + "#" + c1_.hashCode() + "#" + c2_.hashCode();
-	//	}
-	//
-	//	private static void putDistance(DatasetFile dataset, CompoundData c1, CompoundData c2, Double dist)
-	//	{
-	//		euclCompoundDistance.put(keyDistance(dataset, c1, c2), dist);
-	//	}
-	//
-	//	public static Double getDistance(DatasetFile dataset, CompoundData c1, CompoundData c2)
-	//	{
-	//		return euclCompoundDistance.get(keyDistance(dataset, c1, c2));
-	//	}
-	//
-	//	public static Double getDistance(DatasetFile dataset, List<CompoundData> instances)
-	//	{
-	//		List<Double> distances = new ArrayList<Double>();
-	//		for (int i = 0; i < instances.size() - 1; i++)
-	//			for (int j = i + 1; j < instances.size(); j++)
-	//				distances.add(getDistance(dataset, instances.get(i), instances.get(j)));
-	//		return DoubleArraySummary.create(distances).getMedian();
-	//	}
-	//
-	//	public static Double getDistanceInMappedDataset(List<CompoundData> instances)
-	//	{
-	//		return getDistance(Settings.MAPPED_DATASET, instances);
-	//	}
-
-	public static double[][] euclMatrix(List<CompoundData> instances, List<CompoundProperty> features,
-			DatasetFile dataset)
+	public static double[][] euclMatrix(List<CompoundData> instances, List<CompoundProperty> features)
 	{
 		TaskProvider.debug("Compute euclidean distance matrix");
 
@@ -248,31 +228,28 @@ public class EmbedUtil
 			List<Double> v_i = new ArrayList<Double>();
 			for (int k = 0; k < features.size(); k++)
 			{
-				CompoundProperty feature = features.get(k);
-				if (feature.getType() == Type.NUMERIC)
+				if (features.get(k) instanceof NumericProperty)
 				{
+					NumericProperty feature = (NumericProperty) features.get(k);
 					Double v = c.getNormalizedValueCompleteDataset(feature);
 					if (v == null)
-						v = feature.getNormalizedMedian(dataset);
+						v = feature.getNormalizedMedian();
 					v_i.add(v);
 				}
 				else
 				{
-
-					if (feature.getType() != Type.NOMINAL)
-						throw new Error();
-					if (feature.getNominalDomain(dataset).length == 2
-							&& feature.getNominalDomain(dataset)[0].equals("0")
-							&& feature.getNominalDomain(dataset)[1].equals("1"))
+					NominalProperty feature = (NominalProperty) features.get(k);
+					if (feature.getDomain().length == 2 && feature.getDomain()[0].equals("0")
+							&& feature.getDomain()[1].equals("1"))
 					{
 						if (c.getStringValue(feature) == null)
-							v_i.add(Double.parseDouble(feature.getModeNonNull(dataset)));
+							v_i.add(Double.parseDouble(feature.getModeNonNull()));
 						else
 							v_i.add(Double.parseDouble(c.getStringValue(feature)));
 					}
 					else
 					{
-						for (String val : feature.getNominalDomain(dataset))
+						for (String val : feature.getDomain())
 						{
 							if (ObjectUtil.equals(c.getStringValue(feature), val))
 								v_i.add(1.0);
@@ -299,62 +276,17 @@ public class EmbedUtil
 		return d;
 	}
 
-	public enum Dimensions
-	{
-		xyz, xy, xz, yz, x, y, z
-	}
-
 	private static double[][] euclMatrix(List<Vector3f> positions)
-	{
-		return euclMatrix(positions, Dimensions.xyz);
-	}
-
-	private static double[][] euclMatrix(List<Vector3f> positions, Dimensions dims)
 	{
 		double[][] d = new double[positions.size()][positions.size()];
 		for (int i = 0; i < positions.size() - 1; i++)
 			for (int j = i + 1; j < positions.size(); j++)
 			{
-				d[i][j] = dist(positions.get(i), positions.get(j), dims);
+				d[i][j] = Vector3fUtil.dist(positions.get(i), positions.get(j));
 				d[j][i] = d[i][j];
 			}
 		//		Settings.LOGGER.println(ArrayUtil.toString(d));
 		return d;
-	}
-
-	private static double dist(Vector3f v1, Vector3f v2, Dimensions dims)
-	{
-		switch (dims)
-		{
-			case xyz:
-				return Vector3fUtil.dist(v1, v2);
-			case xy:
-				Vector3f vec1 = new Vector3f(v1);
-				Vector3f vec2 = new Vector3f(v2);
-				vec1.z = 0;
-				vec2.z = 0;
-				return Vector3fUtil.dist(vec1, vec2);
-			case xz:
-				vec1 = new Vector3f(v1);
-				vec2 = new Vector3f(v2);
-				vec1.y = 0;
-				vec2.y = 0;
-				return Vector3fUtil.dist(vec1, vec2);
-			case yz:
-				vec1 = new Vector3f(v1);
-				vec2 = new Vector3f(v2);
-				vec1.x = 0;
-				vec2.x = 0;
-				return Vector3fUtil.dist(vec1, vec2);
-			case x:
-				return Math.abs(v1.x - v2.x);
-			case y:
-				return Math.abs(v1.y - v2.y);
-			case z:
-				return Math.abs(v1.z - v2.z);
-			default:
-				throw new Error("wtf");
-		}
 	}
 
 	public static void main(String args[])
@@ -424,67 +356,5 @@ public class EmbedUtil
 		//			Settings.LOGGER.info();
 		//		}
 	}
-
-	//	public static class CompoundPropertyEmbedQuality implements Comparable<CompoundPropertyEmbedQuality>
-	//	{
-	//		Double d;
-	//		CompoundProperty feature;
-	//		List<Vector3f> positions;
-	//		List<CompoundPropertyOwner> instances;
-	//		DatasetFile dataset;
-	//
-	//		public CompoundPropertyEmbedQuality(CompoundProperty feature, List<Vector3f> positions,
-	//				List<CompoundPropertyOwner> instances, DatasetFile dataset)
-	//		{
-	//			this.feature = feature;
-	//			this.positions = positions;
-	//			this.instances = instances;
-	//			this.dataset = dataset;
-	//		}
-	//
-	//		public CompoundPropertyEmbedQuality clone()
-	//		{
-	//			return new CompoundPropertyEmbedQuality(feature, positions, instances, dataset);
-	//		}
-	//
-	//		public String toString()
-	//		{
-	//			if (d == null)
-	//				return "computing..";
-	//			if (Double.isNaN(d))
-	//				return "na";
-	//			return StringUtil.formatDouble(d);
-	//		}
-	//
-	//		public double compute(Dimensions dims)
-	//		{
-	//			if (d == null)
-	//			{
-	//				if (feature.getType() != Type.NUMERIC && feature.getType() != Type.NOMINAL)
-	//					d = Double.NaN;
-	//				else
-	//				{
-	//					List<CompoundProperty> features = new ArrayList<CompoundProperty>();
-	//					features.add(feature);
-	//					double m[][] = euclMatrix(instances, features, dataset);
-	//					d = computeCCC(positions, dims, m);
-	//				}
-	//			}
-	//			return d;
-	//		}
-	//
-	//		public int compareTo(CompoundPropertyEmbedQuality o)
-	//		{
-	//			if (d == null || Double.isNaN(d))
-	//			{
-	//				if (o.d == null || Double.isNaN(o.d))
-	//					return 0;
-	//				return -1;
-	//			}
-	//			if (o.d == null || Double.isNaN(o.d))
-	//				return 1;
-	//			return d.compareTo(o.d);
-	//		}
-	//	}
 
 }

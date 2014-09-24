@@ -47,9 +47,12 @@ import com.jgoodies.forms.layout.FormLayout;
 import data.DatasetFile;
 import data.FeatureLoader;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
+import dataInterface.CompoundPropertySet.Type;
+import dataInterface.FragmentProperty;
 import dataInterface.FragmentPropertySet;
+import dataInterface.NominalProperty;
+import dataInterface.NumericProperty;
 import freechart.AbstractFreeChartPanel;
 import freechart.BarPlotPanel;
 import freechart.HistogramPanel;
@@ -75,7 +78,7 @@ public class CompoundPropertyPanel extends JPanel
 
 	JPanel comboPanel = new JPanel();
 	JLabel comboLabel = new JLabel();
-	JComboBox comboBox = new JComboBox();
+	JComboBox<CompoundProperty> comboBox = new JComboBox<CompoundProperty>();
 	JLabel missingValuesLabel = new JLabel(ImageLoader.getImage(ImageLoader.Image.warning));
 	LinkButton rawDataLink = new LinkButton("Raw data...");
 	JPanel featurePlotPanel = new JPanel(new BorderLayout());
@@ -85,14 +88,14 @@ public class CompoundPropertyPanel extends JPanel
 	JPanel mainPanel;
 
 	private boolean selfUpdate = false;
-
 	DatasetFile dataset;
-
 	JPanel fragmentProps;
+	CheSMapperWizard wizard;
 
-	public CompoundPropertyPanel(FeatureWizardPanel featurePanel, Window owner)
+	public CompoundPropertyPanel(FeatureWizardPanel featurePanel, CheSMapperWizard wizard)
 	{
-		fragmentProps = featurePanel.getFragmentPropPanel().getSummaryPanel(owner);
+		fragmentProps = featurePanel.getFragmentPropPanel().getSummaryPanel(wizard);
+		this.wizard = wizard;
 		buildLayout();
 		addListeners();
 	}
@@ -160,8 +163,8 @@ public class CompoundPropertyPanel extends JPanel
 
 	public void toggleType()
 	{
-		CompoundProperty p = selectedPropertySet.get(dataset, selectedPropertyIndex);
-		if (p.getType() == Type.NOMINAL)
+		//		CompoundProperty p = selectedPropertySet.get(dataset, selectedPropertyIndex);
+		if (selectedPropertySet.getType() == Type.NOMINAL)
 			setType(Type.NUMERIC);
 		else
 			setType(Type.NOMINAL);
@@ -169,11 +172,11 @@ public class CompoundPropertyPanel extends JPanel
 
 	public void setType(Type type)
 	{
-		if (selectedPropertySet != null && selectedPropertySet.get(dataset, selectedPropertyIndex).getType() != type
-				&& selectedPropertySet.get(dataset, selectedPropertyIndex).isTypeAllowed(type))
+		if (selectedPropertySet != null && selectedPropertySet.getType() != type
+				&& selectedPropertySet.isTypeAllowed(type))
 		{
-			CompoundProperty p = selectedPropertySet.get(dataset, selectedPropertyIndex);
-			p.setType(type);
+			//			CompoundProperty p = selectedPropertySet.get(dataset, selectedPropertyIndex);
+			selectedPropertySet.setType(type);
 			firePropertyChange(PROPERTY_TYPE_CHANGED, false, true);
 			loadComputedOrCachedProperty();
 		}
@@ -217,7 +220,7 @@ public class CompoundPropertyPanel extends JPanel
 		});
 		comboBox.setRenderer(new DefaultListCellRenderer()
 		{
-			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus)
 			{
 				String s = value + "";
@@ -244,6 +247,8 @@ public class CompoundPropertyPanel extends JPanel
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
+				if (wizard.isClosed())
+					return;
 				setSelectedPropertySet(selectedPropertySet);
 			}
 		});
@@ -265,22 +270,22 @@ public class CompoundPropertyPanel extends JPanel
 		Object o[];
 		Double n[] = null;
 		String[] c = new String[] { "Index", selectedPropertySet.get(dataset, selectedPropertyIndex).toString() };
-		if (selectedProperty.getType() == Type.NUMERIC)
+		if (selectedPropertySet.getType() == Type.NUMERIC)
 		{
-			o = selectedProperty.getDoubleValues(dataset);
-			n = selectedProperty.getNormalizedValues(dataset);
+			o = ((NumericProperty) selectedProperty).getDoubleValues();
+			n = ((NumericProperty) selectedProperty).getNormalizedValues();
 			c = ArrayUtil.concat(c, new String[] { selectedPropertySet.get(dataset, selectedPropertyIndex).toString()
 					+ " normalized" });
 		}
 		else
-			o = selectedProperty.getStringValues(dataset);
+			o = ((NominalProperty) selectedProperty).getStringValues();
 
-		Object v[][] = new Object[o.length][selectedProperty.getType() == Type.NUMERIC ? 3 : 2];
+		Object v[][] = new Object[o.length][selectedPropertySet.getType() == Type.NUMERIC ? 3 : 2];
 		for (int i = 0; i < o.length; i++)
 		{
 			v[i][0] = new Integer(i + 1);
 			v[i][1] = o[i];
-			if (selectedProperty.getType() == Type.NUMERIC)
+			if (selectedPropertySet.getType() == Type.NUMERIC)
 				v[i][2] = n[i];
 		}
 		DefaultTableModel model = new DefaultTableModel(v, c)
@@ -297,7 +302,7 @@ public class CompoundPropertyPanel extends JPanel
 					boolean hasFocus, int row, int column)
 			{
 				if (value instanceof Double)
-					if (column == 1 && selectedProperty.isInteger(dataset))
+					if (column == 1 && ((NumericProperty) selectedProperty).isInteger())
 						value = StringUtil.formatDouble((Double) value, 0);
 					else
 						value = StringUtil.formatDouble((Double) value, 3);
@@ -306,7 +311,7 @@ public class CompoundPropertyPanel extends JPanel
 		});
 		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(table.getModel());
 		sorter.setComparator(0, new DefaultComparator<Integer>());
-		if (selectedProperty.getType() == Type.NUMERIC)
+		if (selectedPropertySet.getType() == Type.NUMERIC)
 		{
 			sorter.setComparator(1, new DefaultComparator<Double>());
 			sorter.setComparator(2, new DefaultComparator<Double>());
@@ -327,8 +332,8 @@ public class CompoundPropertyPanel extends JPanel
 		if (prop.getSize(dataset) > 0)
 		{
 			comboBox.setSelectedIndex(propIndex);
-			if (prop.get(dataset, propIndex).isSmartsProperty())
-				comboBox.setToolTipText(prop.get(dataset, propIndex).getSmarts());
+			if (prop.get(dataset, propIndex) instanceof FragmentProperty)
+				comboBox.setToolTipText(((FragmentProperty) prop.get(dataset, propIndex)).getSmarts());
 			else
 				comboBox.setToolTipText("");
 			comboBox.setEnabled(true);
@@ -350,30 +355,29 @@ public class CompoundPropertyPanel extends JPanel
 		JPanel p = null;
 		if (prop.getSize(dataset) > 0)
 		{
-			CompoundProperty selectedProperty = prop.get(dataset, propIndex);
-			nominalFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NOMINAL));
-			numericFeatureButton.setEnabled(selectedProperty.isTypeAllowed(Type.NUMERIC));
+			nominalFeatureButton.setEnabled(selectedPropertySet.isTypeAllowed(Type.NOMINAL));
+			numericFeatureButton.setEnabled(selectedPropertySet.isTypeAllowed(Type.NUMERIC));
 
-			if (prop.get(dataset, propIndex).numMissingValues(dataset) > 0)
+			if (prop.get(dataset, propIndex).numMissingValues() > 0)
 			{
 				missingValuesLabel.setVisible(true);
-				missingValuesLabel.setText("Missing values: " + prop.get(dataset, propIndex).numMissingValues(dataset));
+				missingValuesLabel.setText("Missing values: " + prop.get(dataset, propIndex).numMissingValues());
 			}
 			else
 				missingValuesLabel.setVisible(false);
 
 			rawDataLink.setEnabled(true);
 
-			CompoundProperty.Type type = selectedProperty.getType();
+			CompoundPropertySet.Type type = selectedPropertySet.getType();
 			if (type == Type.NOMINAL)
 			{
+				NominalProperty selectedProperty = (NominalProperty) prop.get(dataset, propIndex);
 				nominalFeatureButton.setSelected(true);
 
-				String values[] = new String[selectedProperty.getNominalDomain(dataset).length];
+				String values[] = new String[selectedProperty.getDomain().length];
 				for (int i = 0; i < values.length; i++)
-					values[i] = selectedProperty.getFormattedValue(selectedProperty.getNominalDomain(dataset)[i],
-							dataset);
-				int counts[] = selectedProperty.getNominalDomainCounts(dataset);
+					values[i] = selectedProperty.getFormattedValue(selectedProperty.getDomain()[i]);
+				int counts[] = selectedProperty.getDomainCounts();
 				//				CountedSet<String> set = CountedSet.fromArray(selectedProperty.getStringValues(dataset));
 				//				List<String> values = set.values(new DefaultComparator<String>());
 				//				if (values.contains(null))
@@ -390,8 +394,9 @@ public class CompoundPropertyPanel extends JPanel
 			}
 			else if (type == Type.NUMERIC)
 			{
+				NumericProperty selectedProperty = (NumericProperty) prop.get(dataset, propIndex);
 				numericFeatureButton.setSelected(true);
-				List<Double> vals = ArrayUtil.removeNullValues(selectedProperty.getDoubleValues(dataset));
+				List<Double> vals = ArrayUtil.removeNullValues(selectedProperty.getDoubleValues());
 
 				//List<Double> vals = ArrayUtil.toList(selectedProperty.getNormalizedValues(dataset));
 
@@ -408,7 +413,8 @@ public class CompoundPropertyPanel extends JPanel
 			}
 			else
 			{
-				CountedSet<String> set = CountedSet.fromArray(selectedProperty.getStringValues(dataset));
+				NominalProperty selectedProperty = (NominalProperty) prop.get(dataset, propIndex);
+				CountedSet<String> set = CountedSet.fromArray(selectedProperty.getStringValues());
 				p = new MessageLabel(Message.warningMessage("This feature ('" + selectedProperty.toString()
 						+ "') is most likely not suited for clustering and embedding.\n"
 						+ "It is not numeric, and it has '" + set.getNumValues() + "' distinct values."));

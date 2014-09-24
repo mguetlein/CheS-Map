@@ -3,11 +3,14 @@ package data;
 import java.util.ArrayList;
 import java.util.List;
 
+import task.TaskDialog;
 import alg.DistanceMeasure;
 import alg.align3d.ThreeDAligner;
 import alg.build3d.ThreeDBuilder;
 import alg.cluster.DatasetClusterer;
+import alg.embed3d.CorrelationProperty;
 import alg.embed3d.DistanceMatrix;
+import alg.embed3d.EqualPositionProperty;
 import alg.embed3d.ThreeDEmbedder;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
@@ -31,7 +34,8 @@ public class ClusteringData
 	private int numMultiClusteredCompounds = -1;
 	private String embedQuality;
 
-	private CompoundProperty embedQualityProperty;
+	private CorrelationProperty embedQualityProperty;
+	private EqualPositionProperty equalPosProperty;
 	//	private CompoundProperty appDomainProperties[];
 	//	private List<CompoundProperty> distanceToProperties;
 
@@ -39,6 +43,8 @@ public class ClusteringData
 	private DatasetClusterer datasetClusterer;
 	private ThreeDEmbedder threeDEmbedder;
 	private ThreeDAligner threeDAligner;
+
+	private boolean skippingRedundantFeatures;
 
 	// --------------------------------------------
 
@@ -101,7 +107,7 @@ public class ClusteringData
 			{
 				numMultiClusteredCompounds = 0;
 				for (ClusterData c : clusters)
-					numMultiClusteredCompounds += c.getSize();
+					numMultiClusteredCompounds += c.getNumCompounds();
 			}
 			return numMultiClusteredCompounds;
 		}
@@ -111,6 +117,8 @@ public class ClusteringData
 
 	public void addProperty(CompoundProperty property)
 	{
+		if (features.indexOf(property) != -1)
+			throw new IllegalStateException();
 		properties.add(property);
 	}
 
@@ -121,6 +129,8 @@ public class ClusteringData
 
 	public void addFeature(CompoundProperty feature)
 	{
+		if (properties.indexOf(feature) != -1)
+			throw new IllegalStateException();
 		features.add(feature);
 	}
 
@@ -164,14 +174,24 @@ public class ClusteringData
 		return additionalProperties;
 	}
 
-	public void addAdditionalProperty(CompoundProperty p, boolean isEmbedQuality)
+	public void addEqualPosProperty(EqualPositionProperty p)
 	{
 		additionalProperties.add(p);
-		if (isEmbedQuality)
-			embedQualityProperty = p;
+		equalPosProperty = p;
 	}
 
-	public CompoundProperty getEmbeddingQualityProperty()
+	public void addEmbedQualityProperty(CorrelationProperty p)
+	{
+		additionalProperties.add(p);
+		embedQualityProperty = p;
+	}
+
+	public EqualPositionProperty getEqualPosProperty()
+	{
+		return equalPosProperty;
+	}
+
+	public CorrelationProperty getEmbeddingQualityProperty()
 	{
 		return embedQualityProperty;
 	}
@@ -229,5 +249,32 @@ public class ClusteringData
 	public DistanceMeasure getEmbeddingDistanceMeasure()
 	{
 		return threeDEmbedder.getDistanceMeasure();
+	}
+
+	public void setSkippingRedundantFeatures(boolean skippingRedundantFeatures)
+	{
+		this.skippingRedundantFeatures = skippingRedundantFeatures;
+	}
+
+	public boolean isSkippingRedundantFeatures()
+	{
+		return skippingRedundantFeatures;
+	}
+
+	TaskDialog d;
+
+	public void setCheSMappingWarningOwner(TaskDialog d)
+	{
+		this.d = d;
+	}
+
+	public boolean doCheSMappingWarningsExist()
+	{
+		return d.doWarningsExist();
+	}
+
+	public void showCheSMappingWarnings()
+	{
+		d.showWarningDialog();
 	}
 }

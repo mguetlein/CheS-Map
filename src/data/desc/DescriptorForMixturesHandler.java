@@ -12,12 +12,12 @@ import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IAtomContainerSet;
 import org.openscience.cdk.io.SDFWriter;
 
+import property.CDKDescriptor;
+import property.OBDescriptorFactory;
 import util.ArrayUtil;
 import util.CDKUtil;
 import data.DatasetFile;
-import data.cdk.CDKDescriptor;
-import data.obdesc.OBDescriptorFactory;
-import dataInterface.CompoundProperty.Type;
+import dataInterface.CompoundPropertySet.Type;
 
 public class DescriptorForMixturesHandler
 {

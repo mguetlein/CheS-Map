@@ -10,6 +10,8 @@ import data.fragments.MatchEngine;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
+import dataInterface.FragmentProperty;
+import dataInterface.NominalProperty;
 import dataInterface.SmartsUtil;
 import dataInterface.SubstructureSmartsType;
 
@@ -43,28 +45,28 @@ public class MaxFragAligner extends Abstract3DAligner
 	{
 		for (ClusterData clusterData : clusters)
 		{
-			CompoundProperty maxFrag = null;
+			FragmentProperty maxFrag = null;
 			int maxFragLength = -1;
 			MatchEngine maxMatchEngine = null;
 			for (CompoundProperty feat : features)
 			{
-				if (!feat.isSmartsProperty())
+				if (!(feat instanceof FragmentProperty))
 					continue;
 				boolean matchesAll = true;
 				for (CompoundData c : clusterData.getCompounds())
-					if (c.getStringValue(feat).equals("0"))
+					if (c.getStringValue((NominalProperty) feat).equals("0"))
 					{
 						matchesAll = false;
 						break;
 					}
 				if (!matchesAll)
 					continue;
-				int featLength = SmartsUtil.getLength(feat.getSmarts());
+				int featLength = SmartsUtil.getLength(((FragmentProperty) feat).getSmarts());
 				if (featLength >= MIN_NUM_ATOMS && (maxFrag == null || maxFragLength < featLength))
 				{
-					maxFrag = feat;
+					maxFrag = (FragmentProperty) feat;
 					maxFragLength = featLength;
-					maxMatchEngine = feat.getSmartsMatchEngine();
+					maxMatchEngine = maxFrag.getSmartsMatchEngine();
 				}
 			}
 			if (maxFrag != null)

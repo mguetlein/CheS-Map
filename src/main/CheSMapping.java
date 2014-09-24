@@ -7,16 +7,18 @@ import javax.vecmath.Vector3f;
 
 import util.StringUtil;
 import alg.FeatureComputer;
+import alg.align3d.BigDataFakeAligner;
 import alg.align3d.NoAligner;
 import alg.align3d.ThreeDAligner;
 import alg.build3d.ThreeDBuilder;
 import alg.build3d.UseOrigStructures;
 import alg.cluster.DatasetClusterer;
 import alg.cluster.NoClusterer;
-import alg.embed3d.EqualPositionPropertySet;
+import alg.embed3d.CorrelationProperty;
+import alg.embed3d.CorrelationType;
+import alg.embed3d.EqualPositionProperty;
 import alg.embed3d.Random3DEmbedder;
 import alg.embed3d.ThreeDEmbedder;
-import appdomain.AppDomainComputer;
 import data.ClusteringData;
 import data.CompoundDataImpl;
 import data.DatasetFile;
@@ -24,7 +26,6 @@ import data.DefaultFeatureComputer;
 import dataInterface.ClusterData;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
 import dataInterface.CompoundPropertyUtil;
 
@@ -72,8 +73,6 @@ public class CheSMapping
 			{
 				try
 				{
-					Settings.MAPPED_DATASET = dataset;
-
 					if (dataset.getCompounds().length == 0)
 						throw new IllegalStateException("no compounds");
 
@@ -96,10 +95,7 @@ public class CheSMapping
 						throw new IllegalStateException("num compounds does not fit " + dataset.getCompounds().length
 								+ " != " + clustering.getCompounds().size());
 
-					List<CompoundProperty> featuresWithInfo = new ArrayList<CompoundProperty>();
-					for (CompoundProperty p : clustering.getFeatures())
-						if (!CompoundPropertyUtil.hasUniqueValue(p, dataset))
-							featuresWithInfo.add(p);
+					List<CompoundProperty> featuresWithInfo = determineFeaturesWithInfo(clustering);
 
 					if (!TaskProvider.isRunning())
 						return;
@@ -111,21 +107,29 @@ public class CheSMapping
 					TaskProvider.update(40, "Embed compounds into 3D space");
 					embedDataset(dataset, clustering, featuresWithInfo);
 
-					//computedAppDomain(dataset, clustering, featuresWithInfo);
-
 					if (clustering.getDatasetClusterer() != noClusterer
 							&& clustering.getThreeDEmbedder() != randomEmbedder
 							&& !clustering.getDatasetClusterer().getDistanceMeasure()
 									.equals(clustering.getThreeDEmbedder().getDistanceMeasure()))
 						TaskProvider.warning(
-								Settings.text("mapping.incomp.distances"),
-								Settings.text("mapping.incomp.distances.desc", clustering.getDatasetClusterer()
+								Settings.text("mapping.incomp-distances"),
+								Settings.text("mapping.incomp-distances.desc", clustering.getDatasetClusterer()
 										.getDistanceMeasure() + "", clustering.getThreeDEmbedder().getDistanceMeasure()
 										+ ""));
 
 					if (!TaskProvider.isRunning())
 						return;
-					TaskProvider.update(50, "3D align clusters");
+
+					if (Settings.BIG_DATA)
+					{
+						if (threeDAligner != NoAligner.INSTANCE)
+							TaskProvider.warning(Settings.text("mapping.align-ignored"),
+									Settings.text("mapping.align-ignored.desc"));
+						threeDAligner = BigDataFakeAligner.INSTANCE;
+						TaskProvider.update(50, "Create input dataset without structures");
+					}
+					else
+						TaskProvider.update(50, "3D align clusters");
 					alignDataset(dataset, clustering);
 
 					//		// make sure the files contain appropriate number of compounds 
@@ -157,6 +161,62 @@ public class CheSMapping
 			Settings.LOGGER.error(e);
 		}
 		return clusteringData;
+	}
+
+	/**
+	 * featuresWithInfo are those that are actually used for clustering and embedding
+	 * featuresWithInfo may be != features
+	 * (features does always contain all features selected by the user)
+	 * features with unique values are always removed
+	 * there is a switch for omitting redundant features (default: true)
+	 * (this switch is also used for caching)
+	 */
+	protected List<CompoundProperty> determineFeaturesWithInfo(ClusteringData clustering)
+	{
+		List<CompoundProperty> featuresWithInfo = new ArrayList<CompoundProperty>();
+		int unique = 0;
+		int redundant = 0;
+		for (CompoundProperty p : clustering.getFeatures())
+			if (p.numDistinctValues() > 1)
+				featuresWithInfo.add(p);
+			else
+			{
+				Settings.LOGGER.info("skipping unique prop: " + p);
+				unique++;
+			}
+		if (Settings.SKIP_REDUNDANT_FEATURES)
+		{
+			CompoundPropertyUtil.determineRedundantFeatures(featuresWithInfo);
+			List<CompoundProperty> rem = new ArrayList<CompoundProperty>();
+			for (CompoundProperty p : featuresWithInfo)
+				if (p.getRedundantProp() != null)
+				{
+					redundant++;
+					Settings.LOGGER.info("skipping redundant prop: " + p);
+					rem.add(p);
+				}
+			if (redundant > 0)
+			{
+				for (CompoundProperty p : rem)
+					featuresWithInfo.remove(p);
+				clustering.setSkippingRedundantFeatures(true);
+			}
+		}
+		if (unique > 0)
+			TaskProvider.warning(unique + " of " + clustering.getFeatures().size()
+					+ " feature/s with equal value for each compound ignored for mapping",
+					"Feature/s that have an equal value for each compound, contain no information to distinguish between compounds. "
+							+ "The feature/s are ignored by the mapping algorithms (3D-embedding and clustering). "
+							+ "In the viewer, the feature/s are in the list of features that are selected for mapping "
+							+ "(but labeled as feature with equal value for each compound).");
+		if (redundant > 0)
+			TaskProvider.warning(redundant + " of " + clustering.getFeatures().size()
+					+ " feature/s with redundant values ignored for mapping",
+					"Redundant feature/s contain the same information (feature values) as other features in the dataset. "
+							+ "The feature/s are ignored by the mapping algorithms (3D-embedding and clustering). "
+							+ "In the viewer, the feature/s are in the list of features that are selected for mapping "
+							+ "(but labeled as redundant).");
+		return featuresWithInfo;
 	}
 
 	public Throwable getMappingError()
@@ -233,6 +293,8 @@ public class CheSMapping
 		{
 			clustering.setDatasetClusterer(clusterer);
 			clusterer.clusterDataset(dataset, clustering.getCompounds(), featuresWithInfo);
+			if (!TaskProvider.isRunning())
+				return;
 		}
 		catch (Exception e)
 		{
@@ -253,50 +315,15 @@ public class CheSMapping
 		int sum = 0;
 		for (ClusterData c : clusterer.getClusters())
 		{
-			if (c.getSize() == 0)
+			if (c.getNumCompounds() == 0)
 				throw new IllegalStateException("internal error: cluster has size 0");
-			sum += c.getSize();
+			sum += c.getNumCompounds();
 			clustering.addCluster(c);
 		}
 		if (sum != clustering.getCompounds().size())
 			throw new IllegalStateException("internal error: num clustered compounds does not fit");
 	}
 
-	private void computedAppDomain(DatasetFile dataset, ClusteringData clustering,
-			List<CompoundProperty> featuresWithInfo)
-	{
-		for (CompoundProperty p : featuresWithInfo)
-			if (p.getType() != Type.NUMERIC || p.numMissingValues(dataset) > 0)
-				return;
-
-		//AppDomainComputer appDomain[] = new AppDomainComputer[] { AppDomainHelper.select() };
-		AppDomainComputer appDomain[] = AppDomainComputer.APP_DOMAIN_COMPUTERS;
-		if (appDomain != null && appDomain.length > 0)
-		{
-			List<CompoundProperty> props = new ArrayList<CompoundProperty>();
-			for (AppDomainComputer ad : appDomain)
-			{
-				ad.computeAppDomain(dataset, clustering.getCompounds(), featuresWithInfo, clustering
-						.getThreeDEmbedder().getFeatureDistanceMatrix().getValues());
-				props.add(ad.getInsideAppDomainProperty());
-				props.add(ad.getPropabilityAppDomainProperty());
-				for (int i = 0; i < clustering.getNumCompounds(false); i++)
-				{
-					((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(
-							ad.getPropabilityAppDomainProperty(),
-							ad.getPropabilityAppDomainProperty().getDoubleValues(dataset)[i]);
-					((CompoundDataImpl) clustering.getCompounds().get(i)).setStringValue(
-							ad.getInsideAppDomainProperty(),
-							ad.getInsideAppDomainProperty().getStringValues(dataset)[i]);
-				}
-			}
-
-			for (CompoundProperty p : props)
-				clustering.addAdditionalProperty(p, false);
-		}
-	}
-
-	@SuppressWarnings("unchecked")
 	private void embedDataset(DatasetFile dataset, ClusteringData clustering, List<CompoundProperty> featuresWithInfo)
 	{
 		embedderException = null;
@@ -331,6 +358,8 @@ public class CheSMapping
 
 			clustering.setThreeDEmbedder(embedder);
 			embedder.embedDataset(dataset, clustering.getCompounds(), featuresWithInfo); //, train
+			if (!TaskProvider.isRunning())
+				return;
 		}
 		catch (Exception e)
 		{
@@ -352,30 +381,31 @@ public class CheSMapping
 
 		//		clustering.setEmbedAlgorithm(embedder.getName());
 
-		if (dataset.numCompounds() > 2)
+		if (dataset.numCompounds() > 2 && !Settings.BIG_DATA)
 		{
-			//			double rSquare = embedder.getRSquare();
-			double ccc = embedder.getCCC();
-			//			Settings.LOGGER.info("r-square: " + rSquare + ", ccc: " + ccc);
-			Settings.LOGGER.info("ccc: " + ccc);
-			//			String formRSquare = StringUtil.formatDouble(rSquare, 2);
-			String formCCC = StringUtil.formatDouble(embedder.getCCC(), 2);
-			String details = " (CCC: " + formCCC + ")";
-			//			String details = " (CCC: " + formCCC + ", r^2: " + formRSquare + ")";
+			double corr = embedder.getCorrelation(CorrelationType.Pearson);
+			Settings.LOGGER.info("correlation: " + corr);
+			String details = " (Pearson: " + StringUtil.formatDouble(corr, 2) + ")";
 			String warnMsg = null;
-			if (ccc >= 0.9)
-				clustering.setEmbedQuality("excellent" + details);
-			else if (ccc >= 0.7)
+			// categorization according to evans 1996
+			if (corr >= 0.8)
+				clustering.setEmbedQuality("very good" + details);
+			else if (corr >= 0.6)
 				clustering.setEmbedQuality("good" + details);
-			else if (ccc >= 0.5)
+			else if (corr >= 0.4)
 			{
 				warnMsg = "The embedding quality is moderate" + details;
 				clustering.setEmbedQuality("moderate" + details);
 			}
+			else if (corr >= 0.2)
+			{
+				warnMsg = "The embedding quality is weak" + details;
+				clustering.setEmbedQuality("weak" + details);
+			}
 			else
-			{ // < 0.5
-				warnMsg = "The embedding quality is poor" + details;
-				clustering.setEmbedQuality("poor" + details);
+			{
+				warnMsg = "The embedding quality is very weak" + details;
+				clustering.setEmbedQuality("very weak" + details);
 			}
 			if (warnMsg != null)
 			{
@@ -383,12 +413,15 @@ public class CheSMapping
 					warnMsg = "Random embedding applied, 3D positions do not reflect feature values";
 				TaskProvider.warning(warnMsg, Settings.text("embed.info.quality", Settings.text("embed.r.sammon")));
 			}
-			if (embedder.getCCCProperty() != null)
+			for (CorrelationType t : CorrelationType.types())
 			{
-				for (int i = 0; i < clustering.getNumCompounds(false); i++)
-					((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(embedder.getCCCProperty(),
-							embedder.getCCCProperty().getDoubleValues(dataset)[i]);
-				clustering.addAdditionalProperty(embedder.getCCCProperty(), true);
+				if (embedder.getCorrelationProperty(t) != null)
+				{
+					CorrelationProperty p = embedder.getCorrelationProperty(t);
+					for (int i = 0; i < clustering.getNumCompounds(false); i++)
+						((CompoundDataImpl) clustering.getCompounds().get(i)).setDoubleValue(p, p.getDoubleValues()[i]);
+					clustering.addEmbedQualityProperty(p);
+				}
 			}
 		}
 		else
@@ -396,14 +429,15 @@ public class CheSMapping
 
 		if (embedder != randomEmbedder)
 		{
-			EqualPositionPropertySet eqPos = EqualPositionPropertySet.create(dataset, embedder.getPositions(),
-					dataset.getEmbeddingResultsFilePath("eq-pos"));
+			//			EqualPositionProperty eqPos = EqualPositionProperty.create(dataset, embedder.getPositions(),
+			//					dataset.getEmbeddingResultsFilePath("eq-pos"));
+			EqualPositionProperty eqPos = EqualPositionProperty.create(embedder.getPositions());
 			if (eqPos != null)
 			{
 				for (int i = 0; i < clustering.getNumCompounds(false); i++)
 					((CompoundDataImpl) clustering.getCompounds().get(i)).setStringValue(eqPos,
-							eqPos.getStringValues(dataset)[i]);
-				clustering.addAdditionalProperty(eqPos, false);
+							eqPos.getStringValues()[i]);
+				clustering.addEqualPosProperty(eqPos);
 			}
 		}
 
@@ -447,6 +481,11 @@ public class CheSMapping
 	public DatasetFile getDatasetFile()
 	{
 		return dataset;
+	}
+
+	public int getNumFeatureSets()
+	{
+		return featureComputer.getNumFeatureSets();
 	}
 
 }

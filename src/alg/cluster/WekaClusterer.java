@@ -204,8 +204,8 @@ public class WekaClusterer extends AbstractDatasetClusterer
 		Messages m = super.getMessages(dataset, featureInfo, clusterer);
 		if (wekaClusterer instanceof EM || wekaClusterer instanceof CascadeSimpleKMeans)
 		{
-			if (dataset.numCompounds() >= 50 && featureInfo.isNumFeaturesHigh())
-				m.add(MessageUtil.slowMessage(featureInfo.getNumFeaturesWarning()));
+			if (featureInfo.isNumPairsHigh())
+				m.add(MessageUtil.slowRuntimeMessage(featureInfo.getNumPairsWarning()));
 		}
 		return m;
 	}

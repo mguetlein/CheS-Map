@@ -1,6 +1,6 @@
 package appdomain;
 
-import dataInterface.CompoundProperty;
+import dataInterface.NumericProperty;
 
 public class CentroidAppDomainComputer extends DistanceBasedAppDomainComputer
 {
@@ -19,8 +19,9 @@ public class CentroidAppDomainComputer extends DistanceBasedAppDomainComputer
 			double dist = 0;
 			for (int j = 0; j < features.size(); j++)
 			{
-				CompoundProperty f = features.get(j);
-				dist += Math.pow(f.getNormalizedMedian(dataset) - f.getNormalizedValues(dataset)[i], 2);
+				NumericProperty f = features.get(j);
+				dist += Math.pow(
+						f.getNormalizedMedian() - f.getNormalizedValues()[i], 2);
 			}
 			trainingDistances[i] = Math.sqrt(dist);
 		}

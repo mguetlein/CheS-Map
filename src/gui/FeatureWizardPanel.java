@@ -1,7 +1,5 @@
 package gui;
 
-import gui.property.Property;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -16,10 +14,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 
+import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -36,37 +33,32 @@ import main.BinHandler;
 import main.PropHandler;
 import main.ScreenSetup;
 import main.Settings;
-import util.ArrayUtil;
+import property.ListedFragments;
+import property.OBDescriptorSet;
+import property.PropertySetCategory;
+import property.PropertySetProvider;
 import util.DoubleImageIcon;
 import util.FileUtil;
 import util.ImageLoader;
-import util.ListUtil;
 import util.MessageUtil;
-import util.StringUtil;
 import util.WizardComponentFactory;
-import workflow.FeatureMappingWorkflowProvider;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
 import data.DatasetFile;
 import data.FeatureLoader;
-import data.FeatureService;
-import data.IntegratedProperty;
-import data.cdk.CDKPropertySet;
-import data.fragments.StructuralFragmentProperties;
-import data.fragments.StructuralFragments;
-import data.obdesc.OBDescriptorProperty;
+import data.fragments.FragmentProperties;
 import dataInterface.CompoundProperty;
-import dataInterface.CompoundProperty.SubstructureType;
-import dataInterface.CompoundProperty.Type;
 import dataInterface.CompoundPropertySet;
+import dataInterface.CompoundPropertySet.Type;
 import dataInterface.CompoundPropertySetUtil;
 import dataInterface.FragmentPropertySet;
+import dataInterface.NominalProperty;
 
-public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWorkflowProvider
+public class FeatureWizardPanel extends WizardPanel
 {
-	Selector<CompoundPropertySet> selector;
+	Selector<PropertySetCategory, CompoundPropertySet> selector;
 	JLabel numFeaturesLabel;
 	LinkButton loadFeaturesButton = new LinkButton("Load");
 	CompoundPropertyPanel compoundPropertyPanel;
@@ -74,21 +66,6 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 
 	DatasetFile dataset = null;
 	boolean selfUpdate;
-
-	private String addFeaturesText = "Add feature";
-	private String remFeaturesText = "Remove feature";
-
-	public static final String ROOT = Settings.text("features.root");
-
-	public static final String INTEGRATED_FEATURES = Settings.text("features.integrated");
-	public static final String PC_FEATURES = Settings.text("features.pc");
-	public static final String STRUCTURAL_FRAGMENTS = Settings.text("features.struct");
-
-	public static final String MINE_STRUCTURAL_FRAGMENTS = Settings.text("features.struct.mine");
-	public static final String MATCH_STRUCTURAL_FRAGMENTS = Settings.text("features.struct.match");
-
-	public static final String CDK_FEATURES = Settings.text("features.cdk");
-	public static final String OB_FEATURES = Settings.text("features.ob");
 
 	JPanel structuralFragmentPropsContainer;
 	private JPanel fragmentPropsPanel;
@@ -125,8 +102,8 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		label2.setFont(label2.getFont().deriveFont(Font.BOLD));
 		labelPanel.add(label2);
 
-		selector.setAddButtonText(addFeaturesText);
-		selector.setRemoveButtonText(remFeaturesText);
+		selector.setAddButtonText("Add feature");
+		selector.setRemoveButtonText("Remove feature");
 
 		numFeaturesLabel = new JLabel();
 		JPanel numFeaturesPanel = new JPanel(new GridLayout(0, 2, 10, 10));
@@ -147,7 +124,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		JLabel label3 = new JLabel("Feature properties:");
 		label3.setFont(label3.getFont().deriveFont(Font.BOLD));
 
-		fragmentProperties = new StructuralFragmentPropertiesPanel();
+		fragmentProperties = new StructuralFragmentPropertiesPanel(wizard);
 
 		fragmentProperties.setBorder(new CompoundBorder(new EmptyBorder(0, 0, 10, 0), fragmentProperties.getBorder()));
 		DefaultFormBuilder builder = new DefaultFormBuilder(new FormLayout("p,fill:p:grow"));
@@ -184,8 +161,8 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 
 	private void createSelector()
 	{
-		selector = new Selector<CompoundPropertySet>(CompoundPropertySet.class, ROOT,
-				(ScreenSetup.INSTANCE.isWizardSpaceSmall() ? 6 : 12))
+		selector = new Selector<PropertySetCategory, CompoundPropertySet>(CompoundPropertySet.class,
+				PropertySetProvider.INSTANCE.getRoot(), (ScreenSetup.INSTANCE.isWizardSpaceSmall() ? 6 : 12))
 		{
 			public Icon getIcon(CompoundPropertySet elem)
 			{
@@ -195,7 +172,7 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 				if (elem.getBinary() != null && !elem.getBinary().isFound())
 					warningIcon = ImageLoader.getImage(ImageLoader.Image.error);
 
-				CompoundProperty.Type type = CompoundPropertySetUtil.getType(elem);
+				Type type = CompoundPropertySetUtil.getType(elem);
 				if (type == Type.NUMERIC)
 					typeIcon = ImageLoader.getImage(ImageLoader.Image.numeric);
 				else if (type == Type.NOMINAL)
@@ -225,9 +202,9 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			}
 
 			@Override
-			public ImageIcon getCategoryIcon(String name)
+			public ImageIcon getCategoryIcon(PropertySetCategory cat)
 			{
-				if (OB_FEATURES.equals(name) && !BinHandler.BABEL_BINARY.isFound())
+				if (cat.getBinary() != null && !cat.getBinary().isFound())
 					return ImageLoader.getImage(ImageLoader.Image.error);
 				else
 					return null;
@@ -260,11 +237,12 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
+				if (wizard.isClosed())
+					return;
 				if (BinHandler.BABEL_BINARY.isFound())
 				{
-					selector.addElementList(new String[] { PC_FEATURES, OB_FEATURES },
-							OBDescriptorProperty.getDescriptors(true));
-					update();
+					OBDescriptorSet.loadDescriptors(true);
+					updateFeatures(dataset, true);
 				}
 			}
 		});
@@ -321,10 +299,11 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
-				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME,
-						"You have no feature/s selected. Please select (a group of) feature/s in the left panel before clicking '"
-								+ addFeaturesText + "'.", "Warning - No feature/s selected",
-						JOptionPane.WARNING_MESSAGE);
+				JOptionPane
+						.showMessageDialog(
+								Settings.TOP_LEVEL_FRAME,
+								"You have no feature/s selected. Please select (a group of) feature/s in the left panel before clicking 'Add feature'.",
+								"Warning - No feature/s selected", JOptionPane.WARNING_MESSAGE);
 			}
 		});
 		selector.addPropertyChangeListener(Selector.PROPERTY_EMPTY_REMOVE, new PropertyChangeListener()
@@ -332,10 +311,11 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
-				JOptionPane.showMessageDialog(Settings.TOP_LEVEL_FRAME,
-						"You have no feature/s selected. Please select (a group of) feature/s in the right panel before clicking '"
-								+ remFeaturesText + "'.", "Warning - No feature/s selected",
-						JOptionPane.WARNING_MESSAGE);
+				JOptionPane
+						.showMessageDialog(
+								Settings.TOP_LEVEL_FRAME,
+								"You have no feature/s selected. Please select (a group of) feature/s in the right panel before clicking 'Remove feature'.",
+								"Warning - No feature/s selected", JOptionPane.WARNING_MESSAGE);
 			}
 		});
 		selector.addKeyListener(new KeyAdapter()
@@ -356,6 +336,8 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
+				if (wizard.isClosed())
+					return;
 				update();
 			}
 		});
@@ -393,8 +375,8 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 							return;
 					}
 					FileUtil.copy(f, new File(dest));
-					StructuralFragments.instance.reset(name);
-					updateIntegratedFeatures(dataset, true);
+					ListedFragments.reset(name);
+					updateFeatures(dataset, true);
 				}
 			}
 		});
@@ -410,57 +392,40 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 			}
 		});
 
-		StructuralFragments.instance.toString(); // load instances first (listener order is important)
-		StructuralFragmentProperties.addPropertyChangeListenerToProperties(new PropertyChangeListener()
+		ListedFragments.init(); // load instances first (listener order is important)
+		FragmentProperties.addPropertyChangeListenerToProperties(new PropertyChangeListener()
 		{
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
+				if (wizard.isClosed())
+					return;
 				update();
 			}
-		});
+		}, false);
 	}
 
-	protected void updateFeatureProperties(String highlightedCategory)
+	protected void updateFeatureProperties(PropertySetCategory highlightedCategory)
 	{
+		String info = null;
 		JPanel props = null;
 
-		String info;
-		if (highlightedCategory == null || highlightedCategory.equals(ROOT))
-			info = Settings.text("features.desc.long", addFeaturesText);
-		else if (highlightedCategory.equals(PC_FEATURES))
-			info = Settings.text("features.pc.desc");
-		else if (highlightedCategory.equals(INTEGRATED_FEATURES))
-			info = Settings.text("features.integrated.desc");
-		else if (highlightedCategory.equals(STRUCTURAL_FRAGMENTS))
-		{
-			info = Settings.text("features.struct.desc");
-			props = fragmentPropsPanel;
-		}
-		else if (highlightedCategory.equals(MINE_STRUCTURAL_FRAGMENTS))
-		{
-			info = Settings.text("features.struct.mine.desc");
-			props = fragmentPropsPanel;
-		}
-		else if (highlightedCategory.equals(MATCH_STRUCTURAL_FRAGMENTS))
-		{
-			info = Settings.text("features.struct.match.desc", Settings.STRUCTURAL_FRAGMENT_DIR + File.separator);
-			props = fragmentPropsPanelSMARTS;
-		}
-		else if (highlightedCategory.equals(CDK_FEATURES))
-			info = Settings.text("features.cdk.desc", Settings.CDK_STRING);
-		else if (highlightedCategory.equals(OB_FEATURES))
-		{
-			info = Settings.text("features.ob.desc", Settings.OPENBABEL_STRING);
-			JComponent pp = BinHandler.getBinaryComponent(BinHandler.BABEL_BINARY, wizard);
-			JPanel p = new JPanel();
-			p.add(pp);
-			props = p;
-		}
+		if (highlightedCategory == null)
+			info = PropertySetProvider.INSTANCE.getRoot().getDescription();
 		else
 		{
-			//cdk sub categories
-			info = Settings.text("features.cdk.desc", Settings.CDK_STRING);
+			info = highlightedCategory.getDescription();
+			if (highlightedCategory.isFragmentCategory())
+				props = fragmentPropsPanel;
+			else if (highlightedCategory.isSMARTSFragmentCategory())
+				props = fragmentPropsPanelSMARTS;
+			else if (highlightedCategory.getBinary() != null)
+			{
+				JComponent pp = BinHandler.getBinaryComponent(highlightedCategory.getBinary(), wizard);
+				JPanel p = new JPanel();
+				p.add(pp);
+				props = p;
+			}
 		}
 
 		compoundPropertyPanel.showInfoText(info);
@@ -485,41 +450,38 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 
 		selector.repaintSelector();
 
+		featureInfo = new FeatureInfo(dataset, selector.getSelected());
+		numFeaturesLabel.setText("Number of selected features: " + featureInfo.numFeatures
+				+ (featureInfo.numFeaturesUnknown ? " + ?" : ""));
+
 		boolean notComputed = false;
+		boolean slowMiningFeatureSelected = false;
 		boolean slowFeaturesSelected = false;
-		msg = null;
-		featureInfo = new FeatureInfo();
 		for (CompoundPropertySet set : selector.getSelected())
 		{
-			featureInfo.featuresSelected = true;
-			if (set.isSizeDynamic() && !set.isComputed(dataset))
-			{
-				featureInfo.numFeaturesUnknown = true;
-				if (set.isSizeDynamicHigh(dataset))
-					featureInfo.numFeaturesUnknownHigh = true;
-			}
-			else
-			{
-				int num = set.getSize(dataset);
-				featureInfo.numFeatures += num;
-			}
-			if (set instanceof FragmentPropertySet)
-				featureInfo.smartsFeaturesSelected = true;
 			if (!set.isComputed(dataset))
 				notComputed = true;
 			if (!set.isComputed(dataset) && !(Settings.CACHING_ENABLED && set.isCached(dataset))
 					&& set.isComputationSlow())
+			{
 				slowFeaturesSelected = true;
-			if (set.getType() == Type.NUMERIC)
-				featureInfo.numericFeaturesSelected = true;
-			if (set.getType() == Type.NOMINAL)
-				featureInfo.nominalFeaturesSelected = true;
+				if (set instanceof FragmentPropertySet && set.isSizeDynamic())
+					slowMiningFeatureSelected = true;
+			}
 		}
-		numFeaturesLabel.setText("Number of selected features: " + featureInfo.numFeatures
-				+ (featureInfo.numFeaturesUnknown ? " + ?" : ""));
-
-		if (slowFeaturesSelected)
-			msg = MessageUtil.slowMessages(Settings.text("features.slow"));
+		msg = null;
+		if (slowMiningFeatureSelected)
+			msg = Messages.slowMessage(Settings.text("features.slowMining"), new AbstractAction(
+					"Settings for fragments")
+			{
+				@Override
+				public void actionPerformed(ActionEvent e)
+				{
+					fragmentProperties.showDialog(wizard);
+				}
+			});
+		else if (slowFeaturesSelected)
+			msg = MessageUtil.slowRuntimeMessages(Settings.text("features.slow"));
 		loadFeaturesButton.setVisible(notComputed);
 		if (!selfUpdate)
 			wizard.update();
@@ -535,31 +497,96 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 
 	public static class FeatureInfo
 	{
-		public int numFeatures = 0;
-		public boolean numFeaturesUnknown = false;
-		public boolean numFeaturesUnknownHigh = false;
-		public boolean featuresSelected = false;
-		public boolean numericFeaturesSelected = false;
-		public boolean nominalFeaturesSelected = false;
-		public boolean smartsFeaturesSelected = false;
+		private int numFeatures = 0;
+		private int numCompounds = 0;
+		private boolean numFeaturesUnknown = false;
+		private boolean numUnknwonFeaturesHigh = false;
 
-		public boolean isNumFeaturesHigh()
+		private boolean featuresSelected = false;
+		private boolean numericFeature = false;
+		private boolean nonBinaryNominalFeature = false;
+		private boolean fragmentFeature = false;
+
+		public FeatureInfo(DatasetFile d, CompoundPropertySet sets[])
 		{
-			if (numFeatures >= 1000)
+			numCompounds = (d == null ? 0 : d.numCompounds());
+			for (CompoundPropertySet set : sets)
+			{
+				featuresSelected = true;
+				if (set.getType() == Type.NUMERIC)
+					numericFeature = true;
+				else if (set.getType() == Type.NOMINAL)
+				{
+					if (set instanceof FragmentPropertySet)
+						fragmentFeature = true;
+					else
+						for (int i = 0; i < set.getSize(d); i++)
+							if (((NominalProperty) set.get(d, i)).getDomain().length > 2)
+								nonBinaryNominalFeature = true;
+				}
+				else
+					throw new IllegalStateException();
+
+				if (set.isSizeDynamic() && !set.isComputed(d))
+				{
+					numFeaturesUnknown = true;
+					if (set.isSizeDynamicHigh(d))
+						numUnknwonFeaturesHigh = true;
+				}
+				else
+				{
+					int num = set.getSize(d);
+					numFeatures += num;
+				}
+			}
+		}
+
+		public boolean isFeaturesSelected()
+		{
+			return featuresSelected;
+		}
+
+		public boolean isFragmentFeatureSelected()
+		{
+			return fragmentFeature;
+		}
+
+		public boolean isNumericFeatureSelected()
+		{
+			return numericFeature;
+		}
+
+		public boolean isOnlyBinaryFeaturesSelected()
+		{
+			if (!featuresSelected)
+				throw new IllegalStateException();
+			return !numericFeature && !nonBinaryNominalFeature;
+		}
+
+		public boolean isOnlyNominalFeaturesSelected()
+		{
+			if (!featuresSelected)
+				throw new IllegalStateException();
+			return !numericFeature;
+		}
+
+		public boolean isNumPairsHigh()
+		{
+			if (numFeatures * numCompounds >= 250000)
 				return true;
 			if (numFeaturesUnknown)
-				return numFeaturesUnknownHigh;
+				return numUnknwonFeaturesHigh;
 			return false;
 		}
 
-		public String getNumFeaturesWarning()
+		public String getNumPairsWarning()
 		{
-			if (!isNumFeaturesHigh())
+			if (!isNumPairsHigh())
 				throw new IllegalStateException();
-			String msg = "The selected algorithm could run a long time because the number of features is ";
-			if (numFeatures >= 1000)
+			String msg = "The selected algorithm could run a long time because the number of compound feature pairs is ";
+			if (numFeatures * numCompounds >= 250000)
 			{
-				msg += "high (" + (numFeaturesUnknown ? ">=" : "") + numFeatures + ").";
+				msg += "high (" + (numFeaturesUnknown ? ">=" : "") + (numFeatures * numCompounds / 1000) + "k).";
 				//				if (smartsFeaturesSelected)
 				//					msg += " You could try to increase minimum-frequency ";
 				//				else
@@ -574,12 +601,12 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		}
 	}
 
-	public void updateIntegratedFeatures(DatasetFile dataset)
+	public void updateFeatures(DatasetFile dataset)
 	{
-		updateIntegratedFeatures(dataset, false);
+		updateFeatures(dataset, false);
 	}
 
-	private void updateIntegratedFeatures(DatasetFile dataset, boolean forceUpdate)
+	private void updateFeatures(DatasetFile dataset, boolean forceUpdate)
 	{
 		if (dataset.equals(this.dataset) && !forceUpdate)
 			return;
@@ -594,184 +621,26 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		CompoundPropertySet[] selected = selector.getSelected();
 		selector.clearElements();
 
-		IntegratedProperty[] integrated = dataset.getIntegratedProperties();
-		selector.addElementList(INTEGRATED_FEATURES, integrated);
-		selector.addElements(PC_FEATURES);
-		for (CDKPropertySet p : CDKPropertySet.NUMERIC_DESCRIPTORS)
-			for (String clazz : p.getDictionaryClass())
-				selector.addElements(new String[] { PC_FEATURES, CDK_FEATURES, clazz }, p);
-		selector.addElements(new String[] { PC_FEATURES, OB_FEATURES }, OBDescriptorProperty.getDescriptors(false));
-		selector.addElements(STRUCTURAL_FRAGMENTS);
-		selector.addElementList(new String[] { STRUCTURAL_FRAGMENTS, MINE_STRUCTURAL_FRAGMENTS },
-				StructuralFragments.instance.getSets(SubstructureType.MINE));
-		selector.addElementList(new String[] { STRUCTURAL_FRAGMENTS, MATCH_STRUCTURAL_FRAGMENTS },
-				StructuralFragments.instance.getSets(SubstructureType.MATCH));
+		PropertySetProvider.INSTANCE.addToSelector(selector, dataset);
 
-		selector.expand(PC_FEATURES);
-		selector.expand(STRUCTURAL_FRAGMENTS);
+		for (CompoundPropertySet m : PropertySetProvider.INSTANCE.getFeaturesFromMappingWorkflow(
+				PropHandler.getProperties(), false, dataset))
+			selector.setSelected(m, false);
 
-		for (CompoundPropertySet m : getFeaturesFromMappingWorkflow(PropHandler.getProperties(), false))
-			selector.setSelected(m);
-
-		selector.setSelected(selected);
+		selector.setSelected(selected, false);
 
 		update();
 		selfUpdate = false;
 	}
 
 	@Override
-	public CompoundPropertySet[] getFeaturesFromMappingWorkflow(Properties props, boolean storeToSettings)
-	{
-		for (Property p : StructuralFragmentProperties.getProperties())
-			p.loadOrResetToDefault(props);
-		if (storeToSettings)
-		{
-			for (String propKey : propKeys)
-				if (props.containsKey(propKey))
-					PropHandler.put(propKey, (String) props.get(propKey));
-				else
-					PropHandler.remove(propKey);
-			for (Property p : StructuralFragmentProperties.getProperties())
-				p.put(PropHandler.getProperties());
-		}
-
-		List<CompoundPropertySet> features = new ArrayList<CompoundPropertySet>();
-
-		String integratedFeatures = (String) props.get(propKeyIntegrated);
-		List<String> selection = StringUtil.split(integratedFeatures);
-		for (String string : selection)
-		{
-			int index = string.lastIndexOf('#');
-			if (index == -1)
-				throw new Error("no type in serialized compound prop");
-			Type t = Type.valueOf(string.substring(index + 1));
-			String feat = string.substring(0, index);
-
-			IntegratedProperty p = IntegratedProperty.fromString(feat, t, dataset);
-			features.add(p);
-		}
-
-		String typedIntegratedFeatures = (String) props.get(propKeyIntegratedType);
-		selection = StringUtil.split(typedIntegratedFeatures);
-		for (String string : selection)
-		{
-			int index = string.lastIndexOf('#');
-			if (index == -1)
-				throw new Error("no type in serialized compound prop");
-			Type t = Type.valueOf(string.substring(index + 1));
-			String feat = string.substring(0, index);
-			IntegratedProperty.fromString(feat, t, dataset);
-		}
-
-		String cdkFeatures = (String) props.get(propKeyCDK);
-		selection = StringUtil.split(cdkFeatures);
-		for (String string : selection)
-		{
-			CDKPropertySet d = CDKPropertySet.fromString(string);
-			if (d != null)
-				features.add(d);
-		}
-
-		String obFeatures = (String) props.get(propKeyOB);
-		selection = StringUtil.split(obFeatures);
-		for (String string : selection)
-		{
-			if (string == null)
-				continue;
-			int index = string.lastIndexOf('#');
-			if (index == -1)
-				throw new Error("no type in serialized compound prop");
-			Type t = Type.valueOf(string.substring(index + 1));
-			String feat = string.substring(0, index);
-			OBDescriptorProperty p = OBDescriptorProperty.fromString(feat, t);
-			features.add(p);
-		}
-
-		String fragmentFeatures = (String) props.get(propKeyFragments);
-		selection = StringUtil.split(fragmentFeatures);
-		for (String string : selection)
-		{
-			FragmentPropertySet d = StructuralFragments.instance.findFromString(string);
-			if (d != null)
-				features.add(d);
-		}
-
-		return ArrayUtil.toArray(CompoundPropertySet.class, features);
-	}
-
-	private String propKeyIntegrated = "features-integrated";
-	private String propKeyCDK = "features-cdk";
-	private String propKeyOB = "features-ob";
-	private String propKeyFragments = "features-fragments";
-	private String propKeyIntegratedType = "feature-type";
-	private String[] propKeys = { propKeyIntegrated, propKeyCDK, propKeyOB, propKeyFragments, propKeyIntegratedType };
-
-	@Override
 	public void proceed()
 	{
-		HashMap<String, CompoundPropertySet[]> selected = new HashMap<String, CompoundPropertySet[]>();
-		selected.put(INTEGRATED_FEATURES, selector.getSelected(INTEGRATED_FEATURES));
-		selected.put(CDK_FEATURES, selector.getSelected(CDK_FEATURES));
-		selected.put(OB_FEATURES, selector.getSelected(OB_FEATURES));
-		selected.put(STRUCTURAL_FRAGMENTS, selector.getSelected(STRUCTURAL_FRAGMENTS));
-		putToProps(selected, PropHandler.getProperties());
+		PropertySetProvider.INSTANCE.putToProperties(selector.getSelected(), PropHandler.getProperties(), dataset);
 
 		PropHandler.storeProperties();
 		if (fragmentProperties != null)
 			fragmentProperties.store();
-	}
-
-	private void putToProps(HashMap<String, CompoundPropertySet[]> features, Properties props)
-	{
-		if (features.containsKey(INTEGRATED_FEATURES) && features.get(INTEGRATED_FEATURES).length > 0)
-		{
-			IntegratedProperty[] integratedProps = ArrayUtil.cast(IntegratedProperty.class,
-					features.get(INTEGRATED_FEATURES));
-			String[] serializedProps = new String[integratedProps.length];
-			for (int i = 0; i < serializedProps.length; i++)
-				serializedProps[i] = integratedProps[i] + "#" + integratedProps[i].getType();
-			props.put(propKeyIntegrated, ArrayUtil.toCSVString(serializedProps, true));
-		}
-		else
-			props.remove(propKeyIntegrated);
-
-		if (dataset.getIntegratedProperties().length > 0)
-		{
-			List<String> serializedProps = new ArrayList<String>();
-			for (CompoundProperty p : dataset.getIntegratedProperties())
-				if ((!features.containsKey(INTEGRATED_FEATURES) || ArrayUtil.indexOf(features.get(INTEGRATED_FEATURES),
-						p) == -1) && p.getType() != null)
-					serializedProps.add(p + "#" + p.getType());
-			if (serializedProps.size() > 0)
-				props.put(propKeyIntegratedType, ArrayUtil.toCSVString(ListUtil.toArray(serializedProps), true));
-		}
-
-		if (CDKPropertySet.NUMERIC_DESCRIPTORS.length > 0)
-		{
-			if (features.containsKey(CDK_FEATURES) && features.get(CDK_FEATURES).length > 0)
-				props.put(propKeyCDK, ArrayUtil.toCSVString(features.get(CDK_FEATURES), true));
-			else
-				props.remove(propKeyCDK);
-		}
-
-		if (features.containsKey(OB_FEATURES) && features.get(OB_FEATURES).length > 0)
-		{
-			OBDescriptorProperty[] obFeats = ArrayUtil.cast(OBDescriptorProperty.class, features.get(OB_FEATURES));
-			String[] serilizedOBFeats = new String[obFeats.length];
-			for (int i = 0; i < serilizedOBFeats.length; i++)
-				serilizedOBFeats[i] = obFeats[i] + "#" + obFeats[i].getType();
-			props.put(propKeyOB, ArrayUtil.toCSVString(serilizedOBFeats, true));
-		}
-		else
-			props.remove(propKeyOB);
-
-		if (features.containsKey(STRUCTURAL_FRAGMENTS) && features.get(STRUCTURAL_FRAGMENTS).length > 0)
-			props.put(propKeyFragments, ArrayUtil.toCSVString(features.get(STRUCTURAL_FRAGMENTS), true));
-		else
-			props.remove(propKeyFragments);
-
-		for (Property p : StructuralFragmentProperties.getProperties())
-			p.put(props);
 	}
 
 	@Override
@@ -802,82 +671,4 @@ public class FeatureWizardPanel extends WizardPanel implements FeatureMappingWor
 		return fragmentProperties;
 	}
 
-	@Override
-	public void exportFeaturesToMappingWorkflow(HashMap<String, CompoundPropertySet[]> features, Properties props)
-	{
-		for (CompoundPropertySet[] feats : features.values())
-			for (CompoundPropertySet feature : feats)
-			{
-				if (feature instanceof IntegratedProperty || feature instanceof OBDescriptorProperty)
-				{
-					CompoundProperty feat = (CompoundProperty) feature;
-					if (feature instanceof IntegratedProperty)
-					{
-						if (FeatureService.guessNominalFeatureType(feat.numDistinctValues(dataset),
-								dataset.numCompounds(), feat.isTypeAllowed(Type.NUMERIC)))
-							feat.setType(Type.NOMINAL);
-						else
-							feat.setType(Type.NUMERIC);
-					}
-					else if (feature instanceof OBDescriptorProperty)
-					{
-						if (feat.isTypeAllowed(Type.NUMERIC))
-							feat.setType(Type.NUMERIC);
-					}
-					if (feature.getType() == null)
-						throw new IllegalArgumentException("probably not suited: " + feat);
-				}
-			}
-		putToProps(features, props);
-	}
-
-	//	public void exportFeaturesToMappingWorkflow(String[] featureNames, boolean selectAllInternalFeatures,
-	//			Properties props)
-	//	{
-	//		IntegratedProperty[] availableIntegratedProps = dataset.getIntegratedProperties(false);
-	//		if (featureNames != null && featureNames.length > 0 && selectAllInternalFeatures)
-	//			throw new IllegalArgumentException("either specify features manually, or select all internal features");
-	//		if (selectAllInternalFeatures)
-	//		{
-	//			List<String> features = new ArrayList<String>();
-	//			for (int i = 0; i < availableIntegratedProps.length; i++)
-	//				if (availableIntegratedProps[i].isTypeAllowed(Type.NUMERIC)
-	//						|| availableIntegratedProps[i].getType() == Type.NOMINAL)
-	//					features.add(availableIntegratedProps[i].getName());
-	//			featureNames = ArrayUtil.toArray(String.class, features);
-	//		}
-	//		IntegratedProperty[] selectedIntegratedProps = new IntegratedProperty[featureNames.length];
-	//		int index = 0;
-	//		for (String featureName : featureNames)
-	//		{
-	//			IntegratedProperty match = null;
-	//			for (IntegratedProperty availableProp : availableIntegratedProps)
-	//			{
-	//				if (availableProp.getName().equals(featureName))
-	//				{
-	//					match = availableProp;
-	//					break;
-	//				}
-	//			}
-	//			if (match == null)
-	//				throw new IllegalArgumentException("could not find property: " + featureName + " in "
-	//						+ ArrayUtil.toString(availableIntegratedProps));
-	//			if (match.isTypeAllowed(Type.NUMERIC))
-	//				match.setType(Type.NUMERIC);
-	//			else if (match.getType() != Type.NOMINAL)
-	//				throw new IllegalArgumentException("probably not suited: " + featureName);
-	//			selectedIntegratedProps[index++] = match;
-	//		}
-	//		putIntegratedToProps(selectedIntegratedProps, props);
-	//	}
-
-	@Override
-	public void exportSettingsToMappingWorkflow(Properties props)
-	{
-		for (String propKey : propKeys)
-			if (PropHandler.containsKey(propKey))
-				props.put(propKey, PropHandler.get(propKey));
-		for (Property p : StructuralFragmentProperties.getProperties())
-			p.put(props);
-	}
 }

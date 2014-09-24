@@ -11,12 +11,12 @@ import java.util.List;
 
 import main.BinHandler;
 import main.Settings;
+import main.TaskProvider;
 import rscript.ExportRUtil;
 import util.ExternalToolUtil;
 import util.FileUtil;
 import alg.AlgorithmException.ClusterException;
 import alg.cluster.AbstractDatasetClusterer;
-import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;
@@ -24,10 +24,6 @@ import dataInterface.CompoundPropertyUtil;
 
 public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 {
-	public static final DatasetClusterer[] R_CLUSTERER = new AbstractRClusterer[] { KMeansRClusterer.INSTANCE,
-			CascadeKMeansRClusterer.INSTANCE, HierarchicalRClusterer.INSTANCE,
-			DynamicTreeCutHierarchicalRClusterer.INSTANCE };//, MahalanobisFixedPointClusterer.INSTANCE };
-
 	@Override
 	public Binary getBinary()
 	{
@@ -65,6 +61,8 @@ public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 					new String[] { BinHandler.RSCRIPT_BINARY.getLocation(), FileUtil.getAbsolutePathEscaped(rScript),
 							FileUtil.getAbsolutePathEscaped(new File(featureTableFile)),
 							FileUtil.getAbsolutePathEscaped(tmp) });
+			if (!TaskProvider.isRunning())
+				return null;
 
 			List<Integer[]> cluster = new ArrayList<Integer[]>();
 			if (tmp.exists())

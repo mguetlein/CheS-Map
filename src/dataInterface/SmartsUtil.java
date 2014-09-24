@@ -2,6 +2,7 @@ package dataInterface;
 
 import main.Settings;
 
+import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.isomorphism.matchers.QueryAtomContainer;
 import org.openscience.cdk.smiles.smarts.parser.SMARTSParser;
 
@@ -12,7 +13,7 @@ public class SmartsUtil
 	{
 		try
 		{
-			QueryAtomContainer cont = SMARTSParser.parse(smarts);
+			QueryAtomContainer cont = SMARTSParser.parse(smarts, DefaultChemObjectBuilder.getInstance());
 			//			Settings.LOGGER.println("length '" + smarts + "': " + cont.getAtomCount());
 			return cont.getAtomCount();
 		}

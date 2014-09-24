@@ -14,7 +14,6 @@ import javax.vecmath.Vector3f;
 
 import main.Settings;
 import main.TaskProvider;
-import util.MessageUtil;
 import weka.CompoundArffWriter;
 import weka.WekaPropertyUtil;
 import weka.attributeSelection.PrincipalComponents;
@@ -29,7 +28,13 @@ import dataInterface.CompoundProperty;
 public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 {
 	public static final WekaPCA3DEmbedder INSTANCE = new WekaPCA3DEmbedder(null);
-	public static final WekaPCA3DEmbedder INSTANCE_NO_PROBS = new WekaPCA3DEmbedder(new Property[0]);
+	public static final WekaPCA3DEmbedder INSTANCE_NO_PROBS = new WekaPCA3DEmbedder(new Property[0])
+	{
+		public Property[] getProperties()
+		{
+			return null;
+		}
+	};
 
 	PrincipalComponents pca = new PrincipalComponents();
 	Instances resultData;
@@ -78,7 +83,7 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 		TaskProvider.debug("Apply PCA");
 		//		pca.buildEvaluator(reducedData);
 		pca.buildEvaluator(data);
-		Settings.LOGGER.debug(pca.toString());
+		//Settings.LOGGER.debug(pca.toString());
 		resultData = pca.transformedData(data);
 
 		List<Vector3f> positions = new ArrayList<Vector3f>();
@@ -101,8 +106,7 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 	public DistanceMatrix getFeatureDistanceMatrix()
 	{
 		if (dist == null)
-			dist = new DistanceMatrix(DistanceMeasure.EUCLIDEAN_DISTANCE, EmbedUtil.euclMatrix(instances, features,
-					dataset));
+			dist = new DistanceMatrix(DistanceMeasure.EUCLIDEAN_DISTANCE, EmbedUtil.euclMatrix(instances, features));
 		return dist;
 	}
 
@@ -110,15 +114,6 @@ public class WekaPCA3DEmbedder extends Abstract3DEmbedder
 	protected boolean storesDistances()
 	{
 		return false;
-	}
-
-	@Override
-	public Messages getMessages(DatasetFile dataset, FeatureInfo featureInfo, DatasetClusterer clusterer)
-	{
-		Messages m = super.getMessages(dataset, featureInfo, clusterer);
-		if (dataset.numCompounds() >= 50 && featureInfo.isNumFeaturesHigh())
-			m.add(MessageUtil.slowMessage(featureInfo.getNumFeaturesWarning()));
-		return m;
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import main.BinHandler;
 import main.PropHandler;
@@ -23,17 +24,17 @@ import util.SwingUtil;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
+import data.fragments.FragmentProperties;
 import data.fragments.MatchEngine;
-import data.fragments.StructuralFragmentProperties;
 
 public class StructuralFragmentPropertiesPanel extends JPanel
 {
 	private PropertyPanel propPanel;
 	private JComponent babelPanel;
 
-	public StructuralFragmentPropertiesPanel()
+	public StructuralFragmentPropertiesPanel(final CheSMapperWizard wizard)
 	{
-		propPanel = new PropertyPanel(StructuralFragmentProperties.getProperties(), PropHandler.getProperties(),
+		propPanel = new PropertyPanel(FragmentProperties.getProperties(), PropHandler.getProperties(),
 				PropHandler.getPropertiesFile());
 		babelPanel = BinHandler.getBinaryComponent(BinHandler.BABEL_BINARY, (Window) getTopLevelAncestor());
 
@@ -45,14 +46,16 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 		add(b.getPanel(), BorderLayout.WEST);
 
 		if (!BinHandler.BABEL_BINARY.isFound())
-			StructuralFragmentProperties.setMatchEngine(MatchEngine.CDK);
+			FragmentProperties.setMatchEngine(MatchEngine.CDK);
 
-		StructuralFragmentProperties.addMatchEngingePropertyChangeListenerToProperties(new PropertyChangeListener()
+		FragmentProperties.addMatchEngingePropertyChangeListenerToProperties(new PropertyChangeListener()
 		{
 			@Override
 			public void propertyChange(PropertyChangeEvent evt)
 			{
-				babelPanel.setVisible(StructuralFragmentProperties.getMatchEngine() == MatchEngine.OpenBabel);
+				if (wizard.isClosed())
+					return;
+				babelPanel.setVisible(FragmentProperties.getMatchEngine() == MatchEngine.OpenBabel);
 				StructuralFragmentPropertiesPanel.this.revalidate();
 				StructuralFragmentPropertiesPanel.this.repaint();
 			}
@@ -67,6 +70,22 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 	public JPanel getSummaryPanel(Window owner)
 	{
 		return new SummaryPanel(owner);
+	}
+
+	public void showDialog(Window owner)
+	{
+		babelPanel.setVisible(true);
+		SwingUtil.showInDialog(StructuralFragmentPropertiesPanel.this, "Settings for structural fragments", null,
+				new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						babelPanel.setVisible(FragmentProperties.getMatchEngine() == MatchEngine.OpenBabel);
+					}
+				}, Settings.TOP_LEVEL_FRAME);
+		if (owner != null)
+			owner.setVisible(true);
 	}
 
 	class SummaryPanel extends JPanel
@@ -85,18 +104,14 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 				@Override
 				public void actionPerformed(ActionEvent e)
 				{
-					babelPanel.setVisible(true);
-					SwingUtil.showInDialog(StructuralFragmentPropertiesPanel.this, "Settings for structural fragments",
-							null, new Runnable()
-							{
-								@Override
-								public void run()
-								{
-									babelPanel.setVisible(StructuralFragmentProperties.getMatchEngine() == MatchEngine.OpenBabel);
-								}
-							}, Settings.TOP_LEVEL_FRAME);
-					if (owner != null)
-						owner.setVisible(true);
+					SwingUtilities.invokeLater(new Runnable()
+					{
+						@Override
+						public void run()
+						{
+							showDialog(owner);
+						}
+					});
 				}
 			});
 
@@ -117,10 +132,10 @@ public class StructuralFragmentPropertiesPanel extends JPanel
 		private void update()
 		{
 			String skip = "";
-			if (StructuralFragmentProperties.isSkipOmniFragments())
+			if (FragmentProperties.isSkipOmniFragments())
 				skip = "skip omnipresent fragments, ";
-			l.setText("Settings for fragments: min-frequency " + StructuralFragmentProperties.getMinFrequency() + ", "
-					+ skip + "match with " + StructuralFragmentProperties.getMatchEngine());
+			l.setText("Settings for fragments: min-frequency " + FragmentProperties.getMinFrequency() + ", " + skip
+					+ "match with " + FragmentProperties.getMatchEngine());
 		}
 	}
 

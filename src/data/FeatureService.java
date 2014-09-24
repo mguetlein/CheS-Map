@@ -21,8 +21,8 @@ import javax.vecmath.Point3d;
 import main.Settings;
 import main.TaskProvider;
 
+import org.openscience.cdk.Atom;
 import org.openscience.cdk.AtomContainer;
-import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.ChemFile;
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.aromaticity.Aromaticity;
@@ -53,48 +53,51 @@ import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 
+import property.IntegratedPropertySet;
 import util.ArrayUtil;
 import util.FileUtil;
 import util.FileUtil.UnexpectedNumColsException;
 import util.ListUtil;
 import util.ValueFileCache;
-import dataInterface.CompoundProperty.Type;
+import dataInterface.CompoundProperty;
+import dataInterface.CompoundPropertySet.Type;
+import dataInterface.NominalProperty;
 
 public class FeatureService
 {
 	private HashMap<DatasetFile, IAtomContainer[]> fileToCompounds = new HashMap<DatasetFile, IAtomContainer[]>();
 	private HashMap<DatasetFile, Boolean> fileHas3D = new HashMap<DatasetFile, Boolean>();
-	private HashMap<DatasetFile, LinkedHashSet<IntegratedProperty>> integratedProperties = new HashMap<DatasetFile, LinkedHashSet<IntegratedProperty>>();
-	private HashMap<DatasetFile, IntegratedProperty> integratedSmiles = new HashMap<DatasetFile, IntegratedProperty>();
+	private HashMap<DatasetFile, LinkedHashSet<IntegratedPropertySet>> integratedProperties = new HashMap<DatasetFile, LinkedHashSet<IntegratedPropertySet>>();
+	private HashMap<DatasetFile, IntegratedPropertySet> integratedSmiles = new HashMap<DatasetFile, IntegratedPropertySet>();
 	private HashMap<DatasetFile, String[]> cdkSmiles = new HashMap<DatasetFile, String[]>();
 
 	public FeatureService()
 	{
 	}
 
-	public IntegratedProperty[] getIntegratedProperties(DatasetFile dataset)
+	public IntegratedPropertySet[] getIntegratedProperties(DatasetFile dataset)
 	{
-		return ArrayUtil.toArray(IntegratedProperty.class, integratedProperties.get(dataset));
+		return ArrayUtil.toArray(IntegratedPropertySet.class, integratedProperties.get(dataset));
 	}
 
-	public IntegratedProperty getIntegratedClusterProperty(DatasetFile dataset)
+	public IntegratedPropertySet getIntegratedClusterProperty(DatasetFile dataset)
 	{
-		IntegratedProperty cProp = null;
-		for (IntegratedProperty integratedProperty : integratedProperties.get(dataset))
+		IntegratedPropertySet cProp = null;
+		for (IntegratedPropertySet integratedProperty : integratedProperties.get(dataset))
 			if (integratedProperty.toString().toLowerCase().equals("cluster"))
 			{
 				cProp = integratedProperty;
 				break;
 			}
 		if (cProp == null)
-			for (IntegratedProperty integratedProperty : integratedProperties.get(dataset))
+			for (IntegratedPropertySet integratedProperty : integratedProperties.get(dataset))
 				if (integratedProperty.toString().toLowerCase().equals("clusters"))
 				{
 					cProp = integratedProperty;
 					break;
 				}
 		if (cProp == null)
-			for (IntegratedProperty integratedProperty : integratedProperties.get(dataset))
+			for (IntegratedPropertySet integratedProperty : integratedProperties.get(dataset))
 				if (integratedProperty.toString().matches("(?i).*cluster.*"))
 				{
 					cProp = integratedProperty;
@@ -103,18 +106,20 @@ public class FeatureService
 		return cProp;
 	}
 
-	public boolean isLoaded(DatasetFile dataset)
+	public synchronized boolean isLoaded(DatasetFile dataset)
 	{
 		return (fileToCompounds.get(dataset) != null);
 	}
 
-	public void clear(DatasetFile dataset)
+	public synchronized void clear(DatasetFile dataset)
 	{
 		if (fileToCompounds.get(dataset) != null)
 		{
 			fileToCompounds.remove(dataset);
 			fileHas3D.remove(dataset);
 			integratedProperties.remove(dataset);
+			integratedSmiles.remove(dataset);
+			cdkSmiles.remove(dataset);
 		}
 	}
 
@@ -204,7 +209,7 @@ public class FeatureService
 					reader.close();
 					List<IAtomContainer> l = ChemFileManipulator.getAllAtomContainers(content);
 					if (l.size() != 1)
-						throw new Error();
+						throw new Error("Could not read inchi: " + inch);
 					list.add(l.get(0));
 				}
 			}
@@ -396,7 +401,7 @@ public class FeatureService
 			TaskProvider.debug("Parsing file with CDK");
 
 			Vector<IAtomContainer> mols = new Vector<IAtomContainer>();
-			integratedProperties.put(dataset, new LinkedHashSet<IntegratedProperty>());
+			integratedProperties.put(dataset, new LinkedHashSet<IntegratedPropertySet>());
 
 			int mCount = 0;
 			File file = new File(dataset.getLocalPath());
@@ -432,14 +437,16 @@ public class FeatureService
 			}
 
 			List<Integer> illegalCompounds = new ArrayList<Integer>();
-			HashMap<IntegratedProperty, List<Object>> propVals = new HashMap<IntegratedProperty, List<Object>>();
+			HashMap<IntegratedPropertySet, List<Object>> propVals = new HashMap<IntegratedPropertySet, List<Object>>();
 
 			for (IAtomContainer iAtomContainer : list)
 			{
 				IAtomContainer mol = (IAtomContainer) iAtomContainer;
 				for (Object key : mol.getProperties().keySet())
 				{
-					IntegratedProperty p = IntegratedProperty.create(key.toString(), dataset);
+					if (key == null)
+						throw new Error("null key in dataset, empty column header?");
+					IntegratedPropertySet p = IntegratedPropertySet.create(key.toString(), dataset);
 					integratedProperties.get(dataset).add(p);
 					if (key.toString().toUpperCase().equals("STRUCTURE_SMILES")
 							|| key.toString().toUpperCase().equals("SMILES"))
@@ -464,11 +471,11 @@ public class FeatureService
 				TaskProvider.verbose("Loaded " + (mCount + 1) + "/" + list.size() + " compounds");
 
 				Map<Object, Object> props = mol.getProperties();
-				for (IntegratedProperty p : integratedProperties.get(dataset))
+				for (IntegratedPropertySet p : integratedProperties.get(dataset))
 				{
 					if (!propVals.containsKey(p))
 						propVals.put(p, new ArrayList<Object>());
-					propVals.get(p).add(props.get(p.getName()));
+					propVals.get(p).add(props.get(p.get().getName()));
 				}
 
 				mol = (IAtomContainer) AtomContainerManipulator.removeHydrogens(mol);
@@ -523,8 +530,9 @@ public class FeatureService
 			Settings.LOGGER.info(mols.size() + " compounds found");
 
 			// convert string to double
-			for (IntegratedProperty p : integratedProperties.get(dataset))
+			for (IntegratedPropertySet p : integratedProperties.get(dataset))
 			{
+				CompoundProperty prop = p.get();
 				List<Object> l = propVals.get(p);
 				while (l.size() < mCount)
 				{
@@ -534,7 +542,7 @@ public class FeatureService
 				String stringValues[] = new String[l.size()];
 				l.toArray(stringValues);
 
-				p.setStringValues(dataset, stringValues);
+				p.setStringValues(stringValues);
 
 				Double doubleValues[] = ArrayUtil.parse(stringValues);
 				if (doubleValues != null)
@@ -542,7 +550,7 @@ public class FeatureService
 					// numericSdfProperties.get(f).add(p);
 					p.setTypeAllowed(Type.NOMINAL, true);
 					p.setTypeAllowed(Type.NUMERIC, true);
-					if (guessNominalFeatureType(p.numDistinctValues(dataset), stringValues.length, true))
+					if (guessNominalFeatureType(prop.numDistinctValues(), stringValues.length, true))
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(Type.NUMERIC);
@@ -551,13 +559,13 @@ public class FeatureService
 				{
 					p.setTypeAllowed(Type.NOMINAL, true);
 					p.setTypeAllowed(Type.NUMERIC, false);
-					if (guessNominalFeatureType(p.numDistinctValues(dataset), stringValues.length, false))
+					if (guessNominalFeatureType(prop.numDistinctValues(), stringValues.length, false))
 						p.setType(Type.NOMINAL);
 					else
 						p.setType(null);
 				}
 				if (p.getType() == Type.NUMERIC || p.isTypeAllowed(Type.NUMERIC))
-					p.setDoubleValues(dataset, doubleValues);
+					p.setDoubleValues(doubleValues);
 			}
 
 			IAtomContainer res[] = new IAtomContainer[mols.size()];
@@ -569,12 +577,12 @@ public class FeatureService
 		}
 	}
 
-	public int numCompounds(DatasetFile dataset)
+	public synchronized int numCompounds(DatasetFile dataset)
 	{
 		return fileToCompounds.get(dataset).length;
 	}
 
-	public IAtomContainer[] getCompounds(DatasetFile dataset)
+	public synchronized IAtomContainer[] getCompounds(DatasetFile dataset)
 	{
 		try
 		{
@@ -588,11 +596,11 @@ public class FeatureService
 		}
 	}
 
-	public String[] getSmiles(DatasetFile dataset)
+	public synchronized String[] getSmiles(DatasetFile dataset)
 	{
 		if (integratedSmiles.containsKey(dataset))
 		{
-			String smiles[] = integratedSmiles.get(dataset).getStringValues(dataset);
+			String smiles[] = ((NominalProperty) integratedSmiles.get(dataset).get()).getStringValues();
 			SmilesGenerator sg = null;
 			for (int i = 0; i < smiles.length; i++)
 				if (smiles[i] == null || smiles[i].length() == 0)
@@ -652,7 +660,7 @@ public class FeatureService
 		return cdkSmiles.get(dataset);
 	}
 
-	public boolean has3D(DatasetFile dataset)
+	public synchronized boolean has3D(DatasetFile dataset)
 	{
 		// loadSdf(dataset);
 
@@ -740,7 +748,7 @@ public class FeatureService
 		int compoundOrigIndices[] = new int[dataset.numCompounds()];
 		for (int i = 0; i < compoundOrigIndices.length; i++)
 			compoundOrigIndices[i] = i;
-		writeOrigCompoundsToSDFile(dataset.getCompounds(), sdfFile, compoundOrigIndices, false);
+		writeOrigCompoundsToSDFile(dataset.getCompounds(), sdfFile, compoundOrigIndices, false, false);
 	}
 
 	/**
@@ -754,7 +762,7 @@ public class FeatureService
 	 * @throws IOException
 	 */
 	public static void writeOrigCompoundsToSDFile(IAtomContainer molecules[], String sdfFile,
-			int compoundOrigIndices[], boolean overwrite) throws CDKException, IOException
+			int compoundOrigIndices[], boolean overwrite, boolean bigData) throws CDKException, IOException
 	{
 		if (molecules.length < compoundOrigIndices.length)
 			throw new IllegalArgumentException();
@@ -774,44 +782,44 @@ public class FeatureService
 
 					IAtomContainerSet oldSet = ConnectivityChecker.partitionIntoMolecules(molecule);
 					AtomContainer newSet = new AtomContainer();
-					for (int i = 0; i < oldSet.getAtomContainerCount(); i++)
+					if (bigData)
+						newSet.addAtom(new Atom("C"));
+					else
 					{
-						IAtomContainer mol;
-						try
+						for (int i = 0; i < oldSet.getAtomContainerCount(); i++)
 						{
-							sdg.setMolecule(oldSet.getAtomContainer(i));
-							sdg.generateCoordinates();
-							mol = sdg.getMolecule();
-						}
-						catch (Exception e)
-						{
-							Settings.LOGGER.error(e);
-							mol = oldSet.getAtomContainer(i);
-						}
-						mol = (IAtomContainer) AtomContainerManipulator.removeHydrogens(mol);
-						try
-						{
-							mol = fix.kekuliseAromaticRings(mol);
-						}
-						catch (Exception e)
-						{
-							Settings.LOGGER.error(e);
-						}
-						newSet.add(mol);
+							IAtomContainer mol;
+							try
+							{
+								sdg.setMolecule(oldSet.getAtomContainer(i));
+								sdg.generateCoordinates();
+								mol = sdg.getMolecule();
+							}
+							catch (Exception e)
+							{
+								Settings.LOGGER.error(e);
+								mol = oldSet.getAtomContainer(i);
+							}
+							mol = (IAtomContainer) AtomContainerManipulator.removeHydrogens(mol);
+							try
+							{
+								mol = fix.kekuliseAromaticRings(mol);
+							}
+							catch (Exception e)
+							{
+								Settings.LOGGER.error(e);
+							}
+							newSet.add(mol);
 
-						if (!TaskProvider.isRunning())
-							return;
+							if (!TaskProvider.isRunning())
+								return;
+						}
 					}
-					if (molecule.getProperty("SMIdbNAME") != null) // set identifier in sdf file (title) with identifier in SMI file (SMIdbNAME)
-						newSet.setProperty(CDKConstants.TITLE, molecule.getProperty("SMIdbNAME"));
-					writer.write(newSet);
-					if (!TaskProvider.isRunning())
-						return;
-				}
 
-				if (!FileUtil.robustRenameTo(tmpFile, new File(sdfFile)))
-					throw new Error("renaming or delete file error");
-				Settings.LOGGER.info("write cdk compounds to sd-file: " + sdfFile);
+					if (!FileUtil.robustRenameTo(tmpFile, new File(sdfFile)))
+						throw new Error("renaming or delete file error");
+					Settings.LOGGER.info("write cdk compounds to sd-file: " + sdfFile);
+				}
 			}
 			finally
 			{
@@ -821,5 +829,4 @@ public class FeatureService
 		else
 			Settings.LOGGER.info("cdk sd-file alread exists: " + sdfFile);
 	}
-
 }

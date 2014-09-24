@@ -5,7 +5,7 @@ import main.Settings;
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.exception.InvalidSmilesException;
-import org.openscience.cdk.interfaces.IMolecule;
+import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.qsar.IMolecularDescriptor;
 import org.openscience.cdk.qsar.descriptors.molecular.BCUTDescriptor;
 import org.openscience.cdk.qsar.descriptors.molecular.WeightDescriptor;
@@ -22,7 +22,7 @@ public class CDKTest
 		try
 		{
 			SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
-			IMolecule m = sp.parseSmiles("N[C@@H](C)C(=O)O");
+			IAtomContainer m = sp.parseSmiles("N[C@@H](C)C(=O)O");
 
 			CDKHydrogenAdder ha = CDKHydrogenAdder.getInstance(DefaultChemObjectBuilder.getInstance());
 			AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(m);

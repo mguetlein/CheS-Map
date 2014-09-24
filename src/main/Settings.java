@@ -101,7 +101,8 @@ public class Settings
 	public static Boolean DBG = false;
 	public static Boolean CACHING_ENABLED = true;
 	public static Boolean DESC_MIXTURE_HANDLING = false;
-	public static DatasetFile MAPPED_DATASET = null;
+	public static boolean SKIP_REDUNDANT_FEATURES = false;
+	public static boolean BIG_DATA = false;
 
 	public static ImageIcon CHES_MAPPER_IMAGE = ImageLoader.getImage(ImageLoader.Image.ches_mapper);
 	public static ImageIcon CHES_MAPPER_ICON = ImageLoader.getImage(ImageLoader.Image.ches_mapper_icon);
@@ -193,6 +194,7 @@ public class Settings
 		try
 		{
 			LOGGER = new Logger(LOG_FILE, true);
+			LOGGER.logFromStdErr();
 			LOGGER.info("Logger initialized ('" + LOG_FILE + "')");
 		}
 		catch (RuntimeException e)
@@ -222,6 +224,7 @@ public class Settings
 		}
 	}
 
+	public static String MOSS_VERSION = "version 6.10, 2013.04.22";
 	public static String CDK_VERSION = "1.4.18";
 	public static String CDK_STRING = text("lib.cdk", CDK_VERSION);
 	public static boolean CDK_SKIP_SOME_DESCRIPTORS = true;
@@ -236,6 +239,8 @@ public class Settings
 	public static String HOMEPAGE_RUNTIME = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki/index.php?title=Supported_Formats,_Dataset_Size_and_Algorithm_Runtimes";
 	public static String HOMEPAGE_DOCUMENTATION = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki";
 	public static String HOMEPAGE_SPECIFICITY = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki/index.php?title=Working_with_the_3D_Viewer#Sorting_of_feature_values";
+	public static String HOMEPAGE_FORMATS = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki/index.php?title=Supported_Dataset_Formats_and_Size";
+	public static String HOMEPAGE_EXPORT_SETTINGS = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki/index.php?title=Export/Import_Wizard_Settings";
 
 	public static String CONTACT = "Martin Gütlein (ches-mapper@informatik.uni-freiburg.de)";
 

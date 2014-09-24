@@ -1,93 +1,34 @@
 package dataInterface;
 
-import gui.property.ColorGradient;
-import data.DatasetFile;
-import data.fragments.MatchEngine;
-
 public interface CompoundProperty
 {
-	public static enum Type
-	{
-		NUMERIC, NOMINAL
-	}
-
-	public static enum SubstructureType
-	{
-		MINE, MATCH
-	}
+	public boolean isValuesSet();
 
 	public String getName();
 
 	public String getDescription();
 
-	public Type getType();
-
-	public boolean isSmiles();
-
-	public void setType(Type type);
-
-	public boolean isTypeAllowed(Type type);
-
-	public void setTypeAllowed(Type type, boolean allowed);
-
-	public boolean isSmartsProperty();
-
-	public String getSmarts();
-
-	public MatchEngine getSmartsMatchEngine();
-
-	public SubstructureType getSubstructureType();
-
 	public CompoundPropertySet getCompoundPropertySet();
-
-	public String getUniqueName();
-
-	public String[] getNominalDomain(DatasetFile dataset);
-
-	public int[] getNominalDomainCounts(DatasetFile dataset);
-
-	public String[] getNominalDomainInMappedDataset();
-
-	public String[] getStringValues(DatasetFile dataset);
-
-	public String getFormattedValueInMappedDataset(Object doubleOrString);
-
-	public String getFormattedValue(Object doubleOrString, DatasetFile dataset);
 
 	public String getFormattedNullValue();
 
-	public Double[] getDoubleValues(DatasetFile dataset);
+	public int numMissingValues();
 
-	public Double[] getDoubleValuesInCompleteMappedDataset();
+	/** excluding null */
+	public int numDistinctValues();
 
-	public Double[] getNormalizedValues(DatasetFile dataset);
+	public CompoundProperty getRedundantProp();
 
-	public Double[] getNormalizedValuesInCompleteMappedDataset();
+	public void setRedundantProp(CompoundProperty b);
 
-	public Double[] getNormalizedLogValues(DatasetFile dataset);
-
-	public Double getNormalizedMedian(DatasetFile dataset);
-
-	public String getModeNonNull(DatasetFile dataset);
-
-	public int numMissingValues(DatasetFile dataset);
-
-	public int numDistinctValues(DatasetFile dataset);
-
-	public Boolean isInteger(DatasetFile dataset);
-
-	public Boolean isIntegerInMappedDataset();
-
-	public boolean isLogHighlightingEnabled();
-
-	public void setLogHighlightingEnabled(boolean log);
-
-	public ColorGradient getHighlightColorGradient();
-
-	public void setHighlightColorGradient(ColorGradient grad);
-
-	public Boolean hasSmallDoubleValues(DatasetFile dataset);
-
-	public Boolean hasSmallDoubleValuesInMappedDataset();
-
+	/**
+	 * there numeric or nominal properties
+	 * numeric properties are never undefined
+	 * non-integrated nominal properties are never undefined
+	 * integrated nominal properties can be undefined, if they have a lot of different values (e.g. one for each compound)
+	 * hence, they are not suited for mapping
+	 * when selected in the viewer, undefined values should not be colored 
+	 * the user can in the viewer make an undefined property to a defined nominal property (setting the type) 
+	 */
+	public boolean isUndefined();
 }

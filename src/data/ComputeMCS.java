@@ -42,27 +42,28 @@ public class ComputeMCS
 
 				TaskProvider.debug("Compute MCS for cluster " + count + "/" + clusters.size());
 
-				IAtomContainer mols[] = new IAtomContainer[c.getSize()];
+				IAtomContainer mols[] = new IAtomContainer[c.getNumCompounds()];
 				for (int i = 0; i < mols.length; i++)
 					mols[i] = allMols[c.getCompounds().get(i).getOrigIndex()];
 				IAtomContainer mcsMolecule = null;
 				try
 				{
 					mcsMolecule = MCSComputer.computeMCS(mols, ThreeDAligner.MIN_NUM_ATOMS);
+					if (mcsMolecule != null)
+					{
+						SmilesGenerator g = SmilesGenerator.generic();
+						//					SmilesGenerator g = new SmilesGenerator(true, true);
+						smarts = g.create(mcsMolecule);
+						//HACK: otherwhise CDK cannot rematch the smarts 
+						smarts = smarts.replaceAll("\\[nH\\]", "n");
+						//				Settings.LOGGER.println("non aromatic");
+						//				g = new SmilesGenerator();
+						//				Settings.LOGGER.println(g.createSMILES(mcsMolecule));
+					}
 				}
 				catch (Exception e)
 				{
 					Settings.LOGGER.error(e);
-				}
-				if (mcsMolecule != null)
-				{
-					SmilesGenerator g = new SmilesGenerator(true, true);
-					smarts = g.createSMILES(mcsMolecule);
-					//HACK: otherwhise CDK cannot rematch the smarts 
-					smarts = smarts.replaceAll("\\[nH\\]", "n");
-					//				Settings.LOGGER.println("non aromatic");
-					//				g = new SmilesGenerator();
-					//				Settings.LOGGER.println(g.createSMILES(mcsMolecule));
 				}
 				if (MCSComputer.DEBUG)
 					Settings.LOGGER.info("\n\n");

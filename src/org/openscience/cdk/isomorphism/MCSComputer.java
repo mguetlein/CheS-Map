@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import main.ScreenSetup;
 import main.Settings;
 import main.TaskProvider;
 
@@ -35,18 +36,21 @@ public class MCSComputer
 
 	public static void main(String[] args) throws CDKException, CloneNotSupportedException, IOException
 	{
+		ScreenSetup.INSTANCE = ScreenSetup.DEFAULT;
+
 		SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
-		//IMolecule mol1 = sp.parseSmiles("O=C(OC(COc1ccccc1CC=C)CNC(C)C)C2CC2");
-		//IMolecule mol2 = sp.parseSmiles("O=C(OC1CC3N(C)C(C1)C2OC23)C(c4ccccc4)CO");
-		IMolecule mol1 = sp.parseSmiles("Oc1ccccc1");
-		IMolecule mol2 = sp.parseSmiles("OCCCCCC");
+		IMolecule mol1 = sp.parseSmiles("O=C(OC(COc1ccccc1CC=C)CNC(C)C)C2CC2");
+		IMolecule mol2 = sp.parseSmiles("O=C(OC1CC3N(C)C(C1)C2OC23)C(c4ccccc4)CO");
+		IMolecule mol3 = sp.parseSmiles("O=C(OC1CC3N(CCCCC)C(C1)C2OC23)C(c4cccnc4)CO");
+		//		IMolecule mol1 = sp.parseSmiles("Oc1ccccc1");
+		//		IMolecule mol2 = sp.parseSmiles("OCCCCCC");
 
 		//COCCCNC(C)C
 		//IMolecule mol3 = sp.parseSmiles("c1ccccc1");
 		//		IMolecule mol1 = sp.parseSmiles("CCCCOOOO");
 		//		IMolecule mol2 = sp.parseSmiles("CCCCNOO");
 		//		IMolecule mol3 = sp.parseSmiles("CC");
-		IMolecule list[] = new IMolecule[] { mol1, mol2 };
+		IMolecule list[] = new IMolecule[] { mol1, mol2, mol3 };
 		computeMCS(list);
 		System.exit(1);
 

@@ -5,16 +5,12 @@ import java.awt.event.ComponentEvent;
 import java.io.File;
 
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import javax.swing.filechooser.FileFilter;
 
 import main.CheSMapping;
-import main.PropHandler;
 import main.ScreenSetup;
 import main.Settings;
-import util.FileUtil;
 import util.ScreenUtil;
 import util.SwingUtil;
 import workflow.MappingWorkflow;
@@ -96,83 +92,55 @@ public class CheSMapperWizard extends WizardDialog
 		}
 
 		((JComponent) getContentPane().getComponent(0)).setBorder(ScreenSetup.INSTANCE.getWizardBorder());
-		setImportActive(true);
+		setImportActive(false);
 
 		setVisible(true);
 	}
 
-	protected void doImport()
+	public void initImport(final File f)
 	{
-		JFileChooser chooser = null;
-		String dir = PropHandler.get("workflow-import-dir");
-		if (dir == null)
-			dir = PropHandler.get("workflow-export-dir");
-		if (dir == null)
-			dir = System.getProperty("user.home");
-		chooser = new JFileChooser(new File(dir));
-		chooser.setFileFilter(new FileFilter()
+		Thread th = new Thread(new Runnable()
 		{
 			@Override
-			public String getDescription()
+			public void run()
 			{
-				return "CheS-Mapper Wizard Settings File (*.ches)";
-			}
-
-			@Override
-			public boolean accept(File f)
-			{
-				return f.isDirectory() || FileUtil.getFilenamExtension(f.getAbsolutePath()).matches("(?i)ches");
-			}
-		});
-		chooser.showOpenDialog(this);
-		final File f = chooser.getSelectedFile();
-		if (f != null && FileUtil.getFilenamExtension(f.getAbsolutePath()).matches("(?i)ches"))
-		{
-			PropHandler.put("workflow-import-dir", f.getParent());
-			PropHandler.storeProperties();
-			Thread th = new Thread(new Runnable()
-			{
-				@Override
-				public void run()
+				try
 				{
-					try
+					SwingUtilities.invokeLater(new Runnable()
 					{
-						SwingUtilities.invokeLater(new Runnable()
+						@Override
+						public void run()
 						{
-							@Override
-							public void run()
-							{
-								CheSMapperWizard.this.block("create worflow");
-							}
-						});
-						// do not do this in AWT event thread, this will cause errors
-						chesMapping = MappingWorkflow.createMappingFromMappingWorkflow(f.getAbsolutePath());
-					}
-					finally
-					{
-						SwingUtilities.invokeLater(new Runnable()
-						{
-							@Override
-							public void run()
-							{
-								CheSMapperWizard.this.unblock("create worflow");
-							}
-						});
-					}
-					if (chesMapping != null)
-						SwingUtilities.invokeLater(new Runnable()
-						{
-							@Override
-							public void run()
-							{
-								close(RETURN_VALUE_IMPORT);
-							}
-						});
+							CheSMapperWizard.this.block("create worflow");
+						}
+					});
+					// do not do this in AWT event thread, this will cause errors
+					chesMapping = MappingWorkflow.createMappingFromMappingWorkflow(f.getAbsolutePath());
 				}
+				finally
+				{
+					SwingUtilities.invokeLater(new Runnable()
+					{
+						@Override
+						public void run()
+						{
+							CheSMapperWizard.this.unblock("create worflow");
+						}
+					});
+				}
+				if (chesMapping != null)
+					SwingUtilities.invokeLater(new Runnable()
+					{
+						@Override
+						public void run()
+						{
+							close(RETURN_VALUE_IMPORT);
+						}
+					});
+			}
 
-			});
-			th.start();
-		}
+		});
+		th.start();
 	}
 
 	public static final int RETURN_VALUE_IMPORT = 2;
@@ -184,10 +152,12 @@ public class CheSMapperWizard extends WizardDialog
 
 	protected void update(int status)
 	{
+		if (isClosed())
+			return;
 		if (dataset.getDatasetFile() != null)
 		{
 			create3D.update(dataset.getDatasetFile(), null, null);
-			features.updateIntegratedFeatures(dataset.getDatasetFile());
+			features.updateFeatures(dataset.getDatasetFile());
 			if (features.getFeatureInfo() != null)
 			{
 				cluster.update(dataset.getDatasetFile(), features.getFeatureInfo(), cluster.getDatasetClusterer());
@@ -203,6 +173,19 @@ public class CheSMapperWizard extends WizardDialog
 	{
 		chesMapping = new CheSMapping(dataset.getDatasetFile(), features.getSelectedFeatures(),
 				cluster.getDatasetClusterer(), create3D.get3DBuilder(), embed.get3DEmbedder(), align.getAlginer());
+	}
+
+	private boolean closed = false;
+
+	public boolean isClosed()
+	{
+		return closed;
+	}
+
+	protected void close(int returnValue)
+	{
+		closed = true;
+		super.close(returnValue);
 	}
 
 	public CheSMapping getChesMapping()

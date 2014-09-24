@@ -4,6 +4,7 @@ import gui.property.PropertyUtil;
 
 import java.util.List;
 
+import property.ListedFragmentProperty;
 import main.Settings;
 import util.ArrayUtil;
 import util.StringUtil;
@@ -11,7 +12,6 @@ import alg.Algorithm;
 import alg.build3d.ThreeDBuilder;
 import appdomain.AppDomainComputer;
 import data.fragments.MatchEngine;
-import data.fragments.StructuralFragment;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundPropertySet;
 import dataInterface.CompoundPropertyUtil;
@@ -43,7 +43,10 @@ public class FilenameProvider
 							new Algorithm[] { clusteringData.getThreeDBuilder() });
 					break;
 				}
-		return CompoundPropertyUtil.getSetMD5(clusteringData.getFeatures(), getEncodedSettings(algs));
+		String skipped = "";
+		if (clusteringData.isSkippingRedundantFeatures())
+			skipped += "skippedRedundantFeatures";
+		return CompoundPropertyUtil.getSetMD5(clusteringData.getFeatures(), skipped + getEncodedSettings(algs));
 	}
 
 	private static String getEncodedSettings(Algorithm... algs)
@@ -77,10 +80,10 @@ public class FilenameProvider
 		return Settings.destinationFile(dataset, getEncodedSettingsIncludingFeatures(app) + "." + param);
 	}
 
-	public String getSmartsMatchesFilePath(MatchEngine matchEngine, List<StructuralFragment> fragments)
+	public String getSmartsMatchesFilePath(MatchEngine matchEngine, List<ListedFragmentProperty> fragments)
 	{
 		String allSmartsStrings = "";
-		for (StructuralFragment fragment : fragments)
+		for (ListedFragmentProperty fragment : fragments)
 			allSmartsStrings += fragment.getSmarts();
 		String enc = StringUtil.getMD5(matchEngine + allSmartsStrings);
 		return Settings.destinationFile(dataset, enc + ".matches.csv");

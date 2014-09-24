@@ -19,6 +19,11 @@ public class PropHandler
 		INSTANCE = new PropHandler(loadProperties);
 	}
 
+	public static void forceReload()
+	{
+		INSTANCE = new PropHandler(true);
+	}
+
 	private static PropHandler INSTANCE;
 
 	private static PropHandler instance()
@@ -56,6 +61,14 @@ public class PropHandler
 	public static void storeProperties()
 	{
 		instance().storeProps();
+	}
+
+	public static long modificationTime()
+	{
+		if (instance().propertiesFile != null)
+			return new File(instance().propertiesFile).lastModified();
+		else
+			return -1;
 	}
 
 	// ---------------------------------------------------------
