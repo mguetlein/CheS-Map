@@ -12,11 +12,10 @@ import main.TaskProvider;
 
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.DefaultChemObjectBuilder;
-import org.openscience.cdk.Molecule;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IMolecule;
+import org.openscience.cdk.silent.AtomContainer;
 import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
@@ -30,7 +29,7 @@ public class MCSComputer
 	private static SmilesGenerator g;
 	static
 	{
-		g = new SmilesGenerator(true, true);
+		g = new SmilesGenerator();//true, true);
 		g.setUseAromaticityFlag(true);
 	}
 
@@ -39,18 +38,18 @@ public class MCSComputer
 		ScreenSetup.INSTANCE = ScreenSetup.DEFAULT;
 
 		SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
-		IMolecule mol1 = sp.parseSmiles("O=C(OC(COc1ccccc1CC=C)CNC(C)C)C2CC2");
-		IMolecule mol2 = sp.parseSmiles("O=C(OC1CC3N(C)C(C1)C2OC23)C(c4ccccc4)CO");
-		IMolecule mol3 = sp.parseSmiles("O=C(OC1CC3N(CCCCC)C(C1)C2OC23)C(c4cccnc4)CO");
-		//		IMolecule mol1 = sp.parseSmiles("Oc1ccccc1");
-		//		IMolecule mol2 = sp.parseSmiles("OCCCCCC");
+		IAtomContainer mol1 = sp.parseSmiles("O=C(OC(COc1ccccc1CC=C)CNC(C)C)C2CC2");
+		IAtomContainer mol2 = sp.parseSmiles("O=C(OC1CC3N(C)C(C1)C2OC23)C(c4ccccc4)CO");
+		IAtomContainer mol3 = sp.parseSmiles("O=C(OC1CC3N(CCCCC)C(C1)C2OC23)C(c4cccnc4)CO");
+		//		IAtomContainer mol1 = sp.parseSmiles("Oc1ccccc1");
+		//		IAtomContainer mol2 = sp.parseSmiles("OCCCCCC");
 
 		//COCCCNC(C)C
-		//IMolecule mol3 = sp.parseSmiles("c1ccccc1");
-		//		IMolecule mol1 = sp.parseSmiles("CCCCOOOO");
-		//		IMolecule mol2 = sp.parseSmiles("CCCCNOO");
-		//		IMolecule mol3 = sp.parseSmiles("CC");
-		IMolecule list[] = new IMolecule[] { mol1, mol2, mol3 };
+		//IAtomContainer mol3 = sp.parseSmiles("c1ccccc1");
+		//		IAtomContainer mol1 = sp.parseSmiles("CCCCOOOO");
+		//		IAtomContainer mol2 = sp.parseSmiles("CCCCNOO");
+		//		IAtomContainer mol3 = sp.parseSmiles("CC");
+		IAtomContainer list[] = new IAtomContainer[] { mol1, mol2, mol3 };
 		computeMCS(list);
 		System.exit(1);
 
@@ -64,11 +63,12 @@ public class MCSComputer
 				{
 					Settings.LOGGER.info("running");
 					SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
-					IMolecule mol1 = sp
+					IAtomContainer mol1 = sp
 							.parseSmiles("O=C1OC=C(C=C1)C4CCC5(O)(C6CCC3=CC(OC2OC(C)C(O)C(O)C2(O))CCC3(C)C6(CCC45(C)))");
-					IMolecule mol2 = sp
+					IAtomContainer mol2 = sp
 							.parseSmiles("O=C1C=CC4(C(=C1)CCC3C5CC(C)C(O)(C(=O)COC2OC(CO)C(O)C(O)C2(O))C5(C)(CC(O)C34(F)))(C)");
-					UniversalIsomorphismTester.getOverlaps(mol1, mol2);
+					UniversalIsomorphismTester ust = new UniversalIsomorphismTester();
+					ust.getOverlaps(mol1, mol2);
 					Settings.LOGGER.info("done");
 				}
 				catch (Exception e)
@@ -87,7 +87,7 @@ public class MCSComputer
 		}
 	}
 
-	private static void printCandidates(String s, Iterable<IAtomContainer> l)
+	private static void printCandidates(String s, Iterable<IAtomContainer> l) throws CDKException
 	{
 		Settings.LOGGER.info(s + " candidates: ");
 		for (IAtomContainer can : l)
@@ -96,7 +96,7 @@ public class MCSComputer
 			for (IAtom atom : can.atoms())
 				if (atom.getFlag(CDKConstants.ISAROMATIC))
 					aromCan++;
-			Settings.LOGGER.info("'" + g.createSMILES(can) + " (#arom:" + aromCan + ")' ");
+			Settings.LOGGER.info("'" + g.create(can) + " (#arom:" + aromCan + ")' ");
 		}
 		Settings.LOGGER.info();
 	}
@@ -123,11 +123,11 @@ public class MCSComputer
 		// iterate over compounds
 		for (IAtomContainer mol : mols)
 		{
-			mol = new Molecule(AtomContainerManipulator.removeHydrogens(mol));
+			mol = new AtomContainer(AtomContainerManipulator.removeHydrogens(mol));
 			TaskProvider.verbose("Iterate over compound " + count + "/" + mols.length + ", num MCS-candidates: "
 					+ candidates.size());
 			if (DEBUG)
-				Settings.LOGGER.info("[" + count + "]\nmol: " + g.createSMILES(mol));
+				Settings.LOGGER.info("[" + count + "]\nmol: " + g.create(mol));
 			if (candidates.size() == 0)
 			{
 				// if == first compound, add compound to candidates
@@ -151,8 +151,8 @@ public class MCSComputer
 						for (IAtom atom : mol.atoms())
 							if (atom.getFlag(CDKConstants.ISAROMATIC))
 								aromMol++;
-						Settings.LOGGER.info("mcs: " + g.createSMILES(can) + " (#arom:" + aromCan + ") - "
-								+ g.createSMILES(mol) + " (#arom:" + aromMol + ")");
+						Settings.LOGGER.info("mcs: " + g.create(can) + " (#arom:" + aromCan + ") - " + g.create(mol)
+								+ " (#arom:" + aromMol + ")");
 					}
 					List<IAtomContainer> canMCS = MyUniversalIsomorphismTester.getOverlaps(can, mol);
 					if (DEBUG)

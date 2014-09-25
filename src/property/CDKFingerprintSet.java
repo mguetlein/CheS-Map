@@ -2,7 +2,6 @@ package property;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,10 +10,11 @@ import main.Settings;
 import main.TaskProvider;
 
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.fingerprint.IBitFingerprint;
 import org.openscience.cdk.fingerprint.KlekotaRothFingerprinter;
 import org.openscience.cdk.fingerprint.StandardSubstructureSets;
 import org.openscience.cdk.fingerprint.SubstructureFingerprinter;
-import org.openscience.cdk.interfaces.IMolecule;
+import org.openscience.cdk.interfaces.IAtomContainer;
 
 import util.ArrayUtil;
 import util.CountedSet;
@@ -87,10 +87,10 @@ public class CDKFingerprintSet extends FragmentPropertySet
 			TaskProvider.verbose("Computing CDK fingerprint for compound " + (m + 1) + "/" + dataset.numCompounds());
 			//			TaskProvider.task().verbose("Total number of matched structural fragments (unfiltered): " + ps.size());
 
-			IMolecule mol = dataset.getCompounds()[m];
+			IAtomContainer mol = dataset.getCompounds()[m];
 			try
 			{
-				BitSet bs = fingerprinter.getFingerprint(mol);
+				IBitFingerprint bs = fingerprinter.getBitFingerprint(mol);
 				for (int i = 0; i < bs.size(); i++)
 				{
 					if (bs.get(i))

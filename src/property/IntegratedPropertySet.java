@@ -138,7 +138,7 @@ public class IntegratedPropertySet extends AbstractPropertySet
 	@Override
 	public String getNameIncludingParams()
 	{
-		return toString() + "_" + getType();
+		return toString().replace(" ", "-") + "_" + getType();
 	}
 
 	@Override

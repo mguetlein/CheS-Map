@@ -5,6 +5,7 @@ import io.SDFUtil.SDChecker;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
@@ -139,6 +140,7 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 		@Override
 		public boolean invalid(String compoundString, int sdFileIndex)
 		{
+			MDLV2000Reader reader = null;
 			try
 			{
 				int numAtoms = -1;
@@ -150,8 +152,7 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 					}
 				if (numAtoms == -1)
 					throw new Exception("could not parse num atoms");
-				MDLV2000Reader reader = new MDLV2000Reader(new InputStreamReader(new ByteArrayInputStream(
-						compoundString.getBytes())));
+				reader = new MDLV2000Reader(new InputStreamReader(new ByteArrayInputStream(compoundString.getBytes())));
 				IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
 				List<IAtomContainer> list = ChemFileManipulator.getAllAtomContainers(content);
 				if (list.size() != 1)
@@ -180,6 +181,18 @@ public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 			{
 				e.printStackTrace();
 				return true;
+			}
+			finally
+			{
+				try
+				{
+					if (reader != null)
+						reader.close();
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
 			}
 		}
 	};

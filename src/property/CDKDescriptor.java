@@ -9,8 +9,8 @@ import java.util.List;
 
 import main.Settings;
 
+import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IMolecule;
 import org.openscience.cdk.qsar.DescriptorEngine;
 import org.openscience.cdk.qsar.IDescriptor;
 import org.openscience.cdk.qsar.IMolecularDescriptor;
@@ -30,7 +30,8 @@ import util.ArrayUtil;
 
 public class CDKDescriptor
 {
-	static final DescriptorEngine ENGINE = new DescriptorEngine(DescriptorEngine.MOLECULAR);
+	static final DescriptorEngine ENGINE = new DescriptorEngine(IMolecularDescriptor.class,
+			DefaultChemObjectBuilder.getInstance());
 	private static CDKDescriptor[] CDK_DESCRIPTORS;
 	private static CDKDescriptor[] CDK_NUMERIC_DESCRIPTORS;
 
@@ -123,7 +124,12 @@ public class CDKDescriptor
 	public CDKDescriptor(IMolecularDescriptor m)
 	{
 		this.m = m;
-		name = CDKDescriptor.ENGINE.getDictionaryTitle(m.getSpecification()).trim();
+		m.initialise(DefaultChemObjectBuilder.getInstance());
+
+		name = CDKDescriptor.ENGINE.getDictionaryTitle(m.getClass().getName()).trim();
+		if ("".equals(name))
+			name = m.getClass().getSimpleName().replace("Descriptor", "");
+
 		//m.getClass().getSimpleName().replace("Descriptor", "");
 
 		description = name + " ";
@@ -131,10 +137,11 @@ public class CDKDescriptor
 		for (int i = 0; i < dictionaryClass.length; i++)
 			dictionaryClass[i] = dictionaryClass[i].replace("Descriptor", "");
 		description += ArrayUtil.toString(dictionaryClass, ",", "(", ")") + "\n";
-		description += CDKDescriptor.ENGINE.getDictionaryDefinition(m.getSpecification()).trim() + "\n";
+		description += CDKDescriptor.ENGINE.getDictionaryDefinition(m.getClass().getName()).trim() + "\n";
 		description += "API: " + getAPILink(m.getClass()) + "\n";
 
 		slow = m instanceof IPMolecularLearningDescriptor;
+
 		//				|| m instanceof ChiChainDescriptor
 		//				|| m instanceof ChiClusterDescriptor || m instanceof ChiPathDescriptor
 		//				|| m instanceof ChiPathClusterDescriptor || m instanceof FMFDescriptor
@@ -241,10 +248,10 @@ public class CDKDescriptor
 					+ res.getClass());
 	}
 
-	public Double[] computeDescriptor(IMolecule mol)
-	{
-		return computeDescriptor(m, mol);
-	}
+	//	public Double[] computeDescriptor(IMolecule mol)
+	//	{
+	//		return computeDescriptor(m, mol);
+	//	}
 
 	public Double[] computeDescriptor(IAtomContainer mol)
 	{

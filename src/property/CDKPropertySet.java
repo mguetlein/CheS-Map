@@ -12,7 +12,7 @@ import java.util.Set;
 import main.Settings;
 import main.TaskProvider;
 
-import org.openscience.cdk.interfaces.IMolecule;
+import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.qsar.IMolecularDescriptor;
 
 import util.ArrayUtil;
@@ -210,7 +210,7 @@ public class CDKPropertySet extends AbstractPropertySet
 		if (isComputed(dataset))
 			throw new IllegalStateException();
 
-		IMolecule mols[] = dataset.getCompounds();
+		IAtomContainer mols[] = dataset.getCompounds();
 
 		String cache = cacheFile(dataset);
 
@@ -227,6 +227,7 @@ public class CDKPropertySet extends AbstractPropertySet
 				Settings.LOGGER.error(e);
 			}
 		}
+		boolean success = true;
 		if (vv == null)
 		{
 			IMolecularDescriptor descriptor = desc.getIMolecularDescriptor();
@@ -238,6 +239,7 @@ public class CDKPropertySet extends AbstractPropertySet
 				vv.add(new Double[mols.length]);
 
 			TaskProvider.debug("Compute " + this + " for " + mols.length + " compounds");
+			success = false;
 
 			for (int i = 0; i < mols.length; i++)
 			{
@@ -262,6 +264,7 @@ public class CDKPropertySet extends AbstractPropertySet
 									+ getSize() + " != " + d.length);
 						for (int j = 0; j < d.length; j++)
 							vv.get(j)[i] = d[j];
+						success = true;
 					}
 					catch (Throwable e)
 					{
@@ -282,13 +285,15 @@ public class CDKPropertySet extends AbstractPropertySet
 			for (int j = 0; j < getSize(); j++)
 				checkForBugs(j, vv.get(j));
 
-			Settings.LOGGER.info("writing cdk props to: " + cache);
-			ValueFileCache.writeCacheDouble(cache, vv);
+			if (success)
+			{
+				Settings.LOGGER.info("writing cdk props to: " + cache);
+				ValueFileCache.writeCacheDouble(cache, vv);
+			}
 		}
 		for (int j = 0; j < getSize(); j++)
 			((DefaultNumericProperty) createCDKProperty(desc, dataset, j)).setDoubleValues(vv.get(j));
-
-		return true;
+		return success;
 	}
 
 	private void checkForBugs(int index, Double values[])
@@ -353,7 +358,7 @@ public class CDKPropertySet extends AbstractPropertySet
 	@Override
 	public String getNameIncludingParams()
 	{
-		String s = toString();
+		String s = toString().replace(" ", "-");
 		if (Settings.DESC_MIXTURE_HANDLING)
 			s += ".mixt";
 		return s;

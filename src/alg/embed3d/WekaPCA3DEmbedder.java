@@ -1,7 +1,5 @@
 package alg.embed3d;
 
-import gui.FeatureWizardPanel.FeatureInfo;
-import gui.Messages;
 import gui.property.Property;
 
 import java.io.BufferedReader;
@@ -20,7 +18,6 @@ import weka.attributeSelection.PrincipalComponents;
 import weka.core.Instance;
 import weka.core.Instances;
 import alg.DistanceMeasure;
-import alg.cluster.DatasetClusterer;
 import data.DatasetFile;
 import dataInterface.CompoundData;
 import dataInterface.CompoundProperty;

@@ -47,18 +47,18 @@ public class MultiKabschAlignement
 	private static SMARTSQueryTool queryTool;
 	static
 	{
-		try
-		{
-			queryTool = new SMARTSQueryTool("C");
-		}
-		catch (CDKException e)
-		{
-		}
+		//		try
+		//		{
+		queryTool = new SMARTSQueryTool("C", DefaultChemObjectBuilder.getInstance());
+		//		}
+		//		catch (CDKException e)
+		//		{
+		//		}
 	}
 	private static SmilesGenerator g;
 	static
 	{
-		g = new SmilesGenerator(true, true);
+		g = new SmilesGenerator(); //true, true);
 		g.setUseAromaticityFlag(true);
 	}
 
