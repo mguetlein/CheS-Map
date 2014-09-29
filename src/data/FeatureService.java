@@ -58,6 +58,7 @@ import util.ArrayUtil;
 import util.FileUtil;
 import util.FileUtil.UnexpectedNumColsException;
 import util.ListUtil;
+import util.ObjectUtil;
 import util.ValueFileCache;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundPropertySet.Type;
@@ -121,6 +122,15 @@ public class FeatureService
 			integratedSmiles.remove(dataset);
 			cdkSmiles.remove(dataset);
 		}
+	}
+
+	public static boolean testSmilesProp() throws Exception
+	{
+		SmilesParser smilesParser = new SmilesParser(SilentChemObjectBuilder.getInstance());
+		IAtomContainer mol = smilesParser.parseSmiles("C");
+		if (!ObjectUtil.equals(mol.getProperties().get("SMILES"), "C"))
+			throw new IllegalStateException("Smiles property not set");
+		return true;
 	}
 
 	private List<IAtomContainer> readFromCSV(File f, boolean throwError) throws Exception
@@ -767,7 +777,7 @@ public class FeatureService
 		if (molecules.length < compoundOrigIndices.length)
 			throw new IllegalArgumentException();
 
-		if (!new File(sdfFile).exists() || overwrite)
+		if (!new File(sdfFile).exists() || overwrite || !Settings.CACHING_ENABLED)
 		{
 			File tmpFile = File.createTempFile("tmp-dataset", "build.sdf");
 			SDFWriter writer = new SDFWriter(new FileOutputStream(tmpFile));

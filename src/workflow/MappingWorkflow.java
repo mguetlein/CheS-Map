@@ -25,6 +25,7 @@ import property.PropertySetProvider.PropertySetShortcut;
 import util.ArrayUtil;
 import util.FileUtil;
 import util.ListUtil;
+import alg.align3d.NoAligner;
 import alg.align3d.ThreeDAligner;
 import alg.build3d.ThreeDBuilder;
 import alg.cluster.DatasetClusterer;
@@ -303,6 +304,14 @@ public class MappingWorkflow
 	public static Properties createMappingWorkflow(String datasetFile, DescriptorSelection featureSelection,
 			FragmentSettings fragmentSettings, DatasetClusterer clusterer, ThreeDEmbedder embedder)
 	{
+		return createMappingWorkflow(datasetFile, featureSelection, fragmentSettings, clusterer, embedder,
+				NoAligner.INSTANCE);
+	}
+
+	public static Properties createMappingWorkflow(String datasetFile, DescriptorSelection featureSelection,
+			FragmentSettings fragmentSettings, DatasetClusterer clusterer, ThreeDEmbedder embedder,
+			ThreeDAligner aligner)
+	{
 		Properties props = new Properties();
 
 		DatasetMappingWorkflowProvider datasetProvider = new DatasetLoader(false);
@@ -325,6 +334,7 @@ public class MappingWorkflow
 		}
 		new ClustererProvider().exportAlgorithmToMappingWorkflow(clusterer, props);
 		new EmbedderProvider().exportAlgorithmToMappingWorkflow(embedder, props);
+		new AlignerProvider().exportAlgorithmToMappingWorkflow(aligner, props);
 
 		return props;
 	}

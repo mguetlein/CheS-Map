@@ -22,6 +22,7 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
 import util.StringUtil;
 import util.ThreadUtil;
+import data.DatasetFile;
 
 public class MCSComputer
 {
@@ -99,6 +100,12 @@ public class MCSComputer
 			Settings.LOGGER.info("'" + g.create(can) + " (#arom:" + aromCan + ")' ");
 		}
 		Settings.LOGGER.info();
+	}
+
+	public static String computeMCS(DatasetFile d) throws Exception
+	{
+		IAtomContainer m = computeMCS(d.getCompounds(), 2);
+		return g.createSMILES(m);
 	}
 
 	public static IAtomContainer computeMCS(IAtomContainer mols[]) throws CDKException
