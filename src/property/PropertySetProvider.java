@@ -33,10 +33,12 @@ public class PropertySetProvider implements FeatureMappingWorkflowProvider
 	{
 	}
 
-	private PropertySetCategory pcFeatures = new PropertySetCategory("pc", new PropertySetCategory[] {
-			new CDKFeaturesCategory(), new OBFeatureCategory() });
-
 	private PropertySetCategory integrated = new IntegratedPropertySetCategory();
+
+	private PropertySetCategory cdk = new CDKFeaturesCategory();
+
+	private PropertySetCategory pcFeatures = new PropertySetCategory("pc", new PropertySetCategory[] { cdk,
+			new OBFeatureCategory() });
 
 	private PropertySetCategory fragments = new StructuralFragmentsCategory();
 
@@ -61,6 +63,11 @@ public class PropertySetProvider implements FeatureMappingWorkflowProvider
 	public PropertySetCategory getStructuralFragmentCategory()
 	{
 		return fragments;
+	}
+
+	public PropertySetCategory getCDKCategory()
+	{
+		return cdk;
 	}
 
 	public void addToSelector(Selector<PropertySetCategory, CompoundPropertySet> selector, DatasetFile dataset)
