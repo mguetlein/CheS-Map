@@ -31,7 +31,9 @@ public class MCSComputer
 	static
 	{
 		g = new SmilesGenerator();//true, true);
-		g.setUseAromaticityFlag(true);
+		//		g.setUseAromaticityFlag(true);
+
+		g = g.aromatic();
 	}
 
 	public static void main(String[] args) throws CDKException, CloneNotSupportedException, IOException

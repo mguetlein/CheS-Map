@@ -23,6 +23,7 @@ import main.TaskProvider;
 
 import org.openscience.cdk.Atom;
 import org.openscience.cdk.AtomContainer;
+import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.ChemFile;
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.aromaticity.Aromaticity;
@@ -371,7 +372,8 @@ public class FeatureService
 		}
 		catch (Exception e)
 		{
-			throw new Error("could not load molecule strcutures " + e, e);
+			e.printStackTrace();
+			throw new Error("could not load molecule structures " + e, e);
 		}
 	}
 
@@ -825,16 +827,20 @@ public class FeatureService
 								return;
 						}
 					}
-
-					if (!FileUtil.robustRenameTo(tmpFile, new File(sdfFile)))
-						throw new Error("renaming or delete file error");
-					Settings.LOGGER.info("write cdk compounds to sd-file: " + sdfFile);
+					if (molecule.getProperty("SMIdbNAME") != null) // set identifier in sdf file (title) with identifier in SMI file (SMIdbNAME)
+						newSet.setProperty(CDKConstants.TITLE, molecule.getProperty("SMIdbNAME"));
+					writer.write(newSet);
+					if (!TaskProvider.isRunning())
+						return;
 				}
 			}
 			finally
 			{
 				writer.close();
 			}
+			if (!FileUtil.robustRenameTo(tmpFile, new File(sdfFile)))
+				throw new Error("renaming or delete file error");
+			Settings.LOGGER.info("write cdk compounds to sd-file: " + sdfFile);
 		}
 		else
 			Settings.LOGGER.info("cdk sd-file alread exists: " + sdfFile);

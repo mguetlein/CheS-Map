@@ -1,24 +1,13 @@
 package main.test;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.openscience.cdk.CDKConstants;
-import org.openscience.cdk.ChemFile;
 import org.openscience.cdk.DefaultChemObjectBuilder;
-import org.openscience.cdk.aromaticity.CDKHueckelAromaticityDetector;
+import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IChemFile;
-import org.openscience.cdk.interfaces.IChemObject;
-import org.openscience.cdk.io.ISimpleChemObjectReader;
-import org.openscience.cdk.io.ReaderFactory;
-import org.openscience.cdk.io.SDFWriter;
+import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
-import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
-import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 
 public class CDKTest
 {
@@ -57,45 +46,75 @@ public class CDKTest
 		//			Settings.LOGGER.error(e);
 		//		}
 
-		String smiles[] = { "c1ccccc1", "C1=CC=CC=C1" };
+		//		String smiles[] = { "c1ccccc1", "C1=CC=CC=C1" };
+		//
+		//		SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+		//		IAtomContainer mols[] = new IAtomContainer[] { sp.parseSmiles(smiles[0]), sp.parseSmiles(smiles[1]) };
+		//
+		//		System.out.println("parse from smiles");
+		//		for (int i = 0; i < mols.length; i++)
+		//			System.out.println(smiles[i] + " aromtic ? " + mols[i].getAtom(0).getFlag(CDKConstants.ISAROMATIC));
+		//
+		//		File tmp = File.createTempFile("file", "sdf");
+		//		SDFWriter writer = new SDFWriter(new FileOutputStream(tmp));
+		//		for (int i = 0; i < mols.length; i++)
+		//		{
+		//			//			FixBondOrdersTool fbot = new FixBondOrdersTool();
+		//			//			mols[i] = fbot.kekuliseAromaticRings((IMolecule) mols[i]);
+		//			mols[i] = mykekule(mols[i]);
+		//
+		//			writer.write(mols[i]);
+		//		}
+		//		writer.close();
+		//
+		//		ISimpleChemObjectReader reader = new ReaderFactory().createReader(new InputStreamReader(
+		//				new FileInputStream(tmp)));
+		//		IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
+		//		List<IAtomContainer> sdfMols = ChemFileManipulator.getAllAtomContainers(content);
+		//
+		//		System.out.println("\nwrite and read from sdf");
+		//		for (int i = 0; i < sdfMols.size(); i++)
+		//			System.out.println(smiles[i] + " aromtic ? " + sdfMols.get(i).getAtom(0).getFlag(CDKConstants.ISAROMATIC));
+		//
+		//		for (int i = 0; i < sdfMols.size(); i++)
+		//		{
+		//			AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(sdfMols.get(i));
+		//			CDKHueckelAromaticityDetector.detectAromaticity(sdfMols.get(i));
+		//		}
+		//
+		//		System.out.println("\ndetect aromaticity from sdf");
+		//		for (int i = 0; i < sdfMols.size(); i++)
+		//			System.out.println(smiles[i] + " aromtic ? " + sdfMols.get(i).getAtom(0).getFlag(CDKConstants.ISAROMATIC));
 
 		SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
-		IAtomContainer mols[] = new IAtomContainer[] { sp.parseSmiles(smiles[0]), sp.parseSmiles(smiles[1]) };
+		IAtomContainer mol1 = sp.parseSmiles("c1ccccc1NC");
+		IAtomContainer mol2 = sp.parseSmiles("c1cccnc1");
+		org.openscience.cdk.smsd.Isomorphism mcsFinder = new org.openscience.cdk.smsd.Isomorphism(
+				org.openscience.cdk.smsd.interfaces.Algorithm.DEFAULT, true);
+		mcsFinder.init(mol1, mol2, true, true);
+		mcsFinder.setChemFilters(true, true, true);
 
-		System.out.println("parse from smiles");
-		for (int i = 0; i < mols.length; i++)
-			System.out.println(smiles[i] + " aromtic ? " + mols[i].getAtom(0).getFlag(CDKConstants.ISAROMATIC));
-
-		File tmp = File.createTempFile("file", "sdf");
-		SDFWriter writer = new SDFWriter(new FileOutputStream(tmp));
-		for (int i = 0; i < mols.length; i++)
+		mol1 = mcsFinder.getReactantMolecule();
+		IAtomContainer mcsmolecule = DefaultChemObjectBuilder.getInstance().newInstance(IAtomContainer.class, mol1);
+		List<IAtom> atomsToBeRemoved = new ArrayList<IAtom>();
+		for (IAtom atom : mcsmolecule.atoms())
 		{
-			//			FixBondOrdersTool fbot = new FixBondOrdersTool();
-			//			mols[i] = fbot.kekuliseAromaticRings((IMolecule) mols[i]);
-			mols[i] = mykekule(mols[i]);
-
-			writer.write(mols[i]);
+			int index = mcsmolecule.getAtomNumber(atom);
+			if (!mcsFinder.getFirstMapping().containsKey(index))
+				atomsToBeRemoved.add(atom);
 		}
-		writer.close();
+		for (IAtom atom : atomsToBeRemoved)
+			mcsmolecule.removeAtomAndConnectedElectronContainers(atom);
 
-		ISimpleChemObjectReader reader = new ReaderFactory().createReader(new InputStreamReader(
-				new FileInputStream(tmp)));
-		IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
-		List<IAtomContainer> sdfMols = ChemFileManipulator.getAllAtomContainers(content);
+		// has no effect
+		// mcsmolecule = AtomContainerManipulator.removeHydrogens(mcsmolecule);
 
-		System.out.println("\nwrite and read from sdf");
-		for (int i = 0; i < sdfMols.size(); i++)
-			System.out.println(smiles[i] + " aromtic ? " + sdfMols.get(i).getAtom(0).getFlag(CDKConstants.ISAROMATIC));
+		SmilesGenerator g = new SmilesGenerator().aromatic();
+		System.out.println("mcs smiles: " + g.create(mcsmolecule));
 
-		for (int i = 0; i < sdfMols.size(); i++)
-		{
-			AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(sdfMols.get(i));
-			CDKHueckelAromaticityDetector.detectAromaticity(sdfMols.get(i));
-		}
+		//		for (int i = 0; i < mcsmolecule.getAtomCount(); i++)
+		//			System.out.println("is mcs atom aromtic: " + mcsmolecule.getAtom(i).getFlag(CDKConstants.ISAROMATIC));
 
-		System.out.println("\ndetect aromaticity from sdf");
-		for (int i = 0; i < sdfMols.size(); i++)
-			System.out.println(smiles[i] + " aromtic ? " + sdfMols.get(i).getAtom(0).getFlag(CDKConstants.ISAROMATIC));
 	}
 
 	static IAtomContainer mykekule(IAtomContainer org) throws Exception
