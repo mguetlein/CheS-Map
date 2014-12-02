@@ -59,7 +59,6 @@ import util.ArrayUtil;
 import util.FileUtil;
 import util.FileUtil.UnexpectedNumColsException;
 import util.ListUtil;
-import util.ObjectUtil;
 import util.ValueFileCache;
 import dataInterface.CompoundProperty;
 import dataInterface.CompoundPropertySet.Type;
@@ -125,14 +124,14 @@ public class FeatureService
 		}
 	}
 
-	public static boolean testSmilesProp() throws Exception
-	{
-		SmilesParser smilesParser = new SmilesParser(SilentChemObjectBuilder.getInstance());
-		IAtomContainer mol = smilesParser.parseSmiles("C");
-		if (!ObjectUtil.equals(mol.getProperties().get("SMILES"), "C"))
-			throw new IllegalStateException("Smiles property not set");
-		return true;
-	}
+	//	public static boolean testSmilesProp() throws Exception
+	//	{
+	//		MySmilesParser smilesParser = new MySmilesParser();
+	//		IAtomContainer mol = smilesParser.parseSmiles("C");
+	//		if (!ObjectUtil.equals(mol.getProperties().get("SMILES"), "C"))
+	//			throw new IllegalStateException("Smiles property not set");
+	//		return true;
+	//	}
 
 	private List<IAtomContainer> readFromCSV(File f, boolean throwError) throws Exception
 	{
@@ -228,7 +227,7 @@ public class FeatureService
 				throw new Error("Could not read csv file");
 			if (list.size() != (csvFile.content.size() - 1) && smiles)
 			{
-				System.err.println("wrong num molecules checking smarts");
+				System.err.println("wrong num molecules checking smiles");
 				rowIndex = 0;
 				SmilesParser smilesParser = new SmilesParser(SilentChemObjectBuilder.getInstance());
 				for (String smilesString : smilesInchiContent.toString().split("\n"))
@@ -254,18 +253,15 @@ public class FeatureService
 			int molCount = 0;
 			for (IAtomContainer mol : list)
 			{
-				boolean smilesProp = true;
+				int pCount = 0;
 				for (String p : propNames)
 				{
-					if (smilesProp)
-					{
-						smilesProp = false;
-						continue;
-					}
 					if (props.get(p).size() != list.size())
 						throw new IllegalStateException("num molecules: " + list.size() + ", num values for '" + p
 								+ "': " + props.get(p).size());
-					mol.setProperty(p, props.get(p).get(molCount));
+					String prop = pCount == 0 ? (smiles ? "SMILES" : "InChI") : p;
+					mol.setProperty(prop, props.get(p).get(molCount));
+					pCount++;
 				}
 				molCount++;
 			}
@@ -445,6 +441,19 @@ public class FeatureService
 					dataset.setSDF(dataset.getLocalPath());
 				IChemFile content = (IChemFile) reader.read((IChemObject) new ChemFile());
 				list = ChemFileManipulator.getAllAtomContainers(content);
+				// do that manually to not overwrite smiles parser
+				if (dataset.getLocalPath().endsWith(".smi"))
+				{
+					String smilesFileContent[] = FileUtil.readStringFromFile(dataset.getLocalPath()).split("\n");
+					if (smilesFileContent[smilesFileContent.length - 1].trim().length() == 0)
+						smilesFileContent = ArrayUtil.removeAt(String.class, smilesFileContent,
+								smilesFileContent.length - 1);
+					if (list.size() != smilesFileContent.length)
+						throw new IllegalStateException("num compounds in smiles file does not fit, lines: "
+								+ smilesFileContent.length + " != num-compounds-parsed: " + list.size());
+					for (int i = 0; i < smilesFileContent.length; i++)
+						list.get(i).setProperty("SMILES", smilesFileContent[i].split("[\\s\\t]+")[0]);
+				}
 				reader.close();
 			}
 
