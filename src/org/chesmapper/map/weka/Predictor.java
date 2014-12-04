@@ -58,8 +58,7 @@ public class Predictor
 		{
 			if (classification)
 			{
-				if (clazz instanceof NominalProperty
-						&& ((NominalProperty) clazz).getDomain().length != 2)
+				if (clazz instanceof NominalProperty && ((NominalProperty) clazz).getDomain().length != 2)
 					throw new Error();
 			}
 			final boolean swapPredictedDouble = classification
@@ -147,7 +146,7 @@ public class Predictor
 							Instances test = data.testCV(numFolds, i);
 							evaluateModel(copiedClassifier, test, forPredictionsPrinting);
 						}
-						m_NumFolds = numFolds;
+						//m_NumFolds = numFolds;
 
 						if (classificationOutput != null)
 							classificationOutput.printFooter();
@@ -191,8 +190,8 @@ public class Predictor
 			{
 				if (classification)
 				{
-					double actual = ArrayUtil.indexOf(((NominalProperty) clazz).getDomain(), compounds
-							.get(i).getStringValue((NominalProperty) clazz));
+					double actual = ArrayUtil.indexOf(((NominalProperty) clazz).getDomain(), compounds.get(i)
+							.getStringValue((NominalProperty) clazz));
 					if (actual == 0)
 						error[i] = 1 - predicted[i];
 					else
