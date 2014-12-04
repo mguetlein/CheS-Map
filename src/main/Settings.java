@@ -242,7 +242,7 @@ public class Settings
 	public static String HOMEPAGE_FORMATS = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki/index.php?title=Supported_Dataset_Formats_and_Size";
 	public static String HOMEPAGE_EXPORT_SETTINGS = "http://opentox.informatik.uni-freiburg.de/ches-mapper-wiki/index.php?title=Export/Import_Wizard_Settings";
 
-	public static String CONTACT = "Martin Gütlein (ches-mapper@informatik.uni-freiburg.de)";
+	public static String CONTACT = "Martin Guetlein (ches-mapper@informatik.uni-freiburg.de)";
 
 	// ------------------ TMP/RESULT-FILE SUPPORT ---------------------------------------------
 

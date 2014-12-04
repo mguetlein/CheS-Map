@@ -34,7 +34,7 @@ public class UseOrigStructures extends Abstract3DBuilder
 	@Override
 	public String getDescription()
 	{
-		return Settings.text("build3d.no-3d.desc");
+		return Settings.text("build3d.no-3d.desc", Settings.CDK_STRING);
 	}
 
 	@Override
