@@ -42,8 +42,10 @@ public class PropertySetProvider implements FeatureMappingWorkflowProvider
 
 	private PropertySetCategory fragments = new StructuralFragmentsCategory();
 
+	private PropertySetCategory hashedFPs = new HashedFPsCategory();
+
 	private PropertySetCategory root = new PropertySetCategory("root", new PropertySetCategory[] { integrated,
-			pcFeatures, fragments });
+			pcFeatures, fragments, hashedFPs });
 
 	public PropertySetCategory getRoot()
 	{
@@ -251,6 +253,48 @@ public class PropertySetProvider implements FeatureMappingWorkflowProvider
 		protected CompoundPropertySet fromString(String s, Type t, DatasetFile dataset)
 		{
 			return ListedFragments.findFromString(s);
+		}
+	};
+
+	private class HashedFPsCategory extends PropertySetCategory
+	{
+		public HashedFPsCategory()
+		{
+			super("hashed");
+		}
+
+		@Override
+		public String getDescriptionParam()
+		{
+			return Settings.CDK_STRING;
+		}
+
+		public boolean isSMARTSFragmentCategory()
+		{
+			return false;
+		}
+
+		public CompoundPropertySet[] getPropertySet(DatasetFile dataset)
+		{
+			return CDKHashedFingerprintSet.FINGERPRINTS;
+		}
+
+		@Override
+		protected String getSerializeKey()
+		{
+			return "features-hashed";
+		}
+
+		protected CompoundPropertySet fromString(String s, Type t, DatasetFile dataset)
+		{
+			return CDKHashedFingerprintSet.fromString(s);
+		}
+
+		@Override
+		public CompoundPropertySet[] getPropertySet(DatasetFile dataset,
+				PropertySetProvider.PropertySetShortcut shortcut)
+		{
+			return null;
 		}
 	};
 

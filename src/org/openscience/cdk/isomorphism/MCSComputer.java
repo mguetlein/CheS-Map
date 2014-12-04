@@ -27,13 +27,32 @@ import data.DatasetFile;
 public class MCSComputer
 {
 	public static boolean DEBUG = false;
-	private static SmilesGenerator g;
-	static
-	{
-		g = new SmilesGenerator();//true, true);
-		//		g.setUseAromaticityFlag(true);
 
-		g = g.aromatic();
+	private static SmilesGenerator g = SmilesGenerator.generic().aromatic();
+
+	//	static
+	//	{
+	//		//g = new SmilesGenerator();//true, true);
+	//		//		 	//		g.setUseAromaticityFlag(true);
+	//		//g = g.aromatic();
+	//
+	//		g = SmilesGenerator.generic().aromatic();
+	//	}
+
+	public static class SMARTSGenerator
+	{
+		private static SmilesGenerator g = SmilesGenerator.generic().aromatic();
+
+		public static String create(IAtomContainer m) throws CDKException
+		{
+			for (int i = 0; i < m.getAtomCount(); i++)
+				m.getAtom(i).setImplicitHydrogenCount(0);
+			String smarts = g.create(m);
+			//			System.err.println("before: " + smarts);
+			smarts = smarts.replaceAll("(?i)\\[(B|C|N|O|P|S|F|Cl|Br|I)\\]", "$1");
+			//			System.err.println("after: " + smarts);
+			return smarts;
+		}
 	}
 
 	public static void main(String[] args) throws CDKException, CloneNotSupportedException, IOException
@@ -107,7 +126,7 @@ public class MCSComputer
 	public static String computeMCS(DatasetFile d) throws Exception
 	{
 		IAtomContainer m = computeMCS(d.getCompounds(), 2);
-		return g.createSMILES(m);
+		return SMARTSGenerator.create(m);
 	}
 
 	public static IAtomContainer computeMCS(IAtomContainer mols[]) throws CDKException
@@ -160,8 +179,8 @@ public class MCSComputer
 						for (IAtom atom : mol.atoms())
 							if (atom.getFlag(CDKConstants.ISAROMATIC))
 								aromMol++;
-						Settings.LOGGER.info("mcs: " + g.create(can) + " (#arom:" + aromCan + ") - " + g.create(mol)
-								+ " (#arom:" + aromMol + ")");
+						Settings.LOGGER.info("mcs: " + SMARTSGenerator.create(can) + " (#arom:" + aromCan + ") - "
+								+ g.create(mol) + " (#arom:" + aromMol + ")");
 					}
 					List<IAtomContainer> canMCS = MyUniversalIsomorphismTester.getOverlaps(can, mol);
 					if (DEBUG)

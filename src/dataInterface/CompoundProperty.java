@@ -22,7 +22,7 @@ public interface CompoundProperty
 	public void setRedundantProp(CompoundProperty b);
 
 	/**
-	 * there numeric or nominal properties
+	 * there are numeric or nominal properties
 	 * numeric properties are never undefined
 	 * non-integrated nominal properties are never undefined
 	 * integrated nominal properties can be undefined, if they have a lot of different values (e.g. one for each compound)

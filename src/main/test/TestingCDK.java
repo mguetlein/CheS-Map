@@ -10,7 +10,6 @@ import java.util.List;
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.ChemFile;
 import org.openscience.cdk.DefaultChemObjectBuilder;
-import org.openscience.cdk.aromaticity.CDKHueckelAromaticityDetector;
 import org.openscience.cdk.aromaticity.Kekulization;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -19,12 +18,15 @@ import org.openscience.cdk.interfaces.IChemObject;
 import org.openscience.cdk.io.ISimpleChemObjectReader;
 import org.openscience.cdk.io.ReaderFactory;
 import org.openscience.cdk.io.SDFWriter;
+import org.openscience.cdk.isomorphism.MCSComputer.SMARTSGenerator;
+import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
+import org.openscience.cdk.tools.CDKHydrogenAdder;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
 
-public class CDKTest
+public class TestingCDK
 {
 	public static void main(String args[]) throws Exception
 	{
@@ -61,7 +63,9 @@ public class CDKTest
 		//			Settings.LOGGER.error(e);
 		//		}
 
-		testWriteReadSDF();
+		//		testWriteReadSDF();
+
+		testMCStoSMARTS();
 
 	}
 
@@ -104,7 +108,8 @@ public class CDKTest
 			//			Kekulization.kekulize(sdfMols.get(i));
 
 			AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(sdfMols.get(i));
-			CDKHueckelAromaticityDetector.detectAromaticity(sdfMols.get(i));
+
+			//CDKHueckelAromaticityDetector.detectAromaticity(sdfMols.get(i));
 		}
 
 		System.out.println("\ndetect aromaticity from sdf");
@@ -114,9 +119,10 @@ public class CDKTest
 
 	static void testMCStoSMARTS() throws Exception
 	{
-		SmilesParser sp = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+		SmilesParser sp = new SmilesParser(SilentChemObjectBuilder.getInstance());
 		IAtomContainer mol1 = sp.parseSmiles("c1ccccc1NC");
 		IAtomContainer mol2 = sp.parseSmiles("c1cccnc1");
+
 		org.openscience.cdk.smsd.Isomorphism mcsFinder = new org.openscience.cdk.smsd.Isomorphism(
 				org.openscience.cdk.smsd.interfaces.Algorithm.DEFAULT, true);
 		mcsFinder.init(mol1, mol2, true, true);
@@ -134,11 +140,20 @@ public class CDKTest
 		for (IAtom atom : atomsToBeRemoved)
 			mcsmolecule.removeAtomAndConnectedElectronContainers(atom);
 
+		mcsmolecule = sp.parseSmiles("[CH3]c1cccnc1");
+
+		AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(mcsmolecule);
+		CDKHydrogenAdder.getInstance(SilentChemObjectBuilder.getInstance()).addImplicitHydrogens(mcsmolecule);
+
+		//		AtomAtomMapping aam = new AtomAtomMapping(mol1, mol2);
+		//		IAtomContainer mcsmolecule = aam.getCommonFragment();
+
 		// has no effect
 		// mcsmolecule = AtomContainerManipulator.removeHydrogens(mcsmolecule);
 
-		SmilesGenerator g = new SmilesGenerator().aromatic();
+		SmilesGenerator g = SmilesGenerator.generic().aromatic();
 		System.out.println("mcs smiles: " + g.create(mcsmolecule));
+		System.out.println("mcs smarts: " + SMARTSGenerator.create(mcsmolecule));
 
 		//		for (int i = 0; i < mcsmolecule.getAtomCount(); i++)
 		//			System.out.println("is mcs atom aromtic: " + mcsmolecule.getAtom(i).getFlag(CDKConstants.ISAROMATIC));

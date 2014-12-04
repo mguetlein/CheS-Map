@@ -8,7 +8,7 @@ import main.TaskProvider;
 
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.isomorphism.MCSComputer;
-import org.openscience.cdk.smiles.SmilesGenerator;
+import org.openscience.cdk.isomorphism.MCSComputer.SMARTSGenerator;
 
 import util.FileUtil;
 import alg.align3d.ThreeDAligner;
@@ -49,17 +49,19 @@ public class ComputeMCS
 				try
 				{
 					mcsMolecule = MCSComputer.computeMCS(mols, ThreeDAligner.MIN_NUM_ATOMS);
-					if (mcsMolecule != null)
-					{
-						SmilesGenerator g = SmilesGenerator.generic();
-						//					SmilesGenerator g = new SmilesGenerator(true, true);
-						smarts = g.create(mcsMolecule);
-						//HACK: otherwhise CDK cannot rematch the smarts 
-						smarts = smarts.replaceAll("\\[nH\\]", "n");
-						//				Settings.LOGGER.println("non aromatic");
-						//				g = new SmilesGenerator();
-						//				Settings.LOGGER.println(g.createSMILES(mcsMolecule));
-					}
+					smarts = SMARTSGenerator.create(mcsMolecule);
+
+					//					if (mcsMolecule != null)
+					//					{
+					//						SmilesGenerator g = SmilesGenerator.generic();
+					//						//					SmilesGenerator g = new SmilesGenerator(true, true);
+					//						smarts = g.create(mcsMolecule);
+					//						//HACK: otherwhise CDK cannot rematch the smarts 
+					//						smarts = smarts.replaceAll("\\[nH\\]", "n");
+					//						//				Settings.LOGGER.println("non aromatic");
+					//						//				g = new SmilesGenerator();
+					//						//				Settings.LOGGER.println(g.createSMILES(mcsMolecule));
+					//					}
 				}
 				catch (Exception e)
 				{

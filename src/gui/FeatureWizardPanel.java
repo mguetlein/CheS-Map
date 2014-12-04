@@ -521,7 +521,7 @@ public class FeatureWizardPanel extends WizardPanel
 						fragmentFeature = true;
 					else
 						for (int i = 0; i < set.getSize(d); i++)
-							if (((NominalProperty) set.get(d, i)).getDomain().length > 2)
+							if (set.isComputed(d) && ((NominalProperty) set.get(d, i)).getDomain().length > 2)
 								nonBinaryNominalFeature = true;
 				}
 				else
