@@ -12,9 +12,8 @@ import java.util.Set;
 
 import javax.vecmath.Point3d;
 
-import main.Settings;
-import main.TaskProvider;
-
+import org.chesmapper.map.main.Settings;
+import org.chesmapper.map.main.TaskProvider;
 import org.openscience.cdk.Atom;
 import org.openscience.cdk.AtomContainer;
 import org.openscience.cdk.DefaultChemObjectBuilder;

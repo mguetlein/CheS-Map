@@ -6,10 +6,10 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import main.ScreenSetup;
-import main.Settings;
-import main.TaskProvider;
-
+import org.chesmapper.map.data.DatasetFile;
+import org.chesmapper.map.main.ScreenSetup;
+import org.chesmapper.map.main.Settings;
+import org.chesmapper.map.main.TaskProvider;
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.exception.CDKException;
@@ -22,7 +22,6 @@ import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
 import util.StringUtil;
 import util.ThreadUtil;
-import data.DatasetFile;
 
 public class MCSComputer
 {
