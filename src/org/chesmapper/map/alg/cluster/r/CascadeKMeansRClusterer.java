@@ -1,10 +1,5 @@
 package org.chesmapper.map.alg.cluster.r;
 
-import gui.Messages;
-import gui.property.IntegerProperty;
-import gui.property.Property;
-import gui.property.SelectProperty;
-
 import java.util.HashMap;
 
 import org.chesmapper.map.alg.DistanceMeasure;
@@ -15,6 +10,10 @@ import org.chesmapper.map.data.DatasetFile;
 import org.chesmapper.map.gui.FeatureWizardPanel.FeatureInfo;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.rscript.RScriptUtil;
+import org.mg.javalib.gui.Messages;
+import org.mg.javalib.gui.property.IntegerProperty;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.gui.property.SelectProperty;
 
 public class CascadeKMeansRClusterer extends AbstractRClusterer
 {

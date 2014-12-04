@@ -9,11 +9,10 @@ import org.chesmapper.map.dataInterface.ClusterData;
 import org.chesmapper.map.dataInterface.SubstructureSmartsType;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
+import org.mg.javalib.util.FileUtil;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.isomorphism.MCSComputer;
 import org.openscience.cdk.isomorphism.MCSComputer.SMARTSGenerator;
-
-import util.FileUtil;
 
 public class ComputeMCS
 {

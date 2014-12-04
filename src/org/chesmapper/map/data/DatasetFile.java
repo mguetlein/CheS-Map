@@ -7,10 +7,9 @@ import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
 import org.chesmapper.map.property.IntegratedPropertySet;
 import org.chesmapper.map.property.PropertySetProvider;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.StringUtil;
 import org.openscience.cdk.interfaces.IAtomContainer;
-
-import util.FileUtil;
-import util.StringUtil;
 
 public class DatasetFile extends FilenameProvider
 {

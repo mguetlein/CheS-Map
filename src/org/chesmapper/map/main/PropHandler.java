@@ -6,9 +6,9 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.util.Properties;
 
-import util.ArrayUtil;
-import util.FileUtil;
-import util.Version;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.Version;
 
 public class PropHandler
 {

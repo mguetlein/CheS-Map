@@ -14,6 +14,8 @@ import javax.vecmath.Point3d;
 
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.StringUtil;
 import org.openscience.cdk.Atom;
 import org.openscience.cdk.AtomContainer;
 import org.openscience.cdk.DefaultChemObjectBuilder;
@@ -35,9 +37,6 @@ import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.smiles.smarts.SMARTSQueryTool;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
-
-import util.ArrayUtil;
-import util.StringUtil;
 
 public class MultiKabschAlignement
 {

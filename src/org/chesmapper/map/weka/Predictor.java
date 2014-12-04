@@ -10,8 +10,8 @@ import org.chesmapper.map.dataInterface.CompoundProperty;
 import org.chesmapper.map.dataInterface.DefaultNumericProperty;
 import org.chesmapper.map.dataInterface.NominalProperty;
 import org.chesmapper.map.dataInterface.NumericProperty;
+import org.mg.javalib.util.ArrayUtil;
 
-import util.ArrayUtil;
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;

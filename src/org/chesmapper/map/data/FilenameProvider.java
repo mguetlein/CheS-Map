@@ -1,7 +1,5 @@
 package org.chesmapper.map.data;
 
-import gui.property.PropertyUtil;
-
 import java.util.List;
 
 import org.chesmapper.map.alg.Algorithm;
@@ -13,9 +11,9 @@ import org.chesmapper.map.dataInterface.CompoundPropertySet;
 import org.chesmapper.map.dataInterface.CompoundPropertyUtil;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.property.ListedFragmentProperty;
-
-import util.ArrayUtil;
-import util.StringUtil;
+import org.mg.javalib.gui.property.PropertyUtil;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.StringUtil;
 
 public class FilenameProvider
 {

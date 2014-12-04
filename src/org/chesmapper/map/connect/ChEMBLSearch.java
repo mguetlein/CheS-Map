@@ -1,11 +1,5 @@
 package org.chesmapper.map.connect;
 
-import gui.TextPanel;
-import gui.property.IntegerProperty;
-import gui.property.Property;
-import gui.property.PropertyPanel;
-import gui.property.StringProperty;
-
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,19 +18,24 @@ import org.chesmapper.map.gui.DatasetWizardPanel;
 import org.chesmapper.map.main.PropHandler;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
+import org.mg.javalib.gui.TextPanel;
+import org.mg.javalib.gui.property.IntegerProperty;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.gui.property.PropertyPanel;
+import org.mg.javalib.gui.property.StringProperty;
+import org.mg.javalib.task.Task;
+import org.mg.javalib.task.TaskDialog;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.StringUtil;
+import org.mg.javalib.util.SwingUtil;
+import org.mg.javalib.util.ThreadUtil;
+import org.mg.javalib.util.FileUtil.CSVFile;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import task.Task;
-import task.TaskDialog;
 import uk.ac.ebi.chemblws.domain.Compound;
 import uk.ac.ebi.chemblws.restclient.ChemblRestClient;
-import util.ArrayUtil;
-import util.FileUtil;
-import util.FileUtil.CSVFile;
-import util.StringUtil;
-import util.SwingUtil;
-import util.ThreadUtil;
 
 import com.jgoodies.forms.factories.ButtonBarFactory;
 

@@ -1,11 +1,10 @@
 package org.chesmapper.map.workflow;
 
-import gui.property.Property;
-
 import java.util.Properties;
 
 import org.chesmapper.map.alg.Algorithm;
 import org.chesmapper.map.main.PropHandler;
+import org.mg.javalib.gui.property.Property;
 
 public abstract class AbstractSimpleViewAlgorithmProvider extends AbstractAlgorithmProvider implements
 		SimpleViewAlgorithmProvider

@@ -1,7 +1,5 @@
 package org.chesmapper.map.property;
 
-import gui.binloc.Binary;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,12 +18,12 @@ import org.chesmapper.map.dataInterface.FragmentProperty.SubstructureType;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
 import org.chesmapper.map.util.ValueFileCache;
+import org.mg.javalib.gui.binloc.Binary;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.DoubleKeyHashMap;
+import org.mg.javalib.util.FileUtil.UnexpectedNumColsException;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.qsar.IMolecularDescriptor;
-
-import util.ArrayUtil;
-import util.DoubleKeyHashMap;
-import util.FileUtil.UnexpectedNumColsException;
 
 public class CDKPropertySet extends AbstractPropertySet
 {

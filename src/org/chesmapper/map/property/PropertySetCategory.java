@@ -1,7 +1,5 @@
 package org.chesmapper.map.property;
 
-import gui.binloc.Binary;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -11,10 +9,10 @@ import org.chesmapper.map.dataInterface.CompoundPropertySet;
 import org.chesmapper.map.dataInterface.CompoundPropertySet.Type;
 import org.chesmapper.map.main.PropHandler;
 import org.chesmapper.map.main.Settings;
-
-import util.ArrayUtil;
-import util.ListUtil;
-import util.StringUtil;
+import org.mg.javalib.gui.binloc.Binary;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.ListUtil;
+import org.mg.javalib.util.StringUtil;
 
 public class PropertySetCategory
 {

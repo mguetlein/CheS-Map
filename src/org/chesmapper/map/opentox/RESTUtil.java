@@ -17,8 +17,7 @@ import javax.swing.JOptionPane;
 
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
-
-import util.StringUtil;
+import org.mg.javalib.util.StringUtil;
 
 public class RESTUtil
 {

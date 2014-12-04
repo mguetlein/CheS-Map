@@ -1,7 +1,5 @@
 package org.chesmapper.map.alg.cluster;
 
-import gui.property.Property;
-
 import java.util.List;
 
 import org.chesmapper.map.alg.Algorithm;
@@ -14,8 +12,8 @@ import org.chesmapper.map.data.DatasetFile;
 import org.chesmapper.map.dataInterface.ClusterData;
 import org.chesmapper.map.dataInterface.CompoundData;
 import org.chesmapper.map.dataInterface.CompoundProperty;
-
-import util.ArrayUtil;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.util.ArrayUtil;
 
 public interface DatasetClusterer extends Algorithm
 {

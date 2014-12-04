@@ -3,8 +3,7 @@ package org.chesmapper.map.alg.embed3d;
 import java.util.Arrays;
 
 import org.chesmapper.map.alg.DistanceMeasure;
-
-import util.ArrayUtil;
+import org.mg.javalib.util.ArrayUtil;
 
 public class DistanceMatrix
 {

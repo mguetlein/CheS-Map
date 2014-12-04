@@ -1,7 +1,5 @@
 package org.chesmapper.map.property;
 
-import io.JarUtil;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,12 +12,12 @@ import org.chesmapper.map.data.fragments.MatchEngine;
 import org.chesmapper.map.dataInterface.FragmentPropertySet;
 import org.chesmapper.map.dataInterface.FragmentProperty.SubstructureType;
 import org.chesmapper.map.main.Settings;
-
-import util.ArrayUtil;
-import util.FileUtil;
-import util.FileUtil.CSVFile;
-import util.ListUtil;
-import util.StringUtil;
+import org.mg.javalib.io.JarUtil;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.ListUtil;
+import org.mg.javalib.util.StringUtil;
+import org.mg.javalib.util.FileUtil.CSVFile;
 
 public class ListedFragments
 {

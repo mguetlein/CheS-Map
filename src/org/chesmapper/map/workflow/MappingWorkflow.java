@@ -33,10 +33,9 @@ import org.chesmapper.map.property.IntegratedPropertySet;
 import org.chesmapper.map.property.OBDescriptorSet;
 import org.chesmapper.map.property.PropertySetProvider;
 import org.chesmapper.map.property.PropertySetProvider.PropertySetShortcut;
-
-import util.ArrayUtil;
-import util.FileUtil;
-import util.ListUtil;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.ListUtil;
 
 public class MappingWorkflow
 {

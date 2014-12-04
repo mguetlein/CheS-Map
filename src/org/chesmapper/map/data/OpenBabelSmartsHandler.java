@@ -5,8 +5,7 @@ import java.util.List;
 import org.chesmapper.map.dataInterface.SmartsHandler;
 import org.chesmapper.map.main.BinHandler;
 import org.chesmapper.map.main.Settings;
-
-import babel.OBSmartsMatcher;
+import org.mg.javalib.babel.OBSmartsMatcher;
 
 public class OpenBabelSmartsHandler implements SmartsHandler
 {

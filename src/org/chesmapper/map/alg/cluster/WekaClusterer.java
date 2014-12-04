@@ -1,9 +1,5 @@
 package org.chesmapper.map.alg.cluster;
 
-import gui.Messages;
-import gui.property.Property;
-import gui.property.PropertyUtil;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -21,8 +17,11 @@ import org.chesmapper.map.main.TaskProvider;
 import org.chesmapper.map.util.MessageUtil;
 import org.chesmapper.map.weka.CascadeSimpleKMeans;
 import org.chesmapper.map.weka.CompoundArffWriter;
+import org.mg.javalib.gui.Messages;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.gui.property.PropertyUtil;
+import org.mg.javalib.weka.WekaPropertyUtil;
 
-import weka.WekaPropertyUtil;
 import weka.clusterers.ClusterEvaluation;
 import weka.clusterers.Clusterer;
 import weka.clusterers.Cobweb;

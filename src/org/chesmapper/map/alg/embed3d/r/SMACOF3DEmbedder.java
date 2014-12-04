@@ -8,11 +8,10 @@ import org.chesmapper.map.gui.FeatureWizardPanel.FeatureInfo;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.rscript.RScriptUtil;
 import org.chesmapper.map.util.MessageUtil;
-
-import gui.Messages;
-import gui.property.IntegerProperty;
-import gui.property.Property;
-import util.StringLineAdder;
+import org.mg.javalib.gui.Messages;
+import org.mg.javalib.gui.property.IntegerProperty;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.util.StringLineAdder;
 
 public class SMACOF3DEmbedder extends AbstractRTo3DEmbedder
 {

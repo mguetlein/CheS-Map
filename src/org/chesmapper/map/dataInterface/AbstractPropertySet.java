@@ -3,8 +3,7 @@ package org.chesmapper.map.dataInterface;
 import java.util.HashSet;
 
 import org.chesmapper.map.data.DatasetFile;
-
-import util.ArrayUtil;
+import org.mg.javalib.util.ArrayUtil;
 
 public abstract class AbstractPropertySet implements CompoundPropertySet
 {

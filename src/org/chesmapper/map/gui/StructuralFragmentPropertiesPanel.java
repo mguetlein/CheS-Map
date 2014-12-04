@@ -1,8 +1,5 @@
 package org.chesmapper.map.gui;
 
-import gui.LinkButton;
-import gui.property.PropertyPanel;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -21,9 +18,10 @@ import org.chesmapper.map.data.fragments.MatchEngine;
 import org.chesmapper.map.main.BinHandler;
 import org.chesmapper.map.main.PropHandler;
 import org.chesmapper.map.main.Settings;
-
-import util.ImageLoader;
-import util.SwingUtil;
+import org.mg.javalib.gui.LinkButton;
+import org.mg.javalib.gui.property.PropertyPanel;
+import org.mg.javalib.util.ImageLoader;
+import org.mg.javalib.util.SwingUtil;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;

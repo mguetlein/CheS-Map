@@ -5,9 +5,8 @@ import org.chesmapper.map.alg.cluster.NoClusterer;
 import org.chesmapper.map.alg.cluster.WekaClusterer;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.weka.CascadeSimpleKMeans;
-
-import gui.property.IntegerProperty;
-import gui.property.Property;
+import org.mg.javalib.gui.property.IntegerProperty;
+import org.mg.javalib.gui.property.Property;
 
 public class ClustererProvider extends AbstractSimpleViewAlgorithmProvider
 {

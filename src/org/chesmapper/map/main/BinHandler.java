@@ -1,10 +1,5 @@
 package org.chesmapper.map.main;
 
-import gui.LinkButton;
-import gui.binloc.Binary;
-import gui.binloc.BinaryLocator;
-import gui.binloc.BinaryLocatorDialog;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Window;
@@ -19,11 +14,14 @@ import java.util.List;
 import javax.swing.JComponent;
 
 import org.chesmapper.map.property.OBDescriptorFactory;
-
-import util.FileUtil;
-import util.ImageLoader;
-import util.OSUtil;
-import babel.OBWrapper;
+import org.mg.javalib.babel.OBWrapper;
+import org.mg.javalib.gui.LinkButton;
+import org.mg.javalib.gui.binloc.Binary;
+import org.mg.javalib.gui.binloc.BinaryLocator;
+import org.mg.javalib.gui.binloc.BinaryLocatorDialog;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.ImageLoader;
+import org.mg.javalib.util.OSUtil;
 
 public class BinHandler
 {

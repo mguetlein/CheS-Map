@@ -1,13 +1,5 @@
 package org.chesmapper.map.gui.wizard;
 
-import gui.Messages;
-import gui.MoreTextPanel;
-import gui.WizardPanel;
-import gui.binloc.Binary;
-import gui.property.Property;
-import gui.property.PropertyComponent;
-import gui.property.PropertyPanel;
-
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -40,8 +32,14 @@ import org.chesmapper.map.main.BinHandler;
 import org.chesmapper.map.main.PropHandler;
 import org.chesmapper.map.util.WizardComponentFactory;
 import org.chesmapper.map.workflow.AlgorithmProvider;
-
-import util.ArrayUtil;
+import org.mg.javalib.gui.Messages;
+import org.mg.javalib.gui.MoreTextPanel;
+import org.mg.javalib.gui.WizardPanel;
+import org.mg.javalib.gui.binloc.Binary;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.gui.property.PropertyComponent;
+import org.mg.javalib.gui.property.PropertyPanel;
+import org.mg.javalib.util.ArrayUtil;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;

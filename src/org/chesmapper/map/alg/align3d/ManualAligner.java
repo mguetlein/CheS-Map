@@ -1,11 +1,5 @@
 package org.chesmapper.map.alg.align3d;
 
-import gui.Messages;
-import gui.binloc.Binary;
-import gui.property.Property;
-import gui.property.SelectProperty;
-import gui.property.StringProperty;
-
 import java.util.List;
 
 import org.chesmapper.map.alg.cluster.DatasetClusterer;
@@ -20,6 +14,11 @@ import org.chesmapper.map.gui.FeatureWizardPanel.FeatureInfo;
 import org.chesmapper.map.main.BinHandler;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
+import org.mg.javalib.gui.Messages;
+import org.mg.javalib.gui.binloc.Binary;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.gui.property.SelectProperty;
+import org.mg.javalib.gui.property.StringProperty;
 
 public class ManualAligner extends Abstract3DAligner
 {

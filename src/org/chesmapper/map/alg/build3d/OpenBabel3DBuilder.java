@@ -5,10 +5,9 @@ import org.chesmapper.map.data.desc.DescriptorForMixturesHandler;
 import org.chesmapper.map.main.BinHandler;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
-
-import gui.binloc.Binary;
-import babel.OBWrapper;
-import babel.OBWrapper.Aborter;
+import org.mg.javalib.babel.OBWrapper;
+import org.mg.javalib.babel.OBWrapper.Aborter;
+import org.mg.javalib.gui.binloc.Binary;
 
 public class OpenBabel3DBuilder extends AbstractReal3DBuilder
 {

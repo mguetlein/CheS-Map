@@ -1,12 +1,5 @@
 package org.chesmapper.map.alg.build3d;
 
-import gui.Messages;
-import gui.binloc.Binary;
-import gui.property.FileProperty;
-import gui.property.Property;
-import gui.property.StringProperty;
-import io.SDFUtil;
-
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +11,13 @@ import org.chesmapper.map.dataInterface.CompoundProperty;
 import org.chesmapper.map.dataInterface.NominalProperty;
 import org.chesmapper.map.dataInterface.NumericProperty;
 import org.chesmapper.map.property.IntegratedPropertySet;
+import org.mg.javalib.gui.Messages;
+import org.mg.javalib.gui.binloc.Binary;
+import org.mg.javalib.gui.property.FileProperty;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.gui.property.StringProperty;
+import org.mg.javalib.io.SDFUtil;
+import org.mg.javalib.util.ArrayUtil;
 import org.openscience.cdk.ChemFile;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IChemFile;
@@ -25,8 +25,6 @@ import org.openscience.cdk.interfaces.IChemObject;
 import org.openscience.cdk.io.ISimpleChemObjectReader;
 import org.openscience.cdk.io.ReaderFactory;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
-
-import util.ArrayUtil;
 
 public class SDFImport3DBuilder extends AbstractReal3DBuilder
 {

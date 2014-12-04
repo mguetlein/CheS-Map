@@ -1,7 +1,5 @@
 package org.chesmapper.map.gui;
 
-import gui.property.Property;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -10,6 +8,7 @@ import org.chesmapper.map.alg.cluster.DatasetClusterer;
 import org.chesmapper.map.alg.r.DistanceProperty;
 import org.chesmapper.map.gui.wizard.SimpleViewWizardPanel;
 import org.chesmapper.map.workflow.ClustererProvider;
+import org.mg.javalib.gui.property.Property;
 
 public class ClusterWizardPanel extends SimpleViewWizardPanel
 {

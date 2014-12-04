@@ -1,9 +1,5 @@
 package org.chesmapper.map.alg.cluster.r;
 
-import gui.binloc.Binary;
-import gui.property.PropertyUtil;
-import io.RUtil;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,8 +16,10 @@ import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
 import org.chesmapper.map.rscript.ExportRUtil;
 import org.chesmapper.map.util.ExternalToolUtil;
-
-import util.FileUtil;
+import org.mg.javalib.gui.binloc.Binary;
+import org.mg.javalib.gui.property.PropertyUtil;
+import org.mg.javalib.io.RUtil;
+import org.mg.javalib.util.FileUtil;
 
 public abstract class AbstractRClusterer extends AbstractDatasetClusterer
 {

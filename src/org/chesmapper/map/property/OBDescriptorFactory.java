@@ -9,10 +9,9 @@ import org.chesmapper.map.dataInterface.CompoundPropertySet.Type;
 import org.chesmapper.map.main.BinHandler;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.util.ExternalToolUtil;
-
-import util.ArrayUtil;
-import util.CollectionUtil;
-import util.FileUtil;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.CollectionUtil;
+import org.mg.javalib.util.FileUtil;
 
 public class OBDescriptorFactory
 {

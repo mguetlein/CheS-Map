@@ -44,23 +44,21 @@ import org.chesmapper.map.dataInterface.CompoundPropertySet.Type;
 import org.chesmapper.map.main.BinHandler;
 import org.chesmapper.map.main.ScreenSetup;
 import org.chesmapper.map.main.Settings;
-
-import util.ArrayUtil;
-import util.CountedSet;
-import util.DefaultComparator;
-import util.ImageLoader;
-import util.StringUtil;
+import org.mg.javalib.freechart.AbstractFreeChartPanel;
+import org.mg.javalib.freechart.BarPlotPanel;
+import org.mg.javalib.freechart.HistogramPanel;
+import org.mg.javalib.gui.LinkButton;
+import org.mg.javalib.gui.Message;
+import org.mg.javalib.gui.MessageLabel;
+import org.mg.javalib.gui.MoreTextPanel;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.CountedSet;
+import org.mg.javalib.util.DefaultComparator;
+import org.mg.javalib.util.ImageLoader;
+import org.mg.javalib.util.StringUtil;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
-
-import freechart.AbstractFreeChartPanel;
-import freechart.BarPlotPanel;
-import freechart.HistogramPanel;
-import gui.LinkButton;
-import gui.Message;
-import gui.MessageLabel;
-import gui.MoreTextPanel;
 
 public class CompoundPropertyPanel extends JPanel
 {

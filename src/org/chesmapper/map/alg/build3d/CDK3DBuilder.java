@@ -3,9 +3,8 @@ package org.chesmapper.map.alg.build3d;
 import org.chesmapper.map.data.DatasetFile;
 import org.chesmapper.map.data.FeatureService;
 import org.chesmapper.map.main.Settings;
-
-import gui.property.Property;
-import gui.property.SelectProperty;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.gui.property.SelectProperty;
 
 public class CDK3DBuilder extends AbstractReal3DBuilder
 {

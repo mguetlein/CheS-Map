@@ -1,7 +1,5 @@
 package org.chesmapper.map.property;
 
-import gui.binloc.Binary;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -23,9 +21,9 @@ import org.chesmapper.map.main.BinHandler;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
 import org.chesmapper.map.util.ExternalToolUtil;
-
-import util.ArrayUtil;
-import util.ListUtil;
+import org.mg.javalib.gui.binloc.Binary;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.ListUtil;
 
 public class OBFingerprintSet extends FragmentPropertySet
 {

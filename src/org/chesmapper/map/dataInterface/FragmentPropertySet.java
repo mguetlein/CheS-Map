@@ -1,7 +1,5 @@
 package org.chesmapper.map.dataInterface;
 
-import gui.binloc.Binary;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -11,6 +9,7 @@ import java.util.List;
 import org.chesmapper.map.data.DatasetFile;
 import org.chesmapper.map.data.fragments.FragmentProperties;
 import org.chesmapper.map.dataInterface.FragmentProperty.SubstructureType;
+import org.mg.javalib.gui.binloc.Binary;
 
 public abstract class FragmentPropertySet implements CompoundPropertySet
 {

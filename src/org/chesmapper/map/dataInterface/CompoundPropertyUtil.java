@@ -14,11 +14,10 @@ import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.property.CDKPropertySet;
 import org.chesmapper.map.property.OBDescriptorSet;
 import org.chesmapper.map.property.OBFingerprintSet;
-
-import util.ArrayUtil;
-import util.CountedSet;
-import util.DoubleArraySummary;
-import freechart.FreeChartUtil;
+import org.mg.javalib.freechart.FreeChartUtil;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.CountedSet;
+import org.mg.javalib.util.DoubleArraySummary;
 
 public class CompoundPropertyUtil
 {

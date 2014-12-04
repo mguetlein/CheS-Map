@@ -1,7 +1,7 @@
 package org.chesmapper.map.main;
 
-import task.Task;
-import task.TaskImpl;
+import org.mg.javalib.task.Task;
+import org.mg.javalib.task.TaskImpl;
 
 public class TaskProvider
 {

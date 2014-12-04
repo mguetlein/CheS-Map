@@ -1,8 +1,5 @@
 package org.chesmapper.map.alg.embed3d;
 
-import gui.Message;
-import gui.Messages;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -18,10 +15,11 @@ import org.chesmapper.map.gui.FeatureWizardPanel.FeatureInfo;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
 import org.chesmapper.map.util.ValueFileCache;
-
-import util.ArrayUtil;
-import util.DoubleUtil;
-import util.FileUtil;
+import org.mg.javalib.gui.Message;
+import org.mg.javalib.gui.Messages;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.DoubleUtil;
+import org.mg.javalib.util.FileUtil;
 
 public abstract class Abstract3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedder
 {

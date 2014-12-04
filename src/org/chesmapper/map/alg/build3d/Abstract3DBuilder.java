@@ -6,9 +6,8 @@ import org.chesmapper.map.data.DatasetFile;
 import org.chesmapper.map.gui.FeatureWizardPanel.FeatureInfo;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.util.MessageUtil;
-
-import gui.Message;
-import gui.Messages;
+import org.mg.javalib.gui.Message;
+import org.mg.javalib.gui.Messages;
 
 public abstract class Abstract3DBuilder extends AbstractAlgorithm implements ThreeDBuilder
 {

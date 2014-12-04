@@ -1,10 +1,5 @@
 package org.chesmapper.map.gui;
 
-import gui.LinkButton;
-import gui.Messages;
-import gui.Selector;
-import gui.WizardPanel;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -53,10 +48,13 @@ import org.chesmapper.map.property.PropertySetCategory;
 import org.chesmapper.map.property.PropertySetProvider;
 import org.chesmapper.map.util.MessageUtil;
 import org.chesmapper.map.util.WizardComponentFactory;
-
-import util.DoubleImageIcon;
-import util.FileUtil;
-import util.ImageLoader;
+import org.mg.javalib.gui.LinkButton;
+import org.mg.javalib.gui.Messages;
+import org.mg.javalib.gui.Selector;
+import org.mg.javalib.gui.WizardPanel;
+import org.mg.javalib.util.DoubleImageIcon;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.ImageLoader;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;

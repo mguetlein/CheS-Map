@@ -10,9 +10,8 @@ import org.chesmapper.map.dataInterface.NominalProperty;
 import org.chesmapper.map.dataInterface.NumericProperty;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
-
-import weka.ArffWritable;
-import weka.ArffWriter;
+import org.mg.javalib.weka.ArffWritable;
+import org.mg.javalib.weka.ArffWriter;
 
 public class CompoundArffWriter implements ArffWritable
 {
@@ -27,7 +26,14 @@ public class CompoundArffWriter implements ArffWritable
 		if (!Settings.CACHING_ENABLED || !file.exists())
 		{
 			TaskProvider.debug("writing arff file: " + arffFile);
-			ArffWriter.writeToArffFile(file, new CompoundArffWriter(compounds, features));
+			try
+			{
+				ArffWriter.writeToArffFile(file, new CompoundArffWriter(compounds, features));
+			}
+			catch (Exception e)
+			{
+				throw new RuntimeException(e);
+			}
 		}
 		else
 			TaskProvider.debug("arff file already exists: " + arffFile);

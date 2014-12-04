@@ -7,9 +7,9 @@ import org.chesmapper.map.alg.embed3d.Random3DEmbedder;
 import org.chesmapper.map.alg.embed3d.ThreeDEmbedder;
 import org.chesmapper.map.main.BinHandler;
 import org.chesmapper.map.main.Settings;
+import org.mg.javalib.datamining.ResultSet;
 
 import weka.clusterers.EM;
-import datamining.ResultSet;
 
 public class AlgorithmUtil
 {

@@ -3,9 +3,9 @@ package org.chesmapper.map.dataInterface;
 import java.awt.Color;
 import java.util.Arrays;
 
-import util.ArrayUtil;
-import util.CountedSet;
-import util.ToStringComparator;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.CountedSet;
+import org.mg.javalib.util.ToStringComparator;
 
 public class DefaultNominalProperty extends AbstractCompoundProperty implements NominalProperty
 {

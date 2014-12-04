@@ -1,11 +1,5 @@
 package org.chesmapper.map.alg.cluster;
 
-import gui.Message;
-import gui.Messages;
-import gui.property.BooleanProperty;
-import gui.property.Property;
-import gui.property.SelectProperty;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,8 +13,12 @@ import org.chesmapper.map.dataInterface.NumericProperty;
 import org.chesmapper.map.gui.FeatureWizardPanel.FeatureInfo;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.property.IntegratedPropertySet;
-
-import util.ArrayUtil;
+import org.mg.javalib.gui.Message;
+import org.mg.javalib.gui.Messages;
+import org.mg.javalib.gui.property.BooleanProperty;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.gui.property.SelectProperty;
+import org.mg.javalib.util.ArrayUtil;
 
 public class ManualClusterer extends AbstractDatasetClusterer
 {

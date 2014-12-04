@@ -7,10 +7,9 @@ import org.chesmapper.map.alg.r.DistanceProperty;
 import org.chesmapper.map.data.DatasetFile;
 import org.chesmapper.map.gui.FeatureWizardPanel.FeatureInfo;
 import org.chesmapper.map.main.Settings;
-
-import gui.Messages;
-import gui.property.IntegerProperty;
-import gui.property.Property;
+import org.mg.javalib.gui.Messages;
+import org.mg.javalib.gui.property.IntegerProperty;
+import org.mg.javalib.gui.property.Property;
 
 public class KMeansRClusterer extends AbstractRClusterer
 {

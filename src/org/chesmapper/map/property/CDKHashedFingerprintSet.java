@@ -1,7 +1,5 @@
 package org.chesmapper.map.property;
 
-import gui.binloc.Binary;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +11,7 @@ import org.chesmapper.map.dataInterface.DefaultNominalProperty;
 import org.chesmapper.map.dataInterface.FragmentProperty.SubstructureType;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
+import org.mg.javalib.gui.binloc.Binary;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.fingerprint.CircularFingerprinter;
 import org.openscience.cdk.fingerprint.IBitFingerprint;

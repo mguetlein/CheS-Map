@@ -1,9 +1,5 @@
 package org.chesmapper.map.appdomain;
 
-import gui.Messages;
-import gui.binloc.Binary;
-import gui.property.Property;
-
 import java.util.List;
 
 import org.chesmapper.map.alg.cluster.DatasetClusterer;
@@ -15,8 +11,10 @@ import org.chesmapper.map.dataInterface.NominalProperty;
 import org.chesmapper.map.dataInterface.NumericProperty;
 import org.chesmapper.map.gui.FeatureWizardPanel.FeatureInfo;
 import org.chesmapper.map.main.Settings;
-
-import util.ArrayUtil;
+import org.mg.javalib.gui.Messages;
+import org.mg.javalib.gui.binloc.Binary;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.util.ArrayUtil;
 
 public abstract class AbstractAppDomainComputer implements AppDomainComputer
 {

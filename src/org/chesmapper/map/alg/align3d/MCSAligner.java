@@ -1,7 +1,5 @@
 package org.chesmapper.map.alg.align3d;
 
-import gui.Messages;
-
 import java.util.List;
 
 import org.chesmapper.map.alg.cluster.DatasetClusterer;
@@ -15,6 +13,7 @@ import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
 import org.chesmapper.map.util.ExternalToolUtil;
 import org.chesmapper.map.util.MessageUtil;
+import org.mg.javalib.gui.Messages;
 
 public class MCSAligner extends Abstract3DAligner
 {

@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.chesmapper.map.main.Settings;
+import org.mg.javalib.util.ArrayUtil;
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.qsar.DescriptorEngine;
@@ -24,8 +25,6 @@ import org.openscience.cdk.qsar.result.IntegerArrayResult;
 import org.openscience.cdk.qsar.result.IntegerArrayResultType;
 import org.openscience.cdk.qsar.result.IntegerResult;
 import org.openscience.cdk.qsar.result.IntegerResultType;
-
-import util.ArrayUtil;
 
 public class CDKDescriptor
 {

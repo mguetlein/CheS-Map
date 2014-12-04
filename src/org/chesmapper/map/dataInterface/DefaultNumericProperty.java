@@ -1,9 +1,9 @@
 package org.chesmapper.map.dataInterface;
 
-import gui.property.ColorGradient;
-import util.ArrayUtil;
-import util.DoubleArraySummary;
-import util.StringUtil;
+import org.mg.javalib.gui.property.ColorGradient;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.DoubleArraySummary;
+import org.mg.javalib.util.StringUtil;
 
 public class DefaultNumericProperty extends AbstractCompoundProperty implements NumericProperty
 {

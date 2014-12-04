@@ -1,7 +1,5 @@
 package org.chesmapper.map.property;
 
-import gui.binloc.Binary;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -20,12 +18,12 @@ import org.chesmapper.map.dataInterface.FragmentProperty.SubstructureType;
 import org.chesmapper.map.main.BinHandler;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
-
-import util.ArrayUtil;
-import util.DoubleKeyHashMap;
-import util.FileUtil;
-import util.FileUtil.CSVFile;
-import util.FileUtil.UnexpectedNumColsException;
+import org.mg.javalib.gui.binloc.Binary;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.DoubleKeyHashMap;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.FileUtil.CSVFile;
+import org.mg.javalib.util.FileUtil.UnexpectedNumColsException;
 
 public class ListedFragmentSet extends FragmentPropertySet
 {

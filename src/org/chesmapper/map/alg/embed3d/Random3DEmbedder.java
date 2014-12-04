@@ -1,8 +1,5 @@
 package org.chesmapper.map.alg.embed3d;
 
-import gui.property.IntegerProperty;
-import gui.property.Property;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -15,8 +12,9 @@ import org.chesmapper.map.data.DatasetFile;
 import org.chesmapper.map.dataInterface.CompoundData;
 import org.chesmapper.map.dataInterface.CompoundProperty;
 import org.chesmapper.map.main.Settings;
-
-import util.Vector3fUtil;
+import org.mg.javalib.gui.property.IntegerProperty;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.util.Vector3fUtil;
 
 public class Random3DEmbedder extends AbstractAlgorithm implements ThreeDEmbedder
 {

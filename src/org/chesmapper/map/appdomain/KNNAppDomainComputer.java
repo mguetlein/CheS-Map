@@ -1,16 +1,14 @@
 package org.chesmapper.map.appdomain;
 
-import gui.property.IntegerProperty;
-import gui.property.Property;
-
 import java.util.Arrays;
 
 import org.chesmapper.map.alg.embed3d.EmbedUtil;
 import org.chesmapper.map.dataInterface.CompoundProperty;
-
-import util.ArrayUtil;
-import util.DoubleArraySummary;
-import util.ListUtil;
+import org.mg.javalib.gui.property.IntegerProperty;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.DoubleArraySummary;
+import org.mg.javalib.util.ListUtil;
 
 public class KNNAppDomainComputer extends DistanceBasedAppDomainComputer
 {

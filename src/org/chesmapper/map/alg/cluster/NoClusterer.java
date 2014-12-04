@@ -1,7 +1,5 @@
 package org.chesmapper.map.alg.cluster;
 
-import gui.property.Property;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +11,7 @@ import org.chesmapper.map.dataInterface.ClusterData;
 import org.chesmapper.map.dataInterface.CompoundData;
 import org.chesmapper.map.dataInterface.CompoundProperty;
 import org.chesmapper.map.main.Settings;
+import org.mg.javalib.gui.property.Property;
 
 public class NoClusterer extends AbstractAlgorithm implements DatasetClusterer
 {

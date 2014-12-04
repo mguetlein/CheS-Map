@@ -1,7 +1,5 @@
 package org.chesmapper.map.main;
 
-import io.Logger;
-
 import java.awt.Font;
 import java.awt.Image;
 import java.io.BufferedReader;
@@ -23,12 +21,12 @@ import javax.swing.UIManager;
 import javax.swing.plaf.InsetsUIResource;
 
 import org.chesmapper.map.data.DatasetFile;
-
-import util.ArrayUtil;
-import util.FileUtil;
-import util.ImageLoader;
-import util.ScreenUtil;
-import util.Version;
+import org.mg.javalib.io.Logger;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.ImageLoader;
+import org.mg.javalib.util.ScreenUtil;
+import org.mg.javalib.util.Version;
 
 public class Settings
 {
@@ -204,7 +202,7 @@ public class Settings
 		}
 	}
 
-	public static util.Version VERSION = null;
+	public static org.mg.javalib.util.Version VERSION = null;
 	static
 	{
 		try
@@ -215,7 +213,7 @@ public class Settings
 				r = new BufferedReader(new FileReader(new File("VERSION")));
 			else
 				r = new BufferedReader(new InputStreamReader(u.openStream()));
-			VERSION = util.Version.fromString(r.readLine());
+			VERSION = org.mg.javalib.util.Version.fromString(r.readLine());
 			r.close();
 		}
 		catch (Exception e)

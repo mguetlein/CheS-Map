@@ -1,7 +1,5 @@
 package org.chesmapper.map.gui;
 
-import gui.property.Property;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -10,6 +8,7 @@ import org.chesmapper.map.alg.embed3d.ThreeDEmbedder;
 import org.chesmapper.map.alg.r.DistanceProperty;
 import org.chesmapper.map.gui.wizard.SimpleViewWizardPanel;
 import org.chesmapper.map.workflow.EmbedderProvider;
+import org.mg.javalib.gui.property.Property;
 
 public class EmbedWizardPanel extends SimpleViewWizardPanel
 {

@@ -13,15 +13,14 @@ import org.chesmapper.map.dataInterface.FragmentPropertySet;
 import org.chesmapper.map.dataInterface.FragmentProperty.SubstructureType;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.CountedSet;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.fingerprint.IBitFingerprint;
 import org.openscience.cdk.fingerprint.KlekotaRothFingerprinter;
 import org.openscience.cdk.fingerprint.StandardSubstructureSets;
 import org.openscience.cdk.fingerprint.SubstructureFingerprinter;
 import org.openscience.cdk.interfaces.IAtomContainer;
-
-import util.ArrayUtil;
-import util.CountedSet;
 
 public class CDKFingerprintSet extends FragmentPropertySet
 {

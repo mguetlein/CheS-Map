@@ -9,10 +9,9 @@ import java.util.List;
 import org.chesmapper.map.dataInterface.CompoundPropertySet;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
-
-import task.Task;
-import task.TaskDialog;
-import util.SequentialWorkerThread;
+import org.mg.javalib.task.Task;
+import org.mg.javalib.task.TaskDialog;
+import org.mg.javalib.util.SequentialWorkerThread;
 
 public class FeatureLoader
 {

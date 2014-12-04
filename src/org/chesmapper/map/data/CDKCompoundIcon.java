@@ -1,9 +1,5 @@
 package org.chesmapper.map.data;
 
-import gui.MultiImageIcon;
-import gui.MultiImageIcon.Layout;
-import gui.MultiImageIcon.Orientation;
-
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -21,6 +17,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.chesmapper.map.main.Settings;
+import org.mg.javalib.gui.MultiImageIcon;
+import org.mg.javalib.gui.MultiImageIcon.Layout;
+import org.mg.javalib.gui.MultiImageIcon.Orientation;
+import org.mg.javalib.util.StringUtil;
+import org.mg.javalib.util.SwingUtil;
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.ConnectivityChecker;
@@ -37,9 +38,6 @@ import org.openscience.cdk.renderer.generators.IGenerator;
 import org.openscience.cdk.renderer.generators.IGeneratorParameter;
 import org.openscience.cdk.renderer.visitor.AWTDrawVisitor;
 import org.openscience.cdk.smiles.SmilesParser;
-
-import util.StringUtil;
-import util.SwingUtil;
 
 public class CDKCompoundIcon
 {

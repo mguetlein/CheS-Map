@@ -1,6 +1,6 @@
 package org.chesmapper.map.dataInterface;
 
-import gui.property.ColorGradient;
+import org.mg.javalib.gui.property.ColorGradient;
 
 public interface NumericProperty extends CompoundProperty
 {

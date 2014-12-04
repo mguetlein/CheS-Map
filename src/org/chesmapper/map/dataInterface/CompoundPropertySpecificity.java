@@ -7,9 +7,8 @@ import java.util.List;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.stat.inference.TestUtils;
-
-import util.Binning;
-import util.CountedSet;
+import org.mg.javalib.util.Binning;
+import org.mg.javalib.util.CountedSet;
 
 public class CompoundPropertySpecificity
 {

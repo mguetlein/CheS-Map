@@ -14,11 +14,10 @@ import org.chesmapper.map.dataInterface.CompoundPropertyOwner;
 import org.chesmapper.map.dataInterface.NominalProperty;
 import org.chesmapper.map.dataInterface.NumericProperty;
 import org.chesmapper.map.main.TaskProvider;
-
-import util.ArrayUtil;
-import util.ObjectUtil;
-import util.StopWatchUtil;
-import util.Vector3fUtil;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.ObjectUtil;
+import org.mg.javalib.util.StopWatchUtil;
+import org.mg.javalib.util.Vector3fUtil;
 
 public class EmbedUtil
 {

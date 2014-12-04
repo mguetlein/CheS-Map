@@ -1,17 +1,15 @@
 package org.chesmapper.map.alg.r;
 
-import gui.Message;
-import gui.Messages;
-import gui.property.SelectProperty;
-
 import java.util.LinkedHashMap;
 
 import org.chesmapper.map.alg.DistanceMeasure;
 import org.chesmapper.map.gui.FeatureWizardPanel.FeatureInfo;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.rscript.RScriptUtil;
-
-import util.ArrayUtil;
+import org.mg.javalib.gui.Message;
+import org.mg.javalib.gui.Messages;
+import org.mg.javalib.gui.property.SelectProperty;
+import org.mg.javalib.util.ArrayUtil;
 
 public class DistanceProperty extends SelectProperty
 {

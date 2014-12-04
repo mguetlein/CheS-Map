@@ -2,7 +2,7 @@ package org.chesmapper.map.dataInterface;
 
 import java.util.List;
 
-import util.StringUtil;
+import org.mg.javalib.util.StringUtil;
 
 public class CompoundPropertySetUtil
 {

@@ -2,8 +2,8 @@ package org.chesmapper.map.data;
 
 import java.util.Comparator;
 
-import util.ArrayUtil;
-import util.StringUtil;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.StringUtil;
 
 public class DatasetSorter
 {

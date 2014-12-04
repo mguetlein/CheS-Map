@@ -1,10 +1,5 @@
 package org.chesmapper.map.alg.cluster;
 
-import gui.Message;
-import gui.Messages;
-import gui.property.Property;
-import io.SDFUtil;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +16,10 @@ import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
 import org.chesmapper.map.util.ValueFileCache;
 import org.chesmapper.map.weka.CascadeSimpleKMeans;
+import org.mg.javalib.gui.Message;
+import org.mg.javalib.gui.Messages;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.io.SDFUtil;
 
 public abstract class AbstractDatasetClusterer extends AbstractAlgorithm implements DatasetClusterer
 {

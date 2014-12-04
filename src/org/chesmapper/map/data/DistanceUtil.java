@@ -9,11 +9,10 @@ import org.chesmapper.map.dataInterface.CompoundProperty;
 import org.chesmapper.map.dataInterface.CompoundPropertyOwner;
 import org.chesmapper.map.dataInterface.NominalProperty;
 import org.chesmapper.map.dataInterface.NumericProperty;
-
-import util.ArrayUtil;
-import util.DistanceMatrix;
-import dist.SimilarityMeasure;
-import dist.SimilartiyCache;
+import org.mg.javalib.dist.SimilarityMeasure;
+import org.mg.javalib.dist.SimilartiyCache;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.DistanceMatrix;
 
 public class DistanceUtil
 {

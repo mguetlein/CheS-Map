@@ -27,8 +27,7 @@ import org.chesmapper.map.dataInterface.CompoundData;
 import org.chesmapper.map.dataInterface.CompoundProperty;
 import org.chesmapper.map.dataInterface.CompoundPropertySet;
 import org.chesmapper.map.dataInterface.CompoundPropertyUtil;
-
-import util.StringUtil;
+import org.mg.javalib.util.StringUtil;
 
 public class CheSMapping
 {

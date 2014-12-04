@@ -1,10 +1,5 @@
 package org.chesmapper.map.alg.align3d;
 
-import gui.Message;
-import gui.Messages;
-import io.ExternalTool.ExternalToolError;
-import io.SDFUtil;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -23,10 +18,13 @@ import org.chesmapper.map.main.BinHandler;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
 import org.chesmapper.map.util.ExternalToolUtil;
+import org.mg.javalib.gui.Message;
+import org.mg.javalib.gui.Messages;
+import org.mg.javalib.io.SDFUtil;
+import org.mg.javalib.io.ExternalTool.ExternalToolError;
+import org.mg.javalib.util.FileUtil;
 import org.openscience.cdk.geometry.alignment.MultiKabschAlignement;
 import org.openscience.cdk.interfaces.IAtomContainer;
-
-import util.FileUtil;
 
 public abstract class Abstract3DAligner extends AbstractAlgorithm implements ThreeDAligner
 {

@@ -2,8 +2,7 @@ package org.chesmapper.map.dataInterface;
 
 import org.chesmapper.map.data.DatasetFile;
 import org.chesmapper.map.dataInterface.FragmentProperty.SubstructureType;
-
-import gui.binloc.Binary;
+import org.mg.javalib.gui.binloc.Binary;
 
 public interface CompoundPropertySet
 {

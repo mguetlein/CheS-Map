@@ -14,8 +14,7 @@ import org.chesmapper.map.alg.embed3d.ThreeDEmbedder;
 import org.chesmapper.map.dataInterface.ClusterData;
 import org.chesmapper.map.dataInterface.CompoundData;
 import org.chesmapper.map.dataInterface.CompoundProperty;
-
-import task.TaskDialog;
+import org.mg.javalib.task.TaskDialog;
 
 public class ClusteringData
 {

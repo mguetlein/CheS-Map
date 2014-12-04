@@ -1,8 +1,5 @@
 package org.chesmapper.map.util;
 
-import gui.Message;
-import gui.Messages;
-
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.net.URI;
@@ -11,6 +8,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 
 import org.chesmapper.map.main.Settings;
+import org.mg.javalib.gui.Message;
+import org.mg.javalib.gui.Messages;
 
 public class MessageUtil
 {

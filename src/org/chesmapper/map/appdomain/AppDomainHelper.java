@@ -1,12 +1,10 @@
 package org.chesmapper.map.appdomain;
 
-import gui.property.PropertyPanel;
-
 import javax.swing.JOptionPane;
 
 import org.chesmapper.map.main.Settings;
-
-import util.SwingUtil;
+import org.mg.javalib.gui.property.PropertyPanel;
+import org.mg.javalib.util.SwingUtil;
 
 public class AppDomainHelper
 {

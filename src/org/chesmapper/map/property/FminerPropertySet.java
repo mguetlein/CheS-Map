@@ -1,8 +1,5 @@
 package org.chesmapper.map.property;
 
-import gui.binloc.Binary;
-import gui.binloc.BinaryLocator;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,9 +11,10 @@ import org.chesmapper.map.dataInterface.FragmentPropertySet;
 import org.chesmapper.map.dataInterface.FragmentProperty.SubstructureType;
 import org.chesmapper.map.main.BinHandler;
 import org.chesmapper.map.main.Settings;
-
-import util.ArrayUtil;
-import util.FminerWrapper;
+import org.mg.javalib.gui.binloc.Binary;
+import org.mg.javalib.gui.binloc.BinaryLocator;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.FminerWrapper;
 
 public class FminerPropertySet extends FragmentPropertySet
 {

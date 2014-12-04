@@ -11,12 +11,11 @@ import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.property.CDKDescriptor;
 import org.chesmapper.map.property.OBDescriptorFactory;
 import org.chesmapper.map.util.CDKUtil;
+import org.mg.javalib.util.ArrayUtil;
 import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IAtomContainerSet;
 import org.openscience.cdk.io.SDFWriter;
-
-import util.ArrayUtil;
 
 public class DescriptorForMixturesHandler
 {

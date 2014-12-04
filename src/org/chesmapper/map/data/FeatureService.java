@@ -1,7 +1,5 @@
 package org.chesmapper.map.data;
 
-import io.SDFUtil;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -25,6 +23,11 @@ import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
 import org.chesmapper.map.property.IntegratedPropertySet;
 import org.chesmapper.map.util.ValueFileCache;
+import org.mg.javalib.io.SDFUtil;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.ListUtil;
+import org.mg.javalib.util.FileUtil.UnexpectedNumColsException;
 import org.openscience.cdk.Atom;
 import org.openscience.cdk.AtomContainer;
 import org.openscience.cdk.CDKConstants;
@@ -57,11 +60,6 @@ import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
-
-import util.ArrayUtil;
-import util.FileUtil;
-import util.FileUtil.UnexpectedNumColsException;
-import util.ListUtil;
 
 public class FeatureService
 {

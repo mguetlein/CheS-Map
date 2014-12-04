@@ -1,7 +1,5 @@
 package org.chesmapper.map.workflow;
 
-import io.SDFUtil;
-
 import java.io.File;
 import java.util.List;
 import java.util.Properties;
@@ -17,15 +15,15 @@ import org.chesmapper.map.main.PropHandler;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
 import org.chesmapper.map.opentox.DatasetUtil;
-
-import task.Task;
-import task.TaskDialog;
-import util.FileUtil;
-import util.ListUtil;
-import util.StringUtil;
-import util.SwingUtil;
-import util.ThreadUtil;
-import util.VectorUtil;
+import org.mg.javalib.io.SDFUtil;
+import org.mg.javalib.task.Task;
+import org.mg.javalib.task.TaskDialog;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.ListUtil;
+import org.mg.javalib.util.StringUtil;
+import org.mg.javalib.util.SwingUtil;
+import org.mg.javalib.util.ThreadUtil;
+import org.mg.javalib.util.VectorUtil;
 
 public class DatasetLoader implements DatasetMappingWorkflowProvider
 {

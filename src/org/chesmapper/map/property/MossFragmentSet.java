@@ -16,11 +16,11 @@ import org.chesmapper.map.dataInterface.FragmentPropertySet;
 import org.chesmapper.map.dataInterface.FragmentProperty.SubstructureType;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.StringUtil;
 
 import moss.Miner;
 import moss.Miner.MinerAbortable;
-import util.FileUtil;
-import util.StringUtil;
 
 public class MossFragmentSet extends FragmentPropertySet
 {

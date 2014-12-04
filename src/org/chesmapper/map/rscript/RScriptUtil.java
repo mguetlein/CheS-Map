@@ -3,8 +3,7 @@ package org.chesmapper.map.rscript;
 import java.io.File;
 
 import org.chesmapper.map.main.Settings;
-
-import util.FileUtil;
+import org.mg.javalib.util.FileUtil;
 
 public class RScriptUtil
 {

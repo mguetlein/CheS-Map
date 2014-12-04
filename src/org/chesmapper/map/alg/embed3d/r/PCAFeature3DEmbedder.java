@@ -3,8 +3,7 @@ package org.chesmapper.map.alg.embed3d.r;
 import org.chesmapper.map.alg.DistanceMeasure;
 import org.chesmapper.map.alg.embed3d.AbstractRTo3DEmbedder;
 import org.chesmapper.map.main.Settings;
-
-import util.StringLineAdder;
+import org.mg.javalib.util.StringLineAdder;
 
 public class PCAFeature3DEmbedder extends AbstractRTo3DEmbedder
 {

@@ -1,9 +1,5 @@
 package org.chesmapper.map.property;
 
-import gui.Selector;
-import gui.binloc.Binary;
-import gui.property.Property;
-
 import java.io.File;
 import java.util.Properties;
 import java.util.Set;
@@ -17,9 +13,11 @@ import org.chesmapper.map.main.BinHandler;
 import org.chesmapper.map.main.PropHandler;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.workflow.FeatureMappingWorkflowProvider;
-
-import util.ArrayUtil;
-import util.ListUtil;
+import org.mg.javalib.gui.Selector;
+import org.mg.javalib.gui.binloc.Binary;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.ListUtil;
 
 public class PropertySetProvider implements FeatureMappingWorkflowProvider
 {

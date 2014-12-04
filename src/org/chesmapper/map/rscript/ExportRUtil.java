@@ -1,7 +1,5 @@
 package org.chesmapper.map.rscript;
 
-import io.RUtil;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,9 +7,9 @@ import org.chesmapper.map.dataInterface.CompoundProperty;
 import org.chesmapper.map.dataInterface.NominalProperty;
 import org.chesmapper.map.dataInterface.NumericProperty;
 import org.chesmapper.map.main.Settings;
-
-import util.ArrayUtil;
-import util.ObjectUtil;
+import org.mg.javalib.io.RUtil;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.ObjectUtil;
 
 public class ExportRUtil
 {

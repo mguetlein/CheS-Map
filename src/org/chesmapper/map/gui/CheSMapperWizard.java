@@ -1,7 +1,5 @@
 package org.chesmapper.map.gui;
 
-import gui.WizardDialog;
-
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
@@ -14,9 +12,9 @@ import org.chesmapper.map.main.CheSMapping;
 import org.chesmapper.map.main.ScreenSetup;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.workflow.MappingWorkflow;
-
-import util.ScreenUtil;
-import util.SwingUtil;
+import org.mg.javalib.gui.WizardDialog;
+import org.mg.javalib.util.ScreenUtil;
+import org.mg.javalib.util.SwingUtil;
 
 public class CheSMapperWizard extends WizardDialog
 {

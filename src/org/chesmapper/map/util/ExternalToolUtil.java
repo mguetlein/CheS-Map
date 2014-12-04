@@ -1,11 +1,10 @@
 package org.chesmapper.map.util;
 
-import io.ExternalTool;
-
 import java.io.File;
 
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
+import org.mg.javalib.io.ExternalTool;
 
 public class ExternalToolUtil
 {

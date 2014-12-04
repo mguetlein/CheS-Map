@@ -1,8 +1,5 @@
 package org.chesmapper.map.alg.build3d;
 
-import io.SDFUtil;
-import io.SDFUtil.SDChecker;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +11,9 @@ import javax.vecmath.Point3d;
 import org.chesmapper.map.data.DatasetFile;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
+import org.mg.javalib.io.SDFUtil;
+import org.mg.javalib.io.SDFUtil.SDChecker;
+import org.mg.javalib.util.FileUtil;
 import org.openscience.cdk.ChemFile;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -21,8 +21,6 @@ import org.openscience.cdk.interfaces.IChemFile;
 import org.openscience.cdk.interfaces.IChemObject;
 import org.openscience.cdk.io.MDLV2000Reader;
 import org.openscience.cdk.tools.manipulator.ChemFileManipulator;
-
-import util.FileUtil;
 
 public abstract class AbstractReal3DBuilder extends Abstract3DBuilder
 {

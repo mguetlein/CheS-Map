@@ -6,9 +6,8 @@ import org.chesmapper.map.dataInterface.CompoundProperty;
 import org.chesmapper.map.dataInterface.DefaultNominalProperty;
 import org.chesmapper.map.dataInterface.DefaultNumericProperty;
 import org.chesmapper.map.dataInterface.FragmentProperty.SubstructureType;
-
-import gui.binloc.Binary;
-import util.DoubleKeyHashMap;
+import org.mg.javalib.gui.binloc.Binary;
+import org.mg.javalib.util.DoubleKeyHashMap;
 
 public class IntegratedPropertySet extends AbstractPropertySet
 {

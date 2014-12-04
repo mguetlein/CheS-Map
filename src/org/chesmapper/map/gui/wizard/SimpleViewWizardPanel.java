@@ -1,9 +1,5 @@
 package org.chesmapper.map.gui.wizard;
 
-import gui.property.Property;
-import gui.property.PropertyComponent;
-import gui.property.PropertyPanel;
-
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
@@ -21,6 +17,9 @@ import org.chesmapper.map.alg.Algorithm;
 import org.chesmapper.map.gui.CheSMapperWizard;
 import org.chesmapper.map.main.PropHandler;
 import org.chesmapper.map.workflow.SimpleViewAlgorithmProvider;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.gui.property.PropertyComponent;
+import org.mg.javalib.gui.property.PropertyPanel;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;

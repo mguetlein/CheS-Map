@@ -1,7 +1,5 @@
 package org.chesmapper.map.property;
 
-import gui.binloc.Binary;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,10 +17,10 @@ import org.chesmapper.map.main.BinHandler;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
 import org.chesmapper.map.util.ValueFileCache;
-
-import util.ArrayUtil;
-import util.FileUtil.UnexpectedNumColsException;
-import util.ListUtil;
+import org.mg.javalib.gui.binloc.Binary;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.ListUtil;
+import org.mg.javalib.util.FileUtil.UnexpectedNumColsException;
 
 public class OBDescriptorSet implements CompoundPropertySet
 {

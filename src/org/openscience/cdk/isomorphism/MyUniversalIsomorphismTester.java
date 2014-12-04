@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.chesmapper.map.main.Settings;
+import org.mg.javalib.util.ArrayUtil;
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtom;
@@ -20,8 +21,6 @@ import org.openscience.cdk.isomorphism.mcss.RGraph;
 import org.openscience.cdk.isomorphism.mcss.RMap;
 import org.openscience.cdk.isomorphism.mcss.RNode;
 import org.openscience.cdk.tools.manipulator.BondManipulator;
-
-import util.ArrayUtil;
 
 public class MyUniversalIsomorphismTester
 {

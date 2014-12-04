@@ -1,13 +1,12 @@
 package org.chesmapper.map.data.fragments;
 
-import gui.property.BooleanProperty;
-import gui.property.IntegerProperty;
-import gui.property.Property;
-import gui.property.SelectProperty;
-
 import java.beans.PropertyChangeListener;
 
 import org.chesmapper.map.main.BinHandler;
+import org.mg.javalib.gui.property.BooleanProperty;
+import org.mg.javalib.gui.property.IntegerProperty;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.gui.property.SelectProperty;
 
 public class FragmentProperties
 {

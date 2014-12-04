@@ -9,9 +9,8 @@ import javax.vecmath.Vector3f;
 import org.chesmapper.map.dataInterface.DefaultNominalProperty;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
-
-import util.ArrayUtil;
-import util.StringUtil;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.StringUtil;
 
 public class EqualPositionProperty extends DefaultNominalProperty
 {

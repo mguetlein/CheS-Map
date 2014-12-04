@@ -1,9 +1,9 @@
 package org.chesmapper.map.appdomain;
 
-import gui.property.DoubleProperty;
-import gui.property.Property;
-import gui.property.SelectProperty;
-import util.DoubleArraySummary;
+import org.mg.javalib.gui.property.DoubleProperty;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.gui.property.SelectProperty;
+import org.mg.javalib.util.DoubleArraySummary;
 
 public abstract class DistanceBasedAppDomainComputer extends AbstractAppDomainComputer
 {

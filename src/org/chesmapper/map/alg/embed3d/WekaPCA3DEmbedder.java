@@ -1,7 +1,5 @@
 package org.chesmapper.map.alg.embed3d;
 
-import gui.property.Property;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -17,8 +15,9 @@ import org.chesmapper.map.dataInterface.CompoundProperty;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.main.TaskProvider;
 import org.chesmapper.map.weka.CompoundArffWriter;
+import org.mg.javalib.gui.property.Property;
+import org.mg.javalib.weka.WekaPropertyUtil;
 
-import weka.WekaPropertyUtil;
 import weka.attributeSelection.PrincipalComponents;
 import weka.core.Instance;
 import weka.core.Instances;

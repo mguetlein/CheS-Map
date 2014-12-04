@@ -1,7 +1,5 @@
 package org.chesmapper.map.gui;
 
-import gui.property.Property;
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -10,6 +8,7 @@ import org.chesmapper.map.alg.align3d.ManualAligner;
 import org.chesmapper.map.alg.align3d.ThreeDAligner;
 import org.chesmapper.map.gui.wizard.ListWizardPanel;
 import org.chesmapper.map.workflow.AlignerProvider;
+import org.mg.javalib.gui.property.Property;
 
 public class AlignWizardPanel extends ListWizardPanel
 {

@@ -1,12 +1,5 @@
 package org.chesmapper.map.gui;
 
-import gui.DownArrowButton;
-import gui.Message;
-import gui.MessageLabel;
-import gui.Messages;
-import gui.WizardDialog;
-import gui.WizardPanel;
-
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -37,12 +30,17 @@ import org.chesmapper.map.main.PropHandler;
 import org.chesmapper.map.main.Settings;
 import org.chesmapper.map.util.MessageUtil;
 import org.chesmapper.map.workflow.DatasetLoader;
-
-import util.FileUtil;
-import util.ListUtil;
-import util.OSUtil;
-import util.StringUtil;
-import util.SwingUtil;
+import org.mg.javalib.gui.DownArrowButton;
+import org.mg.javalib.gui.Message;
+import org.mg.javalib.gui.MessageLabel;
+import org.mg.javalib.gui.Messages;
+import org.mg.javalib.gui.WizardDialog;
+import org.mg.javalib.gui.WizardPanel;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.ListUtil;
+import org.mg.javalib.util.OSUtil;
+import org.mg.javalib.util.StringUtil;
+import org.mg.javalib.util.SwingUtil;
 
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;

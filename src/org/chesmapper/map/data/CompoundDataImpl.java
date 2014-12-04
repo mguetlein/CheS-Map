@@ -1,7 +1,5 @@
 package org.chesmapper.map.data;
 
-import gui.MultiImageIcon.Layout;
-
 import java.util.HashMap;
 
 import javax.swing.ImageIcon;
@@ -11,6 +9,7 @@ import org.chesmapper.map.dataInterface.CompoundData;
 import org.chesmapper.map.dataInterface.CompoundProperty;
 import org.chesmapper.map.dataInterface.NominalProperty;
 import org.chesmapper.map.dataInterface.NumericProperty;
+import org.mg.javalib.gui.MultiImageIcon.Layout;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
 

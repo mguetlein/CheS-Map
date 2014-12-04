@@ -12,11 +12,11 @@ import java.util.Random;
 
 import javax.vecmath.Vector3f;
 
-import util.ArrayUtil;
-import util.FileUtil;
-import util.Vector3fUtil;
-import util.FileUtil.CSVFile;
-import util.FileUtil.UnexpectedNumColsException;
+import org.mg.javalib.util.ArrayUtil;
+import org.mg.javalib.util.FileUtil;
+import org.mg.javalib.util.Vector3fUtil;
+import org.mg.javalib.util.FileUtil.CSVFile;
+import org.mg.javalib.util.FileUtil.UnexpectedNumColsException;
 
 public class ValueFileCache
 {

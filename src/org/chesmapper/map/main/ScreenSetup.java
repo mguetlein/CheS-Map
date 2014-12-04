@@ -7,7 +7,7 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 
-import util.ScreenUtil;
+import org.mg.javalib.util.ScreenUtil;
 
 public class ScreenSetup
 {
